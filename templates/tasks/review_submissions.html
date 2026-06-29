@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Review Submissions
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/review_submissions.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-main">
+
+        <!-- HEADER -->
+        <div class="page-header">
+
+            <div>
+
+                <span class="dashboard-badge">
+                    🧪 Sprint Review
+                </span>
+
+                <h1>Review Submissions</h1>
+
+                <p>
+                    Evaluate submitted work, check deliverables, and approve sprint contributions.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- SUBMISSIONS -->
+
+        <div class="submission-grid">
+
+            {% for submission in submissions %}
+
+            <div class="submission-card">
+
+                <div class="submission-glow"></div>
+
+                <!-- HEADER -->
+                <div class="submission-header">
+
+                    <h3>{{ submission.task.title }}</h3>
+
+                    <span class="status-pill">
+
+                        {% if submission.reviewed %}
+
+                        <p class="review-date">
+
+                            Reviewed on
+                            {{ submission.reviewed_at|date:"d M Y H:i" }}
+
+                        </p>
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+                <!-- USER -->
+                <p class="submitted-by">
+                    👤 {{ submission.user.username }}
+                </p>
+
+                <!-- LINKS -->
+                <div class="link-section">
+
+                    {% if submission.github_url %}
+                    <a href="{{ submission.github_url }}" target="_blank" class="link-btn">
+                        🔗 GitHub
+                    </a>
+                    {% endif %}
+
+                    {% if submission.drive_url %}
+                    <a href="{{ submission.drive_url }}" target="_blank" class="link-btn">
+                        📁 Drive
+                    </a>
+                    {% endif %}
+
+                </div>
+
+                <!-- NOTES -->
+                <div class="notes-box">
+                    <p>{{ submission.notes }}</p>
+                </div>
+
+                <!-- ACTION -->
+                <div class="action-area">
+
+                    {% if submission.reviewed %}
+
+                    <span class="reviewed-btn">
+
+                        ✅ Reviewed
+
+                    </span>
+
+                    {% else %}
+
+                    <a href="{% url 'submission_review' submission.id %}" class="approve-btn">
+
+                        Review Submission →
+
+                    </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">🧪</div>
+
+                <h3>No Submissions Yet</h3>
+
+                <p>Once users submit their work, it will appear here for review.</p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

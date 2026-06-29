@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Attendance Details
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/attendance_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="attendance-detail-page">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            <div class="breadcrumb">
+
+                <a href="{% url 'attendance' %}">
+
+                    Attendance
+
+                </a>
+
+                /
+
+                <span>
+
+                    Attendance Details
+
+                </span>
+
+            </div>
+
+            <h1>
+
+                🕒 Attendance Record
+
+            </h1>
+
+            <p>
+
+                View complete attendance information for this employee.
+
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <a href="{% url 'attendance_update' attendance.id %}"
+               class="btn-edit">
+
+                ✏ Edit
+
+            </a>
+
+            <a href="{% url 'attendance_delete' attendance.id %}"
+               class="btn-delete">
+
+                🗑 Delete
+
+            </a>
+
+            <a href="{% url 'attendance' %}"
+               class="btn-back">
+
+                ← Back
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= EMPLOYEE CARD ================= -->
+
+    <div class="employee-card">
+
+        <div class="employee-left">
+
+            {% if attendance.employee.profile_image %}
+
+                <img src="{{ attendance.employee.profile_image.url }}"
+                     class="employee-photo">
+
+            {% else %}
+
+                <div class="employee-avatar">
+
+                    {{ attendance.employee.user.first_name|first|default:attendance.employee.user.username|first }}
+
+                </div>
+
+            {% endif %}
+
+            <div>
+
+                <h2>
+
+                    {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
+
+                </h2>
+
+                <p>
+
+                    {{ attendance.employee.designation }}
+
+                </p>
+
+                <small>
+
+                    Employee ID :
+                    {{ attendance.employee.employee_id }}
+
+                </small>
+
+            </div>
+
+        </div>
+
+        <div class="employee-status">
+
+            {% if attendance.status == "Present" %}
+
+                <span class="badge success">
+
+                    ✅ Present
+
+                </span>
+
+            {% elif attendance.status == "Absent" %}
+
+                <span class="badge danger">
+
+                    ❌ Absent
+
+                </span>
+
+            {% elif attendance.status == "WFH" %}
+
+                <span class="badge info">
+
+                    🏡 Work From Home
+
+                </span>
+
+            {% else %}
+
+                <span class="badge warning">
+
+                    🌴 Leave
+
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= ATTENDANCE INFORMATION ================= -->
+
+    <div class="detail-grid">
+
+        <div class="detail-card">
+
+            <div class="card-title">
+
+                📅 Attendance Details
+
+            </div>
+
+            <table class="detail-table">
+
+                <tr>
+
+                    <th>Date</th>
+
+                    <td>
+
+                        {{ attendance.date }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Status</th>
+
+                    <td>
+
+                        {{ attendance.status }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Check In</th>
+
+                    <td>
+
+                        {{ attendance.check_in|default:"--" }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Check Out</th>
+
+                    <td>
+
+                        {{ attendance.check_out|default:"--" }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Working Hours</th>
+
+                    <td>
+
+                        {{ attendance.working_hours }}
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+                <!-- ================= NOTES ================= -->
+
+        <div class="detail-card">
+
+            <div class="card-title">
+
+                📝 Notes
+
+            </div>
+
+            <div class="notes-box">
+
+                {% if attendance.notes %}
+
+                    {{ attendance.notes }}
+
+                {% else %}
+
+                    <span class="empty-text">
+
+                        No notes added for this attendance record.
+
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= SUMMARY ================= -->
+
+    <div class="summary-card">
+
+        <div class="summary-header">
+
+            <h3>
+
+                📊 Attendance Summary
+
+            </h3>
+
+        </div>
+
+        <div class="summary-grid">
+
+            <div class="summary-item">
+
+                <div class="summary-icon">
+
+                    📅
+
+                </div>
+
+                <div>
+
+                    <span>Date</span>
+
+                    <strong>
+
+                        {{ attendance.date }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div class="summary-item">
+
+                <div class="summary-icon">
+
+                    🕘
+
+                </div>
+
+                <div>
+
+                    <span>Check In</span>
+
+                    <strong>
+
+                        {{ attendance.check_in|default:"--" }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div class="summary-item">
+
+                <div class="summary-icon">
+
+                    🕔
+
+                </div>
+
+                <div>
+
+                    <span>Check Out</span>
+
+                    <strong>
+
+                        {{ attendance.check_out|default:"--" }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div class="summary-item">
+
+                <div class="summary-icon">
+
+                    ⏱
+
+                </div>
+
+                <div>
+
+                    <span>Working Hours</span>
+
+                    <strong>
+
+                        {{ attendance.working_hours }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= TIMELINE ================= -->
+
+    <div class="timeline-card">
+
+        <div class="card-title">
+
+            📌 Attendance Timeline
+
+        </div>
+
+        <div class="timeline">
+
+            <div class="timeline-item">
+
+                <div class="timeline-dot success"></div>
+
+                <div class="timeline-content">
+
+                    <strong>
+
+                        Check In
+
+                    </strong>
+
+                    <p>
+
+                        {{ attendance.check_in|default:"Not Recorded" }}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="timeline-item">
+
+                <div class="timeline-dot info"></div>
+
+                <div class="timeline-content">
+
+                    <strong>
+
+                        Check Out
+
+                    </strong>
+
+                    <p>
+
+                        {{ attendance.check_out|default:"Not Recorded" }}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="timeline-item">
+
+                <div class="timeline-dot primary"></div>
+
+                <div class="timeline-content">
+
+                    <strong>
+
+                        Total Working Hours
+
+                    </strong>
+
+                    <p>
+
+                        {{ attendance.working_hours }}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= QUICK ACTIONS ================= -->
+
+    <div class="action-card">
+
+        <div class="card-title">
+
+            ⚡ Quick Actions
+
+        </div>
+
+        <div class="action-grid">
+
+            <a href="{% url 'attendance_update' attendance.id %}"
+               class="action-btn edit">
+
+                ✏ Edit Attendance
+
+            </a>
+
+            <a href="{% url 'attendance_delete' attendance.id %}"
+               class="action-btn delete">
+
+                🗑 Delete Attendance
+
+            </a>
+
+            <a href="{% url 'attendance_report' %}"
+               class="action-btn report">
+
+                📈 Attendance Report
+
+            </a>
+
+            <a href="{% url 'attendance' %}"
+               class="action-btn back">
+
+                ← Back to Attendance
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

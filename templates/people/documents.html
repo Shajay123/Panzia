@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Employee Documents
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/documents.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="documents-page">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>📂 Employee Documents</h1>
+
+            <p>
+                Manage employee documents, certificates and contracts securely.
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <a href="{% url 'document_create' %}" class="btn-primary">
+                ⬆ Upload Document
+            </a>
+
+            <a href="#" class="btn-secondary">
+                📥 Export
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= SUMMARY ================= -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card blue">
+
+            <h2>{{ total_documents }}</h2>
+
+            <p>Total Documents</p>
+
+        </div>
+
+        <div class="summary-card green">
+
+            <h2>{{ employees_count }}</h2>
+
+            <p>Employees</p>
+
+        </div>
+
+        <div class="summary-card orange">
+
+            <h2>{{ verified_documents }}</h2>
+
+            <p>Verified</p>
+
+        </div>
+
+        <div class="summary-card purple">
+
+            <h2>{{ pending_documents }}</h2>
+
+            <p>Pending Review</p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= SEARCH ================= -->
+
+    <div class="filter-card">
+
+        <input
+            type="text"
+            id="documentSearch"
+            placeholder="🔍 Search Employee / Document..."
+        >
+
+    </div>
+
+
+    <!-- ================= TABLE ================= -->
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Department</th>
+
+                    <th>Document</th>
+
+                    <th>Uploaded</th>
+
+                    <th>Preview</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for doc in documents %}
+
+                <tr>
+
+                    <td>
+
+                        <div class="employee-box">
+
+                            {% if doc.employee.profile_image %}
+
+                                <img src="{{ doc.employee.profile_image.url }}">
+
+                            {% else %}
+
+                                <div class="avatar">
+
+                                    {{ doc.employee.user.first_name|first|default:doc.employee.user.username|first|upper }}
+
+                                </div>
+
+                            {% endif %}
+
+                            <div>
+
+                                <strong>
+
+                                    {{ doc.employee.user.get_full_name|default:doc.employee.user.username }}
+
+                                </strong>
+
+                                <small>
+
+                                    {{ doc.employee.designation }}
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>
+
+                        {{ doc.employee.department }}
+
+                    </td>
+
+                    <td>
+
+                        <span class="doc-icon">
+
+                            📄
+
+                        </span>
+
+                        {{ doc.title }}
+
+                    </td>
+
+                    <td>
+
+                        {{ doc.uploaded_at|date:"d M Y" }}
+
+                    </td>
+
+                    <td>
+
+                        <a href="{{ doc.file.url }}"
+                           target="_blank"
+                           class="preview-btn">
+
+                            View
+
+                        </a>
+
+                    </td>
+
+                    <td>
+
+                        <div class="table-actions">
+
+                            <a href="{% url 'document_detail' doc.id %}" class="action-btn view">
+
+                                👁
+
+                            </a>
+
+                            <a href="{% url 'document_update' doc.id %}" class="action-btn edit">
+
+                                ✏
+
+                            </a>
+
+                            <a href="{% url 'document_delete' doc.id %}" class="action-btn delete">
+
+                                🗑
+
+                            </a>
+
+                            <a href="{{ doc.file.url }}"
+                               download
+                               class="action-btn download">
+
+                                ⬇
+
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            {% empty %}
+
+                <tr>
+
+                    <td colspan="6">
+
+                        <div class="empty-state">
+
+                            <div class="empty-icon">
+
+                                📂
+
+                            </div>
+
+                            <h3>
+
+                                No Documents Uploaded
+
+                            </h3>
+
+                            <p>
+
+                                Upload employee documents to begin maintaining records.
+
+                            </p>
+
+                            <a href="{% url 'document_create' %}" class="btn-primary">
+
+                                Upload First Document
+
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ================= MOBILE CARDS ================= -->
+
+    <div class="documents-cards">
+
+        {% for doc in documents %}
+
+        <div class="document-card">
+
+            <div class="card-header">
+
+                {% if doc.employee.profile_image %}
+
+                    <img src="{{ doc.employee.profile_image.url }}">
+
+                {% else %}
+
+                    <div class="avatar">
+
+                        {{ doc.employee.user.first_name|first|default:doc.employee.user.username|first|upper }}
+
+                    </div>
+
+                {% endif %}
+
+                <div>
+
+                    <h3>
+
+                        {{ doc.employee.user.get_full_name|default:doc.employee.user.username }}
+
+                    </h3>
+
+                    <span>
+
+                        {{ doc.employee.designation }}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="card-body">
+
+                <p>
+
+                    <strong>Department</strong>
+
+                    {{ doc.employee.department }}
+
+                </p>
+
+                <p>
+
+                    <strong>Document</strong>
+
+                    {{ doc.title }}
+
+                </p>
+
+                <p>
+
+                    <strong>Uploaded</strong>
+
+                    {{ doc.uploaded_at|date:"d M Y" }}
+
+                </p>
+
+            </div>
+
+            <div class="card-actions">
+
+                <a href="{% url 'document_detail' doc.id %}" class="btn-light">
+
+                    View
+
+                </a>
+
+                <a href="{% url 'document_update' doc.id %}" class="btn-primary">
+
+                    Edit
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<script>
+
+const search=document.getElementById("documentSearch");
+
+search.addEventListener("keyup",function(){
+
+let filter=this.value.toLowerCase();
+
+let rows=document.querySelectorAll("tbody tr");
+
+rows.forEach(function(row){
+
+row.style.display=row.innerText.toLowerCase().includes(filter)?"":"none";
+
+});
+
+});
+
+</script>
+
+{% endblock %}

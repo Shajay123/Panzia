@@ -1,0 +1,648 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Attendance Report
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/attendance_report.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="attendance-report-page">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            <span class="page-tag">
+                Attendance Analytics
+            </span>
+
+            <h1>
+                📊 Attendance Report
+            </h1>
+
+            <p>
+
+                Analyze attendance trends, employee working hours,
+                absenteeism and workforce productivity.
+
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <a href="{% url 'attendance' %}" class="btn-light">
+
+                ← Attendance
+
+            </a>
+
+            <a href="#" class="btn-secondary">
+
+                📥 Excel
+
+            </a>
+
+            <a href="#" class="btn-primary">
+
+                🖨 PDF
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================= KPI CARDS ================= -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card present">
+
+            <div class="card-icon">
+
+                ✅
+
+            </div>
+
+            <div>
+
+                <h2>
+
+                    {{ present_count }}
+
+                </h2>
+
+                <p>
+
+                    Present
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card absent">
+
+            <div class="card-icon">
+
+                ❌
+
+            </div>
+
+            <div>
+
+                <h2>
+
+                    {{ absent_count }}
+
+                </h2>
+
+                <p>
+
+                    Absent
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card leave">
+
+            <div class="card-icon">
+
+                🌴
+
+            </div>
+
+            <div>
+
+                <h2>
+
+                    {{ leave_count }}
+
+                </h2>
+
+                <p>
+
+                    Leave
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card wfh">
+
+            <div class="card-icon">
+
+                🏠
+
+            </div>
+
+            <div>
+
+                <h2>
+
+                    {{ wfh_count }}
+
+                </h2>
+
+                <p>
+
+                    WFH
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card percentage">
+
+            <div class="card-icon">
+
+                📈
+
+            </div>
+
+            <div>
+
+                <h2>
+
+                    {{ attendance_percentage }}%
+
+                </h2>
+
+                <p>
+
+                    Attendance
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================= FILTERS ================= -->
+
+    <div class="filter-card">
+
+        <form method="GET">
+
+            <div class="filter-grid">
+
+                <div class="filter-group">
+
+                    <label>
+
+                        Employee
+
+                    </label>
+
+                    <select name="employee">
+
+                        <option value="">
+                            All Employees
+                        </option>
+
+                        {% for emp in employees %}
+
+                        <option value="{{ emp.id }}">
+                            {{ emp.user.get_full_name|default:emp.user.username }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="filter-group">
+
+                    <label>
+
+                        Status
+
+                    </label>
+
+                    <select name="status">
+
+                        <option value="">
+
+                            All Status
+
+                        </option>
+
+                        <option value="Present">
+
+                            Present
+
+                        </option>
+
+                        <option value="Absent">
+
+                            Absent
+
+                        </option>
+
+                        <option value="Leave">
+
+                            Leave
+
+                        </option>
+
+                        <option value="WFH">
+
+                            WFH
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="filter-group">
+
+                    <label>
+
+                        From Date
+
+                    </label>
+
+                    <input type="date" name="from" value="{{ request.GET.from }}">
+
+                </div>
+
+
+
+                <div class="filter-group">
+
+                    <label>
+
+                        To Date
+
+                    </label>
+
+                    <input type="date" name="to" value="{{ request.GET.to }}">
+
+                </div>
+
+            </div>
+
+
+
+            <div class="filter-actions">
+
+                <button type="submit" class="btn-primary">
+
+                    🔍 Apply Filters
+
+                </button>
+
+                <a href="{% url 'attendance_report' %}" class="btn-light">
+
+                    Reset
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+
+    <!-- ================= ATTENDANCE TABLE ================= -->
+
+    <div class="table-card">
+
+        <div class="table-header">
+
+            <h3>
+
+                Attendance Records
+
+            </h3>
+
+            <span>
+
+                {{ records|length }} Record{{ records|length|pluralize }}
+
+            </span>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="attendance-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Employee</th>
+
+                        <th>Date</th>
+
+                        <th>Check In</th>
+
+                        <th>Check Out</th>
+
+                        <th>Working Hours</th>
+
+                        <th>Status</th>
+
+                        <th>Notes</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for record in records %}
+
+                    <tr>
+
+                        <!-- Employee -->
+
+                        <td>
+
+                            <div class="employee-box">
+
+                                {% if record.employee.profile_image %}
+
+                                <img src="{{ record.employee.profile_image.url }}" alt="Employee">
+
+                                {% else %}
+
+                                <div class="avatar">
+
+                                    {{ record.employee.user.first_name|first|default:record.employee.user.username|first
+                                    }}
+
+                                </div>
+
+                                {% endif %}
+
+                                <div>
+
+                                    <strong>
+
+                                        {{ record.employee.user.get_full_name|default:record.employee.user.username }}
+
+                                    </strong>
+
+                                    <small>
+
+                                        {{ record.employee.designation }}
+
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                        <!-- Date -->
+
+                        <td>
+
+                            {{ record.date|date:"d M Y" }}
+
+                        </td>
+
+                        <!-- Check In -->
+
+                        <td>
+
+                            {% if record.check_in %}
+
+                            {{ record.check_in }}
+
+                            {% else %}
+
+                            --
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- Check Out -->
+
+                        <td>
+
+                            {% if record.check_out %}
+
+                            {{ record.check_out }}
+
+                            {% else %}
+
+                            --
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- Working Hours -->
+
+                        <td>
+
+                            <span class="working-hours">
+
+                                {{ record.working_hours }}
+
+                            </span>
+
+                        </td>
+
+                        <!-- Status -->
+
+                        <td>
+
+                            {% if record.status == "Present" %}
+
+                            <span class="badge present">
+
+                                ✅ Present
+
+                            </span>
+
+                            {% elif record.status == "Absent" %}
+
+                            <span class="badge absent">
+
+                                ❌ Absent
+
+                            </span>
+
+                            {% elif record.status == "WFH" %}
+
+                            <span class="badge wfh">
+
+                                🏠 WFH
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge leave">
+
+                                🌴 Leave
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- Notes -->
+
+                        <td>
+
+                            {% if record.notes %}
+
+                            {{ record.notes|truncatechars:40 }}
+
+                            {% else %}
+
+                            -
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- Actions -->
+
+                        <td>
+
+                            <div class="action-buttons">
+
+                                <a href="{% url 'attendance_detail' record.id %}" class="table-btn view">
+
+                                    👁
+
+                                </a>
+
+                                <a href="{% url 'attendance_update' record.id %}" class="table-btn edit">
+
+                                    ✏
+
+                                </a>
+
+                                <a href="{% url 'attendance_delete' record.id %}" class="table-btn delete">
+
+                                    🗑
+
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="8">
+
+                            <div class="empty-state">
+
+                                <div class="empty-icon">
+
+                                    📋
+
+                                </div>
+
+                                <h3>
+
+                                    No Attendance Records Found
+
+                                </h3>
+
+                                <p>
+
+                                    No attendance data matches your selected filters.
+
+                                </p>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- Footer -->
+
+        <div class="report-footer">
+
+            <div>
+
+                <strong>Total Records:</strong>
+
+                {{ records|length }}
+
+            </div>
+
+            <div>
+
+                <strong>Attendance Rate:</strong>
+
+                {{ attendance_percentage }}%
+
+            </div>
+
+            <div>
+
+                <strong>Generated:</strong>
+
+                {% now "d M Y H:i" %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

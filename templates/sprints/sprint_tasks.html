@@ -1,0 +1,26 @@
+{{ form.title }}
+
+{{ form.description }}
+
+{{ form.deadline }}
+
+<label>Assign To</label>
+
+<select
+    name="assigned_to"
+    class="form-control"
+>
+
+{% for member in members %}
+
+<option
+    value="{{ member.user.id }}"
+>
+
+{{ member.user.username }}
+
+</option>
+
+{% endfor %}
+
+</select>

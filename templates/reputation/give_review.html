@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Give Review
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/give_review.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-main">
+
+        <!-- HEADER -->
+
+        <div class="page-header">
+
+            <span class="dashboard-badge">
+                ⭐ Reputation System
+            </span>
+
+            <h1>
+                Give Sprint Review
+            </h1>
+
+            <p>
+                Rate the member's performance and help build their startup reputation.
+            </p>
+
+        </div>
+
+        <!-- CARD -->
+
+        <div class="review-card">
+
+            <div class="review-glow"></div>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <!-- MEMBER -->
+
+                <div class="form-group">
+
+                    <label>
+                        Select Member
+                    </label>
+
+                    <select name="user">
+
+                        {% for member in members %}
+
+                        <option value="{{ member.user.id }}">
+                            {{ member.user.username }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <!-- RATING -->
+
+                <div class="form-group">
+
+                    <label>
+                        Rating
+                    </label>
+
+                    <select name="rating">
+
+                        <option value="5">
+                            ⭐⭐⭐⭐⭐ Outstanding
+                        </option>
+
+                        <option value="4">
+                            ⭐⭐⭐⭐ Excellent
+                        </option>
+
+                        <option value="3">
+                            ⭐⭐⭐ Good
+                        </option>
+
+                        <option value="2">
+                            ⭐⭐ Needs Improvement
+                        </option>
+
+                        <option value="1">
+                            ⭐ Poor
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- FEEDBACK -->
+
+                <div class="form-group">
+
+                    <label>
+                        Feedback
+                    </label>
+
+                    <textarea name="feedback" rows="5"
+                        placeholder="Write detailed feedback about the member's contribution..."></textarea>
+
+                </div>
+
+                <!-- BUTTON -->
+
+                <div class="button-area">
+
+                    <button type="submit" class="submit-btn">
+
+                        ⭐ Submit Review
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

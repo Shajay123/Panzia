@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/payment.css' %}">
+
+<div class="payment-page">
+
+    <div class="payment-card">
+
+        <div class="payment-header">
+
+            <div class="plan-icon">
+                💎
+            </div>
+
+            <h1>
+                Upgrade to {{ plan.name }}
+            </h1>
+
+            <p>
+                Unlock premium features and supercharge your journey with PANZIA.
+            </p>
+
+        </div>
+
+
+        <div class="plan-details">
+
+            <div class="detail-box">
+
+                <span class="label">
+                    Plan
+                </span>
+
+                <span class="value">
+                    {{ plan.name }}
+                </span>
+
+            </div>
+
+
+            <div class="detail-box">
+
+                <span class="label">
+                    Duration
+                </span>
+
+                <span class="value">
+                    {{ plan.duration_days }} Days
+                </span>
+
+            </div>
+
+
+            <div class="price-box">
+
+                ₹{{ plan.price }}
+
+            </div>
+
+        </div>
+
+
+        <button id="pay-btn" class="pay-btn">
+
+            🚀 Proceed to Payment
+
+        </button>
+
+
+        <div class="secure-note">
+
+            🔒 100% Secure Payment via Razorpay
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+var options = {
+
+    key: "{{ key_id }}",
+
+    amount: "{{ order.amount }}",
+
+    currency: "INR",
+
+    order_id: "{{ order.id }}",
+
+    name: "PANZIA",
+
+    description: "{{ plan.name }}",
+
+    theme: {
+        color: "#8b5cf6"
+    },
+
+    handler: function(response){
+
+        window.location.href =
+        "/payments/success/?payment_id="
+        + response.razorpay_payment_id
+        + "&plan_id={{ plan.id }}";
+
+    }
+
+};
+
+var rzp = new Razorpay(options);
+
+document.getElementById("pay-btn").onclick = function(e){
+
+    rzp.open();
+
+    e.preventDefault();
+
+}
+
+</script>
+
+{% endblock %}

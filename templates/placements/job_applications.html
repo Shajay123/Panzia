@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/job_applications.css' %}">
+
+<div class="applications-page">
+
+    <div class="page-header">
+
+        <h1>👥 Applicants</h1>
+
+        <p>
+            Manage candidates and move them through your hiring pipeline.
+        </p>
+
+    </div>
+
+
+    <div class="applications-grid">
+
+        {% for app in applications %}
+
+        <div class="candidate-card">
+
+            <div class="candidate-top">
+
+                <div class="avatar">
+
+                    {{ app.talent.username|first|upper }}
+
+                </div>
+
+                <div>
+
+                    <h3>
+
+                        {{ app.talent.username }}
+
+                    </h3>
+
+                    <span class="status status-{{ app.status|lower }}">
+
+                        {{ app.status }}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="candidate-actions">
+
+                <a href="{% url 'portfolio_showcase' app.talent.id %}"
+                   class="portfolio-btn">
+
+                    🌐 Portfolio
+
+                </a>
+
+                <a href="{% url 'shortlist_application' app.id %}"
+                   class="shortlist-btn">
+
+                    ⭐ Shortlist
+
+                </a>
+
+                <a href="{% url 'interview_application' app.id %}"
+                   class="interview-btn">
+
+                    🎤 Interview
+
+                </a>
+
+                <a href="{% url 'hire_application' app.id %}"
+                   class="hire-btn">
+
+                    ✅ Hire
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-card">
+
+            <h3>No Applicants Yet</h3>
+
+            <p>
+                Applications will appear here once talents apply.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

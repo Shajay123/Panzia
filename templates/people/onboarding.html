@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Employee Onboarding
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/onboarding.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="onboarding-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>🚀 Employee Onboarding</h1>
+
+            <p>
+                Manage new employees and monitor onboarding progress.
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <a href="{% url 'employee_create' %}" class="btn-primary">
+
+                ➕ Add Employee
+
+            </a>
+
+            <a href="#" class="btn-secondary">
+
+                📥 Export
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- Summary -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card blue">
+
+            <h2>{{ employees|length }}</h2>
+
+            <p>New Employees</p>
+
+        </div>
+
+        <div class="summary-card orange">
+
+            <h2>24</h2>
+
+            <p>Pending Tasks</p>
+
+        </div>
+
+        <div class="summary-card green">
+
+            <h2>16</h2>
+
+            <p>Completed</p>
+
+        </div>
+
+        <div class="summary-card purple">
+
+            <h2>6</h2>
+
+            <p>In Progress</p>
+
+        </div>
+
+    </div>
+
+    <!-- Overall Progress -->
+
+    <div class="dashboard-card">
+
+        <div class="card-title">
+
+            📈 Overall Onboarding Progress
+
+        </div>
+
+        <div class="progress-bar">
+
+            <div class="progress-fill" style="width:72%"></div>
+
+        </div>
+
+        <p class="progress-text">
+
+            72% Overall Completion
+
+        </p>
+
+    </div>
+
+    <!-- Employee Cards -->
+
+    <div class="employee-grid">
+
+        {% for employee in employees %}
+
+        <div class="employee-card">
+
+            <div class="employee-top">
+
+                {% if employee.profile_image %}
+
+                    <img src="{{ employee.profile_image.url }}">
+
+                {% else %}
+
+                    <div class="avatar">
+
+                        {{ employee.user.first_name|first|default:employee.user.username|first }}
+
+                    </div>
+
+                {% endif %}
+
+                <div>
+
+                    <h3>
+
+                        {{ employee.user.get_full_name|default:employee.user.username }}
+
+                    </h3>
+
+                    <small>
+
+                        {{ employee.designation }}
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="employee-info">
+
+                <p>
+
+                    🏢 {{ employee.department|default:"Not Assigned" }}
+
+                </p>
+
+                <p>
+
+                    📅 Joined :
+                    {{ employee.joining_date }}
+
+                </p>
+
+            </div>
+
+            <div class="checklist">
+
+                <label><input type="checkbox" checked> Offer Letter</label>
+
+                <label><input type="checkbox" checked> Documents Verified</label>
+
+                <label><input type="checkbox"> Company Email</label>
+
+                <label><input type="checkbox"> Laptop Assigned</label>
+
+                <label><input type="checkbox"> ID Card</label>
+
+                <label><input type="checkbox"> HR Orientation</label>
+
+            </div>
+
+            <div class="progress-bar small">
+
+                <div class="progress-fill" style="width:50%"></div>
+
+            </div>
+
+            <div class="employee-actions">
+
+                <a href="{% url 'employee_detail' employee.id %}" class="btn-view">
+
+                    View Profile
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-card">
+
+            🚀 No employees available for onboarding.
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

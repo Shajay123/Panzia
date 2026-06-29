@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/sprints.css' %}">
+{% endblock %}
+
+{% block title %}
+Create Sprint
+{% endblock %}
+
+{% block content %}
+
+<section class="create-sprint-section">
+
+    <div class="create-sprint-container">
+
+        <!-- Header -->
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="page-badge">
+                    🚀 Startup Workspace
+                </span>
+
+                <h1>Create New Sprint</h1>
+
+                <p>
+                    Launch execution opportunities and attract top builders.
+                </p>
+
+            </div>
+
+            <a href="{% url 'startup_dashboard' %}" class="back-btn">
+                ← Dashboard
+            </a>
+
+        </div>
+
+        <!-- Form Card -->
+
+        <div class="form-card">
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Sprint Title</label>
+                        {{ form.title }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Domain</label>
+                        {{ form.domain }}
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Description</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        {{ form.category }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Deadline</label>
+                        {{ form.deadline }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Maximum Contributors</label>
+                        {{ form.max_contributors }}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status</label>
+                        {{ form.status }}
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Required Skills</label>
+                        {{ form.required_skills }}
+                    </div>
+
+                </div>
+
+                <div class="form-actions">
+
+                    <button type="submit" class="create-btn">
+                        🚀 Create Sprint
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

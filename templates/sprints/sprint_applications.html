@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Sprint Applications
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/sprint_applications.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="applications-section">
+
+    <div class="applications-main">
+
+        <!-- HEADER -->
+
+        <div class="dashboard-header-main">
+
+            <div>
+
+                <span class="dashboard-badge">
+                    📥 Talent Applications
+                </span>
+
+                <h1>
+                    {{ sprint.title }}
+                </h1>
+
+                <p>
+                    Review applicants and build your execution team.
+                </p>
+
+            </div>
+
+            <div>
+
+                <a href="{% url 'sprint_members' sprint.id %}" class="primary-btn">
+                    👥 View Team
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- STATS -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-icon">📥</div>
+
+                <h2>{{ applications.count }}</h2>
+
+                <p>Total Applications</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+
+                <h2>{{ sprint.members.count }}</h2>
+
+                <p>Current Members</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+
+                <h2>{{ sprint.max_contributors }}</h2>
+
+                <p>Required Members</p>
+            </div>
+
+        </div>
+
+        <!-- APPLICATIONS -->
+
+        {% if applications %}
+
+        <div class="applications-grid">
+
+            {% for application in applications %}
+
+            <div class="application-card">
+
+                <div class="card-top">
+
+                    <div class="avatar">
+                        {{ application.talent.username|first|upper }}
+                    </div>
+
+                    <div class="user-info">
+
+                        <h3>
+                            {{ application.talent.username }}
+                        </h3>
+
+                        <span class="status-badge status-{{ application.status }}">
+                            {{ application.get_status_display }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="application-message">
+
+                    <h5>
+                        Motivation
+                    </h5>
+
+                    <p>
+                        {{ application.message }}
+                    </p>
+
+                </div>
+
+                <div class="application-meta">
+
+                    <span>
+                        Applied {{ application.applied_at|timesince }} ago
+                    </span>
+
+                </div>
+
+                {% if application.status == 'pending' %}
+
+                <div class="application-actions">
+
+                    <a href="{% url 'accept_application' application.id %}"
+                        class="accept-btn">
+
+                        ✓ Accept
+
+                    </a>
+
+                    <a href="{% url 'reject_application' application.id %}"
+                        class="reject-btn">
+
+                        ✕ Reject
+
+                    </a>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state-card">
+
+            <div class="empty-icon">
+                📭
+            </div>
+
+            <h3>
+                No Applications Yet
+            </h3>
+
+            <p>
+                Talent applications will appear here once builders start applying.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

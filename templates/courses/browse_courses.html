@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/courses.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="course-page">
+
+    <div class="course-container">
+
+        <!-- HEADER -->
+
+        <div class="course-header">
+
+            <span class="course-badge">
+                📚 PANZIA LEARNING
+            </span>
+
+            <h1>
+                Browse Courses
+            </h1>
+
+            <p>
+                Learn real startup skills, earn certificates,
+                and unlock sprint opportunities.
+            </p>
+
+        </div>
+
+        <!-- COURSE GRID -->
+
+        <div class="course-grid">
+
+            {% for course in courses %}
+
+            <div class="course-card">
+
+                <div class="course-image">
+
+                    {% if course.thumbnail %}
+
+                    <img src="{{ course.thumbnail.url }}">
+
+                    {% else %}
+
+                    <img src="{% static 'images/default-course.jpg' %}">
+
+                    {% endif %}
+
+                </div>
+
+                <div class="course-body">
+
+                    <span class="category-tag">
+
+                        {{ course.category }}
+
+                    </span>
+
+                    <h3>
+
+                        {{ course.title }}
+
+                    </h3>
+
+                    <p>
+
+                        {{ course.short_description|truncatechars:120 }}
+
+                    </p>
+
+                    <div class="course-meta">
+
+                        <span>
+                            🎯 {{ course.level }}
+                        </span>
+
+                        <span>
+                            ⏳ {{ course.duration }}
+                        </span>
+
+                    </div>
+
+                    <div class="course-instructor">
+
+                        👨‍🏫 {{ course.instructor }}
+
+                    </div>
+
+                </div>
+
+                <div class="course-footer">
+
+                    <a href="{% url 'course_detail' course.slug %}"
+                       class="view-course-btn">
+
+                        View Course →
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    📚
+                </div>
+
+                <h2>
+
+                    No Courses Available
+
+                </h2>
+
+                <p>
+
+                    New startup learning tracks are coming soon.
+
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

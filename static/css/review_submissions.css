@@ -1,0 +1,374 @@
+/* ===============================
+GLOBAL BACKGROUND
+=============================== */
+
+body {
+    background:
+        radial-gradient(circle at 20% 10%, rgba(124,58,237,.25), transparent 35%),
+        radial-gradient(circle at 80% 80%, rgba(37,99,235,.25), transparent 40%),
+        #0b1220;
+
+    color: #e5e7eb;
+    font-family: Inter, sans-serif;
+}
+
+/* ===============================
+SECTION WRAPPER
+=============================== */
+
+.dashboard-section {
+    min-height: 100vh;
+    padding: 40px;
+}
+
+.dashboard-main {
+    max-width: 1400px;
+    margin: auto;
+}
+
+/* ===============================
+HEADER
+=============================== */
+
+.page-header {
+    padding: 35px;
+    margin-bottom: 30px;
+
+    border-radius: 28px;
+
+    background: rgba(255,255,255,.05);
+    backdrop-filter: blur(25px);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+
+.dashboard-badge {
+    display: inline-block;
+    padding: 8px 18px;
+
+    border-radius: 999px;
+
+    background: linear-gradient(135deg, rgba(124,58,237,.2), rgba(37,99,235,.2));
+
+    color: #c4b5fd;
+    border: 1px solid rgba(124,58,237,.3);
+}
+
+.page-header h1 {
+    margin: 12px 0;
+    font-size: 42px;
+    font-weight: 800;
+}
+
+.page-header p {
+    color: #94a3b8;
+}
+
+/* ===============================
+GRID
+=============================== */
+
+.submission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 22px;
+}
+
+/* ===============================
+CARD
+=============================== */
+
+.submission-card {
+    position: relative;
+    overflow: hidden;
+
+    padding: 26px;
+    border-radius: 26px;
+
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    transition: .35s ease;
+}
+
+.submission-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(124,58,237,.4);
+}
+
+/* glow */
+.submission-glow {
+    position: absolute;
+    top: -80px;
+    right: -80px;
+
+    width: 160px;
+    height: 160px;
+
+    background: radial-gradient(circle, rgba(124,58,237,.35), transparent 60%);
+    filter: blur(20px);
+}
+
+/* HEADER */
+.submission-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.submission-header h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+/* USER */
+.submitted-by {
+    margin: 12px 0;
+    color: #94a3b8;
+}
+
+/* STATUS */
+.status-pill {
+    padding: 7px 14px;
+    border-radius: 999px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    background: rgba(59,130,246,.15);
+    color: #60a5fa;
+}
+
+/* LINKS */
+.link-section {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.link-btn {
+    text-decoration: none;
+
+    padding: 10px 14px;
+    border-radius: 12px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    background: rgba(255,255,255,.06);
+    color: #e5e7eb;
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    transition: .3s;
+}
+
+.link-btn:hover {
+    background: rgba(124,58,237,.15);
+    border-color: rgba(124,58,237,.3);
+    transform: translateY(-2px);
+}
+
+/* NOTES */
+.notes-box {
+    margin-top: 10px;
+    padding: 14px;
+
+    border-radius: 14px;
+
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06);
+}
+
+.notes-box p {
+    color: #94a3b8;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ACTION */
+.action-area {
+    margin-top: 18px;
+}
+
+.approve-btn {
+    display: block;
+    text-align: center;
+
+    padding: 12px;
+    border-radius: 14px;
+
+    text-decoration: none;
+    color: white;
+    font-weight: 600;
+
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+
+    transition: .3s;
+}
+
+.approve-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(34,197,94,.25);
+}
+
+/* ===============================
+EMPTY STATE
+=============================== */
+
+.empty-state {
+    grid-column: 1 / -1;
+
+    text-align: center;
+    padding: 80px 30px;
+
+    border-radius: 28px;
+
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+.empty-icon {
+    font-size: 70px;
+    margin-bottom: 20px;
+}
+
+/* ===============================
+RESPONSIVE
+=============================== */
+
+@media(max-width:768px) {
+
+    .dashboard-section {
+        padding: 20px;
+    }
+
+    .page-header h1 {
+        font-size: 30px;
+    }
+
+    .submission-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.reviewed-btn{
+    display:inline-block;
+    padding:12px 18px;
+    background:#28a745;
+    color:#fff;
+    border-radius:8px;
+    font-weight:600;
+    cursor:default;
+}
+
+.review-date{
+    margin-top:10px;
+    color:#888;
+    font-size:13px;
+}
+
+
+.action-row{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+    flex-wrap:wrap;
+}
+
+.approve-btn,
+.reject-btn,
+.review-btn{
+    padding:12px 24px;
+    border:none;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.approve-btn{
+    background:#16a34a;
+    color:#fff;
+}
+
+.approve-btn:hover{
+    transform:translateY(-2px);
+}
+
+.reject-btn{
+    background:#dc2626;
+    color:#fff;
+}
+
+.reject-btn:hover{
+    transform:translateY(-2px);
+}
+
+.review-btn{
+    background:#2563eb;
+    color:#fff;
+}
+
+.review-btn:hover{
+    transform:translateY(-2px);
+}
+
+.approved-message{
+    background:#d1fae5;
+    color:#065f46;
+    padding:12px 18px;
+    border-radius:10px;
+    font-weight:600;
+}
+
+
+.review-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    padding:12px 24px;
+
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#ffffff;
+
+    text-decoration:none;
+    font-size:15px;
+    font-weight:600;
+
+    border-radius:12px;
+    border:none;
+
+    cursor:pointer;
+    transition:all 0.3s ease;
+
+    box-shadow:0 8px 20px rgba(37,99,235,0.25);
+}
+
+.review-btn:hover{
+    color:#ffffff;
+    text-decoration:none;
+
+    transform:translateY(-3px);
+
+    box-shadow:0 12px 28px rgba(37,99,235,0.35);
+}
+
+.review-btn:active{
+    transform:scale(0.98);
+}
+
+.review-btn i{
+    font-size:16px;
+}

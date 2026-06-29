@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Setup Startup Profile
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/profile_setup.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="setup-section">
+
+    <div class="setup-container">
+
+        <!-- Header -->
+
+        <div class="setup-header">
+
+            <span class="setup-badge">
+                🚀 Startup Onboarding
+            </span>
+
+            <h1>
+                Create Your Startup Profile
+            </h1>
+
+            <p>
+                Build your startup identity, attract talented builders,
+                and start creating execution sprints.
+            </p>
+
+        </div>
+
+        <!-- Form Card -->
+
+        <div class="setup-card">
+
+            <form method="POST" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <!-- Logo Upload -->
+
+                <div class="logo-section">
+
+                    <div class="logo-preview">
+                        🚀
+                    </div>
+
+                    <label class="upload-label">
+                        Upload Startup Logo
+                    </label>
+
+                    {{ form.logo }}
+
+                </div>
+
+                <!-- Company Name -->
+
+                <div class="form-group">
+
+                    <label>
+                        Company Name
+                    </label>
+
+                    {{ form.company_name }}
+
+                </div>
+
+                <!-- Tagline -->
+
+                <div class="form-group">
+
+                    <label>
+                        Startup Tagline
+                    </label>
+
+                    {{ form.tagline }}
+
+                </div>
+
+                <!-- Industry -->
+
+                <div class="form-group">
+
+                    <label>
+                        Industry
+                    </label>
+
+                    {{ form.industry }}
+
+                </div>
+
+                <!-- Website -->
+
+                <div class="form-group">
+
+                    <label>
+                        Website
+                    </label>
+
+                    {{ form.website }}
+
+                </div>
+
+                <!-- Description -->
+
+                <div class="form-group">
+
+                    <label>
+                        Startup Description
+                    </label>
+
+                    {{ form.description }}
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="save-btn">
+
+                    Save Startup Profile
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

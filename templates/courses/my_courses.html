@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+My Courses
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/my_courses.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="courses-dashboard">
+
+    <div class="dashboard-container">
+
+        <!-- HEADER -->
+
+        <div class="dashboard-header">
+
+            <span class="dashboard-badge">
+                📚 PANZIA LEARNING
+            </span>
+
+            <h1>My Learning Journey</h1>
+
+            <p>
+                Track progress, complete courses and unlock startup opportunities.
+            </p>
+
+        </div>
+
+        <!-- STATS -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <h2>{{ enrollments.count }}</h2>
+                <p>Enrolled Courses</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>
+                    {{ completed_count }}
+                </h2>
+                <p>Completed</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>
+                    {{ active_count }}
+                </h2>
+                <p>In Progress</p>
+            </div>
+
+        </div>
+
+        <!-- COURSES -->
+
+        <div class="course-grid">
+
+            {% for enrollment in enrollments %}
+
+            <div class="course-card">
+
+                <div class="course-image">
+
+                    {% if enrollment.course.thumbnail %}
+                    <img src="{{ enrollment.course.thumbnail.url }}">
+                    {% else %}
+                    <img src="{% static 'images/default-course.jpg' %}">
+                    {% endif %}
+
+                </div>
+
+                <div class="course-content">
+
+                    <div class="course-top">
+
+                        <span class="category-tag">
+
+                            {{ enrollment.course.category }}
+
+                        </span>
+
+                        {% if enrollment.completed %}
+
+                        <span class="completed-badge">
+                            ✅ Completed
+                        </span>
+
+                        {% else %}
+
+                        <span class="learning-badge">
+                            📚 Learning
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    <h3>
+
+                        {{ enrollment.course.title }}
+
+                    </h3>
+
+                    <p>
+
+                        {{ enrollment.course.short_description|truncatechars:100 }}
+
+                    </p>
+
+                    <!-- Progress -->
+
+                    <div class="progress-section">
+
+                        <div class="progress-header">
+
+                            <span class="progress-label">
+                                Learning Progress
+                            </span>
+
+                            <span class="progress-value">
+                                {{ enrollment.progress }}%
+                            </span>
+
+                        </div>
+
+                        <div class="progress-wrapper">
+
+                            <div class="progress-track">
+
+                                <div class="progress-fill" data-progress="{{ enrollment.progress }}">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="course-meta">
+
+                        <span>
+                            📅 Joined:
+                            {{ enrollment.joined_at|date:"d M Y" }}
+                        </span>
+
+                    </div>
+
+                    <div class="course-actions">
+
+                        {% if enrollment.next_lesson %}
+
+                        <a href="{% url 'lesson_detail' enrollment.next_lesson.id %}" class="continue-btn">
+
+                            ▶ Resume Course
+
+                        </a>
+
+                        {% else %}
+
+                        <a href="{% url 'course_detail' enrollment.course.slug %}" class="continue-btn">
+
+                            View Course
+
+                        </a>
+
+                        {% endif %}
+
+                        {% if enrollment.completed %}
+
+                        <a href="{% url 'certificate' enrollment.course.id %}" class="certificate-btn">
+
+                            🏆 Certificate
+
+                        </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    📚
+                </div>
+
+                <h2>
+                    No Courses Yet
+                </h2>
+
+                <p>
+                    Start learning startup skills and build your career.
+                </p>
+
+                <a href="{% url 'browse_courses' %}" class="browse-btn">
+
+                    Browse Courses
+
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    document.querySelectorAll(".progress-fill").forEach(bar => {
+
+        let progress = bar.dataset.progress || 0;
+
+        bar.style.width = progress + "%";
+
+    });
+
+});
+
+</script>
+
+{% endblock %}
+
+

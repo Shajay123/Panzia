@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Submission Review
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/submission_review.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-main">
+
+        <!-- HEADER -->
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="dashboard-badge">
+                    🧪 Submission Review
+                </span>
+
+                <h1>
+                    {{ submission.task.title }}
+                </h1>
+
+                <p>
+                    Review the submitted work and approve execution.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- REVIEW CARD -->
+
+        <div class="review-card">
+
+            <div class="review-glow"></div>
+
+            <div class="submission-header">
+
+                <div class="avatar">
+                    {{ submission.user.username|first|upper }}
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ submission.user.username }}
+                    </h3>
+
+                    <span class="status-badge">
+                        Waiting For Approval
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+
+                    <label>
+                        Task
+                    </label>
+
+                    <strong>
+                        {{ submission.task.title }}
+                    </strong>
+
+                </div>
+
+                <div class="info-item">
+
+                    <label>
+                        Current Status
+                    </label>
+
+                    <strong>
+                        {{ submission.task.get_status_display }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            {% if submission.github_url %}
+
+            <div class="link-card">
+
+                <label>
+                    GitHub Repository
+                </label>
+
+                <a href="{{ submission.github_url }}" target="_blank" class="link-btn">
+                    🔗 Open GitHub
+                </a>
+
+            </div>
+
+            {% endif %}
+
+            {% if submission.drive_url %}
+
+            <div class="link-card">
+
+                <label>
+                    Drive Files
+                </label>
+
+                <a href="{{ submission.drive_url }}" target="_blank" class="link-btn">
+                    📁 Open Drive
+                </a>
+
+            </div>
+
+            {% endif %}
+
+            <div class="notes-box">
+
+                <h4>
+                    Submission Notes
+                </h4>
+
+                <p>
+                    {{ submission.notes }}
+                </p>
+
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="action-row">
+
+                    {% if not submission.reviewed %}
+
+                    <!-- APPROVE -->
+
+                    <button type="submit" name="action" value="approve" class="approve-btn">
+
+                        ✅ Approve Work
+
+                    </button>
+
+                    <!-- REJECT -->
+
+                    <button type="submit" name="action" value="reject" class="reject-btn">
+
+                        ❌ Reject Work
+
+                    </button>
+
+                    {% else %}
+
+                    <div class="approved-message">
+
+                        ✅ This submission has been reviewed and approved.
+
+                    </div>
+
+                    <a href="{% url 'give_review' submission.task.sprint.id submission.user.id %}" class="review-btn">
+
+                        ⭐ Give Review
+
+                    </a>
+
+                    {% endif %}
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Payslips
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/payslips.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="payslip-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>🧾 Employee Payslips</h1>
+
+            <p>
+                Download and manage monthly salary slips.
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <a href="#" class="btn-secondary">
+                📥 Export
+            </a>
+
+            <a href="#" class="btn-primary">
+                + Generate Payslip
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Summary -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card blue">
+
+            <div class="icon">
+                📄
+            </div>
+
+            <div>
+
+                <h2>{{ payslips|length }}</h2>
+
+                <p>Total Payslips</p>
+
+            </div>
+
+        </div>
+
+        <div class="summary-card green">
+
+            <div class="icon">
+                💰
+            </div>
+
+            <div>
+
+                <h2>{{ payrolls_paid }}</h2>
+
+                <p>Paid Employees</p>
+
+            </div>
+
+        </div>
+
+        <div class="summary-card orange">
+
+            <div class="icon">
+                📅
+            </div>
+
+            <div>
+
+                <h2>{{ current_month }}</h2>
+
+                <p>Current Month</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Search -->
+
+    <div class="filter-card">
+
+        <form>
+
+            <input
+                type="text"
+                placeholder="🔍 Search Employee..."
+            >
+
+            <select>
+
+                <option>
+                    Select Month
+                </option>
+
+                <option>January</option>
+                <option>February</option>
+                <option>March</option>
+                <option>April</option>
+                <option>May</option>
+                <option>June</option>
+                <option>July</option>
+                <option>August</option>
+                <option>September</option>
+                <option>October</option>
+                <option>November</option>
+                <option>December</option>
+
+            </select>
+
+            <button class="btn-primary">
+
+                Search
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- Table -->
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+
+            <tr>
+
+                <th>Employee</th>
+
+                <th>Month</th>
+
+                <th>Net Salary</th>
+
+                <th>Generated On</th>
+
+                <th>Download</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for payslip in payslips %}
+
+            <tr>
+
+                <td>
+
+                    <div class="employee-box">
+
+                        {% if payslip.payroll.employee.profile_image %}
+
+                        <img src="{{ payslip.payroll.employee.profile_image.url }}">
+
+                        {% else %}
+
+                        <div class="avatar">
+
+                            {{ payslip.payroll.employee.user.first_name|first }}
+
+                        </div>
+
+                        {% endif %}
+
+                        <div>
+
+                            <strong>
+
+                                {{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username }}
+
+                            </strong>
+
+                            <small>
+
+                                {{ payslip.payroll.employee.designation }}
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </td>
+
+                <td>
+
+                    {{ payslip.payroll.month }}
+                    {{ payslip.payroll.year }}
+
+                </td>
+
+                <td>
+
+                    ₹ {{ payslip.payroll.net_salary }}
+
+                </td>
+
+                <td>
+
+                    {{ payslip.created_at|date:"d M Y" }}
+
+                </td>
+
+                <td>
+
+                    <a
+                        href="{{ payslip.pdf.url }}"
+                        target="_blank"
+                        class="download-btn">
+
+                        ⬇ Download
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="5">
+
+                    No Payslips Available.
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

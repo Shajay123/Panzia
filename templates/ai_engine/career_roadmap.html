@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/career_roadmap.css' %}">
+
+<div class="roadmap-wrapper">
+
+
+<div class="hero-section">
+
+    <h1>
+        🚀 AI Career Roadmap
+    </h1>
+
+    <p>
+        Your personalized path from Learning → Execution → Deployment
+    </p>
+
+</div>
+
+<div class="goal-card">
+
+    <h3>
+        🎯 Update Career Goal
+    </h3>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="save-btn">
+
+            Update Goal
+
+        </button>
+
+    </form>
+
+</div>
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+
+        <h2>{{ roadmap|length }}</h2>
+
+        <span>Skills To Master</span>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>{{ goal.goal }}</h2>
+
+        <span>Target Role</span>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2>Deployment</h2>
+
+        <span>Career Track</span>
+
+    </div>
+
+</div>
+
+<div class="progress-container">
+
+    <h4>Career Progress</h4>
+
+    <div class="progress-bar">
+
+        <div class="progress-fill"></div>
+
+    </div>
+
+</div>
+
+<div class="roadmap-title">
+
+    <h2>
+        📈 Your Learning Path
+    </h2>
+</div>
+
+<div class="roadmap-list">
+
+    {% for step in roadmap %}
+
+    <div class="roadmap-step">
+
+        <div class="step-number">
+
+            {{ forloop.counter }}
+
+        </div>
+
+        <div class="step-content">
+
+            {{ step }}
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+
+</div>
+
+{% endblock %}

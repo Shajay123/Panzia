@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{% static 'css/lesson.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="lesson-page">
+
+
+<div class="lesson-container">
+
+    <!-- Header -->
+
+    <div class="lesson-header">
+
+        <span class="lesson-badge">
+            📚 PANZIA LEARNING
+        </span>
+
+        <h1>
+            {{ lesson.title }}
+        </h1>
+
+        <p>
+            {{ lesson.module.course.title }}
+        </p>
+
+    </div>
+
+    <!-- Lesson Card -->
+
+    <div class="lesson-card">
+
+        {% if lesson.video %}
+
+        <div class="video-wrapper">
+
+            <video controls width="100%" class="lesson-video">
+
+                <source src="{{ lesson.video.url }}" type="video/mp4">
+
+                Your browser does not support video playback.
+
+            </video>
+
+        </div>
+
+        {% endif %}
+
+        <div class="lesson-content">
+
+            {{ lesson.notes|safe }}
+
+        </div>
+
+        <!-- Navigation -->
+
+        <div class="lesson-navigation">
+
+            {% if previous_lesson %}
+
+            <a href="{% url 'lesson_detail' previous_lesson.id %}"
+               class="nav-btn secondary-btn">
+
+                ← Previous Lesson
+
+            </a>
+
+            {% endif %}
+
+            {% if next_lesson %}
+
+            <a href="{% url 'lesson_detail' next_lesson.id %}"
+               class="nav-btn secondary-btn">
+
+                Next Lesson →
+
+            </a>
+
+            {% endif %}
+
+        </div>
+
+        <!-- Completion -->
+
+        <div class="lesson-actions">
+
+            {% if completed %}
+
+            <button class="completed-btn" disabled>
+
+                ✅ Lesson Completed
+
+            </button>
+
+            {% else %}
+
+            <a href="{% url 'complete_lesson' lesson.id %}"
+               class="complete-btn">
+
+                Mark As Complete →
+
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</section>
+
+{% endblock %}

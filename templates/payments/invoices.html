@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/payment_history.css' %}">
+
+<div class="payment-page">
+
+    <div class="page-header">
+
+        <h1>🧾 Invoices</h1>
+
+        <p>
+
+            Download your invoice receipts.
+
+        </p>
+
+    </div>
+
+    <div class="invoice-grid">
+
+        {% for invoice in invoices %}
+
+        <div class="invoice-card">
+
+            <div class="invoice-icon">
+
+                🧾
+
+            </div>
+
+            <h3>
+
+                Invoice #{{ invoice.id }}
+
+            </h3>
+
+            <p>
+
+                {{ invoice.plan }}
+
+            </p>
+
+            <h2>
+
+                ₹{{ invoice.amount }}
+
+            </h2>
+
+            <small>
+
+                {{ invoice.created_at|date:"d M Y" }}
+
+            </small>
+
+            <br><br>
+
+            <a href="#"
+
+               class="download-btn">
+
+                Download Invoice
+
+            </a>
+
+        </div>
+
+        {% empty %}
+
+        <h4>
+
+            No invoices found.
+
+        </h4>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

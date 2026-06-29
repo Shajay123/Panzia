@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section class="recommend-page">
+
+    <h1>
+        🎯 AI Learning Roadmap
+    </h1>
+
+    <div class="recommend-grid">
+
+        {% for item in recommendations %}
+
+        <div class="recommend-card">
+
+            <h3>
+                {{ item }}
+            </h3>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endblock %}

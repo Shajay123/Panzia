@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+People Dashboard
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="people-dashboard">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="dashboard-header">
+
+        <div>
+            <h2>👥 People Dashboard</h2>
+            <p>Manage your employees, attendance, payroll and HR operations.</p>
+        </div>
+
+        <div class="header-actions">
+
+            <a href="{% url 'employee_create' %}" class="btn-primary">
+                + Add Employee
+            </a>
+
+            <a href="{% url 'attendance' %}" class="btn-light">
+                Mark Attendance
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= STATS ================= -->
+
+    <div class="stats-grid">
+
+        <div class="stat-card blue">
+            <span class="icon">👥</span>
+
+            <div>
+
+                <h2>{{ employee_count }}</h2>
+
+                <p>Total Employees</p>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card purple">
+
+            <span class="icon">🏢</span>
+
+            <div>
+
+                <h2>{{ department_count }}</h2>
+
+                <p>Departments</p>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card green">
+
+            <span class="icon">✅</span>
+
+            <div>
+
+                <h2>{{ attendance_count }}</h2>
+
+                <p>Attendance Records</p>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card orange">
+
+            <span class="icon">🌴</span>
+
+            <div>
+
+                <h2>{{ leave_count }}</h2>
+
+                <p>Leave Requests</p>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card red">
+
+            <span class="icon">💰</span>
+
+            <div>
+
+                <h2>{{ payroll_count }}</h2>
+
+                <p>Payroll Entries</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= QUICK ACTIONS ================= -->
+
+    <div class="dashboard-section">
+
+        <h3>Quick Actions</h3>
+
+        <div class="quick-grid">
+
+            <a href="{% url 'employees' %}" class="quick-card">
+                👨
+                <span>Employee List</span>
+            </a>
+
+            <a href="{% url 'employee_create' %}" class="quick-card">
+                ➕
+                <span>Add Employee</span>
+            </a>
+
+            <a href="{% url 'attendance' %}" class="quick-card">
+                🕒
+                <span>Attendance</span>
+            </a>
+
+            <a href="{% url 'attendance_report' %}" class="quick-card">
+                📊
+                <span>Attendance Report</span>
+            </a>
+
+            <a href="{% url 'leave_dashboard' %}" class="quick-card">
+                🌴
+                <span>Leave Dashboard</span>
+            </a>
+
+            <a href="{% url 'payroll' %}" class="quick-card">
+                💰
+                <span>Payroll</span>
+            </a>
+
+            <a href="{% url 'performance' %}" class="quick-card">
+                ⭐
+                <span>Performance</span>
+            </a>
+
+            <a href="{% url 'documents' %}" class="quick-card">
+                📂
+                <span>Documents</span>
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= DASHBOARD GRID ================= -->
+
+    <div class="dashboard-grid">
+
+        <!-- Recent Employees -->
+
+        <div class="dashboard-card">
+
+            <div class="card-header">
+
+                <h3>Recent Employees</h3>
+
+                <a href="{% url 'employees' %}">
+                    View All →
+                </a>
+
+            </div>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Name</th>
+
+                        <th>Department</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for employee in recent_employees %}
+
+                    <tr>
+
+                        <td>{{ employee.user.get_full_name|default:employee.user.username }}</td>
+
+                        <td>
+
+                            {{ employee.department|default:"-" }}
+
+                        </td>
+
+                        <td>
+
+                            {% if employee.active %}
+
+                                <span class="badge success">
+                                    Active
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge danger">
+                                    Inactive
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="3">
+
+                            No employees found.
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+        <!-- Today's Summary -->
+
+        <div class="dashboard-card">
+
+            <div class="card-header">
+
+                <h3>Today's Summary</h3>
+
+            </div>
+
+            <div class="summary-list">
+
+                <div class="summary-item">
+
+                    <span>🟢 Present</span>
+
+                    <strong>{{ present_today }}</strong>
+
+                </div>
+
+                <div class="summary-item">
+
+                    <span>🔴 Absent</span>
+
+                    <strong>{{ absent_today }}</strong>
+
+                </div>
+
+                <div class="summary-item">
+
+                    <span>🏡 WFH</span>
+
+                    <strong>{{ wfh_today }}</strong>
+
+                </div>
+
+                <div class="summary-item">
+
+                    <span>🌴 Leave</span>
+
+                    <strong>{{ leave_today }}</strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= HR MODULES ================= -->
+
+    <div class="dashboard-section">
+
+        <h3>HR Modules</h3>
+
+        <div class="module-grid">
+
+            <a href="{% url 'departments' %}" class="module-card">
+                🏢
+                <h4>Departments</h4>
+                <p>Manage company departments.</p>
+            </a>
+
+            <a href="{% url 'leave_requests' %}" class="module-card">
+                📋
+                <h4>Leave Requests</h4>
+                <p>Approve employee leave requests.</p>
+            </a>
+
+            <a href="{% url 'payslips' %}" class="module-card">
+                🧾
+                <h4>Payslips</h4>
+                <p>Download monthly payslips.</p>
+            </a>
+
+            <a href="{% url 'holidays' %}" class="module-card">
+                🎉
+                <h4>Holiday Calendar</h4>
+                <p>Upcoming company holidays.</p>
+            </a>
+
+            <a href="{% url 'onboarding' %}" class="module-card">
+                🚀
+                <h4>Onboarding</h4>
+                <p>Track new employee onboarding.</p>
+            </a>
+
+            <a href="{% url 'exit_management' %}" class="module-card">
+                🚪
+                <h4>Exit Management</h4>
+                <p>Employee resignation workflow.</p>
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

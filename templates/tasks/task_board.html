@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Task Board
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/task_board.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-main">
+
+        <!-- Header -->
+
+        <div class="page-header">
+
+            <div>
+
+                <span class="dashboard-badge">
+                    ✅ Sprint Execution
+                </span>
+
+                <h1>
+                    {{ sprint.title }}
+                </h1>
+
+                <p>
+                    Manage and monitor all tasks assigned to your team members.
+                </p>
+
+            </div>
+
+            <div>
+
+                <a href="{% url 'create_task' sprint.id %}"
+                   class="primary-btn">
+                    ➕ Create Task
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Stats -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">📋</div>
+
+                <h2>{{ tasks.count }}</h2>
+
+                <p>Total Tasks</p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div class="stat-icon">🚀</div>
+
+                <h2>
+                    {{ tasks|length }}
+                </h2>
+
+                <p>Assigned Tasks</p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div class="stat-icon">🏆</div>
+
+                <h2>
+                    {{ sprint.progress_percentage }}%
+                </h2>
+
+                <p>Sprint Progress</p>
+
+            </div>
+
+        </div>
+
+        <!-- Tasks -->
+
+        {% if tasks %}
+
+        <div class="tasks-grid">
+
+            {% for task in tasks %}
+
+            <div class="task-card">
+
+                <div class="task-header">
+
+                    <h3>
+                        {{ task.title }}
+                    </h3>
+
+                    <span class="task-status status-{{ task.status }}">
+                        {{ task.get_status_display }}
+                    </span>
+
+                </div>
+
+                <p class="task-description">
+                    {{ task.description|truncatechars:120 }}
+                </p>
+
+                <div class="task-details">
+
+                    <div class="detail-row">
+
+                        <span>
+                            👤 Assigned To
+                        </span>
+
+                        <strong>
+
+                            {% if task.assigned_to %}
+                                {{ task.assigned_to.username }}
+                            {% else %}
+                                Not Assigned
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <span>
+                            📅 Deadline
+                        </span>
+
+                        <strong>
+                            {{ task.deadline }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <div class="task-footer">
+
+                    <a href="{% url 'task_detail' task.id %}"
+                       class="action-btn">
+                        View Task
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                📋
+            </div>
+
+            <h3>
+                No Tasks Created
+            </h3>
+
+            <p>
+                Start assigning work to your team members.
+            </p>
+
+            <a href="{% url 'create_task' sprint.id %}"
+               class="primary-btn">
+                Create First Task
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

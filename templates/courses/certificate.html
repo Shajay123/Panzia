@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{% static 'css/certificate.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="certificate-page">
+
+
+<div class="certificate-card">
+
+    <div class="certificate-border">
+
+        <h3>PANZIA LEARNING</h3>
+
+        <h1>
+            Certificate of Completion
+        </h1>
+
+        <p>
+            This certifies that
+        </p>
+
+        <h2>
+            {{ certificate.user.username }}
+        </h2>
+
+        <p>
+            has successfully completed
+        </p>
+
+        <h2>
+            {{ certificate.course.title }}
+        </h2>
+
+        <div class="certificate-meta">
+
+            <div>
+                <strong>Certificate ID</strong>
+                <br>
+                {{ certificate.certificate_id }}
+            </div>
+
+            <div>
+                <strong>Issued On</strong>
+                <br>
+                {{ certificate.issued_at|date:"d M Y" }}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="download-section">
+
+    <button
+        onclick="window.print()"
+        class="download-btn">
+
+        🖨 Download Certificate
+
+    </button>
+
+</div>
+
+<div class="recommended-section">
+
+    <h2>
+        🚀 Recommended Startup Sprints
+    </h2>
+
+    <div class="sprint-grid">
+
+        {% for sprint in recommended_sprints %}
+
+        <div class="sprint-card">
+
+            <h3>
+                {{ sprint.title }}
+            </h3>
+
+            <p>
+                {{ sprint.description|truncatechars:120 }}
+            </p>
+
+            <a
+                href="{% url 'sprint_detail' sprint.id %}"
+                class="apply-btn">
+
+                Apply Sprint →
+
+            </a>
+
+        </div>
+
+        {% empty %}
+
+        <p>
+            No matching startup sprints available.
+        </p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+</section>
+
+{% endblock %}

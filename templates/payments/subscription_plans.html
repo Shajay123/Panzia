@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/subscription.css' %}">
+
+<div class="subscription-page">
+
+    <!-- HERO -->
+    <div class="hero-section">
+
+        {% if request.user.role == "startup" %}
+
+        <div class="hero-icon">
+            🚀
+        </div>
+
+        <h1>Startup Plans</h1>
+
+        <p>
+            Build faster, hire smarter and scale your startup with AI.
+        </p>
+
+        {% else %}
+
+        <div class="hero-icon">
+            💎
+        </div>
+
+        <h1>Talent Plans</h1>
+
+        <p>
+            Unlock AI tools, premium visibility and deployment opportunities.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- PLAN CARDS -->
+
+    <div class="plans-grid">
+
+        {% for plan in plans %}
+
+        <div class="plan-card
+
+            {% if plan.name == 'PRO' or plan.name == 'GROWTH' %}
+                popular
+            {% endif %}
+
+            {% if plan.name == 'ELITE' or plan.name == 'SCALE' %}
+                elite
+            {% endif %}
+        ">
+
+            {% if plan.name == 'PRO' or plan.name == 'GROWTH' %}
+            <div class="popular-badge">
+
+                ⭐ MOST POPULAR
+
+            </div>
+            {% endif %}
+
+            <div class="plan-header">
+
+                <h2>
+
+                    {{ plan.name }}
+
+                </h2>
+
+                <h1>
+
+                    ₹{{ plan.price }}
+
+                </h1>
+
+                <p>
+
+                    {{ plan.duration_days }} Days
+
+                </p>
+
+            </div>
+
+
+            <div class="features-section">
+
+                {% if plan.features %}
+
+                    {% for feature in plan.features.splitlines %}
+
+                    <div class="feature-item">
+
+                        ✅ {{ feature }}
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="feature-item">
+
+                        Premium Features Included
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="mt-4">
+
+                {% if plan.price == 0 %}
+
+                <button class="plan-btn current-btn">
+
+                    Current Plan
+
+                </button>
+
+                {% else %}
+
+                <a href="{% url 'buy_plan' plan.id %}"
+
+                   class="plan-btn
+
+                   {% if plan.name == 'ELITE' or plan.name == 'SCALE' %}
+
+                        elite-btn
+
+                   {% else %}
+
+                        premium-btn
+
+                   {% endif %}
+                   ">
+
+                    Upgrade Now →
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-plans">
+
+            <h3>No Plans Available</h3>
+
+            <p>Please add plans from admin panel.</p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

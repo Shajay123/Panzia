@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Delete Attendance
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/attendance_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="attendance-delete-page">
+
+    <!-- ================= Header ================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            <div class="breadcrumb">
+
+                <a href="{% url 'attendance' %}">Attendance</a>
+
+                <span> / </span>
+
+                <a href="{% url 'attendance_detail' attendance.id %}">
+                    Attendance Detail
+                </a>
+
+                <span> / </span>
+
+                <strong>Delete</strong>
+
+            </div>
+
+            <h1>🗑 Delete Attendance Record</h1>
+
+            <p>
+                This action cannot be undone.
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- ================= Delete Card ================= -->
+
+    <div class="delete-card">
+
+        <div class="warning-icon">
+
+            ⚠️
+
+        </div>
+
+        <h2>
+
+            Are you sure?
+
+        </h2>
+
+        <p>
+
+            You are about to permanently delete this attendance record.
+
+        </p>
+
+        <!-- Employee Preview -->
+
+        <div class="employee-preview">
+
+            {% if attendance.employee.profile_image %}
+
+            <img src="{{ attendance.employee.profile_image.url }}">
+
+            {% else %}
+
+            <div class="avatar">
+
+                {{ attendance.employee.user.first_name|first|default:attendance.employee.user.username|first }}
+
+            </div>
+
+            {% endif %}
+
+            <div>
+
+                <h3>
+
+                    {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
+
+                </h3>
+
+                <span>
+
+                    {{ attendance.employee.designation }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+        <!-- Attendance Information -->
+
+        <div class="attendance-summary">
+
+            <div class="summary-item">
+
+                <label>Date</label>
+
+                <strong>{{ attendance.date }}</strong>
+
+            </div>
+
+            <div class="summary-item">
+
+                <label>Status</label>
+
+                <span class="badge">
+
+                    {{ attendance.status }}
+
+                </span>
+
+            </div>
+
+            <div class="summary-item">
+
+                <label>Check In</label>
+
+                <strong>
+
+                    {{ attendance.check_in|default:"--" }}
+
+                </strong>
+
+            </div>
+
+            <div class="summary-item">
+
+                <label>Check Out</label>
+
+                <strong>
+
+                    {{ attendance.check_out|default:"--" }}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+        <!-- Buttons -->
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="action-buttons">
+
+                <button type="submit" class="btn-delete">
+
+                    🗑 Yes Delete
+
+                </button>
+
+                <a href="{% url 'attendance_detail' attendance.id %}"
+
+                   class="btn-cancel">
+
+                    Cancel
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

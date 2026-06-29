@@ -1,0 +1,55 @@
+.department-form-page{
+
+max-width:700px;
+margin:auto;
+padding:40px;
+
+}
+
+.form-card{
+
+background:#1e293b;
+padding:30px;
+border-radius:18px;
+
+}
+
+.form-card h1{
+
+margin-bottom:25px;
+
+}
+
+.form-card input,
+.form-card textarea,
+.form-card select{
+
+width:100%;
+padding:12px;
+margin-bottom:18px;
+border-radius:10px;
+border:none;
+background:#273449;
+color:white;
+
+}
+
+.btn-primary{
+
+padding:12px 24px;
+background:#6366f1;
+color:white;
+border:none;
+border-radius:10px;
+
+}
+
+.btn-secondary{
+
+padding:12px 24px;
+background:#475569;
+color:white;
+text-decoration:none;
+border-radius:10px;
+
+}

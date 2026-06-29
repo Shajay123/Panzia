@@ -1,0 +1,643 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+PANZIA
+{% endblock %}
+
+{% block content %}
+
+<!-- NAVBAR -->
+
+
+<nav class="navbar">
+
+    <div class="container nav-container">
+
+        <div class="logo">
+            PANZIA
+        </div>
+
+        <div class="menu-toggle" id="menu-toggle">
+
+            <span>☰</span>
+
+        </div>
+
+        <ul class="nav-links">
+
+            <!-- Learn -->
+
+            <li class="dropdown">
+
+                <a href="#">
+                    📚 Learn
+                </a>
+
+                <ul class="dropdown-menu">
+
+                    <li>
+                        <a href="{% url 'browse_courses' %}">
+                            Courses
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Webinars
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Certifications
+                        </a>
+                    </li>
+
+                </ul>
+
+            </li>
+
+            <!-- Build -->
+
+            <li class="dropdown">
+
+                <a href="#">
+                    ⚡ Build
+                </a>
+
+                <ul class="dropdown-menu">
+
+                    <li>
+                        <a href="{% url 'browse_sprints' %}">
+                            Startup Sprints
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Real Projects
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Hackathons
+                        </a>
+                    </li>
+
+                </ul>
+
+            </li>
+
+            <!-- Earn -->
+
+            <li class="dropdown">
+
+                <a href="#">
+                    🏆 Earn
+                </a>
+
+                <ul class="dropdown-menu">
+
+                    <li>
+                        <a href="{% url 'leaderboard' %}">
+                            Leaderboard
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Reputation
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Deployment Score
+                        </a>
+                    </li>
+
+                </ul>
+
+            </li>
+
+            <!-- AI -->
+
+            <li class="dropdown">
+
+                <a href="#">
+                    🤖 AI
+                </a>
+
+                <ul class="dropdown-menu">
+
+                    <li>
+                        <a href="#">
+                            Resume Builder
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Portfolio Builder
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            AI Interview
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Skill Analyzer
+                        </a>
+                    </li>
+
+                </ul>
+
+            </li>
+
+            <!-- Launch -->
+
+            <li class="dropdown">
+
+                <a href="#">
+                    🚀 Launch
+                </a>
+
+                <ul class="dropdown-menu">
+
+                    <li>
+                        <a href="#">
+                            Internships
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Startup Hiring
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Placements
+                        </a>
+                    </li>
+
+                </ul>
+
+            </li>
+
+            <!-- Community -->
+
+            <li class="dropdown">
+
+                <a href="#">
+                    🌍 Community
+                </a>
+
+                <ul class="dropdown-menu">
+
+                    <li>
+                        <a href="#">
+                            Mentors
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Founder Talks
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#">
+                            Networking
+                        </a>
+                    </li>
+
+                </ul>
+
+            </li>
+
+        </ul>
+
+
+
+        <div class="nav-buttons">
+
+            {% if request.user.is_authenticated %}
+
+            {% if request.user.is_superuser %}
+
+            <a href="{% url 'admin_dashboard' %}" class="login-btn">
+                Admin Dashboard
+            </a>
+
+            {% else %}
+
+            <a href="{% url 'dashboard' %}" class="login-btn">
+                Dashboard
+            </a>
+
+            {% endif %}
+
+            <a href="{% url 'leaderboard' %}" class="login-btn">
+                Leaderboard
+            </a>
+
+            <a href="{% url 'logout' %}" class="join-btn">
+                Logout
+            </a>
+
+            {% else %}
+
+            <a href="{% url 'login' %}" class="login-btn">
+                Login
+            </a>
+
+            <a href="{% url 'register' %}" class="join-btn">
+                Join Panzia
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+
+
+<!-- HERO SECTION -->
+
+<section class="hero">
+    <div class="container hero-container">
+
+        <div class="hero-content">
+            <div class="badge">
+                THE EXECUTION INFRASTRUCTURE LAYER
+            </div>
+
+            <h1>
+                The Future Of Work Is Execution-Driven
+            </h1>
+
+            <p>
+                Panzia transforms fragmented talent into structured startup execution through real operational work,
+                proof-of-work reputation, and startup collaboration.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="#" class="primary-btn">Join As Talent</a>
+                <a href="#" class="secondary-btn">Join As Startup</a>
+            </div>
+        </div>
+
+        <div class="hero-card">
+
+            <div class="dashboard-card">
+                <div class="dashboard-header">
+                    Execution Sprint
+                </div>
+
+                <div class="task-card completed">
+                    UI Landing Page Design
+                </div>
+
+                <div class="task-card progress">
+                    Startup Research Workflow
+                </div>
+
+                <div class="task-card pending">
+                    AI Automation System
+                </div>
+
+                <div class="analytics">
+                    <div class="analytic-box">
+                        <h2>94%</h2>
+                        <p>Execution Score</p>
+                    </div>
+
+                    <div class="analytic-box">
+                        <h2>128</h2>
+                        <p>Contributors</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- POSITIONING -->
+
+<section class="positioning">
+    <div class="container">
+        <div class="position-box">
+            <span>Not an edtech platform</span>
+            <span>Not a freelance marketplace</span>
+            <span>Not a job board</span>
+            <span>Startup Execution Ecosystem</span>
+        </div>
+    </div>
+</section>
+
+
+<!-- PROBLEM SECTION -->
+
+<section class="problem-section" id="problem">
+    <div class="container">
+
+        <div class="section-header">
+            <h2>
+                Startups Expanded Faster Than Their Execution Capacity
+            </h2>
+
+            <p>
+                The startup ecosystem scaled faster than operational coordination systems.
+            </p>
+        </div>
+
+        <div class="problem-grid">
+
+            <div class="problem-card">
+                <h3>Startup Problems</h3>
+
+                <ul>
+                    <li>Fragmented contributors</li>
+                    <li>Hiring overhead</li>
+                    <li>Operational chaos</li>
+                    <li>Execution bottlenecks</li>
+                    <li>Slow iteration cycles</li>
+                </ul>
+            </div>
+
+            <div class="problem-card">
+                <h3>Talent Problems</h3>
+
+                <ul>
+                    <li>No proof-of-work</li>
+                    <li>No startup exposure</li>
+                    <li>Weak portfolios</li>
+                    <li>Credential dependency</li>
+                    <li>No operational credibility</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- SOLUTION -->
+
+<section class="solution-section" id="solution">
+    <div class="container">
+
+        <div class="section-header">
+            <h2>
+                Panzia Creates Structured Startup Execution
+            </h2>
+        </div>
+
+        <div class="workflow-box">
+
+            <div class="workflow-step">
+                <h3>Startups</h3>
+                <p>Create execution sprints</p>
+            </div>
+
+            <div class="arrow">→</div>
+
+            <div class="workflow-step">
+                <h3>Talent</h3>
+                <p>Participate in real work</p>
+            </div>
+
+            <div class="arrow">→</div>
+
+            <div class="workflow-step">
+                <h3>Validation</h3>
+                <p>Performance gets verified</p>
+            </div>
+
+            <div class="arrow">→</div>
+
+            <div class="workflow-step">
+                <h3>Reputation</h3>
+                <p>Proof-of-work compounds</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- HOW IT WORKS -->
+
+<section class="workflow-section" id="workflow">
+    <div class="container">
+
+        <div class="section-header">
+            <h2>How Panzia Works</h2>
+        </div>
+
+        <div class="workflow-grid">
+
+            <div class="workflow-card">
+                <div class="number">01</div>
+                <h3>Startup Creates Sprint</h3>
+                <p>
+                    Define execution requirements, deliverables, and timelines.
+                </p>
+            </div>
+
+            <div class="workflow-card">
+                <div class="number">02</div>
+                <h3>Talent Participates</h3>
+                <p>
+                    Contributors join real startup execution environments.
+                </p>
+            </div>
+
+            <div class="workflow-card">
+                <div class="number">03</div>
+                <h3>Execution Gets Validated</h3>
+                <p>
+                    Startups verify contribution quality and operational reliability.
+                </p>
+            </div>
+
+            <div class="workflow-card">
+                <div class="number">04</div>
+                <h3>Reputation Compounds</h3>
+                <p>
+                    Contributors build proof-of-work credibility and unlock opportunities.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<!-- STARTUP + TALENT SECTION -->
+
+<section class="ecosystem-section">
+    <div class="container ecosystem-grid">
+
+        <div class="ecosystem-card">
+            <h2>For Startups</h2>
+
+            <ul>
+                <li>Execution bandwidth</li>
+                <li>Operational contributors</li>
+                <li>Flexible scaling</li>
+                <li>Faster experimentation</li>
+                <li>Reputation-based hiring</li>
+            </ul>
+        </div>
+
+        <div class="ecosystem-card">
+            <h2>For Talent</h2>
+
+            <ul>
+                <li>Real startup exposure</li>
+                <li>Proof-of-work identity</li>
+                <li>Execution reputation</li>
+                <li>Operational credibility</li>
+                <li>Career opportunities</li>
+            </ul>
+        </div>
+
+    </div>
+</section>
+
+<!-- REPUTATION -->
+
+<section class="reputation-section" id="reputation">
+    <div class="container reputation-container">
+
+        <div class="reputation-content">
+            <h2>
+                Proof-of-Work Is The New Resume
+            </h2>
+
+            <p>
+                Panzia builds execution-based reputation through real startup contribution history, operational
+                accountability, collaboration, and validated delivery.
+            </p>
+        </div>
+
+        <div class="reputation-card">
+
+            <div class="score-box">
+                <span>Execution Score</span>
+                <h2>96</h2>
+            </div>
+
+            <div class="score-box">
+                <span>Reliability</span>
+                <h2>92%</h2>
+            </div>
+
+            <div class="score-box">
+                <span>Completed Sprints</span>
+                <h2>34</h2>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!--STATS SECTION -->
+
+<section class="stats-section">
+    <div class="container">
+
+        <div class="section-header">
+            <h2>
+                Structured Execution At Scale
+            </h2>
+        </div>
+
+        <div class="stats-grid">
+
+            <div class="stats-card">
+                <h2>10K+</h2>
+                <p>Execution Tasks</p>
+            </div>
+
+            <div class="stats-card">
+                <h2>2K+</h2>
+                <p>Startup Contributors</p>
+            </div>
+
+            <div class="stats-card">
+                <h2>500+</h2>
+                <p>Operational Sprints</p>
+            </div>
+
+            <div class="stats-card">
+                <h2>94%</h2>
+                <p>Execution Completion</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- FINAL CTA -->
+
+<section class="cta-section">
+    <div class="container cta-container">
+
+        <h2>
+            Build Through Execution
+        </h2>
+
+        <p>
+            Join the infrastructure layer connecting startups and emerging talent.
+        </p>
+
+        <div class="hero-buttons">
+            <a href="#" class="primary-btn">Get Started</a>
+            <a href="#" class="secondary-btn">Explore Platform</a>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- FOOTER -->
+
+<footer>
+    <div class="container footer-container">
+        <h3>PANZIA</h3>
+        <p>
+            The Execution Infrastructure Layer For The Startup Economy
+        </p>
+    </div>
+</footer>
+
+
+<script src="{% static 'js/script.js' %}"></script>
+
+
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/hiring_dashboard.css' %}">
+
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+
+        <h1>📊 Hiring Dashboard</h1>
+
+        <p>
+            Track jobs, applicants and manage your hiring pipeline efficiently.
+        </p>
+
+    </div>
+
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+
+        <div class="stat-card total">
+            <h2>{{ total_jobs }}</h2>
+            <span>Total Jobs</span>
+        </div>
+
+        <div class="stat-card applicants">
+            <h2>{{ total_applications }}</h2>
+            <span>Applications</span>
+        </div>
+
+        <div class="stat-card shortlisted">
+            <h2>{{ shortlisted }}</h2>
+            <span>Shortlisted</span>
+        </div>
+
+        <div class="stat-card interview">
+            <h2>{{ interviews }}</h2>
+            <span>Interviews</span>
+        </div>
+
+        <div class="stat-card hired">
+            <h2>{{ hired }}</h2>
+            <span>Hired</span>
+        </div>
+
+    </div>
+
+
+    <!-- Quick Actions -->
+    <div class="glass-card">
+
+        <h3>⚡ Quick Actions</h3>
+
+        <div class="action-grid">
+
+            <a href="{% url 'create_job' %}" class="action-btn">
+                ➕ Create Job
+            </a>
+
+            <a href="{% url 'startup_jobs' %}" class="action-btn">
+                💼 View My Jobs
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Job List -->
+    <div class="glass-card">
+
+        <h3>📋 My Jobs</h3>
+
+        {% for job in jobs %}
+
+        <div class="job-card">
+
+            <div>
+
+                <h4>{{ job.title }}</h4>
+
+                <span>{{ job.job_type }}</span>
+
+            </div>
+
+            <div class="job-actions">
+
+                <a href="{% url 'job_applications' job.id %}" class="blue-btn">
+                    Applicants
+                </a>
+
+                <a href="{% url 'recommended_candidates' job.id %}" class="purple-btn">
+                    AI Candidates
+                </a>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-card">
+
+            <h4>No Jobs Posted Yet</h4>
+
+            <a href="{% url 'create_job' %}" class="purple-btn">
+                Create First Job
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

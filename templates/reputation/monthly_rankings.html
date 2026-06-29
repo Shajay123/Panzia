@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Monthly Rankings
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/monthly_rankings.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="ranking-section">
+
+    <div class="ranking-container">
+
+        <!-- Header -->
+
+        <div class="ranking-header">
+
+            <span class="ranking-badge">
+                🏆 Monthly Performance
+            </span>
+
+            <h1>
+                Monthly Rankings
+            </h1>
+
+            <p>
+                Top performers based on execution, consistency, and startup impact.
+            </p>
+
+        </div>
+
+        <!-- Top 3 -->
+
+        {% if rankings %}
+
+        <div class="top-three">
+
+            {% for rank in rankings|slice:":3" %}
+
+            <div class="top-card">
+
+                <div class="top-rank">
+
+                    {% if forloop.counter == 1 %}
+                    🥇
+                    {% elif forloop.counter == 2 %}
+                    🥈
+                    {% else %}
+                    🥉
+                    {% endif %}
+
+                </div>
+
+                <h3>
+                    {{ rank.user.username }}
+                </h3>
+
+                <p>
+                    {{ rank.score }} Points
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% endif %}
+
+        <!-- Table -->
+
+        <div class="ranking-panel">
+
+            <h3>
+                🌍 Global Monthly Rankings
+            </h3>
+
+            <div class="ranking-table">
+
+                <div class="table-header">
+
+                    <div>Rank</div>
+                    <div>Builder</div>
+                    <div>Monthly Score</div>
+
+                </div>
+
+                {% for rank in rankings %}
+
+                <div class="table-row">
+
+                    <div>
+
+                        {% if forloop.counter == 1 %}
+                        🥇
+                        {% elif forloop.counter == 2 %}
+                        🥈
+                        {% elif forloop.counter == 3 %}
+                        🥉
+                        {% else %}
+                        #{{ rank.rank }}
+                        {% endif %}
+
+                    </div>
+
+                    <div>
+                        👤 {{ rank.user.username }}
+                    </div>
+
+                    <div>
+                        🚀 {{ rank.score }}
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-state">
+
+                    <h3>
+                        No Rankings Available
+                    </h3>
+
+                    <p>
+                        Monthly rankings will appear after performance calculations.
+                    </p>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Edit Document - {{ document.title }}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/document_update.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="document-update-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+
+            <div class="breadcrumb">
+
+                <a href="{% url 'documents' %}">
+                    📂 Documents
+                </a>
+
+                <span>›</span>
+
+                <a href="{% url 'document_detail' document.id %}">
+                    {{ document.title }}
+                </a>
+
+                <span>›</span>
+
+                <span>Edit</span>
+
+            </div>
+
+            <h1>✏ Edit Employee Document</h1>
+
+            <p>
+
+                Update employee document information or replace the uploaded file.
+
+            </p>
+
+        </div>
+
+        <a href="{% url 'document_detail' document.id %}" class="btn-back">
+
+            ← Back
+
+        </a>
+
+    </div>
+
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+
+        <div class="form-errors">
+
+            {{ form.non_field_errors }}
+
+        </div>
+
+        {% endif %}
+
+
+        <div class="form-card">
+
+            <h2>📄 Document Information</h2>
+
+            <div class="form-grid">
+
+                <!-- Employee -->
+
+                <div class="form-group">
+
+                    <label>
+
+                        Employee
+
+                    </label>
+
+                    {{ form.employee }}
+
+                </div>
+
+                <!-- Title -->
+
+                <div class="form-group">
+
+                    <label>
+
+                        Document Title
+
+                    </label>
+
+                    {{ form.title }}
+
+                </div>
+
+                <!-- Current File -->
+
+                <div class="form-group full-width">
+
+                    <label>
+
+                        Current File
+
+                    </label>
+
+                    <div class="current-file">
+
+                        📎
+
+                        <a href="{{ document.file.url }}" target="_blank">
+
+                            {{ document.file.name }}
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <!-- Upload -->
+
+                <div class="form-group full-width">
+
+                    <label>
+
+                        Replace Document
+
+                    </label>
+
+                    <div class="upload-box">
+
+                        {{ form.file }}
+
+                        <p>
+
+                            ⬆ Choose a new file to replace the current document
+
+                        </p>
+
+                        <small>
+
+                            PDF, DOC, DOCX, JPG, PNG
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="submit-area">
+
+            <button type="submit" class="btn-save">
+
+                💾 Save Changes
+
+            </button>
+
+            <a href="{% url 'document_detail' document.id %}" class="btn-cancel">
+
+                Cancel
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/jobs.css' %}">
+
+<div class="job-page">
+
+    <div class="job-container">
+
+        <div class="job-header">
+
+            <h1>💼 Create New Job</h1>
+
+            <p>
+                Find exceptional talent and build your startup team.
+            </p>
+
+        </div>
+
+        <div class="glass-card">
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+
+                    <label>Job Title</label>
+
+                    {{ form.title }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Description</label>
+
+                    {{ form.description }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Required Skills</label>
+
+                    {{ form.skills }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Location</label>
+
+                    {{ form.location }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Salary</label>
+
+                    {{ form.salary }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Job Type</label>
+
+                    {{ form.job_type }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Experience Required</label>
+
+                    {{ form.experience_required }}
+
+                </div>
+
+                <button class="create-btn">
+
+                    🚀 Publish Job
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

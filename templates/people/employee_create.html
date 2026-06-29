@@ -1,0 +1,482 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Add Employee
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_create.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-create-page">
+
+<div class="page-header">
+
+<div>
+
+<h1>👤 Add Employee</h1>
+
+<p>Create a new employee profile for your startup.</p>
+
+</div>
+
+<a href="{% url 'employees' %}" class="btn-back">
+
+← Back
+
+</a>
+
+</div>
+
+
+<form method="POST" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+
+<!-- =================================== -->
+<!-- HIRING MODE -->
+<!-- =================================== -->
+
+<div class="form-card">
+
+<h2>🚀 Hiring Mode</h2>
+
+<div class="form-group">
+
+<label>Select Employee Source</label>
+
+<select name="hire_mode"
+        id="hire_mode"
+        class="form-control">
+
+<option value="talent">
+
+Talent Pool Candidate
+
+</option>
+
+<option value="existing">
+
+Existing User
+
+</option>
+
+<option value="new">
+
+Create Brand New Employee
+
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================== -->
+<!-- TALENT -->
+<!-- =================================== -->
+
+<div class="form-card"
+     id="talent-section">
+
+<h2>🌟 Talent Pool</h2>
+
+<div class="form-group">
+
+<label>Select Candidate</label>
+
+<select
+name="talent_user"
+class="form-control">
+
+<option value="">
+
+Select Candidate
+
+</option>
+
+{% for user in talent_users %}
+
+<option value="{{ user.id }}">
+
+{{ user.get_full_name|default:user.username }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+</div>
+
+
+
+
+<!-- =================================== -->
+<!-- EXISTING -->
+<!-- =================================== -->
+
+<div class="form-card d-none"
+id="existing-section">
+
+<h2>👥 Existing User</h2>
+
+<div class="form-group">
+
+<label>Select User</label>
+
+<select
+name="existing_user"
+class="form-control">
+
+<option value="">
+
+Select Existing User
+
+</option>
+
+{% for user in existing_users %}
+
+<option value="{{ user.id }}">
+
+{{ user.get_full_name|default:user.username }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+</div>
+
+
+
+
+<!-- =================================== -->
+<!-- NEW USER -->
+<!-- =================================== -->
+
+<div class="form-card d-none"
+id="new-section">
+
+<h2>➕ Create User Account</h2>
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>Username</label>
+
+<input
+type="text"
+name="username"
+class="form-control">
+
+</div>
+
+<div class="form-group">
+
+<label>Email</label>
+
+<input
+type="email"
+name="email"
+class="form-control">
+
+</div>
+
+<div class="form-group">
+
+<label>First Name</label>
+
+<input
+type="text"
+name="first_name"
+class="form-control">
+
+</div>
+
+<div class="form-group">
+
+<label>Last Name</label>
+
+<input
+type="text"
+name="last_name"
+class="form-control">
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================== -->
+<!-- BASIC INFO -->
+<!-- =================================== -->
+
+<div class="form-card">
+
+<h2>👤 Employee Information</h2>
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>Employee ID</label>
+
+{{ form.employee_id }}
+
+</div>
+
+<div class="form-group">
+
+<label>Department</label>
+
+{{ form.department }}
+
+</div>
+
+<div class="form-group">
+
+<label>Designation</label>
+
+{{ form.designation }}
+
+</div>
+
+<div class="form-group">
+
+<label>Employment Type</label>
+
+{{ form.employment_type }}
+
+</div>
+
+<div class="form-group">
+
+<label>Status</label>
+
+{{ form.status }}
+
+</div>
+
+<div class="form-group">
+
+<label>Hire Source</label>
+
+{{ form.hire_source }}
+
+</div>
+
+<div class="form-group">
+
+<label>Work Mode</label>
+
+{{ form.work_mode }}
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================== -->
+<!-- DATES -->
+<!-- =================================== -->
+
+<div class="form-card">
+
+<h2>📅 Employment Timeline</h2>
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>Joining Date</label>
+
+{{ form.joining_date }}
+
+</div>
+
+<div class="form-group">
+
+<label>Probation End</label>
+
+{{ form.probation_end }}
+
+</div>
+
+<div class="form-group">
+
+<label>Confirmation Date</label>
+
+{{ form.confirmation_date }}
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================== -->
+<!-- CONTACT -->
+<!-- =================================== -->
+
+<div class="form-card">
+
+<h2>📞 Contact</h2>
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>Phone</label>
+
+{{ form.phone }}
+
+</div>
+
+<div class="form-group">
+
+<label>Emergency Contact</label>
+
+{{ form.emergency_contact }}
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================== -->
+<!-- PAYROLL -->
+<!-- =================================== -->
+
+<div class="form-card">
+
+<h2>💰 Payroll</h2>
+
+<div class="form-grid">
+
+<div class="form-group">
+
+<label>Salary</label>
+
+{{ form.salary }}
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================== -->
+<!-- PHOTO -->
+<!-- =================================== -->
+
+<div class="form-card">
+
+<h2>🖼 Profile Image</h2>
+
+{{ form.profile_image }}
+
+</div>
+
+
+
+<!-- =================================== -->
+<!-- NOTES -->
+<!-- =================================== -->
+
+<div class="form-card">
+
+<h2>📝 Notes</h2>
+
+{{ form.notes }}
+
+</div>
+
+
+
+<div class="submit-area">
+
+<button
+type="submit"
+class="btn-save">
+
+🚀 Create Employee
+
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+
+<script>
+
+const hireMode=document.getElementById("hire_mode");
+
+const talent=document.getElementById("talent-section");
+
+const existing=document.getElementById("existing-section");
+
+const create=document.getElementById("new-section");
+
+function toggleSections(){
+
+talent.classList.add("d-none");
+existing.classList.add("d-none");
+create.classList.add("d-none");
+
+if(hireMode.value==="talent"){
+
+talent.classList.remove("d-none");
+
+}
+
+else if(hireMode.value==="existing"){
+
+existing.classList.remove("d-none");
+
+}
+
+else{
+
+create.classList.remove("d-none");
+
+}
+
+}
+
+hireMode.addEventListener("change",toggleSections);
+
+toggleSections();
+
+</script>
+
+{% endblock %}

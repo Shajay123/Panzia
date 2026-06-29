@@ -1,0 +1,115 @@
+.payment-page{
+    min-height:100vh;
+    padding:50px;
+    background:#0f0524;
+    color:white;
+}
+
+.page-header{
+    margin-bottom:40px;
+}
+
+.page-header h1{
+    font-size:3rem;
+    font-weight:800;
+}
+
+.page-header p{
+    color:#b8b8d0;
+}
+
+.payment-card{
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.1);
+
+    border-radius:25px;
+
+    backdrop-filter:blur(20px);
+
+    padding:30px;
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+}
+
+th{
+
+    color:#c084fc;
+
+    padding:20px;
+
+    text-align:left;
+}
+
+td{
+
+    padding:20px;
+
+    border-top:1px solid rgba(255,255,255,.08);
+}
+
+.invoice-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+
+    gap:30px;
+}
+
+.invoice-card{
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    border-radius:25px;
+
+    padding:40px;
+
+    text-align:center;
+
+    backdrop-filter:blur(20px);
+
+    transition:.4s;
+}
+
+.invoice-card:hover{
+
+    transform:translateY(-10px);
+
+    box-shadow:0 0 25px rgba(168,85,247,.5);
+}
+
+.invoice-icon{
+
+    font-size:50px;
+
+    margin-bottom:20px;
+}
+
+.invoice-card h2{
+
+    color:#a855f7;
+}
+
+.download-btn{
+
+    background:#9333ea;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:12px 20px;
+
+    border-radius:12px;
+
+    font-weight:700;
+}

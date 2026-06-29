@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+<h2>Top Builders</h2>
+
+{% for builder in builders %}
+
+<div class="card p-3 mb-3">
+
+    <h4>
+        {{ builder.user.username }}
+    </h4>
+
+    <p>
+        Deployment Score:
+        {{ builder.deployment_score }}
+    </p>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

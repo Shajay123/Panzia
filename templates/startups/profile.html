@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/profiles.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="profile-section">
+
+    <div class="profile-container">
+
+        <!-- HERO -->
+
+        <div class="profile-header">
+
+            <div class="profile-info">
+
+                {% if startup.logo %}
+                    <img src="{{ startup.logo.url }}"
+                         alt="{{ startup.company_name }}"
+                         class="startup-logo">
+                {% else %}
+                    <div class="startup-logo-placeholder">
+                        🚀
+                    </div>
+                {% endif %}
+
+                <div>
+
+                    <span class="profile-badge">
+                        Startup Profile
+                    </span>
+
+                    <h1>
+                        {{ startup.company_name }}
+                    </h1>
+
+                    <p class="tagline">
+                        {{ startup.tagline }}
+                    </p>
+
+                    <div class="industry-badge">
+                        {{ startup.industry }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ABOUT -->
+
+        <div class="glass-card about-card">
+
+            <h3>
+                About Startup
+            </h3>
+
+            <p>
+                {{ startup.description }}
+            </p>
+
+        </div>
+
+        <!-- STATS -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <span class="stat-icon">⚡</span>
+
+                <h2>
+                    {{ active_count }}
+                </h2>
+
+                <p>
+                    Active Sprints
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <span class="stat-icon">🏆</span>
+
+                <h2>
+                    {{ completed_count }}
+                </h2>
+
+                <p>
+                    Completed Sprints
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <span class="stat-icon">👥</span>
+
+                <h2>
+                    {{ contributors }}
+                </h2>
+
+                <p>
+                    Contributors
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- SPRINTS -->
+
+        <div class="sprints-grid">
+
+            <!-- Active -->
+
+            <div class="glass-card">
+
+                <h3>
+                    🚀 Active Sprints
+                </h3>
+
+                {% for sprint in active_sprints %}
+
+                    <div class="sprint-card">
+
+                        <div class="sprint-header">
+
+                            <h4>
+                                {{ sprint.title }}
+                            </h4>
+
+                            <span class="status active">
+                                Active
+                            </span>
+
+                        </div>
+
+                        <p>
+                            {{ sprint.category }}
+                        </p>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="empty-state">
+                        No active sprints available.
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- Completed -->
+
+            <div class="glass-card">
+
+                <h3>
+                    ✅ Completed Sprints
+                </h3>
+
+                {% for sprint in completed_sprints %}
+
+                    <div class="sprint-card">
+
+                        <div class="sprint-header">
+
+                            <h4>
+                                {{ sprint.title }}
+                            </h4>
+
+                            <span class="status completed">
+                                Completed
+                            </span>
+
+                        </div>
+
+                        <p>
+                            {{ sprint.category }}
+                        </p>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="empty-state">
+                        No completed sprints available.
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

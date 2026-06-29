@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Performance Reviews
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/performance.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="performance-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>⭐ Performance Reviews</h1>
+
+            <p>
+                Track employee performance, ratings and growth.
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <a href="#" class="btn-primary">
+                ➕ New Review
+            </a>
+
+            <a href="#" class="btn-secondary">
+                📥 Export
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Summary -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card blue">
+
+            <h2>{{ reviews|length }}</h2>
+
+            <p>Total Reviews</p>
+
+        </div>
+
+        <div class="summary-card green">
+
+            <h2>4.8</h2>
+
+            <p>Average Rating</p>
+
+        </div>
+
+        <div class="summary-card orange">
+
+            <h2>12</h2>
+
+            <p>Pending Reviews</p>
+
+        </div>
+
+        <div class="summary-card purple">
+
+            <h2>95%</h2>
+
+            <p>Completion Rate</p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Search -->
+
+    <div class="filter-card">
+
+        <input
+            type="text"
+            placeholder="🔍 Search Employee..."
+        >
+
+        <select>
+
+            <option>All Ratings</option>
+
+            <option>★★★★★</option>
+
+            <option>★★★★☆</option>
+
+            <option>★★★☆☆</option>
+
+            <option>★★☆☆☆</option>
+
+            <option>★☆☆☆☆</option>
+
+        </select>
+
+        <button class="btn-primary">
+
+            Filter
+
+        </button>
+
+    </div>
+
+
+    <!-- Reviews Table -->
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+
+            <tr>
+
+                <th>Employee</th>
+
+                <th>Reviewer</th>
+
+                <th>Rating</th>
+
+                <th>Review</th>
+
+                <th>Date</th>
+
+                <th>Action</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for review in reviews %}
+
+            <tr>
+
+                <td>
+
+                    <div class="employee-box">
+
+                        {% if review.employee.profile_image %}
+
+                        <img src="{{ review.employee.profile_image.url }}">
+
+                        {% else %}
+
+                        <div class="avatar">
+
+                            {{ review.employee.user.first_name|first }}
+
+                        </div>
+
+                        {% endif %}
+
+                        <div>
+
+                            <strong>
+
+                                {{ review.employee.user.get_full_name|default:review.employee.user.username }}
+
+                            </strong>
+
+                            <small>
+
+                                {{ review.employee.designation }}
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </td>
+
+                <td>
+
+                    {{ review.reviewer }}
+
+                </td>
+
+                <td>
+
+                    <span class="rating">
+
+                        ⭐ {{ review.rating }}/5
+
+                    </span>
+
+                </td>
+
+                <td>
+
+                    {{ review.review|truncatechars:60 }}
+
+                </td>
+
+                <td>
+
+                    {{ review.created_at|date:"d M Y" }}
+
+                </td>
+
+                <td>
+
+                    <a href="#" class="table-btn">
+
+                        View
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="6">
+
+                    No performance reviews available.
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

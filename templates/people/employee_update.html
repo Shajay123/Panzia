@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Update Employee
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_update.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-create-page container">
+
+<div class="page-header">
+
+<div>
+
+<h1>✏ Update Employee</h1>
+
+<p>
+Modify employee information.
+</p>
+
+</div>
+
+<a href="{% url 'employee_detail' employee.id %}" class="btn-back">
+
+← Back
+
+</a>
+
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+<div class="form-layout">
+
+<div class="form-card">
+
+<h2>Employee Information</h2>
+
+<div class="form-grid">
+
+{% for field in form %}
+
+<div class="form-group">
+
+<label>{{ field.label }}</label>
+
+{{ field }}
+
+{% if field.errors %}
+<div class="text-danger mt-1">
+{{ field.errors }}
+</div>
+{% endif %}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+<div class="submit-area">
+
+<button type="submit" class="btn-save">
+
+💾 Update Employee
+
+</button>
+
+<a href="{% url 'employees' %}" class="btn-cancel">
+
+Cancel
+
+</a>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+{% endblock %}

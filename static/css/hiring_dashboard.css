@@ -1,0 +1,145 @@
+body{
+    background:#0f172a;
+}
+
+.dashboard-container{
+    padding:40px;
+    color:white;
+}
+
+.dashboard-header{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.dashboard-header h1{
+    font-size:40px;
+    font-weight:700;
+}
+
+.dashboard-header p{
+    color:#94a3b8;
+}
+
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:20px;
+    margin-bottom:40px;
+}
+
+.stat-card{
+    padding:30px;
+    border-radius:20px;
+    text-align:center;
+    color:white;
+}
+
+.stat-card h2{
+    font-size:40px;
+}
+
+.total{
+    background:#2563eb;
+}
+
+.applicants{
+    background:#9333ea;
+}
+
+.shortlisted{
+    background:#f59e0b;
+}
+
+.interview{
+    background:#ec4899;
+}
+
+.hired{
+    background:#10b981;
+}
+
+.glass-card{
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:25px;
+    padding:30px;
+    margin-bottom:30px;
+}
+
+.glass-card h3{
+    margin-bottom:25px;
+}
+
+.action-grid{
+    display:flex;
+    gap:20px;
+}
+
+.action-btn{
+    flex:1;
+    background:#7c3aed;
+    padding:18px;
+    text-align:center;
+    border-radius:15px;
+    text-decoration:none;
+    color:white;
+    font-weight:600;
+}
+
+.action-btn:hover{
+    color:white;
+    text-decoration:none;
+}
+
+.job-card{
+    background:#1e293b;
+    border-radius:20px;
+    padding:25px;
+    margin-bottom:20px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.job-card h4{
+    margin-bottom:10px;
+}
+
+.job-card span{
+    color:#94a3b8;
+}
+
+.job-actions{
+    display:flex;
+    gap:15px;
+}
+
+.blue-btn{
+    background:#2563eb;
+    color:white;
+    text-decoration:none;
+    padding:12px 20px;
+    border-radius:12px;
+}
+
+.purple-btn{
+    background:#9333ea;
+    color:white;
+    text-decoration:none;
+    padding:12px 20px;
+    border-radius:12px;
+}
+
+.blue-btn:hover,
+.purple-btn:hover{
+    color:white;
+    text-decoration:none;
+}
+
+.empty-card{
+    text-align:center;
+    padding:40px;
+}

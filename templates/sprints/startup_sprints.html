@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+My Sprints
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/startup_sprints.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-main">
+
+        <!-- Header -->
+
+        <div class="dashboard-header-main">
+
+            <div>
+
+                <span class="dashboard-badge">
+                    🚀 Startup Workspace
+                </span>
+
+                <h1>
+                    My Sprints
+                </h1>
+
+                <p>
+                    Manage execution sprints, monitor progress and build your startup faster.
+                </p>
+
+            </div>
+
+            <div>
+
+                <a href="{% url 'create_sprint' %}" class="primary-btn">
+                    + Create Sprint
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Stats -->
+
+        <div class="sprint-stats">
+
+            <div class="stat-card total">
+
+                <div class="stat-icon">🚀</div>
+
+                <h2>
+                    {{ sprints|length }}
+                </h2>
+
+                <p>Total Sprints</p>
+
+            </div>
+
+            <div class="stat-card active">
+
+                <div class="stat-icon">🟢</div>
+
+                <h2>
+                    {{ active_count }}
+                </h2>
+
+                <p>Active</p>
+
+            </div>
+
+            <div class="stat-card completed">
+
+                <div class="stat-icon">🏆</div>
+
+                <h2>
+                    {{ completed_count }}
+                </h2>
+
+                <p>Completed</p>
+
+            </div>
+
+            <div class="stat-card open">
+
+                <div class="stat-icon">📂</div>
+
+                <h2>
+                    {{ open_count }}
+                </h2>
+
+                <p>Open</p>
+
+            </div>
+
+        </div>
+
+        {% if sprints %}
+
+        <div class="sprints-grid">
+
+            {% for sprint in sprints %}
+
+            <div class="sprint-card">
+
+                <div class="sprint-header">
+
+                    <h3>
+                        🚀 {{ sprint.title }}
+                    </h3>
+
+                    <span class="status-badge status-{{ sprint.status }}">
+                        {{ sprint.get_status_display }}
+                    </span>
+
+                </div>
+
+                <p class="sprint-description">
+                    {{ sprint.description|truncatechars:150 }}
+                </p>
+
+                <div class="sprint-details">
+
+                    <div class="detail-row">
+                        <span>📂 Category</span>
+                        <strong>
+                            {{ sprint.category }}
+                        </strong>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>🌐 Domain</span>
+                        <strong>
+                            {{ sprint.domain }}
+                        </strong>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>👥 Contributors</span>
+                        <strong>
+                            {{ sprint.max_contributors }}
+                        </strong>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>📅 Deadline</span>
+                        <strong>
+                            {{ sprint.deadline }}
+                        </strong>
+                    </div>
+
+                </div>
+
+                <!-- Progress -->
+
+                <div class="progress-wrapper">
+
+                    <div class="progress-top">
+
+                        <span>
+                            Progress
+                        </span>
+
+                        <span>
+                            {{ sprint.progress_percentage }}%
+                        </span>
+
+                    </div>
+
+                    <!-- <div class="progress-bar-bg">
+
+                        <div
+                            class="progress-bar-fill"
+                            style="width: {{ sprint.progress_percentage }}%;"
+                        >
+                        </div>
+
+                    </div> -->
+
+                    <p>
+                        <strong>Status:</strong>
+
+                        <span class="status-badge status-{{ sprint.status }}">
+                            {{ sprint.get_status_display }}
+                        </span>
+                    </p>
+
+                </div>
+
+                <div class="sprint-footer">
+
+                    <small>
+                        Created {{ sprint.created_at|timesince }} ago
+                    </small>
+
+                </div>
+
+                <div class="sprint-actions">
+
+                    <a href="{% url 'sprint_detail' sprint.id %}" class="action-btn">
+                        📄 Details
+                    </a>
+
+                    <a href="{% url 'sprint_applications' sprint.id %}" class="action-btn">
+                        📥 Applications
+                    </a>
+
+                    <a href="{% url 'sprint_members' sprint.id %}" class="action-btn">
+                        👥 Members
+                    </a>
+
+                    <a href="{% url 'sprint_tasks' sprint.id %}" class="action-btn">
+                        ✅ Tasks
+                    </a>
+
+                    <a href="{% url 'create_task' sprint.id %}" class="action-btn">
+                        ➕ Create Task
+                    </a>
+
+                    <a href="{% url 'review_submissions' sprint.id %}" class="action-btn">
+
+                        📝 Review Work
+
+                    </a>
+
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state-card">
+
+            <div class="empty-icon">
+                🚀
+            </div>
+
+            <h3>
+                No Sprints Yet
+            </h3>
+
+            <p>
+                Start your startup execution journey by creating your first sprint.
+            </p>
+
+            <a href="{% url 'create_sprint' %}" class="primary-btn">
+                Create Sprint
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

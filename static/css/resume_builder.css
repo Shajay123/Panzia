@@ -1,0 +1,43 @@
+.resume-page{
+    background:#020617;
+    min-height:100vh;
+    padding:40px;
+}
+
+.resume-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.resume-header h1{
+    color:white;
+}
+
+.resume-header p{
+    color:#94a3b8;
+}
+
+.download-btn{
+    background:#2563eb;
+    color:white;
+    padding:12px 20px;
+    border-radius:10px;
+    text-decoration:none;
+}
+
+.resume-preview{
+    background:white;
+    max-width:900px;
+    margin:auto;
+    border-radius:20px;
+    padding:40px;
+    box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+
+.resume-preview pre{
+    white-space:pre-wrap;
+    font-family:Arial,sans-serif;
+    line-height:1.8;
+}

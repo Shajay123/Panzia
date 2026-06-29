@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Employee Profile
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-profile">
+
+    <div class="profile-card">
+
+        <div class="profile-left">
+
+            {% if employee.profile_image %}
+            <img src="{{ employee.profile_image.url }}" class="profile-image">
+            {% else %}
+            <div class="avatar">
+                {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+            </div>
+            {% endif %}
+
+        </div>
+
+
+        <div class="profile-right">
+
+            <h1>
+
+                {{ employee.user.get_full_name|default:employee.user.username }}
+
+            </h1>
+
+            <h3>
+
+                {{ employee.designation }}
+
+            </h3>
+
+            <p>
+
+                🆔 {{ employee.employee_id }}
+
+            </p>
+
+            <p>
+
+                🏢 {{ employee.department }}
+
+            </p>
+
+            <p>
+
+                👨‍💼 Manager :
+
+                {% if employee.manager %}
+                {{ employee.manager.user.get_full_name }}
+                {% else %}
+                --
+                {% endif %}
+
+            </p>
+
+            {% if employee.is_active %}
+
+            <span class="status active">
+
+                🟢 {{ employee.status }}
+
+            </span>
+
+            {% else %}
+
+            <span class="status inactive">
+
+                🔴 {{ employee.status }}
+
+            </span>
+
+            {% endif %}
+
+
+            <div class="actions">
+
+                <a href="{% url 'employee_update' employee.id %}" class="btn-primary">
+
+                    ✏ Edit
+
+                </a>
+
+                <a href="{% url 'attendance' %}" class="btn-light">
+
+                    🕒 Attendance
+
+                </a>
+
+                <a href="{% url 'payroll' %}" class="btn-light">
+
+                    💰 Payroll
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+
+            <h2>{{ attendance_count }}</h2>
+
+            <p>Attendance</p>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h2>{{ leave_count }}</h2>
+
+            <p>Leaves</p>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h2>
+
+                ₹{{ employee.salary }}
+
+            </h2>
+
+            <p>Salary</p>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h2>
+
+                {{ employee.work_mode }}
+
+            </h2>
+
+            <p>Work Mode</p>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="info-grid">
+
+        <!-- PERSONAL -->
+
+        <div class="info-card">
+
+            <h2>👤 Personal Information</h2>
+
+            <table>
+
+                <tr>
+                    <td>Employee ID</td>
+                    <td>{{ employee.employee_id }}</td>
+                </tr>
+
+                <tr>
+                    <td>Phone</td>
+                    <td>{{ employee.phone }}</td>
+                </tr>
+
+                <tr>
+                    <td>Emergency Contact</td>
+                    <td>{{ employee.emergency_contact }}</td>
+                </tr>
+
+                <tr>
+                    <td>Department</td>
+                    <td>{{ employee.department }}</td>
+                </tr>
+
+                <tr>
+                    <td>Designation</td>
+                    <td>{{ employee.designation }}</td>
+                </tr>
+
+                <tr>
+                    <td>Employment Type</td>
+                    <td>{{ employee.employment_type }}</td>
+                </tr>
+
+                <tr>
+                    <td>Work Mode</td>
+                    <td>{{ employee.work_mode }}</td>
+                </tr>
+
+                <tr>
+                    <td>Hire Source</td>
+                    <td>{{ employee.hire_source }}</td>
+                </tr>
+
+            </table>
+
+        </div>
+
+
+        <!-- EMPLOYMENT -->
+
+        <div class="info-card">
+
+            <h2>💼 Employment Details</h2>
+
+            <table>
+
+                <tr>
+                    <td>Status</td>
+                    <td>{{ employee.status }}</td>
+                </tr>
+
+                <tr>
+                    <td>Joining Date</td>
+                    <td>{{ employee.joining_date }}</td>
+                </tr>
+
+                <tr>
+                    <td>Probation Ends</td>
+                    <td>{{ employee.probation_end|default:"--" }}</td>
+                </tr>
+
+                <tr>
+                    <td>Confirmation Date</td>
+                    <td>{{ employee.confirmation_date|default:"--" }}</td>
+                </tr>
+
+                <tr>
+                    <td>Manager</td>
+                    <td>
+
+                        {% if employee.manager %}
+                        {{ employee.manager.user.get_full_name }}
+                        {% else %}
+                        --
+                        {% endif %}
+
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+
+
+
+        <!-- PAYROLL -->
+
+        <div class="info-card">
+
+            <h2>💰 Payroll</h2>
+
+            <table>
+
+                <tr>
+
+                    <td>Salary</td>
+
+                    <td>
+
+                        ₹{{ employee.salary }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Payroll Enabled</td>
+
+                    <td>
+
+                        {% if employee.is_payroll_enabled %}
+
+                        ✅ Enabled
+
+                        {% else %}
+
+                        ❌ Disabled
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Active</td>
+
+                    <td>
+
+                        {% if employee.is_active %}
+
+                        🟢 Yes
+
+                        {% else %}
+
+                        🔴 No
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+
+
+        <!-- NOTES -->
+
+        <div class="info-card">
+
+            <h2>📝 Notes</h2>
+
+            <p>
+
+                {{ employee.notes|default:"No Notes Available." }}
+
+            </p>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+{% endblock %}

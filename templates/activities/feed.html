@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Activity Feed
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/activity_feed.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-main">
+
+        <!-- HEADER -->
+        <div class="page-header">
+
+            <div>
+
+                <span class="dashboard-badge">
+                    ⚡ Live Feed
+                </span>
+
+                <h1>PANZIA Activity Feed</h1>
+
+                <p>
+                    Real-time execution activity happening across startups, talents, and sprint teams.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- FEED -->
+
+        <div class="feed-container">
+
+            {% if activities %}
+
+                {% for activity in activities %}
+
+                <div class="activity-card">
+
+                    <div class="activity-glow"></div>
+
+                    <!-- LEFT -->
+                    <div class="activity-left">
+
+                        {% if activity.user.profile_image %}
+                            <img src="{{ activity.user.profile_image.url }}" class="avatar">
+                        {% else %}
+                            <div class="avatar-fallback">
+                                {{ activity.user.username|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                    <!-- MIDDLE -->
+                    <div class="activity-middle">
+
+                        <div class="user-row">
+                            <strong>{{ activity.user.username }}</strong>
+                        </div>
+
+                        <p class="activity-text">
+                            {{ activity.action }}
+                        </p>
+
+                    </div>
+
+                    <!-- RIGHT -->
+                    <div class="activity-right">
+
+                        <span class="time-badge">
+                            {{ activity.created_at|timesince }} ago
+                        </span>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">⚡</div>
+
+                    <h3>No Activity Yet</h3>
+
+                    <p>
+                        Activities will appear here when users start working on sprints.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

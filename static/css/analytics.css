@@ -1,0 +1,35 @@
+/* ==========================
+   ANALYTICS BOXES
+========================== */
+
+.analytics-grid{
+    margin-top:40px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+}
+
+.analytics-card{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:28px;
+    padding:35px;
+}
+
+.analytics-card h3{
+    margin-bottom:25px;
+}
+
+.analytics-row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:18px;
+}
+
+.analytics-row span{
+    color:#94a3b8;
+}
+
+.analytics-row strong{
+    color:white;
+}

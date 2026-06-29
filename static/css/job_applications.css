@@ -1,0 +1,169 @@
+.applications-page{
+    min-height:100vh;
+    background:#0f0524;
+    padding:50px;
+    color:white;
+}
+
+.page-header{
+    text-align:center;
+    margin-bottom:50px;
+}
+
+.page-header h1{
+    font-size:3rem;
+    font-weight:800;
+}
+
+.page-header p{
+    color:#b8b8d0;
+}
+
+
+.applications-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+    gap:30px;
+}
+
+
+.candidate-card{
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    backdrop-filter:blur(20px);
+
+    border-radius:30px;
+
+    padding:30px;
+
+    transition:.3s;
+}
+
+.candidate-card:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:0 0 30px rgba(168,85,247,.4);
+}
+
+
+.candidate-top{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    margin-bottom:30px;
+}
+
+
+.avatar{
+
+    width:70px;
+
+    height:70px;
+
+    border-radius:50%;
+
+    background:#9333ea;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:28px;
+
+    font-weight:800;
+}
+
+
+.status{
+
+    padding:8px 15px;
+
+    border-radius:15px;
+
+    font-size:14px;
+
+    display:inline-block;
+
+    margin-top:10px;
+}
+
+.status-applied{
+    background:#2563eb;
+}
+
+.status-shortlisted{
+    background:#f59e0b;
+}
+
+.status-interview{
+    background:#ec4899;
+}
+
+.status-hired{
+    background:#22c55e;
+}
+
+
+.candidate-actions{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:15px;
+}
+
+
+.candidate-actions a{
+
+    text-decoration:none;
+
+    text-align:center;
+
+    padding:14px;
+
+    border-radius:15px;
+
+    color:white;
+
+    font-weight:700;
+}
+
+
+.portfolio-btn{
+    background:#3b82f6;
+}
+
+.shortlist-btn{
+    background:#f59e0b;
+}
+
+.interview-btn{
+    background:#ec4899;
+}
+
+.hire-btn{
+    background:#22c55e;
+}
+
+
+.empty-card{
+
+    background:rgba(255,255,255,.08);
+
+    border-radius:25px;
+
+    padding:60px;
+
+    text-align:center;
+}

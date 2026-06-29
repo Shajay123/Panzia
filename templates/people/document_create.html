@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Upload Employee Document
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/document_form.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="document-create-page">
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>📂 Upload Employee Document</h1>
+
+            <p>
+
+                Securely upload contracts, certificates, ID proofs, offer letters and other employee records.
+
+            </p>
+
+        </div>
+
+        <a href="{% url 'documents' %}" class="btn-back">
+
+            ← Back to Documents
+
+        </a>
+
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <div class="form-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>📄 Document Details</h2>
+
+                    <span>
+
+                        Fields marked with * are required.
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group full-width">
+
+                    <label>
+
+                        Employee *
+
+                    </label>
+
+                    {{ form.employee }}
+
+                </div>
+
+                <div class="form-group full-width">
+
+                    <label>
+
+                        Document Title *
+
+                    </label>
+
+                    {{ form.title }}
+
+                </div>
+
+                <div class="form-group full-width">
+
+                    <label>
+
+                        Upload File *
+
+                    </label>
+
+                    <div class="upload-box">
+
+                        <div class="upload-icon">
+
+                            ☁️
+
+                        </div>
+
+                        {{ form.file }}
+
+                        <h4>
+
+                            Choose a document
+
+                        </h4>
+
+                        <p>
+
+                            Drag & Drop your file here or click to browse
+
+                        </p>
+
+                        <small>
+
+                            Supported formats: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="tips-box">
+
+                <h4>
+
+                    💡 Tips
+
+                </h4>
+
+                <ul>
+
+                    <li>Use clear document titles.</li>
+
+                    <li>Upload only official employee documents.</li>
+
+                    <li>Maximum upload size depends on your server configuration.</li>
+
+                </ul>
+
+            </div>
+
+            <div class="submit-area">
+
+                <button type="submit" class="btn-save">
+
+                    ⬆ Upload Document
+
+                </button>
+
+                <a href="{% url 'documents' %}" class="btn-cancel">
+
+                    Cancel
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,201 @@
+.candidate-page{
+    min-height:100vh;
+    background:#0f0524;
+    padding:50px;
+    color:white;
+}
+
+.page-header{
+    text-align:center;
+    margin-bottom:50px;
+}
+
+.page-header h1{
+    font-size:3rem;
+    font-weight:800;
+}
+
+.page-header p{
+    color:#b8b8d0;
+}
+
+
+.candidate-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+
+    gap:30px;
+}
+
+
+.candidate-card{
+
+    position:relative;
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    backdrop-filter:blur(20px);
+
+    border-radius:30px;
+
+    padding:35px;
+
+    transition:.3s;
+}
+
+.candidate-card:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:0 0 30px rgba(168,85,247,.5);
+}
+
+
+.rank-badge{
+
+    position:absolute;
+
+    top:20px;
+
+    right:20px;
+
+    background:#9333ea;
+
+    padding:10px 18px;
+
+    border-radius:20px;
+
+    font-weight:700;
+}
+
+
+.candidate-info{
+
+    text-align:center;
+
+    margin-bottom:30px;
+}
+
+.avatar{
+
+    width:90px;
+
+    height:90px;
+
+    border-radius:50%;
+
+    background:#7e22ce;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin:auto;
+
+    font-size:36px;
+
+    font-weight:800;
+
+    margin-bottom:20px;
+}
+
+.candidate-info h3{
+    font-weight:700;
+}
+
+
+.score-label{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-bottom:12px;
+
+    color:#ddd;
+}
+
+
+.progress-bar{
+
+    width:100%;
+
+    height:15px;
+
+    border-radius:20px;
+
+    background:rgba(255,255,255,.1);
+
+    overflow:hidden;
+}
+
+
+.progress-fill{
+
+    height:100%;
+
+    background:linear-gradient(
+        90deg,
+        #9333ea,
+        #ec4899
+    );
+
+    border-radius:20px;
+}
+
+
+.action-buttons{
+
+    margin-top:30px;
+}
+
+
+.portfolio-btn{
+
+    display:block;
+
+    text-align:center;
+
+    text-decoration:none;
+
+    padding:15px;
+
+    border-radius:18px;
+
+    color:white;
+
+    font-weight:700;
+
+    background:linear-gradient(
+        135deg,
+        #9333ea,
+        #ec4899
+    );
+}
+
+.portfolio-btn:hover{
+
+    color:white;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 0 20px rgba(168,85,247,.5);
+}
+
+
+.empty-card{
+
+    background:rgba(255,255,255,.08);
+
+    border-radius:30px;
+
+    padding:60px;
+
+    text-align:center;
+}

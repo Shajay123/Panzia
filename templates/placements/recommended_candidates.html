@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/recommended_candidates.css' %}">
+
+<div class="candidate-page">
+
+    <div class="page-header">
+
+        <h1>🤖 AI Recommended Candidates</h1>
+
+        <p>
+            Top candidates ranked intelligently for
+            <strong>{{ job.title }}</strong>
+        </p>
+
+    </div>
+
+
+    <div class="candidate-grid">
+
+        {% for item in ranked %}
+
+        <div class="candidate-card">
+
+            <div class="rank-badge">
+
+                #{{ forloop.counter }}
+
+            </div>
+
+
+            <div class="candidate-info">
+
+                <div class="avatar">
+
+                    {{ item.talent.username|first|upper }}
+
+                </div>
+
+                <h3>
+
+                    {{ item.talent.username }}
+
+                </h3>
+
+            </div>
+
+
+            <div class="match-section">
+
+                <div class="score-circle">
+
+                    <div class="inner-circle">
+
+                        <h2>
+
+                            {{ item.score }}%
+
+                        </h2>
+
+                        <span>
+
+                            Match
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="action-buttons">
+
+                <a href="{% url 'portfolio_showcase' item.talent.id %}" class="portfolio-btn">
+
+                    🌐 Portfolio
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-card">
+
+            <h3>
+
+                No Matching Candidates Found
+
+            </h3>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

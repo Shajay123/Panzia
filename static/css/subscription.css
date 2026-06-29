@@ -1,0 +1,209 @@
+.subscription-page{
+    min-height:100vh;
+    background:#0d071f;
+    padding:50px;
+    color:white;
+}
+
+.hero-section{
+    text-align:center;
+    margin-bottom:70px;
+}
+
+.hero-icon{
+    font-size:70px;
+    margin-bottom:20px;
+}
+
+.hero-section h1{
+    font-size:50px;
+    font-weight:800;
+    color:white;
+}
+
+.hero-section p{
+    color:#b5b0d5;
+    font-size:18px;
+}
+
+.plans-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:35px;
+}
+
+.plan-card{
+
+    position:relative;
+
+    background:rgba(255,255,255,.05);
+
+    backdrop-filter:blur(20px);
+
+    border:1px solid rgba(255,255,255,.1);
+
+    border-radius:30px;
+
+    padding:40px;
+
+    transition:.4s;
+}
+
+.plan-card:hover{
+
+    transform:translateY(-10px);
+
+}
+
+.popular{
+
+    border:2px solid #8b5cf6;
+
+    box-shadow:0 0 40px rgba(139,92,246,.4);
+
+}
+
+.elite{
+
+    border:2px solid #ec4899;
+
+    box-shadow:0 0 50px rgba(236,72,153,.4);
+
+}
+
+.popular-badge{
+
+    position:absolute;
+
+    top:-15px;
+
+    right:20px;
+
+    background:#8b5cf6;
+
+    padding:8px 18px;
+
+    border-radius:20px;
+
+    font-size:13px;
+
+    font-weight:700;
+
+}
+
+.plan-header{
+
+    text-align:center;
+
+}
+
+.plan-header h2{
+
+    color:#a855f7;
+
+    font-weight:700;
+
+}
+
+.plan-header h1{
+
+    font-size:55px;
+
+    font-weight:800;
+
+}
+
+.plan-header p{
+
+    color:#aaa;
+
+}
+
+.features-section{
+
+    margin-top:30px;
+
+}
+
+.feature-item{
+
+    padding:15px 0;
+
+    border-bottom:1px solid rgba(255,255,255,.08);
+
+    color:#d8d6f2;
+
+}
+
+.plan-btn{
+
+    width:100%;
+
+    display:block;
+
+    text-align:center;
+
+    padding:16px;
+
+    border-radius:15px;
+
+    text-decoration:none;
+
+    font-weight:700;
+
+    color:white;
+}
+
+.current-btn{
+
+    background:#374151;
+
+}
+
+.premium-btn{
+
+    background:#7c3aed;
+
+}
+
+.elite-btn{
+
+    background:#ec4899;
+
+}
+
+.plan-btn:hover{
+
+    color:white;
+
+}
+
+.empty-plans{
+
+    text-align:center;
+
+    width:100%;
+
+}
+
+@media(max-width:768px){
+
+.hero-section h1{
+
+font-size:36px;
+
+}
+
+.plan-header h1{
+
+font-size:45px;
+
+}
+
+.subscription-page{
+
+padding:20px;
+
+}
+
+}

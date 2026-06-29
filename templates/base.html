@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="description"
+        content="Panzia is the execution infrastructure layer connecting startups and emerging talent through structured startup execution.">
+    <meta name="keywords"
+        content="startup execution, startup talent, proof of work, execution infrastructure, startup collaboration">
+    <meta name="author" content="Panzia">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}PANZIA{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    {% block css %}
+    {% endblock %}
+</head>
+
+<body>
+
+    {% block content %}
+    {% endblock %}
+    <script>
+
+        const menuToggle = document.getElementById("menu-toggle");
+
+        const navLinks = document.getElementById("nav-links");
+
+        menuToggle.addEventListener(
+
+            "click",
+
+            function () {
+
+                navLinks.classList.toggle("active");
+
+            }
+
+        );
+
+    </script>
+    <script src="{% static 'js/script.js' %}"></script>
+
+
+    {% block scripts %}
+{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/leaderboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="leaderboard-section">
+
+    <div class="leaderboard-container">
+
+        <!-- HEADER -->
+
+        <div class="leaderboard-header">
+
+            <div>
+
+                <span class="leaderboard-badge">
+                    🏆 PANZIA LEADERBOARD
+                </span>
+
+                <h1>
+                    Execution Rankings
+                </h1>
+
+                <p>
+                    Top builders ranked by execution,
+                    reliability, collaboration and startup impact.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- TOP 3 PODIUM -->
+
+        {% if rankings %}
+
+        <div class="podium-grid">
+
+            {% for rank in rankings|slice:":3" %}
+
+            <div class="podium-card rank-{{ forloop.counter }}">
+
+                <div class="rank-circle">
+                    #{{ forloop.counter }}
+                </div>
+
+                <h3>
+                    {{ rank.user.username }}
+                </h3>
+
+                <p>
+                    🚀 {{ rank.deployment_score }}
+                    Deployment Score
+                </p>
+
+                <small>
+                    ⭐ {{ rank.overall_score }}
+                    Reputation
+                </small>
+
+                <br>
+
+                <small>
+                    🏁 {{ rank.completed_sprints }}
+                    Completed Sprints
+                </small>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% endif %}
+
+        <!-- LEADERBOARD TABLE -->
+
+        <div class="leaderboard-panel">
+
+            <h3>
+                🌍 Global Rankings
+            </h3>
+
+            <div class="leaderboard-table">
+
+                <!-- TABLE HEADER -->
+
+                <div class="table-header">
+
+                    <div>Rank</div>
+
+                    <div>Builder</div>
+
+                    <div>Deployment</div>
+
+                    <div>Reputation</div>
+
+                    <div>Sprints</div>
+
+                    <div>Tasks</div>
+
+                    <div>Tier</div>
+
+                </div>
+
+                <!-- TABLE BODY -->
+
+                {% for rank in rankings %}
+
+                <div class="table-row">
+
+                    <!-- Rank -->
+
+                    <div class="rank-number">
+
+                        {% if forloop.counter == 1 %}
+                            🥇
+                        {% elif forloop.counter == 2 %}
+                            🥈
+                        {% elif forloop.counter == 3 %}
+                            🥉
+                        {% else %}
+                            #{{ forloop.counter }}
+                        {% endif %}
+
+                    </div>
+
+                    <!-- Builder -->
+
+                    <div>
+
+                        <a href="{% url 'talent_profile' rank.user.id %}"
+                           class="profile-link">
+
+                            👤 {{ rank.user.username }}
+
+                        </a>
+
+                    </div>
+
+                    <!-- Deployment Score -->
+
+                    <div>
+
+                        🚀 {{ rank.deployment_score }}
+
+                    </div>
+
+                    <!-- Reputation Score -->
+
+                    <div>
+
+                        ⭐ {{ rank.overall_score }}
+
+                    </div>
+
+                    <!-- Completed Sprints -->
+
+                    <div>
+
+                        🏁 {{ rank.completed_sprints }}
+
+                    </div>
+
+                    <!-- Tasks Completed -->
+
+                    <div>
+
+                        ✅ {{ rank.tasks_completed }}
+
+                    </div>
+
+                    <!-- Tier -->
+
+                    <div>
+
+                        <span class="tier {{ rank.rank_tier|lower }}">
+
+                            {{ rank.rank_tier }}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-state">
+
+                    No rankings available.
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

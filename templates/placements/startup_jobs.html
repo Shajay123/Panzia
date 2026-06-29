@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/jobs.css' %}">
+
+<div class="job-page">
+
+    <div class="job-header">
+
+        <h1>
+            💼 My Jobs
+        </h1>
+
+        <p>
+            Manage all your job postings.
+        </p>
+
+    </div>
+
+    <div class="job-grid">
+
+        {% for job in jobs %}
+
+        <div class="job-card">
+
+            <h3>
+                {{ job.title }}
+            </h3>
+
+            <br>
+
+            <span class="job-badge">
+
+                {{ job.job_type }}
+
+            </span>
+
+            <br>
+            <br>
+
+            <p>
+
+                {{ job.description|truncatewords:30 }}
+
+            </p>
+
+            <br>
+
+            <hr>
+
+            <div class="job-meta">
+
+                <span>
+                    📍 {{ job.location }}
+                </span>
+
+                <span>
+                    💰 {{ job.salary }}
+                </span>
+
+            </div>
+
+            <br>
+
+            <a href="#" class="view-btn">
+
+                View Applications
+
+            </a>
+
+        </div>
+
+        {% empty %}
+
+        <div class="glass-card">
+
+            <h3>
+
+                No Jobs Created Yet
+
+            </h3>
+
+            <br>
+
+            <a href="{% url 'create_job' %}" class="view-btn">
+
+                ➕ Create Job
+
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

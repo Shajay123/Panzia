@@ -1,0 +1,116 @@
+* {
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body {
+    font-family:'Inter',sans-serif;
+    background:#050816;
+    color:white;
+    overflow-x:hidden;
+}
+
+.container {
+    width:90%;
+    max-width:1250px;
+    margin:auto;
+}
+
+html {
+    scroll-behavior:smooth;
+}
+
+body {
+    position:relative;
+}
+
+::-webkit-scrollbar {
+    width:10px;
+}
+
+::-webkit-scrollbar-track {
+    background:#0b1120;
+}
+
+::-webkit-scrollbar-thumb {
+    background:#7c3aed;
+    border-radius:20px;
+}
+
+
+
+
+/* NAVBAR */
+
+.navbar {
+    padding: 25px 0;
+    position: sticky;
+    top: 0;
+    background: rgba(5, 8, 22, 0.95);
+    backdrop-filter: blur(12px);
+    z-index: 999;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 800;
+    color: #7c3aed;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 35px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #cbd5e1;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: white;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.login-btn,
+.join-btn,
+.primary-btn,
+.secondary-btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.login-btn,
+.secondary-btn {
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+}
+
+.join-btn,
+.primary-btn {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: white;
+}
+
+.join-btn:hover,
+.primary-btn:hover {
+    transform: translateY(-2px);
+}
+
+

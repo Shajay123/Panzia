@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Attendance
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/attendance.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="attendance-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>🕒 Daily Attendance</h1>
+            <p>Monitor employee attendance in real time.</p>
+        </div>
+
+        <div class="header-actions">
+
+            <a href="{% url 'attendance_report' %}" class="btn-secondary">
+                📊 Attendance Report
+            </a>
+
+            <a href="{% url 'attendance_create' %}" class="btn-primary">
+                ➕ Mark Attendance
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Summary Cards -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card present">
+
+            <h2>{{ attendance|length }}</h2>
+
+            <p>Total Records</p>
+
+        </div>
+
+        <div class="summary-card success">
+            <h2>{{ present_count }}</h2>
+            <p>Present</p>
+        </div>
+
+        <div class="summary-card warning">
+            <h2>{{ wfh_count }}</h2>
+            <p>WFH</p>
+        </div>
+
+        <div class="summary-card danger">
+            <h2>{{ leave_count }}</h2>
+            <p>Leave</p>
+        </div>
+
+        <div class="summary-card absent">
+            <h2>{{ absent_count }}</h2>
+            <p>Absent</p>
+        </div>
+
+    </div>
+
+
+    <!-- Filters -->
+
+    <form method="GET" class="filter-bar">
+
+        <input type="text" name="employee" value="{{ request.GET.employee }}" placeholder="🔍 Search Employee">
+
+        <input type="date" name="date" value="{{ request.GET.date }}">
+
+        <select name="status">
+
+            <option value="">All Status</option>
+
+            <option value="Present">Present</option>
+
+            <option value="Absent">Absent</option>
+
+            <option value="WFH">WFH</option>
+
+            <option value="Leave">Leave</option>
+
+        </select>
+
+        <button class="btn-primary">
+
+            Filter
+
+        </button>
+
+    </form>
+
+
+    <!-- Attendance Table -->
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Date</th>
+
+                    <th>Check In</th>
+
+                    <th>Check Out</th>
+
+                    <th>Status</th>
+
+                    <th>Working Hours</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for item in attendance %}
+
+                <tr>
+
+                    <td>
+
+                        <div class="employee-info">
+
+                            {% if item.employee.profile_image %}
+
+                            <img src="{{ item.employee.profile_image.url }}">
+
+                            {% else %}
+
+                            <div class="avatar">
+
+                                {{ item.employee.user.first_name|first|default:item.employee.user.username|first }}
+
+                            </div>
+
+                            {% endif %}
+
+                            <div>
+
+                                <strong>
+
+                                    {{ item.employee.user.get_full_name|default:item.employee.user.username }}
+
+                                </strong>
+
+                                <small>
+
+                                    {{ item.employee.designation }}
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>
+
+                        {{ item.date }}
+
+                    </td>
+
+                    <td>
+
+                        {{ item.check_in|default:"--" }}
+
+                    </td>
+
+                    <td>
+
+                        {{ item.check_out|default:"--" }}
+
+                    </td>
+
+                    <td>
+
+                        {% if item.status == "Present" %}
+
+                        <span class="badge green">
+
+                            ✅ Present
+
+                        </span>
+
+                        {% elif item.status == "Absent" %}
+
+                        <span class="badge red">
+
+                            ❌ Absent
+
+                        </span>
+
+                        {% elif item.status == "WFH" %}
+
+                        <span class="badge blue">
+
+                            🏡 WFH
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge orange">
+
+                            🌴 Leave
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {{ item.working_hours }}
+
+                    </td>
+
+                    <td>
+
+                        {{ item.notes|default:"-" }}
+
+                    </td>
+
+                    <td class="action-buttons">
+
+                        <a href="{% url 'attendance_detail' item.id %}" title="View">
+
+                            👁
+
+                        </a>
+
+                        <a href="{% url 'attendance_update' item.id %}" title="Edit">
+
+                            ✏
+
+                        </a>
+
+                        <a href="{% url 'attendance_delete' item.id %}" title="Delete">
+
+                            🗑
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6">
+
+                        No attendance records found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/jobs.css' %}">
+
+<div class="job-page">
+
+    <div class="job-container">
+
+        <!-- Header -->
+
+        <div class="job-header">
+
+            <h1>
+                🚀 Apply For Opportunity
+            </h1>
+
+            <p>
+                Introduce yourself and tell the startup why you're the right fit.
+            </p>
+
+        </div>
+
+        <!-- Card -->
+
+        <div class="glass-card">
+
+            <div class="mb-4">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <h2>
+
+                            {{ job.title }}
+
+                        </h2>
+                        <br>
+
+                        <p class="text-secondary">
+
+                            {{ job.job_type }} • {{ job.location }}
+
+                        </p>
+                        <br>
+
+                    </div>
+
+                    <div>
+
+                        <span class="job-badge">
+
+                            💰 {{ job.salary }}
+
+                        </span>
+
+                        <br>
+                        <br>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="mb-4">
+
+                <h5 class="mb-3">
+
+                    About this role
+
+                </h5>
+
+                <br>
+
+                <p class="text-secondary">
+
+                    {{ job.description }}
+
+                </p>
+
+                <br>
+
+            </div>
+
+            <hr>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+
+                    <label>
+
+                        Why should the startup hire you?
+
+                    </label>
+
+                    <textarea
+                            name="message"
+                            rows="7"
+                            class="form-control"
+                            placeholder="Introduce yourself, explain your experience, projects, and why you are excited about this opportunity..."></textarea>
+
+                </div>
+
+                <div class="mt-4">
+
+                    <button class="create-btn">
+
+                        🚀 Apply Now
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

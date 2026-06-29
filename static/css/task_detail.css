@@ -1,0 +1,331 @@
+/* ===============================
+GLOBAL BACKGROUND (DASHBOARD FEEL)
+=============================== */
+
+body {
+    background:
+        radial-gradient(circle at 20% 10%, rgba(124,58,237,.25), transparent 35%),
+        radial-gradient(circle at 80% 80%, rgba(37,99,235,.25), transparent 40%),
+        #0b1220;
+    color: #e5e7eb;
+    font-family: Inter, sans-serif;
+}
+
+/* ===============================
+SECTION WRAPPER
+=============================== */
+
+.dashboard-section {
+    min-height: 100vh;
+    padding: 40px;
+}
+
+.dashboard-main {
+    max-width: 1400px;
+    margin: auto;
+}
+
+/* ===============================
+HEADER (GLASS + GRADIENT BORDER FEEL)
+=============================== */
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    padding: 35px;
+    margin-bottom: 30px;
+
+    border-radius: 28px;
+
+    background: rgba(255,255,255,.05);
+    backdrop-filter: blur(25px);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.35);
+}
+
+.dashboard-badge {
+    padding: 8px 18px;
+    border-radius: 999px;
+
+    background: linear-gradient(135deg, rgba(124,58,237,.2), rgba(37,99,235,.2));
+    color: #c4b5fd;
+
+    border: 1px solid rgba(124,58,237,.3);
+}
+
+.page-header h1 {
+    margin: 12px 0;
+    font-size: 44px;
+    font-weight: 800;
+}
+
+.page-header p {
+    color: #94a3b8;
+}
+
+/* ===============================
+BUTTON (GLOW EFFECT)
+=============================== */
+
+.primary-btn {
+    padding: 14px 26px;
+    border-radius: 16px;
+
+    text-decoration: none;
+    color: white;
+    font-weight: 600;
+
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+
+    box-shadow: 0 10px 30px rgba(124,58,237,.25);
+
+    transition: .3s;
+}
+
+.primary-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(124,58,237,.35);
+}
+
+/* ===============================
+STATS (GLASS CARDS)
+=============================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    padding: 28px;
+    border-radius: 24px;
+
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    transition: .3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(124,58,237,.3);
+}
+
+.stat-card h2 {
+    font-size: 42px;
+    margin: 10px 0;
+
+    background: linear-gradient(135deg, #7c3aed, #60a5fa);
+    
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-card p {
+    color: #94a3b8;
+}
+
+/* ===============================
+TASK GRID
+=============================== */
+
+.tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 22px;
+}
+
+/* ===============================
+TASK CARD (PREMIUM STYLE)
+=============================== */
+
+.task-card {
+    position: relative;
+    overflow: hidden;
+
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    border-radius: 26px;
+
+    padding: 26px;
+
+    transition: .35s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(124,58,237,.4);
+}
+
+/* soft glow */
+.task-glow {
+    position: absolute;
+    top: -80px;
+    right: -80px;
+
+    width: 160px;
+    height: 160px;
+
+    background: radial-gradient(circle, rgba(124,58,237,.35), transparent 60%);
+    filter: blur(20px);
+}
+
+/* HEADER */
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.task-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* DESCRIPTION */
+.task-description {
+    margin: 18px 0;
+    color: #94a3b8;
+    line-height: 1.7;
+}
+
+/* DETAILS */
+.task-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.detail-row span {
+    color: #94a3b8;
+}
+
+.detail-row strong {
+    color: #e5e7eb;
+}
+
+/* FOOTER */
+.task-footer {
+    margin-top: 20px;
+}
+
+.action-btn {
+    display: block;
+    text-align: center;
+
+    padding: 12px;
+    border-radius: 14px;
+
+    text-decoration: none;
+    color: white;
+    font-weight: 600;
+
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+
+    transition: .3s;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(37,99,235,.25);
+}
+
+/* ===============================
+STATUS PILL (CLEANER)
+=============================== */
+
+.task-status {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+}
+
+/* status colors */
+.status-pending {
+    background: rgba(245,158,11,.15);
+    color: #fbbf24;
+}
+
+.status-progress {
+    background: rgba(59,130,246,.15);
+    color: #60a5fa;
+}
+
+.status-review {
+    background: rgba(168,85,247,.15);
+    color: #c084fc;
+}
+
+.status-completed {
+    background: rgba(34,197,94,.15);
+    color: #4ade80;
+}
+
+/* ===============================
+EMPTY STATE
+=============================== */
+
+.empty-state {
+    text-align: center;
+    padding: 80px 30px;
+
+    border-radius: 28px;
+
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+.empty-icon {
+    font-size: 70px;
+    margin-bottom: 20px;
+}
+
+/* ===============================
+RESPONSIVE
+=============================== */
+
+@media(max-width:768px) {
+
+    .dashboard-section {
+        padding: 20px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-header h1 {
+        font-size: 30px;
+    }
+
+    .tasks-grid {
+        grid-template-columns: 1fr;
+    }
+}

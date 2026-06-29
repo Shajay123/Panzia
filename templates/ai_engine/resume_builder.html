@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+AI Resume Builder
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/resume_builder.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="resume-page">
+
+    <div class="resume-header">
+
+        <div>
+            <h1>🤖 AI Resume Builder</h1>
+            <p>
+                Generate startup-ready resumes automatically.
+            </p>
+        </div>
+
+        <div class="header-actions">
+
+            <a href="{% url 'download_resume_pdf' %}"
+               class="download-btn">
+
+                ⬇ Download PDF
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="resume-preview">
+
+        <pre>{{ resume }}</pre>
+
+    </div>
+
+</section>
+
+{% endblock %}

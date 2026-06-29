@@ -1,0 +1,85 @@
+.certificate-page{
+    background:#050816;
+    min-height:100vh;
+    padding:50px;
+}
+
+.certificate-card{
+    max-width:1000px;
+    margin:auto;
+    background:white;
+    color:black;
+    border-radius:20px;
+    padding:25px;
+}
+
+.certificate-border{
+    border:8px solid #7c3aed;
+    padding:60px;
+    text-align:center;
+}
+
+.certificate-border h1{
+    font-size:50px;
+    margin:30px 0;
+}
+
+.certificate-border h2{
+    margin:20px 0;
+}
+
+.certificate-meta{
+    display:flex;
+    justify-content:space-around;
+    margin-top:50px;
+}
+
+.download-section{
+    text-align:center;
+    margin-top:30px;
+}
+
+.download-btn{
+    background:#7c3aed;
+    color:white;
+    padding:15px 30px;
+    border:none;
+    border-radius:12px;
+}
+
+.recommended-section{
+    max-width:1200px;
+    margin:60px auto;
+}
+
+.recommended-section h2{
+    color:white;
+    margin-bottom:30px;
+}
+
+.sprint-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:25px;
+}
+
+.sprint-card{
+    background:#0f172a;
+    padding:25px;
+    border-radius:18px;
+}
+
+.sprint-card h3{
+    color:white;
+}
+
+.sprint-card p{
+    color:#94a3b8;
+}
+
+.apply-btn{
+    display:inline-block;
+    margin-top:15px;
+    color:white;
+    text-decoration:none;
+}

@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{% static 'css/profiles.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="profile-section">
+
+
+<div class="profile-container">
+
+    <!-- HERO SECTION -->
+
+    <div class="profile-hero">
+
+        <div class="profile-avatar">
+            {{ talent.username|first|upper }}
+        </div>
+
+        <div class="profile-info">
+
+            <h1>{{ talent.username }}</h1>
+
+            <p>
+                {{ talent.bio|default:"Builder in the PANZIA ecosystem." }}
+            </p>
+
+            <div class="profile-badges">
+
+                <span class="tier-badge
+                {% if reputation.rank_tier == 'Gold' %}
+                    gold
+                {% elif reputation.rank_tier == 'Silver' %}
+                    silver
+                {% else %}
+                    bronze
+                {% endif %}">
+                    🏆 {{ reputation.rank_tier }}
+                </span>
+
+                <span class="score-badge">
+                    ⚡ {{ reputation.overall_score }} Score
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- STATS -->
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <span>⭐</span>
+            <h2>{{ reputation.overall_score }}</h2>
+            <p>Reputation Score</p>
+        </div>
+
+        <div class="stat-card">
+            <span>🚀</span>
+            <h2>{{ reputation.deployment_score }}</h2>
+            <p>Deployment Score</p>
+        </div>
+
+        <div class="stat-card">
+            <span>✅</span>
+            <h2>{{ completed_sprints }}</h2>
+            <p>Completed Sprints</p>
+        </div>
+
+        <div class="stat-card">
+            <span>🏅</span>
+            <h2>{{ reputation.rank_tier }}</h2>
+            <p>Rank Tier</p>
+        </div>
+
+    </div>
+
+    <!-- LEARNING JOURNEY -->
+
+    <div class="panel">
+
+        <h3>📚 Learning Journey</h3>
+
+        {% for enrollment in enrollments %}
+
+        <div class="learning-card">
+
+            <div class="learning-top">
+
+                <div>
+                    <h4>{{ enrollment.course.title }}</h4>
+                    <small>{{ enrollment.course.category }}</small>
+                </div>
+
+                <div>
+
+                    {% if enrollment.completed %}
+                    <span class="completed-badge">✅ Completed</span>
+                    {% else %}
+                    <span class="learning-badge">📚 Learning</span>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="progress-area">
+
+                <div class="progress-info">
+                    <span>Progress</span>
+                    <strong>{{ enrollment.progress }}%</strong>
+                </div>
+
+            </div>
+
+            <div class="learning-meta">
+
+                <span>
+                    📅 {{ enrollment.joined_at|date:"d M Y" }}
+                </span>
+
+                <span>
+                    🎯 {{ enrollment.course.level }}
+                </span>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+            No courses enrolled yet.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- PORTFOLIO PROJECTS -->
+
+    <div class="panel">
+
+        <h3>🚀 Portfolio Projects</h3>
+
+        <div class="portfolio-grid">
+
+            {% for project in portfolio_projects %}
+
+            <div class="portfolio-card">
+
+                {% if project.image %}
+                <img src="{{ project.image.url }}" alt="{{ project.title }}">
+                {% endif %}
+
+                <div class="portfolio-content">
+
+                    <span class="project-type">
+                        {{ project.project_type }}
+                    </span>
+
+                    <h4>{{ project.title }}</h4>
+
+                    <p>
+                        {{ project.description|truncatechars:120 }}
+                    </p>
+
+                    <br>
+                    <br>
+                    
+                    <div class="portfolio-actions">
+
+                        {% if project.project_url %}
+                        <a href="{{ project.project_url }}" target="_blank">
+                            🌐 Live Demo
+                        </a>
+                        {% endif %}
+                            <br>
+                            <br>
+                        {% if project.github_url %}
+                        <a href="{{ project.github_url }}" target="_blank">
+                            💻 Github
+                        </a>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="empty-state">
+                No portfolio projects added yet.
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    <!-- CERTIFICATES -->
+
+    <div class="panel">
+
+        <h3>🏆 Certifications</h3>
+
+        {% for certificate in certificates %}
+
+        <div class="certificate-card">
+
+            <div>
+
+                <h4>
+                    {{ certificate.course.title }}
+                </h4>
+
+                <small>
+                    Certificate ID:
+                    {{ certificate.certificate_id }}
+                </small>
+
+            </div>
+
+            <a href="{% url 'certificate' certificate.course.id %}"
+               class="certificate-btn">
+
+                View Certificate
+
+            </a>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+            No certificates earned yet.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- ANALYTICS -->
+
+    <div class="analytics-grid">
+
+        <div class="analytics-card">
+
+            <h3>📊 Reputation Breakdown</h3>
+
+            <div class="analytics-row">
+                <span>Execution Score</span>
+                <strong>{{ reputation.execution_score }}</strong>
+            </div>
+
+            <div class="analytics-row">
+                <span>Reliability Score</span>
+                <strong>{{ reputation.reliability_score }}</strong>
+            </div>
+
+            <div class="analytics-row">
+                <span>Collaboration Score</span>
+                <strong>{{ reputation.collaboration_score }}</strong>
+            </div>
+
+        </div>
+
+        <div class="analytics-card">
+
+            <h3>🏆 Builder Statistics</h3>
+
+            <div class="analytics-row">
+                <span>Completed Sprints</span>
+                <strong>{{ completed_sprints }}</strong>
+            </div>
+
+            <div class="analytics-row">
+                <span>Reviews Received</span>
+                <strong>{{ reviews.count }}</strong>
+            </div>
+
+            <div class="analytics-row">
+                <span>Tier</span>
+                <strong>{{ reputation.rank_tier }}</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SPRINT PORTFOLIO -->
+
+    <div class="panel">
+
+        <h3>🚀 Sprint Journey</h3>
+
+        {% for membership in sprint_memberships %}
+
+        <div class="timeline-item">
+
+            <div class="timeline-dot"></div>
+
+            <div>
+
+                <h4>
+                    {{ membership.sprint.title }}
+                </h4>
+
+                <small>
+                    Joined {{ membership.joined_at|date:"d M Y" }}
+                </small>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+            No sprint participation yet.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- REVIEWS -->
+
+    <div class="panel">
+
+        <h3>⭐ Reviews & Ratings</h3>
+
+        {% for review in reviews %}
+
+        <div class="review-card">
+
+            <div class="review-rating">
+                ⭐ {{ review.rating }}/5
+            </div>
+
+            <p>{{ review.feedback }}</p>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+            No reviews available.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- ACTIVITY -->
+
+    <div class="panel">
+
+        <h3>⚡ Activity Timeline</h3>
+
+        {% for activity in activities %}
+
+        <div class="timeline-item">
+
+            <div class="timeline-dot"></div>
+
+            <div>
+
+                <p>{{ activity.action }}</p>
+
+                <small>
+                    {{ activity.created_at|timesince }} ago
+                </small>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+            No activity available.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</section>
+
+{% endblock %}

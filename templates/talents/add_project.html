@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Portfolio Project - PANZIA
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{% static 'css/add_project.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="project-form-page">
+
+
+    <div class="project-form-container">
+
+        <div class="project-header">
+
+            <span class="page-badge">
+                🚀 PANZIA PORTFOLIO
+            </span>
+
+            <h1>
+                Build Your Portfolio
+            </h1>
+
+            <p>
+                Showcase your sprint work, freelance projects, startup builds,
+                and personal creations.
+            </p>
+
+        </div>
+
+        <div class="project-form-card">
+
+            <form method="POST" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+
+                    <label>
+                        Project Title
+                    </label>
+
+                    {{ form.title }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Project Type
+                    </label>
+
+                    {{ form.project_type }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Description
+                    </label>
+
+                    {{ form.description }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Skills Used
+                    </label>
+
+                    {{ form.skills }}
+
+                    <small>
+                        Example: Django, Python, React, Bootstrap
+                    </small>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Live Demo URL
+                    </label>
+
+                    {{ form.project_url }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Github Repository
+                    </label>
+
+                    {{ form.github_url }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Project Thumbnail
+                    </label>
+
+                    {{ form.image }}
+
+                </div>
+
+                <div class="button-row">
+
+                    <button type="submit" class="save-btn">
+
+                        🚀 Save Project
+
+                    </button>
+
+                    <button href="{% url 'my_projects' %}" class="cancel-btn">
+
+                        ← Back to Projects
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+</section>
+
+{% endblock %}

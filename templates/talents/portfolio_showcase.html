@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{{ talent.username }} Portfolio
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/portfolio_showcase.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="showcase-page">
+
+    <!-- HERO SECTION -->
+
+    <div class="portfolio-hero">
+
+        <div class="avatar">
+            {{ talent.username|first|upper }}
+        </div>
+
+        <h1>
+            {{ talent.username }}
+        </h1>
+
+        <p class="builder-title">
+            Startup Builder • Sprint Contributor • PANZIA Talent
+        </p>
+
+        <div class="hero-badges">
+
+            <span class="tier-badge">
+                🏆 {{ reputation.rank_tier }}
+            </span>
+
+            <span class="score-badge">
+                ⚡ {{ reputation.overall_score }} Score
+            </span>
+
+        </div>
+        <br>
+        
+
+        <div class="hero-stats">
+
+            <div class="hero-stat">
+                <h3>{{ projects.count }}</h3>
+                <p>Projects</p>
+            </div>
+
+            <div class="hero-stat">
+                <h3>{{ completed_sprints }}</h3>
+                <p>Sprints</p>
+            </div>
+
+            <div class="hero-stat">
+                <h3>{{ reputation.deployment_score }}</h3>
+                <p>Deployment</p>
+            </div>
+
+            <div class="hero-stat">
+                <h3>{{ reviews.count }}</h3>
+                <p>Reviews</p>
+            </div>
+
+        </div>
+
+        <div class="profile-links">
+
+            {% if talent.talentprofile.github %}
+            <a href="{{ talent.talentprofile.github }}" target="_blank">
+                Github
+            </a>
+            {% endif %}
+
+            {% if talent.talentprofile.linkedin %}
+            <a href="{{ talent.talentprofile.linkedin }}" target="_blank">
+                LinkedIn
+            </a>
+            {% endif %}
+
+            {% if talent.talentprofile.portfolio %}
+            <a href="{{ talent.talentprofile.portfolio }}" target="_blank">
+                Portfolio
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- SKILLS -->
+
+    {% if talent.talentprofile.skills.all %}
+
+    <h2 class="section-title">
+        🚀 Core Skills
+    </h2>
+
+    <div class="skills-section">
+
+        <div class="skills">
+
+            {% for skill in talent.talentprofile.skills.all %}
+
+            <span>
+                {{ skill.name }}
+            </span>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+    <!-- PROJECTS -->
+
+    <h2 class="section-title">
+        🚀 Featured Projects
+    </h2>
+
+    <div class="projects-grid">
+
+        {% for project in projects %}
+
+        <div class="project-card">
+
+            {% if project.image %}
+            <img src="{{ project.image.url }}" alt="{{ project.title }}">
+            {% endif %}
+
+            <div class="project-content">
+
+                <div class="project-header">
+
+                    <span class="project-type">
+                        {{ project.project_type }}
+                    </span>
+
+                    {% if project.is_verified %}
+                    <span class="verified-badge">
+                        ✅ PANZIA Verified
+                    </span>
+                    {% endif %}
+
+                </div>
+
+                <h3>
+                    {{ project.title }}
+                </h3>
+
+                <p>
+                    {{ project.description|truncatechars:180 }}
+                </p>
+
+                {% if project.skill_list %}
+
+                <div class="project-skills">
+
+                    {% for skill in project.skill_list %}
+
+                    <span class="project-skill">
+                        {{ skill }}
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+                {% endif %}
+
+                <div class="project-links">
+
+                    {% if project.project_url %}
+
+                    <a href="{{ project.project_url }}"
+                       target="_blank"
+                       class="demo-btn">
+
+                        🚀 Live Demo
+
+                    </a>
+
+                    {% endif %}
+
+                    {% if project.github_url %}
+
+                    <a href="{{ project.github_url }}"
+                       target="_blank"
+                       class="github-btn">
+
+                        💻 Github
+
+                    </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-card">
+
+            <h3>
+                No Projects Yet
+            </h3>
+
+            <p>
+                This builder has not added any portfolio projects.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- SPRINT EXPERIENCE -->
+
+    <h2 class="section-title">
+        🏃 Sprint Experience
+    </h2>
+
+    <div class="experience-grid">
+
+        {% for membership in sprint_memberships %}
+
+        <div class="experience-card">
+
+            <h4>
+                {{ membership.sprint.title }}
+            </h4>
+
+            <p>
+                Joined on {{ membership.joined_at|date:"d M Y" }}
+            </p>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-card">
+
+            No sprint experience yet.
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- REVIEWS -->
+
+    <h2 class="section-title">
+        ⭐ Startup Reviews
+    </h2>
+
+    <div class="reviews-grid">
+
+        {% for review in reviews %}
+
+        <div class="review-card">
+
+            <div class="review-rating">
+                ⭐ {{ review.rating }}/5
+            </div>
+
+            <p>
+                {{ review.feedback }}
+            </p>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-card">
+
+            No reviews available.
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- PERFORMANCE METRICS -->
+
+    <h2 class="section-title">
+        📊 Performance Metrics
+    </h2>
+
+    <div class="metrics-grid">
+
+        <div class="metric-card">
+
+            <h2>
+                {{ reputation.execution_score }}
+            </h2>
+
+            <p>
+                Execution Score
+            </p>
+
+        </div>
+
+        <div class="metric-card">
+
+            <h2>
+                {{ reputation.reliability_score }}
+            </h2>
+
+            <p>
+                Reliability Score
+            </p>
+
+        </div>
+
+        <div class="metric-card">
+
+            <h2>
+                {{ reputation.collaboration_score }}
+            </h2>
+
+            <p>
+                Collaboration Score
+            </p>
+
+        </div>
+
+        <div class="metric-card">
+
+            <h2>
+                {{ reputation.deployment_score }}
+            </h2>
+
+            <p>
+                Deployment Score
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

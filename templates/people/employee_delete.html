@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Delete Employee
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="delete-container">
+
+<div class="delete-card">
+
+<div class="delete-icon">
+
+🗑
+
+</div>
+
+<h2>
+
+Delete Employee
+
+</h2>
+
+<p>
+
+Are you sure you want to permanently delete
+
+<strong>
+
+{{ employee.user.get_full_name }}
+
+</strong>
+
+?
+
+</p>
+
+<ul>
+
+<li>
+
+Employee ID :
+<strong>{{ employee.employee_id }}</strong>
+
+</li>
+
+<li>
+
+Department :
+<strong>{{ employee.department }}</strong>
+
+</li>
+
+<li>
+
+Designation :
+<strong>{{ employee.designation }}</strong>
+
+</li>
+
+</ul>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="delete-actions">
+
+<button type="submit" class="btn-delete">
+
+Delete Employee
+
+</button>
+
+<a href="{% url 'employee_detail' employee.id %}" class="btn-cancel">
+
+Cancel
+
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

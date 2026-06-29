@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/resume_preview.css' %}">
+
+<div class="dashboard-container">
+
+
+<div class="dashboard-header glass-card">
+
+    <div class="profile-section">
+
+        <div class="profile-avatar">
+
+            {{ name|first|upper }}
+
+        </div>
+
+        <div>
+
+            <h1 class="dashboard-title">
+
+                {{ name }}
+
+            </h1>
+
+            <p class="dashboard-subtitle">
+
+                {{ headline }}
+
+            </p>
+
+            <p class="bio-text">
+
+                {{ bio }}
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="stats-grid">
+
+    <div class="glass-card stat-card">
+
+        <h2>{{ reputation.overall_score|default:"0" }}</h2>
+
+        <span>Overall Score</span>
+
+    </div>
+
+    <div class="glass-card stat-card">
+
+        <h2>{{ reputation.deployment_score|default:"0" }}</h2>
+
+        <span>Deployment Score</span>
+
+    </div>
+
+    <div class="glass-card stat-card">
+
+        <h2>{{ reputation.rank_tier|default:"Beginner" }}</h2>
+
+        <span>Rank Tier</span>
+
+    </div>
+
+</div>
+
+<div class="glass-card section-card">
+
+    <h3>⚡ Skills</h3>
+
+    <div class="skills-wrapper">
+
+        {% for skill in skills %}
+
+            <span class="skill-chip">
+
+                {{ skill }}
+
+            </span>
+
+        {% empty %}
+
+            <p>No skills added.</p>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<div class="glass-card section-card">
+
+    <h3>🚀 Projects</h3>
+
+    <div class="row">
+
+        {% for project in projects %}
+
+        <div class="col-md-6 mb-4">
+
+            <div class="project-box">
+
+                <div class="project-type">
+
+                    {{ project.project_type }}
+
+                </div>
+
+                <h5>
+
+                    {{ project.title }}
+
+                </h5>
+
+                <p>
+
+                    {{ project.description }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="col-12">
+
+            <p>No Projects Found.</p>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<div class="glass-card section-card">
+
+    <h3>🏅 Certifications</h3>
+
+    {% for cert in certificates %}
+
+        <div class="timeline-item">
+
+            {{ cert.course.title }}
+
+        </div>
+
+    {% empty %}
+
+        <p>No Certifications Found.</p>
+
+    {% endfor %}
+
+</div>
+
+<div class="glass-card section-card">
+
+    <h3>🎯 Sprint Experience</h3>
+
+    {% for sprint in sprints %}
+
+        <div class="timeline-item">
+
+            {{ sprint.sprint.title }}
+
+        </div>
+
+    {% empty %}
+
+        <p>No Sprint Experience Yet.</p>
+
+    {% endfor %}
+
+</div>
+
+
+</div>
+
+{% endblock %}

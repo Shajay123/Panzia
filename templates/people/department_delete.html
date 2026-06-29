@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Department{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/department_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="delete-page">
+
+<div class="delete-card">
+
+<h1>
+
+⚠ Delete Department
+
+</h1>
+
+<p>
+
+Are you sure you want to delete
+
+<strong>
+
+{{ department.name }}
+
+</strong> ?
+
+</p>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<button class="btn-danger">
+
+🗑 Yes Delete
+
+</button>
+
+<a href="{% url 'departments' %}" class="btn-secondary">
+
+Cancel
+
+</a>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

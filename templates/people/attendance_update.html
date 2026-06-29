@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Update Attendance
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/attendance_update.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="attendance-update-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+
+            <div class="breadcrumb">
+
+                <a href="{% url 'attendance' %}">Attendance</a>
+
+                <span>/</span>
+
+                <a href="{% url 'attendance_detail' attendance.id %}">
+
+                    {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
+
+                </a>
+
+                <span>/</span>
+
+                <strong>Edit</strong>
+
+            </div>
+
+            <h1>✏ Update Attendance</h1>
+
+            <p>
+
+                Modify attendance information for this employee.
+
+            </p>
+
+        </div>
+
+        <a href="{% url 'attendance_detail' attendance.id %}" class="btn-back">
+
+            ← Back
+
+        </a>
+
+    </div>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <div class="form-card">
+
+            <div class="card-header">
+
+                <h2>🕒 Attendance Details</h2>
+
+            </div>
+
+            <div class="employee-preview">
+
+                {% if attendance.employee.profile_image %}
+
+                <img src="{{ attendance.employee.profile_image.url }}">
+
+                {% else %}
+
+                <div class="avatar">
+
+                    {{ attendance.employee.user.first_name|first|default:attendance.employee.user.username|first }}
+
+                </div>
+
+                {% endif %}
+
+                <div>
+
+                    <h3>
+
+                        {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
+
+                    </h3>
+
+                    <span>
+
+                        {{ attendance.employee.designation }}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>Date</label>
+
+                    {{ form.date }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Status</label>
+
+                    {{ form.status }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Check In</label>
+
+                    {{ form.check_in }}
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Check Out</label>
+
+                    {{ form.check_out }}
+
+                </div>
+
+                <div class="form-group full-width">
+
+                    <label>Notes</label>
+
+                    {{ form.notes }}
+
+                </div>
+
+            </div>
+
+            <!-- Information Panel -->
+
+            <div class="info-panel">
+
+                <div class="info-card">
+
+                    <div class="info-icon">
+                        📅
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Attendance Date
+                        </strong>
+
+                        <p>
+                            Update attendance for the selected working day.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="info-card">
+
+                    <div class="info-icon">
+                        ⏰
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Working Hours
+                        </strong>
+
+                        <p>
+
+                            {% if attendance.working_hours %}
+
+                            Current :
+                            {{ attendance.working_hours }}
+
+                            {% else %}
+
+                            Automatically calculated after saving.
+
+                            {% endif %}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="info-card">
+
+                    <div class="info-icon">
+                        📝
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Notes
+                        </strong>
+
+                        <p>
+
+                            Add remarks like Late Login,
+                            Early Logout,
+                            Half Day,
+                            Official Visit,
+                            etc.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+
+        <div class="action-bar">
+
+            <button type="submit" class="btn-save">
+
+                💾 Save Changes
+
+            </button>
+
+            <a href="{% url 'attendance_detail' attendance.id %}" class="btn-cancel">
+
+                Cancel
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

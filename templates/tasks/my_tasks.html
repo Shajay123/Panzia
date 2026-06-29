@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+My Tasks
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/my_tasks.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+    <div class="dashboard-main">
+
+        <!-- HEADER -->
+        <div class="page-header">
+
+            <div>
+
+                <span class="dashboard-badge">
+                    🎯 Assigned Work
+                </span>
+
+                <h1>My Tasks</h1>
+
+                <p>
+                    Track your assigned tasks, submit work, and complete your sprint contributions.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- TASK GRID -->
+
+        <div class="tasks-grid">
+
+            {% for task in tasks %}
+
+            <div class="task-card">
+
+                <div class="task-glow"></div>
+
+                <!-- HEADER -->
+                <div class="task-header">
+
+                    <h3>{{ task.title }}</h3>
+
+                    <span class="task-status status-{{ task.status }}">
+                        {{ task.get_status_display }}
+                    </span>
+
+                </div>
+
+                <!-- SPRINT INFO -->
+                <p class="task-sprint">
+                    🚀 {{ task.sprint.title }}
+                </p>
+
+                <!-- DETAILS -->
+                <div class="task-details">
+
+                    <div class="detail-row">
+                        <span>📊 Status</span>
+                        <strong>{{ task.get_status_display }}</strong>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>📅 Deadline</span>
+                        <strong>{{ task.deadline }}</strong>
+                    </div>
+
+                </div>
+
+                <!-- ACTION -->
+                <div class="task-footer">
+
+                    {% if task.status == 'pending' %}
+
+                    <a href="{% url 'submit_task' task.id %}" class="action-btn">
+                        🚀 Submit Work
+                    </a>
+
+                    {% elif task.status == 'review' %}
+
+                    <button class="action-btn" disabled>
+                        ⏳ Under Review
+                    </button>
+
+                    {% elif task.status == 'completed' %}
+
+                    <button class="action-btn" disabled>
+                        ✅ Approved
+                    </button>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">📌</div>
+
+                <h3>No Tasks Assigned</h3>
+
+                <p>You currently don't have any tasks assigned.</p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

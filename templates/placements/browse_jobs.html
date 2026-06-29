@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/jobs.css' %}">
+
+<div class="job-page">
+
+    <div class="job-container">
+
+        <!-- HERO -->
+
+        <div class="job-header">
+
+            <h1>
+                🚀 Startup Opportunities
+            </h1>
+
+            <p>
+                Discover internships, freelance projects and full-time opportunities from startups.
+            </p>
+
+        </div>
+
+
+        {% if jobs %}
+
+        <div class="job-grid">
+
+            {% for job in jobs %}
+
+            <div class="job-card">
+
+                <!-- Title -->
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <h3>
+
+                        {{ job.title }}
+
+                    </h3>
+
+                    <br>
+
+                    <span class="job-badge">
+
+                        {{ job.job_type }}
+
+                    </span>
+
+                    <br>
+
+                </div>
+
+                <br>
+
+                <!-- Description -->
+
+                <p class="text-secondary">
+
+                    {{ job.description|truncatechars:150 }}
+
+                </p>
+                <br>
+
+
+
+                <!-- Skills -->
+
+                <div class="mb-4">
+
+                    <small class="text-secondary">
+
+                        Required Skills
+
+                    </small>
+                    <br>
+                    <br>
+
+                    <div class="mt-2">
+
+                        {% for skill in job.skills.split %}
+
+                        <span class="badge bg-dark me-1">
+
+                            {{ skill }}
+
+                        </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Meta -->
+
+                <div class="job-meta mb-4">
+
+                    <div>
+
+                        📍 {{ job.location }}
+
+                    </div>
+
+                    <div>
+
+                        💰 {{ job.salary }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Footer -->
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <small class="text-secondary">
+
+                        Posted
+
+                        {{ job.created_at|date:"d M Y" }}
+
+                    </small>
+
+                    {% if job.id in applied_jobs %}
+
+                    <button class="applied-btn" disabled>
+
+                        ✓ Applied
+
+                    </button>
+
+                    {% else %}
+
+                    <a href="{% url 'apply_job' job.id %}" class="view-btn">
+
+                        Apply →
+
+                    </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <!-- Empty State -->
+
+        <div class="glass-card text-center">
+
+            <h2>
+
+                😔 No Opportunities Available
+
+            </h2>
+
+            <p class="text-secondary">
+
+                There are currently no active startup opportunities.
+
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

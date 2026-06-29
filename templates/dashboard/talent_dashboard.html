@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Talent Dashboard - PANZIA
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section">
+
+
+    <div class="dashboard-wrapper">
+
+        <!-- Sidebar -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-logo">
+                <h2>PANZIA</h2>
+                <p class="dashboard-subtitle">
+                    Talent Workspace
+                </p>
+            </div>
+
+            <ul>
+
+                <li>
+                    <a href="{% url 'talent_dashboard' %}">
+                        🏠 Dashboard
+                    </a>
+                </li>
+
+
+
+                <li class="sidebar-heading">
+                    Subscription
+                </li>
+
+                <li>
+                    <a href="{% url 'subscription_plans' %}">
+                        💎 Plan :
+                        {% if current_plan == "ELITE" %}
+                        <span style="color:#ec4899;font-weight:700;">
+                            ELITE
+                        </span>
+                        {% elif current_plan == "PRO" %}
+                        <span style="color:#a855f7;font-weight:700;">
+                            PRO
+                        </span>
+                        {% else %}
+                        <span style="color:#9ca3af;font-weight:700;">
+                            FREE
+                        </span>
+                        {% endif %}
+                    </a>
+                </li>
+
+                <li class="sidebar-heading">
+                    Learning
+                </li>
+                <li>
+                    <a href="{% url 'browse_courses' %}">
+                        Courses
+                    </a>
+                </li>
+
+                <li class="sidebar-heading">
+                    Sprint Hub
+                </li>
+
+                <li>
+                    <a href="{% url 'browse_sprints' %}">
+                        🚀 Browse Sprints
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'my_applications' %}">
+                        📨 Sprint Applications
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'my_tasks' %}">
+                        ✅ My Tasks
+                    </a>
+                </li>
+
+                <li class="sidebar-heading">
+                    Portfolio
+                </li>
+
+                <li>
+                    <a href="{% url 'talent_profile' request.user.id %}">
+                        👤 My Profile
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'my_projects' %}">
+                        📂 My Projects
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'portfolio_showcase' request.user.id %}">
+                        🌐 Public Portfolio
+                    </a>
+                </li>
+
+                <li class="sidebar-heading">
+                    AI Tools
+                </li>
+
+                <li>
+                    <a href="{% url 'ai_dashboard' %}">
+                        🤖 PANZIA AI Studio
+                    </a>
+                </li>
+
+                <li class="sidebar-heading">
+                    Placements
+                </li>
+
+                <li>
+                    <a href="{% url 'browse_jobs' %}">
+                        💼 Browse Jobs
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'my_job_applications' %}">
+                        📑 My Job Applications
+                    </a>
+                </li>
+
+                <li class="sidebar-heading">
+                    Rankings
+                </li>
+
+                <li>
+                    <a href="{% url 'leaderboard' %}">
+                        🏆 Leaderboard
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'monthly_rankings' %}">
+                        📈 Monthly Rankings
+                    </a>
+                </li>
+
+            </ul>
+
+        </aside>
+
+        <!-- Main Content -->
+
+        <main class="dashboard-main">
+
+            <!-- Header -->
+
+            <div class="dashboard-header-main">
+
+                <div>
+
+                    <span class="dashboard-badge">
+                        Talent Workspace
+                    </span>
+
+                    <h1>
+                        Welcome back, {{ request.user.username }}
+                    </h1>
+
+                    <p>
+                        Build reputation through execution and real startup work.
+                    </p>
+
+                </div>
+
+                <div class="header-actions">
+
+                    <a href="{% url 'browse_sprints' %}" class="primary-btn">
+                        🚀 Explore Sprints
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- Stats Cards -->
+
+            <div class="dashboard-cards">
+
+                <div class="dash-card">
+                    <span class="card-icon">📨</span>
+                    <h2>{{ applications }}</h2>
+                    <p>Applications</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">🚀</span>
+                    <h2>{{ joined_sprints }}</h2>
+                    <p>Joined Sprints</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">✅</span>
+                    <h2>{{ tasks }}</h2>
+                    <p>Assigned Tasks</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">🏆</span>
+                    <h2>{{ reputation.deployment_score }}</h2>
+                    <p>Deployment Score</p>
+                </div>
+
+            </div>
+
+            <!-- Analytics -->
+
+            <div class="dashboard-grid mt-4">
+
+                <!-- Reputation -->
+
+                <div class="dashboard-panel">
+
+                    <h3>🏆 Reputation Profile</h3>
+
+                    <div class="analytics-item">
+                        <span>Overall Score</span>
+                        <strong>{{ reputation.overall_score }}</strong>
+                    </div>
+
+                    <div class="analytics-item">
+                        <span>Execution Score</span>
+                        <strong>{{ reputation.execution_score }}</strong>
+                    </div>
+
+                    <div class="analytics-item">
+                        <span>Reliability Score</span>
+                        <strong>{{ reputation.reliability_score }}</strong>
+                    </div>
+
+                    <div class="analytics-item">
+                        <span>Collaboration Score</span>
+                        <strong>{{ reputation.collaboration_score }}</strong>
+                    </div>
+
+                    <div class="analytics-item">
+
+                        <span>Tier</span>
+
+                        <span class="
+                    {% if reputation.rank_tier == 'Gold' %}
+                        tier-badge gold
+                    {% elif reputation.rank_tier == 'Silver' %}
+                        tier-badge silver
+                    {% else %}
+                        tier-badge bronze
+                    {% endif %}
+                    ">
+                            {{ reputation.rank_tier }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- Builder Stats -->
+
+                <div class="dashboard-panel">
+
+                    <h3>📊 Builder Statistics</h3>
+
+                    <div class="analytics-item">
+                        <span>Completed Sprints</span>
+                        <strong>{{ reputation.completed_sprints }}</strong>
+                    </div>
+
+                    <div class="analytics-item">
+                        <span>Tasks Completed</span>
+                        <strong>{{ reputation.tasks_completed }}</strong>
+                    </div>
+
+                    <div class="analytics-item">
+                        <span>Reviews Received</span>
+                        <strong>{{ reputation.reviews_received }}</strong>
+                    </div>
+
+                    <div class="analytics-item">
+                        <span>Global Rank</span>
+                        <strong>#{{ global_rank }}</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Recent Activity -->
+
+            <div class="dashboard-panel activity-panel mt-4">
+
+                <h3>⚡ Recent Activity</h3>
+
+                {% for activity in activities %}
+
+                <div class="activity-item">
+
+                    <div class="activity-dot"></div>
+
+                    <div>
+
+                        <p>
+                            {{ activity.action }}
+                        </p>
+
+                        <small>
+                            {{ activity.created_at|timesince }} ago
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-state">
+                    No recent activity available.
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <br>
+            <!-- Quick Actions -->
+
+            <div class="dashboard-panel mt-4">
+
+                <h3>⚡ Quick Actions</h3>
+
+                <div class="quick-actions">
+
+                    <a href="{% url 'browse_sprints' %}" class="primary-btn">
+                        Browse Sprints
+                    </a>
+
+                    <a href="{% url 'my_applications' %}" class="secondary-btn">
+                        My Applications
+                    </a>
+
+                    <a href="{% url 'leaderboard' %}" class="secondary-btn">
+                        Leaderboard
+                    </a>
+
+                    <a href="{% url 'talent_profile' request.user.id %}" class="secondary-btn">
+                        My Profile
+                    </a>
+
+                    <a href="{% url 'my_tasks' %}" class="secondary-btn">
+                        ✅ My Tasks
+                    </a>
+                    </li>
+
+                </div>
+
+            </div>
+
+
+
+        </main>
+
+    </div>
+
+
+</section>
+
+{% endblock %}

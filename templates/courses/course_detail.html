@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/courses.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="course-section">
+
+    <div class="course-container">
+
+        <!-- Hero -->
+
+        <div class="course-hero">
+
+            <div class="course-left">
+
+                <span class="course-badge">
+                    📚 PANZIA LEARNING
+                </span>
+
+                <h1>
+                    {{ course.title }}
+                </h1>
+
+                <p class="course-description">
+                    {{ course.description }}
+                </p>
+
+                <div class="course-meta">
+
+                    <span>📂 {{ course.category }}</span>
+
+                    <span>🎯 {{ course.level }}</span>
+
+                    <span>⏳ {{ course.duration }}</span>
+
+                    <span>👨‍🏫 {{ course.instructor }}</span>
+
+                </div>
+
+                <a href="{% url 'enroll_course' course.id %}"
+                   class="enroll-btn">
+
+                    🚀 Enroll Now
+
+                </a>
+
+            </div>
+
+            <div class="course-right">
+
+                {% if course.thumbnail %}
+
+                <img src="{{ course.thumbnail.url }}">
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- Curriculum -->
+
+        <div class="curriculum-section">
+
+            <h2>
+
+                📚 Course Curriculum
+
+            </h2>
+
+            {% for module in course.modules.all %}
+
+            <div class="module-card">
+
+                <div class="module-header">
+
+                    <h3>
+
+                        📂 {{ module.title }}
+
+                    </h3>
+
+                </div>
+
+                <div class="lesson-list">
+
+                    {% for lesson in module.lessons.all %}
+
+                    <div class="lesson-item">
+
+                        <div>
+
+                            ▶ {{ lesson.title }}
+
+                        </div>
+
+                        <a href="{% url 'lesson_detail' lesson.id %}"
+                           class="watch-btn">
+
+                            Watch
+
+                        </a>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="empty-card">
+
+                No modules added yet.
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <!-- Bottom CTA -->
+
+        <div class="bottom-card">
+
+            <h2>
+
+                Ready to Build Real Skills?
+
+            </h2>
+
+            <p>
+
+                Complete this course, earn a certificate,
+                and unlock startup sprint opportunities.
+
+            </p>
+
+            <a href="{% url 'enroll_course' course.id %}"
+               class="enroll-btn">
+
+                🚀 Start Learning
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

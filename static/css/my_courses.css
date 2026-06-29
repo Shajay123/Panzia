@@ -1,0 +1,298 @@
+/* ===========================
+   MY COURSES
+=========================== */
+
+.courses-dashboard{
+    min-height:100vh;
+    padding:40px;
+    background:#050816;
+}
+
+.dashboard-container{
+    max-width:1400px;
+    margin:auto;
+}
+
+/* HEADER */
+
+.dashboard-header{
+    margin-bottom:40px;
+}
+
+.dashboard-badge{
+    display:inline-block;
+    padding:8px 16px;
+    border-radius:30px;
+    background:rgba(124,58,237,.15);
+    color:#a78bfa;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:15px;
+}
+
+.dashboard-header h1{
+    font-size:42px;
+    font-weight:800;
+    color:white;
+    margin-bottom:10px;
+}
+
+.dashboard-header p{
+    color:#94a3b8;
+    font-size:16px;
+}
+
+/* STATS */
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+    margin-bottom:40px;
+}
+
+.stat-card{
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,.05);
+    border-radius:20px;
+    padding:25px;
+    text-align:center;
+}
+
+.stat-card h2{
+    color:#7c3aed;
+    font-size:38px;
+    margin-bottom:8px;
+}
+
+.stat-card p{
+    color:#94a3b8;
+}
+
+/* COURSE GRID */
+
+.course-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    gap:30px;
+}
+
+.course-card{
+    background:#0f172a;
+    border-radius:24px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.05);
+    transition:.3s;
+}
+
+.course-card:hover{
+    transform:translateY(-6px);
+    border-color:#7c3aed;
+}
+
+.course-image{
+    height:220px;
+    overflow:hidden;
+}
+
+.course-image img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.course-content{
+    padding:24px;
+}
+
+.course-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.category-tag{
+    background:#1e293b;
+    color:#a78bfa;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+.completed-badge{
+    color:#22c55e;
+    font-weight:600;
+}
+
+.learning-badge{
+    color:#f59e0b;
+    font-weight:600;
+}
+
+.course-content h3{
+    color:white;
+    margin-bottom:12px;
+    font-size:24px;
+}
+
+.course-content p{
+    color:#94a3b8;
+    line-height:1.6;
+}
+
+/* PROGRESS */
+
+.progress-section{
+    margin-top:20px;
+}
+
+.progress-top{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+    color:#cbd5e1;
+    font-size:14px;
+}
+
+.progress-bar{
+    width:100%;
+    height:10px;
+    background:#1e293b;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(
+        135deg,
+        #7c3aed,
+        #2563eb
+    );
+    border-radius:20px;
+}
+
+/* META */
+
+.course-meta{
+    margin-top:18px;
+    color:#94a3b8;
+    font-size:14px;
+}
+
+/* BUTTONS */
+
+.course-actions{
+    display:flex;
+    gap:12px;
+    margin-top:25px;
+}
+
+.continue-btn,
+.certificate-btn,
+.browse-btn{
+    text-decoration:none;
+    padding:12px 18px;
+    border-radius:12px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.continue-btn{
+    background:linear-gradient(
+        135deg,
+        #7c3aed,
+        #2563eb
+    );
+    color:white;
+}
+
+.certificate-btn{
+    background:#16a34a;
+    color:white;
+}
+
+.continue-btn:hover,
+.certificate-btn:hover,
+.browse-btn:hover{
+    transform:translateY(-2px);
+}
+
+/* EMPTY */
+
+.empty-state{
+    text-align:center;
+    padding:80px 20px;
+    grid-column:1/-1;
+}
+
+.empty-icon{
+    font-size:60px;
+    margin-bottom:20px;
+}
+
+.empty-state h2{
+    color:white;
+    margin-bottom:10px;
+}
+
+.empty-state p{
+    color:#94a3b8;
+    margin-bottom:25px;
+}
+
+.browse-btn{
+    background:linear-gradient(
+        135deg,
+        #7c3aed,
+        #2563eb
+    );
+    color:white;
+}
+
+
+.progress-section{
+    margin-top:20px;
+}
+
+.progress-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+}
+
+.progress-label{
+    font-size:14px;
+    font-weight:600;
+    color:#555;
+}
+
+.progress-value{
+    background:#eef2ff;
+    color:#4f46e5;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:700;
+}
+
+.progress-track{
+    width:100%;
+    height:12px;
+    background:#e5e7eb;
+    border-radius:30px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(
+        90deg,
+        #4f46e5,
+        #06b6d4
+    );
+    border-radius:30px;
+    transition:width .8s ease;
+}

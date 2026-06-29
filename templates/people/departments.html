@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Departments
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/departments.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="departments-page">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>🏢 Departments</h1>
+
+            <p>
+
+                Manage departments inside your startup.
+
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <a href="{% url 'department_create' %}" class="btn-primary">
+
+                ➕ Add Department
+
+            </a>
+
+            <a href="#" class="btn-secondary">
+
+                📥 Export
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================= SUMMARY ================= -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card blue">
+
+            <h2>
+
+                {{ departments|length }}
+
+            </h2>
+
+            <p>Total Departments</p>
+
+        </div>
+
+        <div class="summary-card green">
+
+            <h2>
+
+                {{ employee_count }}
+
+            </h2>
+
+            <p>Total Employees</p>
+
+        </div>
+
+        <div class="summary-card orange">
+
+            <h2>
+
+                {{ active_departments }}
+
+            </h2>
+
+            <p>Active Departments</p>
+
+        </div>
+
+        <div class="summary-card purple">
+
+            <h2>
+
+                {{ startup.company_name }}
+
+            </h2>
+
+            <p>Organization</p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ================= SEARCH ================= -->
+
+    <div class="filter-card">
+
+        <input type="text" placeholder="🔍 Search Department..." id="departmentSearch">
+
+    </div>
+
+
+
+    <!-- ================= TABLE ================= -->
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+
+                    <th>Department</th>
+
+                    <th>Code</th>
+
+                    <th>Description</th>
+
+                    <th>Employees</th>
+
+                    <th>Created</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for department in departments %}
+
+                <tr>
+
+                    <td>
+
+                        {{ forloop.counter }}
+
+                    </td>
+
+                    <td>
+
+                        <strong>
+
+                            🏢 {{ department.name }}
+
+                        </strong>
+
+                    </td>
+
+                    <td>
+
+                        {{ department.code|default:"--" }}
+
+                    </td>
+
+                    <td>
+
+                        {{ department.description|default:"No description available." }}
+
+                    </td>
+
+                    <td>
+
+                        {{ department.employee_set.count }}
+
+                    </td>
+
+                    <td>
+
+                        {{ department.created_at|date:"d M Y" }}
+
+                    </td>
+
+                    <td>
+
+                        <div class="table-actions">
+
+                            <a href="{% url 'department_detail' department.id %}" class="action-btn view">
+
+                                👁
+
+                            </a>
+
+                            <a href="{% url 'department_update' department.id %}" class="action-btn edit">
+
+                                ✏
+
+                            </a>
+
+                            <a href="{% url 'department_delete' department.id %}" class="action-btn delete">
+
+                                🗑
+
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="7">
+
+                        <div class="empty-state">
+
+                            <h3>
+
+                                🏢 No Departments Yet
+
+                            </h3>
+
+                            <p>
+
+                                Create your first department to organize employees.
+
+                            </p>
+
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+
+                            <a href="{% url 'department_create' %}" class="btn-primary">
+
+                                ➕ Create Department
+
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+
+    <!-- ================= CARDS ================= -->
+
+    <div class="department-cards">
+
+        {% for department in departments %}
+
+        <div class="department-card">
+
+            <h3>
+
+                🏢 {{ department.name }}
+
+            </h3>
+
+            <p>
+
+                {{ department.description|default:"No Description" }}
+
+            </p>
+
+            <ul>
+
+                <li>
+
+                    <b>Code :</b>
+
+                    {{ department.code|default:"--" }}
+
+                </li>
+
+                <li>
+
+                    <b>Employees :</b>
+
+                    {{ department.employee_set.count }}
+
+                </li>
+
+                <li>
+
+                    <b>Created :</b>
+
+                    {{ department.created_at|date:"d M Y" }}
+
+                </li>
+
+            </ul>
+
+            <div class="card-actions">
+
+                <a href="{% url 'department_detail' department.id %}" class="btn-light">
+
+                    View
+
+                </a>
+
+                <a href="{% url 'department_update' department.id %}" class="btn-primary">
+
+                    Edit
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

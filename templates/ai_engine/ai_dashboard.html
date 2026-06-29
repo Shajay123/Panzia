@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/ai_dashboard.css' %}">
+
+<div class="ai-dashboard">
+
+    <div class="ai-hero">
+
+        <div class="ai-glow"></div>
+
+        <div class="hero-content">
+
+            <h1>
+                🤖 PANZIA AI Studio
+            </h1>
+
+            <p>
+                AI Powered Career Growth Tools
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="tools-grid">
+
+        <a href="{% url 'resume_builder' %}" class="tool-card">
+
+            <div class="tool-icon">
+                🤖
+            </div>
+
+            <h3>
+                AI Resume Builder
+            </h3>
+
+            <p>
+                Generate a professional resume automatically from your PANZIA profile.
+            </p>
+
+        </a>
+
+        <a href="{% url 'ai_resume' %}" class="tool-card">
+
+            <div class="tool-icon">
+                📄
+            </div>
+
+            <h3>
+                Resume Preview
+            </h3>
+
+            <p>
+                View your AI generated resume in a professional format.
+            </p>
+
+        </a>
+
+        <a href="{% url 'download_resume' %}" class="tool-card">
+
+            <div class="tool-icon">
+                ⬇
+            </div>
+
+            <h3>
+                Download Resume
+            </h3>
+
+            <p>
+                Download your resume as a professional PDF.
+            </p>
+
+        </a>
+
+        <a href="{% url 'career_roadmap' %}" class="tool-card">
+
+            <div class="tool-icon">
+                🚀
+            </div>
+
+            <h3>
+                Career Roadmap
+            </h3>
+
+            <p>
+                Get a personalized roadmap based on your dream career.
+            </p>
+
+        </a>
+
+        <a href="{% url 'ai_recommendations' %}" class="tool-card">
+
+            <div class="tool-icon">
+                🎯
+            </div>
+
+            <h3>
+                AI Recommendations
+            </h3>
+
+            <p>
+                Smart skill recommendations based on your profile.
+            </p>
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

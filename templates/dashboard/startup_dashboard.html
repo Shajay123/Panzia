@@ -1,0 +1,741 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block css %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block title %}
+Startup Dashboard
+{% endblock %}
+
+
+
+{% block content %}
+
+<section class="dashboard-section">
+
+
+    <div class="dashboard-wrapper">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-logo">
+                <h2>PANZIA</h2>
+                <p class="dashboard-subtitle">Startup Workspace</p>
+            </div>
+
+            <ul class="sidebar-menu">
+
+                <!-- Dashboard -->
+                <li>
+                    <a href="{% url 'startup_dashboard' %}">
+                        🏠 Dashboard
+                    </a>
+                </li>
+
+                <!-- ================= PEOPLE ================= -->
+
+                <!-- ================= PEOPLE ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        👥 People
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <!-- ================= OVERVIEW ================= -->
+
+                        <li class="submenu-heading">
+                            <span>Overview</span>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'people_dashboard' %}">
+                                📊 Dashboard
+                            </a>
+                        </li>
+
+                        <!-- ================= ORGANIZATION ================= -->
+
+                        <li class="submenu-heading">
+                            <span>Organization</span>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'departments' %}">
+                                🏢 Departments
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'holidays' %}">
+                                🎉 Holiday Calendar
+                            </a>
+                        </li>
+
+                        <!-- ================= EMPLOYEE MANAGEMENT ================= -->
+
+                        <li class="submenu-heading">
+                            <span>Employees</span>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'employees' %}">
+                                👥 Employee Directory
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'employee_create' %}">
+                                ➕ Hire / Add Employee
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'onboarding' %}">
+                                🚀 Employee Onboarding
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'documents' %}">
+                                📂 Employee Documents
+                            </a>
+                        </li>
+
+                        <!-- ================= ATTENDANCE ================= -->
+
+                        <li class="submenu-heading">
+                            <span>Attendance</span>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'attendance' %}">
+                                🕒 Daily Attendance
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'attendance_report' %}">
+                                📅 Attendance Reports
+                            </a>
+                        </li>
+
+                        <!-- ================= LEAVE ================= -->
+
+                        <li class="submenu-heading">
+                            <span>Leave</span>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'leave_dashboard' %}">
+                                🌴 Leave Dashboard
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'leave_requests' %}">
+                                📝 Leave Requests
+                            </a>
+                        </li>
+
+                        <!-- ================= PAYROLL ================= -->
+
+                        <li class="submenu-heading">
+                            <span>Payroll</span>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'payroll' %}">
+                                💰 Payroll
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'payslips' %}">
+                                🧾 Payslips
+                            </a>
+                        </li>
+
+                        <!-- ================= PERFORMANCE ================= -->
+
+                        <li class="submenu-heading">
+                            <span>Performance</span>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'performance' %}">
+                                ⭐ Performance Reviews
+                            </a>
+                        </li>
+
+                        <!-- ================= EXIT ================= -->
+
+                        <li class="submenu-heading">
+                            <span>Exit</span>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'exit_management' %}">
+                                🚪 Exit Management
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= FINANCE ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        💰 Finance
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="#">🏠 Dashboard</a></li>
+                        <li><a href="#">💵 Income</a></li>
+                        <li><a href="#">💸 Expenses</a></li>
+                        <li><a href="#">🧾 Invoices</a></li>
+                        <li><a href="#">📈 Profit & Loss</a></li>
+                        <li><a href="#">💳 Cash Flow</a></li>
+                        <li><a href="#">📥 Accounts Receivable</a></li>
+                        <li><a href="#">📤 Accounts Payable</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= COMPLIANCE ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        📑 Compliance
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="#">GST Dashboard</a></li>
+                        <li><a href="#">GSTR-1</a></li>
+                        <li><a href="#">GSTR-3B</a></li>
+                        <li><a href="#">TDS</a></li>
+                        <li><a href="#">PF / ESIC</a></li>
+                        <li><a href="#">Income Tax</a></li>
+                        <li><a href="#">MCA Filing</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= LEGAL ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        ⚖ Legal
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="#">Founder Agreements</a></li>
+                        <li><a href="#">Employment Contracts</a></li>
+                        <li><a href="#">Client Contracts</a></li>
+                        <li><a href="#">Vendor Agreements</a></li>
+                        <li><a href="#">NDA</a></li>
+                        <li><a href="#">Trademark</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= EXECUTION ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        🚀 Execution
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="{% url 'startup_sprints' %}">My Sprints</a></li>
+                        <li><a href="{% url 'create_sprint' %}">Create Sprint</a></li>
+                        <li><a href="#">Tasks</a></li>
+                        <li><a href="#">Team Members</a></li>
+                        <li><a href="#">Applications</a></li>
+                        <li><a href="#">AI Candidates</a></li>
+                        <li><a href="{% url 'activity_feed' %}">Activity Feed</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= HIRING ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        💼 Hiring
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="{% url 'create_job' %}">Create Job</a></li>
+                        <li><a href="{% url 'startup_jobs' %}">My Jobs</a></li>
+                        <li><a href="{% url 'hiring_dashboard' %}">Hiring Dashboard</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= SALES ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        📊 Sales
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="#">CRM</a></li>
+                        <li><a href="#">Leads</a></li>
+                        <li><a href="#">Clients</a></li>
+                        <li><a href="#">Revenue</a></li>
+                        <li><a href="#">Subscriptions</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= BANKING ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        🏦 Banking
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="#">Transactions</a></li>
+                        <li><a href="#">Payments</a></li>
+                        <li><a href="#">Vendor Payments</a></li>
+                        <li><a href="#">Expense Cards</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= OPERATIONS ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        📁 Operations
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="#">Assets</a></li>
+                        <li><a href="#">Vendors</a></li>
+                        <li><a href="#">Meetings</a></li>
+                        <li><a href="#">SOP Library</a></li>
+                        <li><a href="#">Notes</a></li>
+                        <li><a href="#">Calendar</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= ANALYTICS ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        📈 Analytics
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="#">Daily Snapshot</a></li>
+                        <li><a href="#">Weekly Report</a></li>
+                        <li><a href="#">Monthly Report</a></li>
+                        <li><a href="#">Runway Calculator</a></li>
+                        <li><a href="#">Burn Rate</a></li>
+                        <li><a href="#">Investor Reports</a></li>
+                        <li><a href="{% url 'leaderboard' %}">Leaderboard</a></li>
+                        <li><a href="{% url 'monthly_rankings' %}">Monthly Rankings</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= COMPANY ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        🏢 Company
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="{% url 'startup_profile_setup' %}">Startup Profile</a></li>
+
+                        <li><a href="{% url 'startup_profile' startup_profile.id %}">Public Profile</a></li>
+
+                    </ul>
+
+                </li>
+
+                <!-- ================= SUBSCRIPTION ================= -->
+
+                <li class="has-submenu">
+
+                    <a href="#" class="menu-link">
+                        💎 Subscription
+                        <span class="menu-arrow">▶</span>
+                    </a>
+
+                    <ul class="submenu">
+
+                        <li><a href="{% url 'subscription_plans' %}">Current Plan : {{ current_plan }}</a></li>
+
+                        <li><a href="{% url 'billing_history' %}">Billing History</a></li>
+
+                        <li><a href="{% url 'invoices' %}">Invoices</a></li>
+
+                        <li><a href="{% url 'payment_history' %}">Payment History</a></li>
+
+                    </ul>
+
+                </li>
+
+            </ul>
+
+        </aside>
+
+        <!-- MAIN -->
+
+        <main class="dashboard-main">
+
+            <!-- HEADER -->
+
+            <div class="dashboard-header-main">
+
+                <div class="header-left">
+
+                    <div class="company-logo-wrapper">
+
+                        {% if startup_profile.logo %}
+
+                        <img src="{{ startup_profile.logo.url }}" alt="{{ startup_profile.company_name }}"
+                            class="company-logo">
+
+                        {% else %}
+
+                        <div class="company-logo-placeholder">
+                            {{ startup_profile.company_name|first|upper }}
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div>
+
+                        <span class="dashboard-badge">
+                            Startup Workspace
+                        </span>
+
+                        <h1>
+                            {{ startup_profile.company_name }}
+                        </h1>
+
+                        <p class="tagline">
+                            {{ startup_profile.tagline }}
+                        </p>
+
+                        <div class="company-meta">
+
+                            <span>
+                                🏭 {{ startup_profile.industry }}
+                            </span>
+
+                            {% if startup_profile.website %}
+                            <span>
+                                🌐
+                                <a href="{{ startup_profile.website }}" target="_blank" class="website-link">
+                                    {{ startup_profile.website }}
+                                </a>
+                            </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="header-actions">
+
+                    <a href="{% url 'create_sprint' %}" class="primary-btn">
+                        + Create Sprint
+                    </a>
+
+                    <a href="{% url 'startup_profile_setup' %}" class="secondary-btn">
+                        Edit Profile
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- PROFILE COMPLETION -->
+
+            <div class="dashboard-panel">
+
+                <div class="panel-header">
+
+                    <h3>
+                        📋 Startup Profile Completion
+                    </h3>
+
+                    <span>
+                        {{ profile_completion }}%
+                    </span>
+
+                </div>
+
+
+            </div>
+
+            <br>
+
+            <!-- STATS -->
+
+            <div class="dashboard-cards">
+
+                <div class="dash-card">
+                    <span class="card-icon">🚀</span>
+                    <h2>{{ total_sprints }}</h2>
+                    <p>Total Sprints</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">📂</span>
+                    <h2>{{ open_sprints }}</h2>
+                    <p>Open Sprints</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">⚡</span>
+                    <h2>{{ active_sprints }}</h2>
+                    <p>Active Sprints</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">🏆</span>
+                    <h2>{{ completed_sprints }}</h2>
+                    <p>Completed</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">👥</span>
+                    <h2>{{ contributors }}</h2>
+                    <p>Contributors</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">📨</span>
+                    <h2>{{ applications }}</h2>
+                    <p>Applications</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">🧑‍💻</span>
+                    <h2>{{ accepted_members }}</h2>
+                    <p>Team Members</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">📋</span>
+                    <h2>{{ active_tasks }}</h2>
+                    <p>Active Tasks</p>
+                </div>
+
+                <div class="dash-card">
+                    <span class="card-icon">⭐</span>
+                    <h2>{{ completion_rate }}%</h2>
+                    <p>Execution Rate</p>
+                </div>
+
+            </div>
+
+            <!-- ANALYTICS -->
+
+            <div class="analytics-grid">
+
+                <div class="analytics-card">
+
+                    <h3>
+                        📈 Execution Analytics
+                    </h3>
+
+                    <div class="analytics-row">
+                        <span>Applications Received</span>
+                        <strong>{{ applications }}</strong>
+                    </div>
+
+                    <div class="analytics-row">
+                        <span>Accepted Members</span>
+                        <strong>{{ accepted_members }}</strong>
+                    </div>
+
+                    <div class="analytics-row">
+                        <span>Completion Rate</span>
+                        <strong>{{ completion_rate }}%</strong>
+                    </div>
+
+                </div>
+
+                <div class="analytics-card">
+
+                    <h3>
+                        🚀 Startup Overview
+                    </h3>
+
+                    <p>
+                        {{ startup_profile.description|truncatechars:250 }}
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- RECENT SPRINTS -->
+
+            <div class="dashboard-panel">
+
+                <div class="panel-header">
+
+                    <h3>
+                        🚀 Recent Sprints
+                    </h3>
+
+                    <a href="{% url 'startup_sprints' %}" class="glass-view-btn">
+                        View All Sprints →
+                    </a>
+
+                </div>
+
+                <br>
+
+
+                {% for sprint in recent_sprints %}
+
+                <div class="sprint-item">
+
+                    <div class="sprint-top">
+
+                        <h4>
+                            {{ sprint.title }}
+                        </h4>
+
+                        <span class="status-badge status-{{ sprint.status }}">
+                            {{ sprint.get_status_display }}
+                        </span>
+
+                    </div>
+
+                    <p>
+                        {{ sprint.category }}
+                    </p>
+
+                    <small>
+                        Deadline:
+                        {{ sprint.deadline }}
+                    </small>
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-state">
+
+                    <h4>
+                        No Sprints Yet
+                    </h4>
+
+                    <p>
+                        Create your first sprint to start building your startup.
+                    </p>
+
+                    <a href="{% url 'create_sprint' %}" class="primary-btn">
+                        Create Sprint
+                    </a>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- QUICK ACTIONS -->
+
+            <div class="quick-actions">
+
+                <a href="{% url 'create_sprint' %}" class="primary-btn">
+                    🚀 Create Sprint
+                </a>
+
+                <a href="{% url 'startup_sprints' %}" class="secondary-btn">
+                    📋 Manage Sprints
+                </a>
+
+                <a href="{% url 'startup_profile_setup' %}" class="secondary-btn">
+                    🏢 Edit Profile
+                </a>
+
+                <a href="{% url 'startup_profile' startup_profile.id %}" class="secondary-btn">
+                    👤 My Profile
+                </a>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+</section>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/sidebar.js' %}"></script>
+{% endblock %}

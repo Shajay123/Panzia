@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Update Department{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/department_form.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="department-form-page">
+
+<div class="form-card">
+
+<h1>✏ Update Department</h1>
+
+<form method="POST">
+
+{% csrf_token %}
+
+{{ form.as_p }}
+
+<button class="btn-primary">
+
+💾 Save Changes
+
+</button>
+
+<a href="{% url 'departments' %}" class="btn-secondary">
+
+Cancel
+
+</a>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}

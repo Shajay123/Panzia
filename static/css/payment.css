@@ -1,0 +1,188 @@
+.payment-page{
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:#0d071f;
+
+    padding:40px;
+
+}
+
+
+.payment-card{
+
+    width:500px;
+
+    background:rgba(255,255,255,.05);
+
+    border:1px solid rgba(255,255,255,.1);
+
+    backdrop-filter:blur(20px);
+
+    border-radius:30px;
+
+    padding:50px;
+
+    color:white;
+
+    text-align:center;
+
+    box-shadow:0 0 40px rgba(139,92,246,.2);
+
+}
+
+
+.plan-icon{
+
+    font-size:70px;
+
+    margin-bottom:20px;
+
+}
+
+
+.payment-header h1{
+
+    font-size:40px;
+
+    font-weight:800;
+
+}
+
+
+.payment-header p{
+
+    color:#b8b5d8;
+
+    margin-top:15px;
+
+}
+
+
+.plan-details{
+
+    margin-top:40px;
+
+}
+
+
+.detail-box{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    padding:18px;
+
+    margin-bottom:15px;
+
+    background:rgba(255,255,255,.05);
+
+    border-radius:15px;
+
+}
+
+
+.label{
+
+    color:#b5b0d0;
+
+}
+
+
+.value{
+
+    font-weight:700;
+
+}
+
+
+.price-box{
+
+    margin-top:30px;
+
+    font-size:55px;
+
+    font-weight:800;
+
+    color:#8b5cf6;
+
+}
+
+
+.pay-btn{
+
+    width:100%;
+
+    margin-top:40px;
+
+    border:none;
+
+    padding:18px;
+
+    border-radius:15px;
+
+    background:linear-gradient(
+            135deg,
+            #7c3aed,
+            #a855f7
+    );
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    transition:.4s;
+
+}
+
+
+.pay-btn:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 0 25px rgba(168,85,247,.5);
+
+}
+
+
+.secure-note{
+
+    margin-top:25px;
+
+    color:#9ca3af;
+
+}
+
+
+@media(max-width:768px){
+
+.payment-card{
+
+width:100%;
+
+padding:30px;
+
+}
+
+.payment-header h1{
+
+font-size:30px;
+
+}
+
+.price-box{
+
+font-size:45px;
+
+}
+
+}

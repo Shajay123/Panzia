@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+My Projects
+{% endblock %}
+
+{% block css %}
+
+<link rel="stylesheet" href="{% static 'css/my_projects.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="projects-page">
+
+
+<div class="projects-container">
+
+    <!-- HEADER -->
+
+    <div class="page-header">
+
+        <span class="badge">
+            🚀 PANZIA PORTFOLIO
+        </span>
+
+        <h1>
+            My Projects
+        </h1>
+
+        <p>
+            Showcase your sprint work, freelance work and startup projects.
+        </p>
+
+        <div class="header-actions">
+
+            <a href="{% url 'add_project' %}" class="add-btn">
+                ➕ Add Project
+            </a>
+
+            
+
+        </div>
+
+    </div>
+
+    <!-- PROJECT GRID -->
+
+    <div class="projects-grid">
+
+        {% for project in projects %}
+
+        <div class="project-card">
+
+            {% if project.image %}
+            <img src="{{ project.image.url }}"
+                 alt="{{ project.title }}">
+            {% endif %}
+
+            <div class="project-content">
+
+                <span class="project-type">
+                    {{ project.project_type }}
+                </span>
+
+                <h3>
+                    {{ project.title }}
+                </h3>
+
+                <p>
+                    {{ project.description|truncatechars:120 }}
+                </p>
+
+                <!-- SKILLS -->
+
+                <div class="skills">
+
+                    {% for skill in project.skill_list %}
+
+                    <span class="skill-badge">
+                        {{ skill }}
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+                <!-- PROJECT LINKS -->
+
+                <div class="project-links">
+
+                    {% if project.project_url %}
+                    <a href="{{ project.project_url }}"
+                       target="_blank">
+                        🌐 Live Demo
+                    </a>
+                    {% endif %}
+
+                    {% if project.github_url %}
+                    <a href="{{ project.github_url }}"
+                       target="_blank">
+                        💻 Github
+                    </a>
+                    {% endif %}
+
+                </div>
+
+                <!-- ACTION BUTTONS -->
+
+                <div class="project-actions">
+
+                    <a href="{% url 'edit_project' project.id %}"
+                       class="edit-btn">
+
+                        ✏️ Edit
+
+                    </a>
+
+                    <a href="{% url 'delete_project' project.id %}"
+                       class="delete-btn"
+                       onclick="return confirm('Are you sure you want to delete this project?')">
+
+                        🗑 Delete
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="empty-state">
+
+            <h3>
+                No Projects Yet
+            </h3>
+
+            <p>
+                Start building your portfolio by adding your first project.
+            </p>
+
+            <a href="{% url 'add_project' %}"
+               class="add-btn">
+
+                ➕ Add First Project
+
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+</section>
+
+{% endblock %}
