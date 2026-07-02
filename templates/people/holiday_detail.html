@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/holiday_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="holiday-detail-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">{{ page_icon }}</div>
+                <div>
+                    <h1>Holiday Details</h1>
+                    <p class="header-subtitle">
+                        <strong>{{ holiday.name }}</strong>
+                        · {{ holiday.date|date:"d M Y" }}
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'holiday_update' holiday.id %}" class="btn-edit">✏️ Edit</a>
+                <a href="{% url 'holiday_delete' holiday.id %}" class="btn-delete" onclick="return confirm('Delete this holiday?')">🗑️ Delete</a>
+                <a href="{% url 'holidays' %}" class="btn-back">← Back</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STATUS BANNER ================= -->
+    <div class="status-banner {% if holiday.is_upcoming %}upcoming{% else %}past{% endif %}">
+        <div class="status-banner-content">
+            <span class="status-icon">
+                {% if holiday.is_upcoming %}⏳{% else %}✅{% endif %}
+            </span>
+            <span class="status-text">
+                <strong>Status:</strong>
+                {% if holiday.is_upcoming %}
+                Upcoming - {{ holiday.date|timeuntil }}
+                {% else %}
+                Past - {{ holiday.date|timesince }} ago
+                {% endif %}
+            </span>
+            {% if holiday.is_company_holiday %}
+            <span class="status-badge company">🏢 Company Holiday</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= DETAIL GRID ================= -->
+    <div class="detail-grid">
+
+        <!-- Left Column -->
+        <div class="detail-left">
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📋 Holiday Information</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="detail-list">
+                    <div class="detail-item">
+                        <span class="detail-label">Holiday Name</span>
+                        <span class="detail-value">
+                            <span class="holiday-name">
+                                <span class="holiday-icon">🎉</span>
+                                {{ holiday.name }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Date</span>
+                        <span class="detail-value">{{ holiday.date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Day</span>
+                        <span class="detail-value">
+                            <span class="day-badge">{{ holiday.date|date:"l" }}</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Holiday Type</span>
+                        <span class="detail-value">
+                            <span class="type-badge type-{{ holiday.holiday_type|lower }}">
+                                {{ holiday.holiday_type }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Company Holiday</span>
+                        <span class="detail-value">
+                            {% if holiday.is_company_holiday %}
+                            <span class="badge company">✅ Yes</span>
+                            {% else %}
+                            <span class="badge not-company">❌ No</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created</span>
+                        <span class="detail-value">{{ holiday.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Last Updated</span>
+                        <span class="detail-value">{{ holiday.updated_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="detail-right">
+            <!-- Description -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📝 Description</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="description-box">
+                    {% if holiday.description %}
+                    <p>{{ holiday.description|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted">No description provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>⚡ Quick Actions</h3>
+                    <span class="card-badge">Actions</span>
+                </div>
+                <div class="action-grid">
+                    <a href="{% url 'holiday_update' holiday.id %}" class="action-btn edit">
+                        <span class="action-icon">✏️</span>
+                        Edit Holiday
+                    </a>
+                    <a href="{% url 'holiday_delete' holiday.id %}" class="action-btn delete" onclick="return confirm('Delete this holiday?')">
+                        <span class="action-icon">🗑️</span>
+                        Delete Holiday
+                    </a>
+                    <a href="{% url 'holidays' %}" class="action-btn back">
+                        <span class="action-icon">📅</span>
+                        View All Holidays
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete confirmation
+        document.querySelectorAll('.btn-delete, .action-btn.delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const confirmed = confirm('Are you sure you want to delete this holiday? This action cannot be undone.');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        console.log('📅 Holiday Details loaded');
+    });
+</script>
+
+{% endblock %}

@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Leave Dashboard
-{% endblock %}
+{% block title %}Leave Dashboard{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/leave_dashboard.css' %}">
@@ -11,461 +9,232 @@ Leave Dashboard
 
 {% block content %}
 
-<div class="leave-dashboard">
+<div class="leave-dashboard-page">
 
     <!-- ================= HEADER ================= -->
-
     <div class="page-header">
-
-        <div>
-
-            <h1>🌴 Leave Dashboard</h1>
-
-            <p>
-                Monitor employee leaves, approvals and leave analytics.
-            </p>
-
-        </div>
-
-        <div class="header-actions">
-
-            <a href="{% url 'leave_requests' %}" class="btn-primary">
-
-                📋 View Requests
-
-            </a>
-
-            <button class="btn-secondary">
-
-                📥 Export Report
-
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= KPI ================= -->
-
-    <div class="summary-grid">
-
-        <div class="summary-card pending">
-
-            <div class="icon">
-                ⏳
-            </div>
-
-            <div>
-
-                <h2>{{ pending }}</h2>
-
-                <p>Pending Requests</p>
-
-            </div>
-
-        </div>
-
-
-        <div class="summary-card approved">
-
-            <div class="icon">
-                ✅
-            </div>
-
-            <div>
-
-                <h2>{{ approved }}</h2>
-
-                <p>Approved</p>
-
-            </div>
-
-        </div>
-
-
-        <div class="summary-card rejected">
-
-            <div class="icon">
-                ❌
-            </div>
-
-            <div>
-
-                <h2>{{ rejected }}</h2>
-
-                <p>Rejected</p>
-
-            </div>
-
-        </div>
-
-
-        <div class="summary-card leave">
-
-            <div class="icon">
-                🌴
-            </div>
-
-            <div>
-
-                <h2>{{ on_leave_today|default:"0" }}</h2>
-
-                <p>On Leave Today</p>
-
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-    <!-- ================= QUICK ACTIONS ================= -->
-
-    <div class="dashboard-card">
-
-        <div class="card-title">
-
-            ⚡ Quick Actions
-
-        </div>
-
-        <div class="quick-grid">
-
-            <a href="{% url 'leave_requests' %}" class="quick-card">
-
-                📋
-
-                <span>
-                    Leave Requests
-                </span>
-
-            </a>
-
-            <a href="{% url 'holidays' %}" class="quick-card">
-
-                🎉
-
-                <span>
-                    Holidays
-                </span>
-
-            </a>
-
-            <a href="#" class="quick-card">
-
-                📜
-
-                <span>
-                    Leave Policy
-                </span>
-
-            </a>
-
-            <a href="#" class="quick-card">
-
-                📊
-
-                <span>
-                    Leave Report
-                </span>
-
-            </a>
-
-            <a href="#" class="quick-card">
-
-                📥
-
-                <span>
-                    Export Excel
-                </span>
-
-            </a>
-
-            <a href="#" class="quick-card">
-
-                🖨
-
-                <span>
-                    Export PDF
-                </span>
-
-            </a>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= GRID ================= -->
-
-    <div class="dashboard-grid">
-
-        <!-- Recent Requests -->
-
-        <div class="dashboard-card">
-
-            <div class="card-header">
-
-                <h3>
-
-                    📝 Recent Leave Requests
-
-                </h3>
-
-                <a href="{% url 'leave_requests' %}">
-
-                    View All →
-
-                </a>
-
-            </div>
-
-            <table>
-
-                <thead>
-
-                <tr>
-
-                    <th>Employee</th>
-
-                    <th>Leave</th>
-
-                    <th>Days</th>
-
-                    <th>Status</th>
-
-                </tr>
-
-                </thead>
-
-                <tbody>
-
-                {% for leave in recent_requests %}
-
-                <tr>
-
-                    <td>
-
-                        {{ leave.employee.user.get_full_name|default:leave.employee.user.username }}
-
-                    </td>
-
-                    <td>
-
-                        {{ leave.leave_type }}
-
-                    </td>
-
-                    <td>
-
-                        {{ leave.from_date }}
-
-                        →
-
-                        {{ leave.to_date }}
-
-                    </td>
-
-                    <td>
-
-                        {% if leave.status == "Approved" %}
-
-                        <span class="badge success">
-
-                            ✅ Approved
-
-                        </span>
-
-                        {% elif leave.status == "Rejected" %}
-
-                        <span class="badge danger">
-
-                            ❌ Rejected
-
-                        </span>
-
-                        {% else %}
-
-                        <span class="badge warning">
-
-                            ⏳ Pending
-
-                        </span>
-
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="4">
-
-                        No leave requests available.
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-        <!-- Upcoming Leaves -->
-
-        <div class="dashboard-card">
-
-            <div class="card-header">
-
-                <h3>
-
-                    📅 Upcoming Leaves
-
-                </h3>
-
-            </div>
-
-            <div class="upcoming-list">
-
-                {% for leave in upcoming_leaves %}
-
-                <div class="leave-item">
-
-                    <div>
-
-                        <strong>
-
-                            {{ leave.employee.user.get_full_name|default:leave.employee.user.username }}
-
-                        </strong>
-
-                        <small>
-
-                            {{ leave.leave_type }}
-
-                        </small>
-
-                    </div>
-
-                    <div>
-
-                        {{ leave.from_date }}
-
-                    </div>
-
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">🌴</div>
+                <div>
+                    <h1>Leave Dashboard</h1>
+                    <p class="header-subtitle">Manage and track employee leave requests across your organization.</p>
                 </div>
-
-                {% empty %}
-
-                <p>
-
-                    No upcoming leaves.
-
-                </p>
-
-                {% endfor %}
-
             </div>
-
+            <div class="header-actions">
+                <a href="{% url 'leave_requests' %}" class="btn-secondary">
+                    📋 View All Requests
+                </a>
+                <a href="{% url 'leave_create' %}" class="btn-primary">
+                    ➕ New Leave Request
+                </a>
+            </div>
         </div>
-
     </div>
 
-
-    <!-- ================= DEPARTMENT SUMMARY ================= -->
-
-    <div class="dashboard-card">
-
-        <div class="card-header">
-
-            <h3>
-
-                🏢 Department Leave Summary
-
-            </h3>
-
+    <!-- ================= STATS CARDS ================= -->
+    <div class="stats-grid">
+        <div class="stat-card pending">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-content">
+                <h2>{{ pending|default:0 }}</h2>
+                <p>Pending Requests</p>
+            </div>
+            <span class="stat-trend up">↑ 5%</span>
         </div>
+        <div class="stat-card approved">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <h2>{{ approved|default:0 }}</h2>
+                <p>Approved Requests</p>
+            </div>
+            <span class="stat-trend up">↑ 12%</span>
+        </div>
+        <div class="stat-card rejected">
+            <div class="stat-icon">❌</div>
+            <div class="stat-content">
+                <h2>{{ rejected|default:0 }}</h2>
+                <p>Rejected Requests</p>
+            </div>
+            <span class="stat-trend down">↓ 3%</span>
+        </div>
+        <div class="stat-card total">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h2>{{ total|default:0 }}</h2>
+                <p>Total Requests</p>
+            </div>
+            <span class="stat-trend neutral">→</span>
+        </div>
+    </div>
 
-        <table>
+    <!-- ================= QUICK STATS ================= -->
+    <div class="quick-stats">
+        <div class="quick-stat-card">
+            <div class="quick-stat-icon">📈</div>
+            <div class="quick-stat-content">
+                <span class="quick-stat-label">Approval Rate</span>
+                <strong class="quick-stat-value">
+                    {% if total > 0 %}
+                        {{ approved|default:0|divisibleby:total|floatformat:0 }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+        <div class="quick-stat-card">
+            <div class="quick-stat-icon">⏱️</div>
+            <div class="quick-stat-content">
+                <span class="quick-stat-label">Average Processing Time</span>
+                <strong class="quick-stat-value">2.5 days</strong>
+            </div>
+        </div>
+        <div class="quick-stat-card">
+            <div class="quick-stat-icon">👥</div>
+            <div class="quick-stat-content">
+                <span class="quick-stat-label">Active Requests</span>
+                <strong class="quick-stat-value">{{ pending|default:0 }}</strong>
+            </div>
+        </div>
+    </div>
 
-            <thead>
+    <!-- ================= RECENT REQUESTS ================= -->
+    <div class="recent-card">
+        <div class="card-header">
+            <h3>📋 Recent Leave Requests</h3>
+            <a href="{% url 'leave_requests' %}" class="view-all">View All →</a>
+        </div>
+        <div class="table-responsive">
+            <table class="recent-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Leave Type</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in recent_requests %}
+                    <tr>
+                        <td>
+                            <div class="employee-info">
+                                {% if request.employee.profile_image %}
+                                <img src="{{ request.employee.profile_image.url }}" alt="{{ request.employee.user.get_full_name }}" class="employee-avatar">
+                                {% else %}
+                                <div class="employee-avatar">
+                                    {{ request.employee.user.first_name|first|default:request.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ request.employee.user.get_full_name|default:request.employee.user.username }}</strong>
+                                    <small>{{ request.employee.designation|default:"-" }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="leave-type-badge">{{ request.leave_type }}</span>
+                        </td>
+                        <td>{{ request.from_date|date:"d M Y" }}</td>
+                        <td>{{ request.to_date|date:"d M Y" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ request.status|lower }}">
+                                <span class="status-dot"></span>
+                                {{ request.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'leave_detail' request.id %}" class="action-btn view" title="View">👁️</a>
+                                <a href="{% url 'leave_update' request.id %}" class="action-btn edit" title="Edit">✏️</a>
+                                {% if request.status == "Pending" %}
+                                <a href="{% url 'leave_approve' request.id %}" class="action-btn approve" title="Approve">✅</a>
+                                <a href="{% url 'leave_reject' request.id %}" class="action-btn reject" title="Reject">❌</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon">📋</div>
+                                <h4>No Leave Requests</h4>
+                                <p>No recent leave requests to display.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-            <tr>
-
-                <th>Department</th>
-
-                <th>Total Employees</th>
-
-                <th>On Leave</th>
-
-                <th>Availability</th>
-
-            </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% for dept in department_summary %}
-
-            <tr>
-
-                <td>
-
-                    {{ dept.name }}
-
-                </td>
-
-                <td>
-
-                    {{ dept.total }}
-
-                </td>
-
-                <td>
-
-                    {{ dept.leave }}
-
-                </td>
-
-                <td>
-
-                    {{ dept.available }}%
-
-                </td>
-
-            </tr>
-
-            {% empty %}
-
-            <tr>
-
-                <td colspan="4">
-
-                    No department statistics available.
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
+    <!-- ================= LEAVE TYPE DISTRIBUTION ================= -->
+    <div class="distribution-card">
+        <div class="card-header">
+            <h3>📊 Leave Type Distribution</h3>
+        </div>
+        <div class="distribution-grid">
+            <div class="distribution-item">
+                <div class="distribution-bar" style="width: 40%; background: #3b6aff;"></div>
+                <div class="distribution-info">
+                    <span class="distribution-label">Annual Leave</span>
+                    <span class="distribution-value">12</span>
+                </div>
+            </div>
+            <div class="distribution-item">
+                <div class="distribution-bar" style="width: 25%; background: #8b5cf6;"></div>
+                <div class="distribution-info">
+                    <span class="distribution-label">Sick Leave</span>
+                    <span class="distribution-value">8</span>
+                </div>
+            </div>
+            <div class="distribution-item">
+                <div class="distribution-bar" style="width: 20%; background: #f59e0b;"></div>
+                <div class="distribution-info">
+                    <span class="distribution-label">Casual Leave</span>
+                    <span class="distribution-value">6</span>
+                </div>
+            </div>
+            <div class="distribution-item">
+                <div class="distribution-bar" style="width: 15%; background: #22c55e;"></div>
+                <div class="distribution-info">
+                    <span class="distribution-label">Other</span>
+                    <span class="distribution-value">4</span>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // ACTION BUTTON CONFIRMATIONS
+        // ============================================
+        document.querySelectorAll('.action-btn.approve, .action-btn.reject').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const action = this.classList.contains('approve') ? 'approve' : 'reject';
+                const confirmed = confirm(`Are you sure you want to ${action} this leave request?`);
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // ============================================
+        // AUTO-REFRESH (Optional)
+        // ============================================
+        // Refresh pending count every 30 seconds
+        // setInterval(() => { location.reload(); }, 30000);
+
+        console.log('🌴 Leave Dashboard initialized');
+    });
+</script>
 
 {% endblock %}

@@ -1,0 +1,422 @@
+<!-- people/includes/startup_banner.html -->
+
+{% if is_super_admin %}
+    <!-- SUPER ADMIN BANNER -->
+    <div class="current-startup-banner">
+        <div class="banner-left">
+            <span class="banner-icon">🏢</span>
+            <span class="banner-text">
+                Viewing:
+                {% if current_startup %}
+                <strong>{{ current_startup.company_name }}</strong>
+                <span class="banner-employees">({{ current_startup.get_employee_count }} employees)</span>
+                {% else %}
+                <strong>All Startups</strong>
+                <span class="banner-employees">({{ total_employees|default:0 }} total employees)</span>
+                {% endif %}
+            </span>
+        </div>
+        <div class="banner-right">
+            <div class="banner-actions">
+                <!-- Startup Switcher Dropdown -->
+                <div class="startup-switcher-dropdown">
+                    <button class="banner-switch-btn" onclick="toggleStartupDropdown()">
+                        🔄 Switch Startup
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="startup-dropdown-menu" id="startupDropdown">
+                        <div class="dropdown-header">
+                            <span>Select Startup</span>
+                            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="dropdown-reset">
+                                ↺ Reset
+                            </a>
+                        </div>
+                        <div id="startupList">
+                            <div class="loading-spinner">⏳ Loading...</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="banner-reset"
+                    title="Reset to view all startups">
+                    ↺ Reset
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Super Admin Styles -->
+    <style>
+        .current-startup-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 1.25rem;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(236, 72, 153, 0.05));
+            border-radius: 0.75rem;
+            border: 1px solid rgba(167, 139, 250, 0.08);
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .banner-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+        .banner-icon {
+            font-size: 1.2rem;
+        }
+        .banner-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        .banner-text strong {
+            color: #e8edf5;
+            font-weight: 600;
+        }
+        .banner-employees {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-left: 0.25rem;
+        }
+        .banner-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        .banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .banner-switch-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            background: rgba(167, 139, 250, 0.06);
+            color: #a78bfa;
+            border: 1px solid rgba(167, 139, 250, 0.08);
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .banner-switch-btn:hover {
+            background: rgba(167, 139, 250, 0.12);
+            border-color: rgba(167, 139, 250, 0.15);
+        }
+        .dropdown-arrow {
+            font-size: 0.5rem;
+            margin-left: 0.1rem;
+        }
+        .banner-reset {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            background: rgba(167, 139, 250, 0.06);
+            transition: all 0.2s ease;
+        }
+        .banner-reset:hover {
+            background: rgba(167, 139, 250, 0.12);
+            color: #a78bfa;
+        }
+        .startup-switcher-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .startup-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            min-width: 250px;
+            max-width: 320px;
+            background: #1a1035;
+            border-radius: 1rem;
+            border: 1px solid rgba(167, 139, 250, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .startup-dropdown-menu.show {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+        .dropdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+            font-weight: 600;
+            color: #e8edf5;
+            background: #1a1035;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .dropdown-reset {
+            color: #a78bfa;
+            font-size: 0.75rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .dropdown-reset:hover {
+            text-decoration: underline;
+        }
+        .startup-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            color: #d6e0f0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(167, 139, 250, 0.02);
+            cursor: pointer;
+        }
+        .startup-item:hover {
+            background: rgba(167, 139, 250, 0.04);
+            color: #e8edf5;
+        }
+        .startup-item.active {
+            background: rgba(167, 139, 250, 0.06);
+            color: #a78bfa;
+        }
+        .startup-item .startup-count {
+            margin-left: auto;
+            font-size: 0.7rem;
+            color: #64748b;
+            background: rgba(167, 139, 250, 0.04);
+            padding: 0.05rem 0.5rem;
+            border-radius: 1rem;
+        }
+        .loading-spinner {
+            padding: 1rem;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .startup-dropdown-menu::-webkit-scrollbar { width: 4px; }
+        .startup-dropdown-menu::-webkit-scrollbar-track { background: transparent; }
+        .startup-dropdown-menu::-webkit-scrollbar-thumb { background: #2d1b4a; border-radius: 2px; }
+        @media (max-width: 768px) {
+            .current-startup-banner {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 0.6rem 1rem;
+                gap: 0.5rem;
+            }
+            .banner-right { justify-content: flex-start; }
+            .banner-actions { flex-wrap: wrap; }
+            .startup-dropdown-menu {
+                right: -20px;
+                min-width: 200px;
+            }
+        }
+    </style>
+
+    <script>
+        (function() {
+            var switchUrl = "{% url 'switch_startup' 0 %}".replace('/0/', '/');
+            var resetUrl = "{% url 'reset_startup_view' %}?next={{ request.path }}";
+            var apiUrl = "{% url 'api_startup_list' %}";
+            var currentPath = "{{ request.path }}";
+            var currentStartupId = "{{ current_startup.id|default:'null' }}";
+            if (currentStartupId === 'null' || currentStartupId === '') {
+                currentStartupId = null;
+            } else {
+                currentStartupId = parseInt(currentStartupId);
+            }
+
+            window.toggleStartupDropdown = function() {
+                var dropdown = document.getElementById('startupDropdown');
+                var isOpen = dropdown.classList.contains('show');
+                document.querySelectorAll('.startup-dropdown-menu').forEach(function(d) {
+                    d.classList.remove('show');
+                });
+                if (!isOpen) {
+                    dropdown.classList.add('show');
+                    loadStartups();
+                }
+            };
+
+            function loadStartups() {
+                var container = document.getElementById('startupList');
+                if (container.dataset.loaded) return;
+                container.innerHTML = '<div class="loading-spinner">⏳ Loading startups...</div>';
+                fetch(apiUrl)
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (data.startups && data.startups.length > 0) {
+                            var html = '';
+                            data.startups.forEach(function(startup) {
+                                var isActive = (currentStartupId === startup.id) ? 'active' : '';
+                                var switchUrlWithId = switchUrl.replace('/0/', '/' + startup.id + '/') + '?next=' + encodeURIComponent(currentPath);
+                                html += `<a href="${switchUrlWithId}" class="startup-item ${isActive}" onclick="event.stopPropagation();">
+                                    🏢 ${startup.company_name}
+                                    <span class="startup-count">${startup.employee_count || 0} employees</span>
+                                </a>`;
+                            });
+                            container.innerHTML = html;
+                            container.dataset.loaded = true;
+                        } else {
+                            container.innerHTML = '<div class="loading-spinner">No startups available</div>';
+                        }
+                    })
+                    .catch(function() {
+                        container.innerHTML = '<div class="loading-spinner" style="color: #f87171;">Failed to load startups</div>';
+                    });
+            }
+
+            document.addEventListener('click', function(event) {
+                var dropdown = document.getElementById('startupDropdown');
+                var btn = document.querySelector('.banner-switch-btn');
+                if (dropdown && btn && !dropdown.contains(event.target) && !btn.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    var dropdown = document.getElementById('startupDropdown');
+                    if (dropdown) dropdown.classList.remove('show');
+                }
+            });
+        })();
+    </script>
+
+{% elif employee and employee.startup %}
+    <!-- EMPLOYEE STARTUP BANNER -->
+    <div class="employee-startup-banner">
+        <div class="banner-content">
+            <div class="banner-left">
+                {% if employee.startup.logo %}
+                <img src="{{ employee.startup.logo.url }}" alt="{{ employee.startup.company_name }}" class="banner-logo">
+                {% else %}
+                <div class="banner-logo-placeholder">
+                    {{ employee.startup.company_name|first|upper }}
+                </div>
+                {% endif %}
+                <div class="banner-info">
+                    <h2>{{ employee.startup.company_name }}</h2>
+                    <p>{{ employee.startup.tagline|default:"Your Startup" }}</p>
+                    <span class="banner-role">{{ employee.get_designation_display|default:"Employee" }}</span>
+                </div>
+            </div>
+            <div class="banner-right">
+                <span class="banner-employee-id">ID: {{ employee.employee_id|default:"N/A" }}</span>
+                <span class="banner-department">{{ employee.department.name|default:"No Department" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .employee-startup-banner {
+            background: linear-gradient(135deg, #1a1035 0%, #2d1b69 100%);
+            border-radius: 12px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(26, 16, 53, 0.3);
+        }
+        .banner-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .banner-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .banner-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .banner-logo-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .banner-info h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: white;
+        }
+        .banner-info p {
+            margin: 2px 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: white;
+        }
+        .banner-role {
+            display: inline-block;
+            background: rgba(124, 58, 237, 0.6);
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: white;
+            margin-top: 4px;
+        }
+        .banner-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        .banner-employee-id {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .banner-department {
+            font-size: 0.85rem;
+            background: rgba(124, 58, 237, 0.4);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        @media (max-width: 768px) {
+            .banner-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .banner-right {
+                align-items: flex-start;
+                width: 100%;
+            }
+        }
+    </style>
+
+{% endif %}

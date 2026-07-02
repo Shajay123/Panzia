@@ -1,92 +1,576 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Update Employee
-{% endblock %}
+{% block title %}Update Employee - {{ employee.user.get_full_name|default:employee.user.username }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/employee_update.css' %}">
+<style>
+    /* ===== ADDITIONAL STYLES ===== */
+    .timing-section {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-top: 16px;
+    }
+    
+    .timing-section .timing-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .timing-section .timing-header h4 {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #a78bfa;
+    }
+    
+    .timing-section .timing-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .timing-section .timing-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .timing-section .timing-item label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .timing-section .timing-item .timing-value {
+        font-size: 0.95rem;
+        color: #e8edf5;
+        font-weight: 500;
+        padding: 6px 12px;
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 6px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+    
+    .timing-section .timing-item .timing-value .not-set {
+        color: #64748b;
+        font-weight: 400;
+    }
+    
+    .timing-section .timing-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .timing-section .timing-actions .btn-timing {
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .timing-section .timing-actions .btn-timing-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+    }
+    
+    .timing-section .timing-actions .btn-timing-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+    
+    .timing-section .timing-actions .btn-timing-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+    
+    .timing-section .timing-actions .btn-timing-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+    
+    .status-badge-timing {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+    
+    .status-badge-timing.configured {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+    
+    .status-badge-timing.not-configured {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .timing-section .timing-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="employee-create-page container">
+<div class="employee-update-page">
 
-<div class="page-header">
+    <!-- ================= PAGE HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">✏️</div>
+                <div>
+                    <h1>Update Employee</h1>
+                    <p class="header-subtitle">
+                        Editing <strong>{{ employee.user.get_full_name|default:employee.user.username }}</strong>
+                        <span class="employee-code">({{ employee.employee_id }})</span>
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'employee_detail' employee.id %}" class="btn-back">
+                    ← Back to Profile
+                </a>
+            </div>
+        </div>
+    </div>
 
-<div>
+    <!-- ================= FORM ================= -->
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
 
-<h1>✏ Update Employee</h1>
+        <!-- ====== ERROR MESSAGES ====== -->
+        {% if form.errors or messages %}
+        <div class="error-alert">
+            <div class="error-alert-header">
+                <span class="error-icon">⚠️</span>
+                <h3>Form Submission Issues</h3>
+            </div>
+            <ul class="error-list">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
 
-<p>
-Modify employee information.
-</p>
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <li>{{ message }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="form-layout">
+
+            <!-- ====== LEFT COLUMN ====== -->
+            <div class="form-left">
+
+                <!-- Employee Information -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>👤 Employee Information</h2>
+                        <span class="card-badge">Required</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="{{ form.employee_id.id_for_label }}" class="form-label required">Employee ID</label>
+                            {{ form.employee_id }}
+                            {% if form.employee_id.errors %}
+                                <div class="field-error">{{ form.employee_id.errors.0 }}</div>
+                            {% endif %}
+                            <span class="help-text">Unique identifier for the employee.</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.department.id_for_label }}" class="form-label required">Department</label>
+                            {{ form.department }}
+                            {% if form.department.errors %}
+                                <div class="field-error">{{ form.department.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.designation.id_for_label }}" class="form-label required">Designation</label>
+                            {{ form.designation }}
+                            {% if form.designation.errors %}
+                                <div class="field-error">{{ form.designation.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.employment_type.id_for_label }}" class="form-label">Employment Type</label>
+                            {{ form.employment_type }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.status.id_for_label }}" class="form-label required">Status</label>
+                            {{ form.status }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.hire_source.id_for_label }}" class="form-label">Hire Source</label>
+                            {{ form.hire_source }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.work_mode.id_for_label }}" class="form-label required">Work Mode</label>
+                            {{ form.work_mode }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employment Timeline -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>📅 Employment Timeline</h2>
+                        <span class="card-badge">Optional</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="{{ form.joining_date.id_for_label }}" class="form-label">Joining Date</label>
+                            {{ form.joining_date }}
+                            {% if form.joining_date.errors %}
+                                <div class="field-error">{{ form.joining_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.probation_end.id_for_label }}" class="form-label">Probation End</label>
+                            {{ form.probation_end }}
+                            {% if form.probation_end.errors %}
+                                <div class="field-error">{{ form.probation_end.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.confirmation_date.id_for_label }}" class="form-label">Confirmation Date</label>
+                            {{ form.confirmation_date }}
+                            {% if form.confirmation_date.errors %}
+                                <div class="field-error">{{ form.confirmation_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== TIMING CONFIGURATION ====== -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>⏰ Attendance Timing</h2>
+                        <span class="card-badge">
+                            {% if employee.default_check_in %}
+                                <span class="status-badge-timing configured">● Configured</span>
+                            {% else %}
+                                <span class="status-badge-timing not-configured">● Not Configured</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="timing-section">
+                        <div class="timing-header">
+                            <h4>Current Timing Configuration</h4>
+                            <span class="status-badge-timing {% if employee.default_check_in %}configured{% else %}not-configured{% endif %}">
+                                {% if employee.default_check_in %}✅ Active{% else %}⏳ Pending{% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="timing-grid">
+                            <div class="timing-item">
+                                <label>Default Check In</label>
+                                <div class="timing-value">
+                                    {% if employee.default_check_in %}
+                                        {{ employee.default_check_in|time:"H:i" }}
+                                    {% else %}
+                                        <span class="not-set">Not set</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="timing-item">
+                                <label>Default Check Out</label>
+                                <div class="timing-value">
+                                    {% if employee.default_check_out %}
+                                        {{ employee.default_check_out|time:"H:i" }}
+                                    {% else %}
+                                        <span class="not-set">Not set</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="timing-item">
+                                <label>Work Start</label>
+                                <div class="timing-value">
+                                    {% if employee.work_start_time %}
+                                        {{ employee.work_start_time|time:"H:i" }}
+                                    {% else %}
+                                        <span class="not-set">Not set</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="timing-item">
+                                <label>Work End</label>
+                                <div class="timing-value">
+                                    {% if employee.work_end_time %}
+                                        {{ employee.work_end_time|time:"H:i" }}
+                                    {% else %}
+                                        <span class="not-set">Not set</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="timing-item">
+                                <label>Grace Period</label>
+                                <div class="timing-value">
+                                    {% if employee.grace_period_minutes %}
+                                        {{ employee.grace_period_minutes }} minutes
+                                    {% else %}
+                                        <span class="not-set">15 minutes (default)</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="timing-item">
+                                <label>Shift</label>
+                                <div class="timing-value">
+                                    {% if employee.shift %}
+                                        {{ employee.get_shift_display }}
+                                    {% else %}
+                                        <span class="not-set">Not set</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="timing-actions">
+                            <a href="{% url 'employee_timing_config' employee.id %}" class="btn-timing btn-timing-primary">
+                                ⏰ Configure Timings
+                            </a>
+                            <a href="{% url 'employee_timing_config' employee.id %}" class="btn-timing btn-timing-secondary">
+                                📋 View Full Settings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ====== RIGHT COLUMN ====== -->
+            <div class="form-right">
+
+                <!-- Profile Image -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>🖼 Profile Image</h2>
+                        <span class="card-badge">Optional</span>
+                    </div>
+                    <div class="form-group">
+                        <div class="current-image">
+                            {% if employee.profile_image %}
+                            <img src="{{ employee.profile_image.url }}" alt="{{ employee.user.get_full_name }}" class="current-avatar">
+                            <span class="current-label">Current Image</span>
+                            {% else %}
+                            <div class="current-avatar avatar-placeholder">
+                                {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+                            </div>
+                            <span class="current-label">No Image</span>
+                            {% endif %}
+                        </div>
+                        <div class="file-upload-wrapper">
+                            {{ form.profile_image }}
+                            <label for="{{ form.profile_image.id_for_label }}" class="file-upload-label">
+                                <span class="upload-icon">📤</span>
+                                <span class="upload-text">Choose New Image</span>
+                            </label>
+                            <span class="help-text">Upload a new profile picture (JPEG, PNG, GIF).</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>📞 Contact</h2>
+                        <span class="card-badge">Optional</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
+                        {{ form.phone }}
+                        <span class="help-text">Primary contact number.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">Emergency Contact</label>
+                        {{ form.emergency_contact }}
+                        <span class="help-text">Emergency contact number.</span>
+                    </div>
+                </div>
+
+                <!-- Payroll -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>💰 Payroll</h2>
+                        <span class="card-badge">Optional</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.salary.id_for_label }}" class="form-label">Salary</label>
+                        {{ form.salary }}
+                        {% if form.salary.errors %}
+                            <div class="field-error">{{ form.salary.errors.0 }}</div>
+                        {% endif %}
+                        <span class="help-text">Monthly or annual salary amount.</span>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-wrapper">
+                            {{ form.is_payroll_enabled }}
+                            <label for="{{ form.is_payroll_enabled.id_for_label }}" class="checkbox-label">
+                                <span class="checkbox-text">Enable Payroll</span>
+                                <span class="checkbox-help">Toggle payroll processing for this employee.</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>📝 Notes</h2>
+                        <span class="card-badge">Optional</span>
+                    </div>
+                    <div class="form-group">
+                        {{ form.notes }}
+                        <span class="help-text">Any additional notes about the employee.</span>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>⚡ Quick Actions</h2>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <a href="{% url 'employee_timing_config' employee.id %}" class="btn-timing btn-timing-primary" style="justify-content: center; width: 100%;">
+                            ⏰ Configure Attendance Timings
+                        </a>
+                        <a href="{% url 'attendance_create' %}?employee={{ employee.id }}" class="btn-timing btn-timing-secondary" style="justify-content: center; width: 100%;">
+                            📝 Mark Attendance
+                        </a>
+                        <a href="{% url 'employee_portal_dashboard' %}" target="_blank" class="btn-timing btn-timing-secondary" style="justify-content: center; width: 100%;">
+                            🚀 Open Employee Portal
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary btn-save">
+                        💾 Update Employee
+                    </button>
+                    <a href="{% url 'employee_detail' employee.id %}" class="btn-secondary">
+                        Cancel
+                    </a>
+                    <a href="#" class="btn-light" onclick="window.location.reload();">
+                        🔄 Reset Form
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
 
 </div>
 
-<a href="{% url 'employee_detail' employee.id %}" class="btn-back">
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // FILE INPUT LABEL UPDATE
+        // ============================================
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                const label = this.closest('.file-upload-wrapper').querySelector('.upload-text');
+                if (this.files && this.files[0]) {
+                    label.textContent = this.files[0].name;
+                } else {
+                    label.textContent = 'Choose New Image';
+                }
+            });
+        }
 
-← Back
+        // ============================================
+        // CONFIRMATION ON CANCEL IF DIRTY
+        // ============================================
+        let formChanged = false;
+        const form = document.querySelector('form');
 
-</a>
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
 
-</div>
+        const cancelBtn = document.querySelector('.btn-secondary');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
 
-<form method="POST" enctype="multipart/form-data">
+        // ============================================
+        // KEYBOARD SHORTCUT: Ctrl+Enter to submit
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement && activeElement.tagName !== 'BUTTON') {
+                    e.preventDefault();
+                    form.querySelector('button[type="submit"]').click();
+                }
+            }
+        });
 
-{% csrf_token %}
+        // ============================================
+        // AUTO-FOCUS ON FIRST FIELD
+        // ============================================
+        const firstInput = document.querySelector('input:not([type="file"]), select, textarea');
+        if (firstInput) {
+            firstInput.focus();
+        }
 
-<div class="form-layout">
+        // ============================================
+        // TIMING SECTION - SHOW/HIDE DETAILS
+        // ============================================
+        const timingSection = document.querySelector('.timing-section');
+        if (timingSection) {
+            console.log('⏰ Timing configuration section loaded');
+            const hasTiming = '{{ employee.default_check_in|yesno:"true,false" }}' === 'true';
+            console.log(`Timing configured: ${hasTiming}`);
+        }
 
-<div class="form-card">
-
-<h2>Employee Information</h2>
-
-<div class="form-grid">
-
-{% for field in form %}
-
-<div class="form-group">
-
-<label>{{ field.label }}</label>
-
-{{ field }}
-
-{% if field.errors %}
-<div class="text-danger mt-1">
-{{ field.errors }}
-</div>
-{% endif %}
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-<div class="submit-area">
-
-<button type="submit" class="btn-save">
-
-💾 Update Employee
-
-</button>
-
-<a href="{% url 'employees' %}" class="btn-cancel">
-
-Cancel
-
-</a>
-
-</div>
-
-</div>
-
-</form>
-
-</div>
+        console.log('✏️ Employee Update page loaded');
+        console.log(`👤 Employee: {{ employee.user.get_full_name }}`);
+        console.log(`📋 Employee ID: {{ employee.employee_id }}`);
+    });
+</script>
 
 {% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-portal">
+    <div class="portal-header">
+        <div class="portal-header-content">
+            <div class="portal-header-left">
+                <div class="portal-header-icon">🕒</div>
+                <div>
+                    <h1>My Attendance</h1>
+                    <p class="portal-header-subtitle">
+                        View your attendance history and statistics
+                    </p>
+                </div>
+            </div>
+            <div class="portal-header-right">
+                <a href="{% url 'employee_portal_attendance_mark' %}" class="btn-portal-primary">
+                    <span class="btn-icon">📝</span> Mark Today
+                </a>
+                <a href="{% url 'employee_portal_dashboard' %}" class="btn-portal-secondary">← Back</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="portal-stats">
+        <div class="portal-stat-card blue">
+            <span class="stat-icon">📊</span>
+            <div>
+                <h2>{{ attendance_percentage }}%</h2>
+                <p>Attendance Rate</p>
+            </div>
+        </div>
+        <div class="portal-stat-card green">
+            <span class="stat-icon">✅</span>
+            <div>
+                <h2>{{ present_days }}</h2>
+                <p>Present</p>
+            </div>
+        </div>
+        <div class="portal-stat-card orange">
+            <span class="stat-icon">🌴</span>
+            <div>
+                <h2>{{ leave_days }}</h2>
+                <p>Leave</p>
+            </div>
+        </div>
+        <div class="portal-stat-card purple">
+            <span class="stat-icon">🏠</span>
+            <div>
+                <h2>{{ wfh_days }}</h2>
+                <p>WFH</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="portal-card">
+        <div class="portal-card-header">
+            <h3>📋 Attendance Records</h3>
+            <span class="record-count">{{ attendances|length }} records</span>
+        </div>
+        <div class="table-responsive">
+            <table class="portal-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in attendances %}
+                    <tr>
+                        <td>{{ att.date|date:"d M Y" }}</td>
+                        <td>{{ att.date|date:"l" }}</td>
+                        <td>{{ att.check_in|default:"-" }}</td>
+                        <td>{{ att.check_out|default:"-" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ att.status|lower }}">
+                                {{ att.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No attendance records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/payroll_form.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="payroll-form-page">
+
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">{{ page_icon }}</div>
+                <div>
+                    <h1>{{ page_title }}</h1>
+                    <p class="header-subtitle">
+                        {% if is_edit %}
+                        Editing payroll for <strong>{{ payroll.employee }}</strong>
+                        {% else %}
+                        Create a new payroll record for an employee.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'payroll' %}" class="btn-back">← Back</a>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        {% if form.errors or messages %}
+        <div class="error-alert">
+            <h3>⚠️ Please correct the errors below</h3>
+            <ul>
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+                {% for field in form %}
+                {% for error in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+                {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <li>{{ message }}</li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="form-card">
+            <div class="card-header">
+                <h2>📋 Payroll Details</h2>
+                <span class="card-badge">Required</span>
+            </div>
+
+            <div class="form-grid">
+                <!-- Employee -->
+                <!-- Employee -->
+<div class="form-group">
+    <label for="{{ form.employee.id_for_label }}" class="form-label required">
+        Employee
+    </label>
+
+    <select
+        name="employee"
+        id="id_employee"
+        class="form-control"
+        required
+    >
+        <option value="">Select Employee</option>
+
+        {% for emp in employees %}
+        <option
+            value="{{ emp.id }}"
+            data-salary="{{ emp.salary }}"
+            {% if form.employee.value|stringformat:"s" == emp.id|stringformat:"s" %}
+                selected
+            {% endif %}
+        >
+            {{ emp.user.get_full_name|default:emp.user.username }}
+            ({{ emp.employee_id }})
+        </option>
+        {% empty %}
+        <option value="">No employees available</option>
+        {% endfor %}
+
+    </select>
+
+    {% if form.employee.errors %}
+        <div class="field-error">
+            {{ form.employee.errors.0 }}
+        </div>
+    {% endif %}
+
+    <span class="help-text">
+        Select the employee for payroll.
+    </span>
+</div>
+
+                <!-- Month -->
+                <div class="form-group">
+                    <label for="{{ form.month.id_for_label }}" class="form-label required">Month</label>
+                    <select name="month" id="{{ form.month.id_for_label }}" class="form-control" required>
+                        <option value="">Select Month</option>
+                        {% for choice in form.fields.month.choices %}
+                            {% if choice.0 %}
+                            <option value="{{ choice.0 }}" {% if form.month.value == choice.0 %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    {% if form.month.errors %}
+                        <div class="field-error">{{ form.month.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Month of the payroll.</span>
+                </div>
+
+                <!-- Year -->
+                <div class="form-group">
+                    <label for="{{ form.year.id_for_label }}" class="form-label required">Year</label>
+                    <select name="year" id="{{ form.year.id_for_label }}" class="form-control" required>
+                        <option value="">Select Year</option>
+                        {% for choice in form.fields.year.choices %}
+                            {% if choice.0 %}
+                            <option value="{{ choice.0 }}" {% if form.year.value == choice.0 %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    {% if form.year.errors %}
+                        <div class="field-error">{{ form.year.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Year of the payroll.</span>
+                </div>
+
+                <!-- Basic Salary -->
+                <div class="form-group">
+                    <label for="{{ form.basic_salary.id_for_label }}" class="form-label required">Basic Salary</label>
+                    {{ form.basic_salary }}
+                    {% if form.basic_salary.errors %}
+                        <div class="field-error">{{ form.basic_salary.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Base salary amount.</span>
+                </div>
+
+                <!-- Allowances -->
+                <div class="form-group">
+                    <label for="{{ form.allowances.id_for_label }}" class="form-label">Allowances</label>
+                    {{ form.allowances }}
+                    {% if form.allowances.errors %}
+                        <div class="field-error">{{ form.allowances.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Additional allowances (HRA, DA, etc.).</span>
+                </div>
+
+                <!-- Deductions -->
+                <div class="form-group">
+                    <label for="{{ form.deductions.id_for_label }}" class="form-label">Deductions</label>
+                    {{ form.deductions }}
+                    {% if form.deductions.errors %}
+                        <div class="field-error">{{ form.deductions.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Deductions (tax, insurance, etc.).</span>
+                </div>
+
+                <!-- Net Salary -->
+                <div class="form-group">
+                    <label for="{{ form.net_salary.id_for_label }}" class="form-label">Net Salary</label>
+                    {{ form.net_salary }}
+                    <span class="help-text">Calculated automatically (Basic + Allowances - Deductions).</span>
+                </div>
+
+                <!-- Status -->
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <div class="status-display">
+                        {% if is_edit and payroll.paid %}
+                        <span class="badge paid">✅ Paid</span>
+                        <span class="help-text">This payroll is already paid and cannot be modified.</span>
+                        {% else %}
+                        <span class="badge pending">⏳ Pending</span>
+                        <span class="help-text">New payroll will be pending until marked as paid.</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary btn-save">
+                {% if is_edit %}💾 Update Payroll{% else %}🚀 Create Payroll{% endif %}
+            </button>
+            <a href="{% url 'payroll' %}" class="btn-secondary">Cancel</a>
+            {% if is_edit and not payroll.paid %}
+            <a href="{% url 'payroll_detail' payroll.id %}" class="btn-light">👁️ View Details</a>
+            {% endif %}
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const employeeSelect = document.getElementById("id_employee");
+    const basicInput = document.getElementById("id_basic_salary");
+    const allowancesInput = document.getElementById("id_allowances");
+    const deductionsInput = document.getElementById("id_deductions");
+    const netInput = document.getElementById("id_net_salary");
+
+    function calculateNet() {
+
+        const basic = parseFloat(basicInput.value) || 0;
+        const allowance = parseFloat(allowancesInput.value) || 0;
+        const deduction = parseFloat(deductionsInput.value) || 0;
+
+        const net = basic + allowance - deduction;
+
+        netInput.value = net.toFixed(2);
+    }
+
+    function updateBasicSalary() {
+
+        const selectedOption =
+            employeeSelect.options[
+                employeeSelect.selectedIndex
+            ];
+
+        const salary =
+            selectedOption.dataset.salary;
+
+        if (salary) {
+
+            basicInput.value =
+                parseFloat(salary).toFixed(2);
+
+        } else {
+
+            basicInput.value = "";
+
+        }
+
+        calculateNet();
+    }
+
+    if (employeeSelect) {
+        employeeSelect.addEventListener(
+            "change",
+            updateBasicSalary
+        );
+    }
+
+    if (basicInput) {
+        basicInput.addEventListener(
+            "input",
+            calculateNet
+        );
+    }
+
+    if (allowancesInput) {
+        allowancesInput.addEventListener(
+            "input",
+            calculateNet
+        );
+    }
+
+    if (deductionsInput) {
+        deductionsInput.addEventListener(
+            "input",
+            calculateNet
+        );
+    }
+
+    // Auto fill when page loads
+    updateBasicSalary();
+
+    // Auto focus
+    const firstInput = document.querySelector(
+        "select,input:not([type='hidden']),textarea"
+    );
+
+    if (firstInput && !firstInput.disabled) {
+        firstInput.focus();
+    }
+
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/holiday_confirm_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="holiday-delete-page">
+
+    <div class="delete-card">
+        <span class="delete-icon">🗑️</span>
+        
+        <h1>Delete Holiday</h1>
+        
+        <p class="delete-message">
+            Are you sure you want to delete the holiday 
+            <strong>{{ holiday.name }}</strong>?
+        </p>
+        
+        <div class="delete-details">
+            <div class="detail-row">
+                <span class="detail-label">Holiday Name</span>
+                <span class="detail-value">
+                    <span class="holiday-name">
+                        <span class="holiday-icon">🎉</span>
+                        {{ holiday.name }}
+                    </span>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date</span>
+                <span class="detail-value">{{ holiday.date|date:"d M Y" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Day</span>
+                <span class="detail-value">{{ holiday.date|date:"l" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Type</span>
+                <span class="detail-value">
+                    <span class="type-badge type-{{ holiday.holiday_type|lower }}">
+                        {{ holiday.holiday_type }}
+                    </span>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                    {% if holiday.is_upcoming %}
+                    <span class="status-badge upcoming">⏳ Upcoming</span>
+                    {% else %}
+                    <span class="status-badge past">✅ Past</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="delete-actions">
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">🗑️ Confirm Delete</button>
+            </form>
+            <a href="{% url 'holiday_detail' holiday.id %}" class="btn-secondary">Cancel</a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

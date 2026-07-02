@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/holiday_form.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="holiday-form-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">{{ page_icon }}</div>
+                <div>
+                    <h1>{{ page_title }}</h1>
+                    <p class="header-subtitle">
+                        {% if is_edit %}
+                        Editing holiday: <strong>{{ holiday.name }}</strong>
+                        {% else %}
+                        Add a new holiday to the calendar.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'holidays' %}" class="btn-back">← Back to Holidays</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FORM ================= -->
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <!-- ====== ERROR MESSAGES ====== -->
+        {% if form.errors or messages %}
+        <div class="error-alert">
+            <div class="error-alert-header">
+                <span class="error-icon">⚠️</span>
+                <h3>Please correct the errors below</h3>
+            </div>
+            <ul class="error-list">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <li>{{ message }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- ====== FORM CARD ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>📅 Holiday Details</h2>
+                <span class="card-badge">Required</span>
+            </div>
+
+            <div class="form-grid">
+                <!-- Holiday Name -->
+                <div class="form-group full-width">
+                    <label for="{{ form.name.id_for_label }}" class="form-label required">Holiday Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="field-error">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Enter the name of the holiday.</span>
+                </div>
+
+                <!-- Date -->
+                <div class="form-group">
+                    <label for="{{ form.date.id_for_label }}" class="form-label required">Date</label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                        <div class="field-error">{{ form.date.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Select the date of the holiday.</span>
+                </div>
+
+                <!-- Holiday Type -->
+                <div class="form-group">
+                    <label for="{{ form.holiday_type.id_for_label }}" class="form-label required">Holiday Type</label>
+                    {{ form.holiday_type }}
+                    {% if form.holiday_type.errors %}
+                        <div class="field-error">{{ form.holiday_type.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Select the type of holiday.</span>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group full-width">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="field-error">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Add any additional details about the holiday.</span>
+                </div>
+
+                <!-- Company Holiday -->
+                <div class="form-group full-width">
+                    <div class="checkbox-wrapper">
+                        {{ form.is_company_holiday }}
+                        <label for="{{ form.is_company_holiday.id_for_label }}" class="checkbox-label">
+                            <span class="checkbox-text">🏢 Company Holiday</span>
+                            <span class="checkbox-help">Check if this is a company-wide holiday.</span>
+                        </label>
+                    </div>
+                    {% if form.is_company_holiday.errors %}
+                        <div class="field-error">{{ form.is_company_holiday.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== FORM ACTIONS ====== -->
+        <div class="form-actions">
+            <button type="submit" class="btn-primary btn-save">
+                {% if is_edit %}💾 Update Holiday{% else %}🎉 Add Holiday{% endif %}
+            </button>
+            <a href="{% url 'holidays' %}" class="btn-secondary">Cancel</a>
+            <!-- Only show View Details button when editing -->
+            {% if is_edit and holiday %}
+            <a href="{% url 'holiday_detail' holiday.id %}" class="btn-light">👁️ View Details</a>
+            {% endif %}
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // AUTO-FOCUS
+        // ============================================
+        const firstInput = document.querySelector('input:not([type="checkbox"]), select, textarea');
+        if (firstInput && !firstInput.disabled) {
+            firstInput.focus();
+        }
+
+        // ============================================
+        // CONFIRMATION ON CANCEL
+        // ============================================
+        let formChanged = false;
+        const form = document.querySelector('form');
+
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+
+        const cancelBtn = document.querySelector('.btn-secondary');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        console.log('📅 Holiday Form initialized');
+    });
+</script>
+
+{% endblock %}

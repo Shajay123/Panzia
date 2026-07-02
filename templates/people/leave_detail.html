@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leave Request - {{ leave.employee }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/leave_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="leave-detail-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">📋</div>
+                <div>
+                    <div class="breadcrumb">
+                        <a href="{% url 'leave_dashboard' %}">Leave</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">Leave Request</span>
+                    </div>
+                    <h1>Leave Request Details</h1>
+                    <p class="header-subtitle">
+                        <strong>{{ leave.employee.user.get_full_name|default:leave.employee.user.username }}</strong>
+                        · {{ leave.leave_type }}
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                {% if leave.status == "Pending" %}
+                <a href="{% url 'leave_approve' leave.id %}" class="btn-approve" onclick="return confirm('Approve this leave request?')">
+                    ✅ Approve
+                </a>
+                <a href="{% url 'leave_reject' leave.id %}" class="btn-reject" onclick="return confirm('Reject this leave request?')">
+                    ❌ Reject
+                </a>
+                <a href="{% url 'leave_update' leave.id %}" class="btn-edit">
+                    ✏️ Edit
+                </a>
+                {% endif %}
+                <a href="{% url 'leave_delete' leave.id %}" class="btn-delete" onclick="return confirm('Delete this leave request?')">
+                    🗑️ Delete
+                </a>
+                <a href="{% url 'leave_dashboard' %}" class="btn-back">
+                    ← Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STATUS BANNER ================= -->
+    <div class="status-banner status-{{ leave.status|lower }}">
+        <div class="status-banner-content">
+            <span class="status-icon">
+                {% if leave.status == "Pending" %}⏳
+                {% elif leave.status == "Approved" %}✅
+                {% else %}❌{% endif %}
+            </span>
+            <span class="status-text">Status: <strong>{{ leave.status }}</strong></span>
+            {% if leave.approved_by %}
+            <span class="status-meta">Approved/Rejected by: {{ leave.approved_by.get_full_name|default:leave.approved_by.username }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <div class="detail-grid">
+
+        <!-- Left Column -->
+        <div class="detail-left">
+            <!-- Leave Information -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📅 Leave Information</h3>
+                    <span class="card-badge">{{ leave.leave_type }}</span>
+                </div>
+                <div class="detail-list">
+                    <div class="detail-item">
+                        <span class="detail-label">Employee</span>
+                        <span class="detail-value">
+                            <div class="employee-info">
+                                {% if leave.employee.profile_image %}
+                                <img src="{{ leave.employee.profile_image.url }}" alt="{{ leave.employee.user.get_full_name }}" class="employee-avatar">
+                                {% else %}
+                                <div class="employee-avatar">
+                                    {{ leave.employee.user.first_name|first|default:leave.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ leave.employee.user.get_full_name|default:leave.employee.user.username }}</strong>
+                                    <small>{{ leave.employee.designation|default:"-" }}</small>
+                                </div>
+                            </div>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Leave Type</span>
+                        <span class="detail-value">
+                            <span class="leave-type-badge">{{ leave.leave_type }}</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">From Date</span>
+                        <span class="detail-value">{{ leave.from_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">To Date</span>
+                        <span class="detail-value">{{ leave.to_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value highlight">{{ duration }} day{{ duration|pluralize }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value">
+                            <span class="status-badge status-{{ leave.status|lower }}">
+                                <span class="status-dot"></span>
+                                {{ leave.status }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created</span>
+                        <span class="detail-value">{{ leave.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="detail-right">
+            <!-- Reason -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📝 Reason</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="reason-box">
+                    {% if leave.reason %}
+                    <p>{{ leave.reason|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted">No reason provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>⏱️ Timeline</h3>
+                    <span class="card-badge">Activity</span>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot primary">
+                            <span class="dot-icon">📝</span>
+                        </div>
+                        <div class="timeline-content">
+                            <strong>Request Created</strong>
+                            <p>{{ leave.created_at|date:"d M Y, H:i" }}</p>
+                        </div>
+                    </div>
+                    {% if leave.status != "Pending" %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot {% if leave.status == 'Approved' %}success{% else %}danger{% endif %}">
+                            <span class="dot-icon">{% if leave.status == 'Approved' %}✅{% else %}❌{% endif %}</span>
+                        </div>
+                        <div class="timeline-content">
+                            <strong>Request {{ leave.status }}</strong>
+                            <p>{% if leave.approved_by %}by {{ leave.approved_by.get_full_name|default:leave.approved_by.username }}{% endif %}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>⚡ Quick Actions</h3>
+                    <span class="card-badge">Actions</span>
+                </div>
+                <div class="action-grid">
+                    <a href="{% url 'leave_update' leave.id %}" class="action-btn edit">
+                        <span class="action-icon">✏️</span>
+                        Edit Request
+                    </a>
+                    {% if leave.status == "Pending" %}
+                    <a href="{% url 'leave_approve' leave.id %}" class="action-btn approve" onclick="return confirm('Approve this leave request?')">
+                        <span class="action-icon">✅</span>
+                        Approve
+                    </a>
+                    <a href="{% url 'leave_reject' leave.id %}" class="action-btn reject" onclick="return confirm('Reject this leave request?')">
+                        <span class="action-icon">❌</span>
+                        Reject
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'leave_delete' leave.id %}" class="action-btn delete" onclick="return confirm('Delete this leave request?')">
+                        <span class="action-icon">🗑️</span>
+                        Delete
+                    </a>
+                    <a href="{% url 'employee_detail' leave.employee.id %}" class="action-btn profile">
+                        <span class="action-icon">👤</span>
+                        Employee Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

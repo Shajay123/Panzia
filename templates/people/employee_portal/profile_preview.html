@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-portal">
+
+    <!-- ================= HEADER ================= -->
+    <div class="portal-header">
+        <div class="portal-header-content">
+            <div class="portal-header-left">
+                <div class="portal-header-icon">👤</div>
+                <div>
+                    <h1>My Profile</h1>
+                    <p class="portal-header-subtitle">View your employee profile information</p>
+                </div>
+            </div>
+            <div class="portal-header-right">
+                <a href="{% url 'employee_portal_dashboard' %}" class="btn-portal-secondary">← Back</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PROFILE CARD ================= -->
+    <div class="profile-card">
+        <div class="profile-left">
+            {% if employee.profile_image %}
+            <img src="{{ employee.profile_image.url }}" alt="{{ employee.user.get_full_name }}" class="profile-image">
+            {% else %}
+            <div class="profile-avatar">
+                {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+            </div>
+            {% endif %}
+            <span class="profile-status {% if employee.is_active %}active{% else %}inactive{% endif %}">
+                {% if employee.is_active %}🟢 Active{% else %}🔴 Inactive{% endif %}
+            </span>
+        </div>
+        <div class="profile-right">
+            <h2>{{ employee.user.get_full_name|default:employee.user.username }}</h2>
+            <p class="profile-designation">{{ employee.designation|default:"-" }}</p>
+            <div class="profile-meta">
+                <div class="meta-item">
+                    <span class="meta-icon">🆔</span>
+                    <span class="meta-label">Employee ID:</span>
+                    <span class="meta-value">{{ employee.employee_id }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">📧</span>
+                    <span class="meta-label">Email:</span>
+                    <span class="meta-value">{{ employee.user.email }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">📞</span>
+                    <span class="meta-label">Phone:</span>
+                    <span class="meta-value">{{ employee.phone|default:"-" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">🏢</span>
+                    <span class="meta-label">Department:</span>
+                    <span class="meta-value">{{ employee.department.name|default:"-" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">💼</span>
+                    <span class="meta-label">Designation:</span>
+                    <span class="meta-value">{{ employee.designation|default:"-" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">📅</span>
+                    <span class="meta-label">Joined:</span>
+                    <span class="meta-value">{{ employee.joining_date|date:"d M Y" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">💰</span>
+                    <span class="meta-label">Salary:</span>
+                    <span class="meta-value">₹{{ employee.salary|floatformat:0|default:"0" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">📍</span>
+                    <span class="meta-label">Work Mode:</span>
+                    <span class="meta-value">{{ employee.work_mode|default:"-" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">📊</span>
+                    <span class="meta-label">Status:</span>
+                    <span class="meta-value">{{ employee.status|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if employee.notes %}
+    <div class="portal-card">
+        <div class="portal-card-header">
+            <h3>📝 Notes</h3>
+        </div>
+        <p>{{ employee.notes|linebreaks }}</p>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

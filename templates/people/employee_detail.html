@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Employee Profile
-{% endblock %}
+{% block title %}Employee Profile - {{ employee.user.get_full_name|default:employee.user.username }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/employee_detail.css' %}">
@@ -11,339 +9,343 @@ Employee Profile
 
 {% block content %}
 
-<div class="employee-profile">
+<div class="employee-profile-page">
 
+    <!-- ================= BACK BUTTON ================= -->
+    <div class="page-nav">
+        <a href="{% url 'employees' %}" class="btn-back">
+            ← Back to Employees
+        </a>
+    </div>
+
+    <!-- ================= PROFILE CARD ================= -->
     <div class="profile-card">
-
         <div class="profile-left">
-
             {% if employee.profile_image %}
-            <img src="{{ employee.profile_image.url }}" class="profile-image">
+            <div class="profile-image-wrapper">
+                <img src="{{ employee.profile_image.url }}" class="profile-image" alt="{{ employee.user.get_full_name }}">
+                <span class="status-dot {% if employee.is_active %}online{% else %}offline{% endif %}"></span>
+            </div>
             {% else %}
             <div class="avatar">
                 {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+                <span class="status-dot {% if employee.is_active %}online{% else %}offline{% endif %}"></span>
             </div>
             {% endif %}
-
         </div>
-
 
         <div class="profile-right">
-
-            <h1>
-
-                {{ employee.user.get_full_name|default:employee.user.username }}
-
-            </h1>
-
-            <h3>
-
-                {{ employee.designation }}
-
-            </h3>
-
-            <p>
-
-                🆔 {{ employee.employee_id }}
-
-            </p>
-
-            <p>
-
-                🏢 {{ employee.department }}
-
-            </p>
-
-            <p>
-
-                👨‍💼 Manager :
-
-                {% if employee.manager %}
-                {{ employee.manager.user.get_full_name }}
-                {% else %}
-                --
-                {% endif %}
-
-            </p>
-
-            {% if employee.is_active %}
-
-            <span class="status active">
-
-                🟢 {{ employee.status }}
-
-            </span>
-
-            {% else %}
-
-            <span class="status inactive">
-
-                🔴 {{ employee.status }}
-
-            </span>
-
-            {% endif %}
-
-
-            <div class="actions">
-
-                <a href="{% url 'employee_update' employee.id %}" class="btn-primary">
-
-                    ✏ Edit
-
-                </a>
-
-                <a href="{% url 'attendance' %}" class="btn-light">
-
-                    🕒 Attendance
-
-                </a>
-
-                <a href="{% url 'payroll' %}" class="btn-light">
-
-                    💰 Payroll
-
-                </a>
-
+            <div class="profile-header">
+                <div>
+                    <h1>{{ employee.user.get_full_name|default:employee.user.username }}</h1>
+                    <h3>{{ employee.designation|default:"No Designation" }}</h3>
+                </div>
+                <span class="status-badge status-{{ employee.status|lower }}">
+                    <span class="status-dot-small"></span>
+                    {{ employee.status|title }}
+                </span>
             </div>
 
-        </div>
-
-    </div>
-
-
-
-    <div class="stats-grid">
-
-        <div class="stat-card">
-
-            <h2>{{ attendance_count }}</h2>
-
-            <p>Attendance</p>
-
-        </div>
-
-        <div class="stat-card">
-
-            <h2>{{ leave_count }}</h2>
-
-            <p>Leaves</p>
-
-        </div>
-
-        <div class="stat-card">
-
-            <h2>
-
-                ₹{{ employee.salary }}
-
-            </h2>
-
-            <p>Salary</p>
-
-        </div>
-
-        <div class="stat-card">
-
-            <h2>
-
-                {{ employee.work_mode }}
-
-            </h2>
-
-            <p>Work Mode</p>
-
-        </div>
-
-    </div>
-
-
-
-    <div class="info-grid">
-
-        <!-- PERSONAL -->
-
-        <div class="info-card">
-
-            <h2>👤 Personal Information</h2>
-
-            <table>
-
-                <tr>
-                    <td>Employee ID</td>
-                    <td>{{ employee.employee_id }}</td>
-                </tr>
-
-                <tr>
-                    <td>Phone</td>
-                    <td>{{ employee.phone }}</td>
-                </tr>
-
-                <tr>
-                    <td>Emergency Contact</td>
-                    <td>{{ employee.emergency_contact }}</td>
-                </tr>
-
-                <tr>
-                    <td>Department</td>
-                    <td>{{ employee.department }}</td>
-                </tr>
-
-                <tr>
-                    <td>Designation</td>
-                    <td>{{ employee.designation }}</td>
-                </tr>
-
-                <tr>
-                    <td>Employment Type</td>
-                    <td>{{ employee.employment_type }}</td>
-                </tr>
-
-                <tr>
-                    <td>Work Mode</td>
-                    <td>{{ employee.work_mode }}</td>
-                </tr>
-
-                <tr>
-                    <td>Hire Source</td>
-                    <td>{{ employee.hire_source }}</td>
-                </tr>
-
-            </table>
-
-        </div>
-
-
-        <!-- EMPLOYMENT -->
-
-        <div class="info-card">
-
-            <h2>💼 Employment Details</h2>
-
-            <table>
-
-                <tr>
-                    <td>Status</td>
-                    <td>{{ employee.status }}</td>
-                </tr>
-
-                <tr>
-                    <td>Joining Date</td>
-                    <td>{{ employee.joining_date }}</td>
-                </tr>
-
-                <tr>
-                    <td>Probation Ends</td>
-                    <td>{{ employee.probation_end|default:"--" }}</td>
-                </tr>
-
-                <tr>
-                    <td>Confirmation Date</td>
-                    <td>{{ employee.confirmation_date|default:"--" }}</td>
-                </tr>
-
-                <tr>
-                    <td>Manager</td>
-                    <td>
-
+            <div class="profile-meta">
+                <div class="meta-item">
+                    <span class="meta-icon">🆔</span>
+                    <span class="meta-label">Employee ID:</span>
+                    <span class="meta-value"><code>{{ employee.employee_id }}</code></span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">🏢</span>
+                    <span class="meta-label">Department:</span>
+                    <span class="meta-value">{{ employee.department.name|default:"-" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">👨‍💼</span>
+                    <span class="meta-label">Manager:</span>
+                    <span class="meta-value">
                         {% if employee.manager %}
                         {{ employee.manager.user.get_full_name }}
                         {% else %}
-                        --
+                        <span class="text-muted">—</span>
                         {% endif %}
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">📧</span>
+                    <span class="meta-label">Email:</span>
+                    <span class="meta-value">{{ employee.user.email }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">📞</span>
+                    <span class="meta-label">Phone:</span>
+                    <span class="meta-value">{{ employee.phone|default:"—" }}</span>
+                </div>
+            </div>
 
-                    </td>
-                </tr>
+            <div class="profile-actions">
+                <a href="{% url 'employee_update' employee.id %}" class="btn-primary">
+                    ✏️ Edit Profile
+                </a>
+                <a href="{% url 'attendance' %}" class="btn-secondary">
+                    🕒 Attendance
+                </a>
+                <a href="{% url 'payroll' %}" class="btn-secondary">
+                    💰 Payroll
+                </a>
+                <button class="btn-light" id="shareBtn">
+                    📤 Share
+                </button>
+            </div>
+        </div>
+    </div>
 
-            </table>
+    <!-- ================= STATS GRID ================= -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+                <h2>{{ attendance_count|default:0 }}</h2>
+                <p>Attendance Records</p>
+            </div>
+            <span class="stat-trend up">↑ 12%</span>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-icon">🌴</div>
+            <div class="stat-content">
+                <h2>{{ leave_count|default:0 }}</h2>
+                <p>Leaves Taken</p>
+            </div>
+            <span class="stat-trend down">↓ 3%</span>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <h2>₹{{ employee.salary|floatformat:0|default:"0" }}</h2>
+                <p>Salary</p>
+            </div>
+            <span class="stat-trend neutral">→</span>
+        </div>
+        <!-- In employee_detail.html - Add this button -->
+<div class="employee-actions">
+    <a href="{% url 'employee_timing_config' employee.id %}" class="btn btn-primary">
+        ⏰ Configure Timings
+    </a>
+</div>
+        <div class="stat-card orange">
+            <div class="stat-icon">💼</div>
+            <div class="stat-content">
+                <h2>{{ employee.work_mode|title|default:"-" }}</h2>
+                <p>Work Mode</p>
+            </div>
+            <span class="stat-trend neutral">→</span>
+        </div>
+    </div>
 
+    <!-- ================= INFO GRID ================= -->
+    <div class="info-grid">
+
+        <!-- Personal Information -->
+        <div class="info-card">
+            <div class="card-header">
+                <h2>👤 Personal Information</h2>
+                <span class="card-badge">Details</span>
+            </div>
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-label">Employee ID</span>
+                    <span class="info-value"><code>{{ employee.employee_id }}</code></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">{{ employee.user.get_full_name|default:employee.user.username }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ employee.user.email }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value">{{ employee.phone|default:"—" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Emergency Contact</span>
+                    <span class="info-value">{{ employee.emergency_contact|default:"—" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Department</span>
+                    <span class="info-value">{{ employee.department.name|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Designation</span>
+                    <span class="info-value">{{ employee.designation|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Employment Type</span>
+                    <span class="info-value">{{ employee.employment_type|title|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Work Mode</span>
+                    <span class="info-value">
+                        <span class="work-mode-badge work-{{ employee.work_mode|lower }}">
+                            {{ employee.work_mode|title|default:"-" }}
+                        </span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Hire Source</span>
+                    <span class="info-value">{{ employee.hire_source|title|default:"-" }}</span>
+                </div>
+            </div>
         </div>
 
-
-
-        <!-- PAYROLL -->
-
+        <!-- Employment Details -->
         <div class="info-card">
-
-            <h2>💰 Payroll</h2>
-
-            <table>
-
-                <tr>
-
-                    <td>Salary</td>
-
-                    <td>
-
-                        ₹{{ employee.salary }}
-
-                    </td>
-
-                </tr>
-
-                <tr>
-
-                    <td>Payroll Enabled</td>
-
-                    <td>
-
-                        {% if employee.is_payroll_enabled %}
-
-                        ✅ Enabled
-
-                        {% else %}
-
-                        ❌ Disabled
-
+            <div class="card-header">
+                <h2>💼 Employment Details</h2>
+                <span class="card-badge">Timeline</span>
+            </div>
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">
+                        <span class="status-badge status-{{ employee.status|lower }}">
+                            <span class="status-dot-small"></span>
+                            {{ employee.status|title }}
+                        </span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Joining Date</span>
+                    <span class="info-value">
+                        {{ employee.joining_date|date:"d M Y"|default:"—" }}
+                        {% if employee.joining_date %}
+                        <span class="time-ago">({{ employee.joining_date|timesince }} ago)</span>
                         {% endif %}
-
-                    </td>
-
-                </tr>
-
-                <tr>
-
-                    <td>Active</td>
-
-                    <td>
-
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Probation Ends</span>
+                    <span class="info-value">{{ employee.probation_end|date:"d M Y"|default:"—" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Confirmation Date</span>
+                    <span class="info-value">{{ employee.confirmation_date|date:"d M Y"|default:"—" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Manager</span>
+                    <span class="info-value">
+                        {% if employee.manager %}
+                        <span class="manager-name">{{ employee.manager.user.get_full_name }}</span>
+                        <span class="manager-email">{{ employee.manager.user.email }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Active</span>
+                    <span class="info-value">
                         {% if employee.is_active %}
-
-                        🟢 Yes
-
+                        <span class="badge success">✅ Yes</span>
                         {% else %}
-
-                        🔴 No
-
+                        <span class="badge danger">❌ No</span>
                         {% endif %}
-
-                    </td>
-
-                </tr>
-
-            </table>
-
+                    </span>
+                </div>
+            </div>
         </div>
 
-
-
-        <!-- NOTES -->
-
+        <!-- Payroll Information -->
         <div class="info-card">
-
-            <h2>📝 Notes</h2>
-
-            <p>
-
-                {{ employee.notes|default:"No Notes Available." }}
-
-            </p>
-
+            <div class="card-header">
+                <h2>💰 Payroll</h2>
+                <span class="card-badge">Compensation</span>
+            </div>
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="info-label">Salary</span>
+                    <span class="info-value salary-amount">₹{{ employee.salary|floatformat:0|default:"0" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Payroll Enabled</span>
+                    <span class="info-value">
+                        {% if employee.is_payroll_enabled %}
+                        <span class="badge payroll enabled">✅ Enabled</span>
+                        {% else %}
+                        <span class="badge payroll disabled">❌ Disabled</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Payroll Status</span>
+                    <span class="info-value">
+                        <span class="status-badge status-{% if employee.is_payroll_enabled %}active{% else %}exited{% endif %}">
+                            <span class="status-dot-small"></span>
+                            {% if employee.is_payroll_enabled %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </span>
+                </div>
+            </div>
         </div>
 
+        <!-- Notes -->
+        <div class="info-card">
+            <div class="card-header">
+                <h2>📝 Notes</h2>
+                <span class="card-badge">Additional</span>
+            </div>
+            <div class="notes-content">
+                {% if employee.notes %}
+                <p>{{ employee.notes|linebreaks }}</p>
+                {% else %}
+                <p class="text-muted">No notes available for this employee.</p>
+                {% endif %}
+            </div>
+        </div>
 
     </div>
 
+    
+
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Share functionality
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Employee Profile',
+                        text: '{{ employee.user.get_full_name|default:employee.user.username }} - {{ employee.designation }}',
+                        url: window.location.href
+                    }).catch(() => {});
+                } else {
+                    // Fallback - copy to clipboard
+                    const url = window.location.href;
+                    navigator.clipboard.writeText(url).then(() => {
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '✅ Copied!';
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                        }, 2000);
+                    }).catch(() => {
+                        alert('Copy this URL: ' + window.location.href);
+                    });
+                }
+            });
+        }
+
+        // Time ago update for relative times
+        document.querySelectorAll('.time-ago').forEach(el => {
+            const timestamp = el.dataset.timestamp;
+            if (timestamp) {
+                // Update time ago periodically
+                setInterval(() => {
+                    // Simple update - you could use a library for this
+                }, 60000);
+            }
+        });
+    });
+</script>
 
 {% endblock %}

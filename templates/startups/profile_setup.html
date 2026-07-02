@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Setup Startup Profile
-{% endblock %}
+{% block title %}Setup Startup Profile{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/profile_setup.css' %}">
@@ -15,123 +13,226 @@ Setup Startup Profile
 
     <div class="setup-container">
 
-        <!-- Header -->
-
+        <!-- ================= HEADER ================= -->
         <div class="setup-header">
-
-            <span class="setup-badge">
-                🚀 Startup Onboarding
-            </span>
-
-            <h1>
-                Create Your Startup Profile
-            </h1>
-
-            <p>
-                Build your startup identity, attract talented builders,
-                and start creating execution sprints.
-            </p>
-
+            <span class="setup-badge">🚀 Startup Onboarding</span>
+            <h1>Create Your Startup Profile</h1>
+            <p>Build your startup identity, attract talented builders, and start creating execution sprints.</p>
         </div>
 
-        <!-- Form Card -->
-
+        <!-- ================= FORM CARD ================= -->
         <div class="setup-card">
-
-            <form method="POST" enctype="multipart/form-data">
-
+            <form method="POST" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
 
-                <!-- Logo Upload -->
-
-                <div class="logo-section">
-
-                    <div class="logo-preview">
-                        🚀
+                <!-- ====== ERROR MESSAGES ====== -->
+                {% if form.errors or messages %}
+                <div class="error-alert">
+                    <div class="error-alert-header">
+                        <span class="error-icon">⚠️</span>
+                        <h3>Please correct the errors below</h3>
                     </div>
+                    <ul class="error-list">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for message in messages %}
+                            {% if message.tags == 'error' %}
+                                <li>{{ message }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
 
-                    <label class="upload-label">
-                        Upload Startup Logo
-                    </label>
+                <!-- ====== SUCCESS MESSAGES ====== -->
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                        <div class="success-alert">
+                            <span class="success-icon">✅</span>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
 
-                    {{ form.logo }}
-
+                <!-- ================= LOGO SECTION ================= -->
+                <div class="logo-section">
+                    <div class="logo-preview" id="logoPreview">
+                        {% if form.instance.logo %}
+                            <img src="{{ form.instance.logo.url }}" alt="Startup Logo" id="logoImage">
+                        {% else %}
+                            <span class="logo-placeholder">🚀</span>
+                        {% endif %}
+                    </div>
+                    <div class="logo-upload">
+                        <label for="{{ form.logo.id_for_label }}" class="upload-label">
+                            <span class="upload-icon">📤</span>
+                            Upload Startup Logo
+                        </label>
+                        {{ form.logo }}
+                        <span class="upload-help">Recommended: Square image, PNG or JPG (max 5MB)</span>
+                    </div>
                 </div>
 
-                <!-- Company Name -->
+                <!-- ================= COMPANY INFORMATION ================= -->
+                <div class="form-section">
+                    <h2>🏢 Company Information</h2>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="{{ form.company_name.id_for_label }}" class="form-label required">Company Name</label>
+                            {{ form.company_name }}
+                            <span class="help-text">Your official company or startup name.</span>
+                        </div>
 
-                <div class="form-group">
+                        <div class="form-group full-width">
+                            <label for="{{ form.tagline.id_for_label }}" class="form-label">Tagline</label>
+                            {{ form.tagline }}
+                            <span class="help-text">A short, catchy phrase that describes your startup.</span>
+                        </div>
 
-                    <label>
-                        Company Name
-                    </label>
+                        <div class="form-group">
+                            <label for="{{ form.industry.id_for_label }}" class="form-label required">Industry</label>
+                            {{ form.industry }}
+                            <span class="help-text">Technology, Healthcare, FinTech, etc.</span>
+                        </div>
 
-                    {{ form.company_name }}
-
+                        <div class="form-group">
+                            <label for="{{ form.website.id_for_label }}" class="form-label">Website</label>
+                            {{ form.website }}
+                            <span class="help-text">Your company website URL.</span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Tagline -->
-
-                <div class="form-group">
-
-                    <label>
-                        Startup Tagline
-                    </label>
-
-                    {{ form.tagline }}
-
+                <!-- ================= DESCRIPTION ================= -->
+                <div class="form-section">
+                    <h2>📝 About Your Startup</h2>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="{{ form.description.id_for_label }}" class="form-label required">Description</label>
+                            {{ form.description }}
+                            <span class="help-text">Describe your startup's vision, mission, and what you do.</span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Industry -->
+                <!-- ================= LOCATION ================= -->
+                <div class="form-section">
+                    <h2>📍 Location</h2>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.address }}
+                            <span class="help-text">Your company's registered address.</span>
+                        </div>
 
-                <div class="form-group">
+                        <div class="form-group">
+                            <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                            {{ form.city }}
+                        </div>
 
-                    <label>
-                        Industry
-                    </label>
+                        <div class="form-group">
+                            <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
+                            {{ form.state }}
+                        </div>
 
-                    {{ form.industry }}
-
+                        <div class="form-group">
+                            <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                            {{ form.country }}
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Website -->
-
-                <div class="form-group">
-
-                    <label>
-                        Website
-                    </label>
-
-                    {{ form.website }}
-
+                <!-- ================= FORM ACTIONS ================= -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">
+                        <span class="btn-icon">💾</span> Save Startup Profile
+                    </button>
+                    <a href="{% url 'people_dashboard' %}" class="btn-cancel">
+                        Cancel
+                    </a>
                 </div>
-
-                <!-- Description -->
-
-                <div class="form-group">
-
-                    <label>
-                        Startup Description
-                    </label>
-
-                    {{ form.description }}
-
-                </div>
-
-                <button
-                    type="submit"
-                    class="save-btn">
-
-                    Save Startup Profile
-
-                </button>
 
             </form>
-
         </div>
 
     </div>
 
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // LOGO PREVIEW
+        // ============================================
+        const logoInput = document.querySelector('input[type="file"]');
+        const logoPreview = document.getElementById('logoPreview');
+        const logoImage = document.getElementById('logoImage');
+
+        if (logoInput) {
+            logoInput.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (logoImage) {
+                            logoImage.src = e.target.result;
+                            logoImage.style.display = 'block';
+                        } else {
+                            logoPreview.innerHTML = `<img src="${e.target.result}" alt="Startup Logo" id="logoImage" style="width: 100%; height: 100%; object-fit: cover; border-radius: 1rem;">`;
+                        }
+                        // Remove placeholder
+                        const placeholder = logoPreview.querySelector('.logo-placeholder');
+                        if (placeholder) {
+                            placeholder.style.display = 'none';
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // ============================================
+        // AUTO-FOCUS
+        // ============================================
+        const firstInput = document.querySelector('input:not([type="file"]), select, textarea');
+        if (firstInput && !firstInput.disabled) {
+            firstInput.focus();
+        }
+
+        // ============================================
+        // CONFIRMATION ON CANCEL
+        // ============================================
+        let formChanged = false;
+        const form = document.querySelector('form');
+
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+
+        const cancelBtn = document.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        console.log('🚀 Startup Profile Setup initialized');
+    });
+</script>
 
 {% endblock %}

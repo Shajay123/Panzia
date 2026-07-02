@@ -233,36 +233,56 @@ PANZIA
 
             {% if request.user.is_authenticated %}
 
-            {% if request.user.is_superuser %}
-
-            <a href="{% url 'admin_dashboard' %}" class="login-btn">
-                Admin Dashboard
+            {# Role-based dashboard link #}
+            {% if request.user.role == 'employee' %}
+            <a href="{% url 'employee_portal_dashboard' %}" class="login-btn" title="Employee Dashboard">
+                👤 My Portal
             </a>
-
+            {% elif request.user.role == 'talent' %}
+            <a href="{% url 'talent_dashboard' %}" class="login-btn" title="Talent Dashboard">
+                🎯 Talent Hub
+            </a>
+            {% elif request.user.role == 'startup_admin' or request.user.role == 'startup_hr' or request.user.role ==
+            'startup_manager' %}
+            <a href="{% url 'dashboard' %}" class="login-btn" title="Admin Dashboard">
+                📊 Dashboard
+            </a>
+            {% elif request.user.is_super_admin or request.user.is_superuser %}
+            <a href="{% url 'dashboard' %}" class="login-btn" title="Super Admin Dashboard">
+                ⚡ Admin
+            </a>
             {% else %}
-
-            <a href="{% url 'dashboard' %}" class="login-btn">
-                Dashboard
+            <a href="{% url 'dashboard' %}" class="login-btn" title="Dashboard">
+                📊 Dashboard
             </a>
-
             {% endif %}
 
-            <a href="{% url 'leaderboard' %}" class="login-btn">
-                Leaderboard
+            {# Show Leaderboard only for non-employees #}
+            {% if request.user.role != 'employee' %}
+            <a href="{% url 'leaderboard' %}" class="login-btn" title="Leaderboard">
+                🏆 Leaderboard
             </a>
+            {% endif %}
 
-            <a href="{% url 'logout' %}" class="join-btn">
-                Logout
+            {# Role-specific additional links #}
+            {% if request.user.role == 'employee' %}
+            <a href="{% url 'employee_portal_profile' %}" class="login-btn" title="My Profile">
+                👤 Profile
+            </a>
+            {% endif %}
+
+            <a href="{% url 'logout' %}" class="join-btn" title="Logout">
+                🚪 Logout
             </a>
 
             {% else %}
 
-            <a href="{% url 'login' %}" class="login-btn">
-                Login
+            <a href="{% url 'login' %}" class="login-btn" title="Login">
+                🔑 Login
             </a>
 
-            <a href="{% url 'register' %}" class="join-btn">
-                Join Panzia
+            <a href="{% url 'register' %}" class="join-btn" title="Join Panzia">
+                🚀 Join Panzia
             </a>
 
             {% endif %}

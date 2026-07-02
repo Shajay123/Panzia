@@ -1,0 +1,211 @@
+/* static/css/people/performance_confirm_delete.css */
+
+.performance-delete-page {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #0b1120;
+    padding: 3rem 1.5rem;
+    color: #e8edf5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-card {
+    background: #182235;
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    max-width: 500px;
+    width: 100%;
+    border: 1px solid #26314a;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.delete-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.delete-card h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #f0f4fe;
+    margin: 0 0 0.5rem;
+}
+
+.delete-message {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.delete-message strong {
+    color: #e8edf5;
+}
+
+.delete-details {
+    background: #101b2e;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    border: 1px solid #2a3852;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #1f2d47;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #e8edf5;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.employee-info {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.employee-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #2a3852;
+}
+
+.employee-info .employee-avatar:not(img) {
+    background: linear-gradient(135deg, #3b6aff, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.rating-stars {
+    font-size: 0.9rem;
+    letter-spacing: 0.05rem;
+}
+
+.rating-number {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-danger,
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: 2.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4);
+}
+
+.btn-secondary {
+    background: #28344a;
+    color: #d6e0f0;
+    border-color: #3a4862;
+}
+
+.btn-secondary:hover {
+    background: #33425c;
+    border-color: #5a6f92;
+    transform: translateY(-2px);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .delete-card {
+        padding: 1.5rem;
+    }
+
+    .delete-card h1 {
+        font-size: 1.5rem;
+    }
+
+    .delete-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-danger,
+    .btn-secondary {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .delete-details {
+        padding: 0.75rem 1rem;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+    }
+
+    .detail-value {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}

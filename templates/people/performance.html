@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Performance Reviews
-{% endblock %}
+{% block title %}Performance Reviews{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/performance.css' %}">
@@ -13,238 +11,382 @@ Performance Reviews
 
 <div class="performance-page">
 
-    <!-- Header -->
-
+    <!-- ================= HEADER ================= -->
     <div class="page-header">
-
-        <div>
-
-            <h1>⭐ Performance Reviews</h1>
-
-            <p>
-                Track employee performance, ratings and growth.
-            </p>
-
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">⭐</div>
+                <div>
+                    <h1>Performance Reviews</h1>
+                    <p class="header-subtitle">Track employee performance, ratings and growth.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" id="exportBtn">
+                    <span class="btn-icon">📥</span> Export
+                </button>
+                <a href="{% url 'performance_create' %}" class="btn-primary">
+                    <span class="btn-icon">➕</span> New Review
+                </a>
+            </div>
         </div>
-
-        <div class="header-actions">
-
-            <a href="#" class="btn-primary">
-                ➕ New Review
-            </a>
-
-            <a href="#" class="btn-secondary">
-                📥 Export
-            </a>
-
-        </div>
-
     </div>
 
+    {% include 'people/includes/startup_banner.html' %}
 
-    <!-- Summary -->
-
+    <!-- ================= SUMMARY ================= -->
     <div class="summary-grid">
-
         <div class="summary-card blue">
-
-            <h2>{{ reviews|length }}</h2>
-
-            <p>Total Reviews</p>
-
+            <span class="icon">📋</span>
+            <div>
+                <h2>{{ total_reviews|default:0 }}</h2>
+                <p>Total Reviews</p>
+            </div>
+            <span class="trend up">↑ 12%</span>
         </div>
-
         <div class="summary-card green">
-
-            <h2>4.8</h2>
-
-            <p>Average Rating</p>
-
+            <span class="icon">⭐</span>
+            <div>
+                <h2>{{ avg_rating|default:0 }}</h2>
+                <p>Average Rating</p>
+            </div>
+            <span class="trend up">↑ 8%</span>
         </div>
-
         <div class="summary-card orange">
-
-            <h2>12</h2>
-
-            <p>Pending Reviews</p>
-
+            <span class="icon">⏳</span>
+            <div>
+                <h2>{{ pending_reviews|default:0 }}</h2>
+                <p>Pending Reviews</p>
+            </div>
+            <span class="trend down">↓ 3%</span>
         </div>
-
         <div class="summary-card purple">
+            <span class="icon">📈</span>
+            <div>
+                <h2>{{ completion_rate|default:0 }}%</h2>
+                <p>Completion Rate</p>
+            </div>
+            <span class="trend up">↑ 5%</span>
+        </div>
+    </div>
 
-            <h2>95%</h2>
+    <!-- ================= FILTERS ================= -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h3>🔍 Filter Reviews</h3>
+            <button class="btn-toggle-filters" id="toggleFilters">▼</button>
+        </div>
+        <form method="GET" id="filterForm">
+            <div class="filter-grid" id="filterGrid">
+                <div class="filter-group">
+                    <label>👤 Employee</label>
+                    {{ filter_form.employee }}
+                </div>
+                <div class="filter-group">
+                    <label>⭐ Rating</label>
+                    {{ filter_form.rating }}
+                </div>
+                <div class="filter-group">
+                    <label>📅 Period</label>
+                    {{ filter_form.review_period }}
+                </div>
+                <div class="filter-group">
+                    <label>📅 From Date</label>
+                    {{ filter_form.from_date }}
+                </div>
+                <div class="filter-group">
+                    <label>📅 To Date</label>
+                    {{ filter_form.to_date }}
+                </div>
+                <div class="filter-group filter-actions">
+                    <label>&nbsp;</label>
+                    <div class="filter-buttons">
+                        <button type="submit" class="btn-primary btn-filter">🔍 Apply</button>
+                        <a href="{% url 'performance' %}" class="btn-light btn-reset">↩️ Reset</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="filter-stats">
+            <span id="recordCount">Showing <strong>{{ reviews|length }}</strong> reviews</span>
+        </div>
+    </div>
 
-            <p>Completion Rate</p>
-
+    <!-- ================= TABLE ================= -->
+    <div class="table-card">
+        <div class="table-header">
+            <div class="table-header-left">
+                <h3>📋 Performance Reviews</h3>
+                <span class="record-badge">{{ reviews|length }}</span>
+            </div>
+            <div class="table-header-right">
+                <div class="table-search">
+                    <input type="text" id="tableSearch" placeholder="🔍 Search..." class="search-input">
+                </div>
+                <button class="btn-light btn-sm" id="refreshTable">🔄 Refresh</button>
+            </div>
         </div>
 
-    </div>
-
-
-    <!-- Search -->
-
-    <div class="filter-card">
-
-        <input
-            type="text"
-            placeholder="🔍 Search Employee..."
-        >
-
-        <select>
-
-            <option>All Ratings</option>
-
-            <option>★★★★★</option>
-
-            <option>★★★★☆</option>
-
-            <option>★★★☆☆</option>
-
-            <option>★★☆☆☆</option>
-
-            <option>★☆☆☆☆</option>
-
-        </select>
-
-        <button class="btn-primary">
-
-            Filter
-
-        </button>
-
-    </div>
-
-
-    <!-- Reviews Table -->
-
-    <div class="table-card">
-
-        <table>
-
-            <thead>
-
-            <tr>
-
-                <th>Employee</th>
-
-                <th>Reviewer</th>
-
-                <th>Rating</th>
-
-                <th>Review</th>
-
-                <th>Date</th>
-
-                <th>Action</th>
-
-            </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% for review in reviews %}
-
-            <tr>
-
-                <td>
-
-                    <div class="employee-box">
-
-                        {% if review.employee.profile_image %}
-
-                        <img src="{{ review.employee.profile_image.url }}">
-
-                        {% else %}
-
-                        <div class="avatar">
-
-                            {{ review.employee.user.first_name|first }}
-
-                        </div>
-
-                        {% endif %}
-
-                        <div>
-
-                            <strong>
-
-                                {{ review.employee.user.get_full_name|default:review.employee.user.username }}
-
-                            </strong>
-
-                            <small>
-
-                                {{ review.employee.designation }}
-
-                            </small>
-
-                        </div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    {{ review.reviewer }}
-
-                </td>
-
-                <td>
-
-                    <span class="rating">
-
-                        ⭐ {{ review.rating }}/5
-
-                    </span>
-
-                </td>
-
-                <td>
-
-                    {{ review.review|truncatechars:60 }}
-
-                </td>
-
-                <td>
-
-                    {{ review.created_at|date:"d M Y" }}
-
-                </td>
-
-                <td>
-
-                    <a href="#" class="table-btn">
-
-                        View
-
-                    </a>
-
-                </td>
-
-            </tr>
-
-            {% empty %}
-
-            <tr>
-
-                <td colspan="6">
-
-                    No performance reviews available.
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="employee">Employee ↕</th>
+                        <th class="sortable" data-sort="reviewer">Reviewer ↕</th>
+                        <th class="sortable" data-sort="rating">Rating ↕</th>
+                        <th class="sortable" data-sort="period">Period ↕</th>
+                        <th>Review</th>
+                        <th class="sortable" data-sort="date">Date ↕</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for review in reviews %}
+                    <tr class="review-row"
+                        data-employee="{{ review.employee.user.get_full_name|default:review.employee.user.username|lower }}"
+                        data-reviewer="{{ review.reviewer.get_full_name|default:review.reviewer.username|lower }}"
+                        data-rating="{{ review.rating }}"
+                        data-period="{{ review.review_period|lower }}"
+                        data-date="{{ review.created_at|date:'Y-m-d' }}">
+                        <td>
+                            <div class="employee-box">
+                                {% if review.employee.profile_image %}
+                                <img src="{{ review.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                {% else %}
+                                <div class="avatar">
+                                    {{ review.employee.user.first_name|first|default:review.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div class="employee-details">
+                                    <strong class="employee-name">{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>
+                                    <span class="employee-designation">{{ review.employee.designation|default:"-" }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="reviewer-info">
+                                <span class="reviewer-name">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="rating-display">
+                                <span class="rating-stars">{{ review.get_rating_stars }}</span>
+                                <span class="rating-number">{{ review.rating }}/5</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="period-badge">{{ review.get_review_period_display }}</span>
+                        </td>
+                        <td class="review-cell">
+                            {{ review.review|truncatechars:50 }}
+                        </td>
+                        <td>
+                            <span class="date-cell">{{ review.created_at|date:"d M Y" }}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'performance_detail' review.id %}" class="action-btn view" title="View">👁️</a>
+                                <a href="{% url 'performance_update' review.id %}" class="action-btn edit" title="Edit">✏️</a>
+                                <a href="{% url 'performance_delete' review.id %}" class="action-btn delete" title="Delete" onclick="return confirm('Delete this review?')">🗑️</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-icon">⭐</div>
+                                <h3>No Performance Reviews Found</h3>
+                                <p>Start by creating your first performance review.</p>
+                                <a href="{% url 'performance_create' %}" class="btn-primary">➕ New Review</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table Footer -->
+        <div class="table-footer">
+            <div class="footer-left">
+                <span><strong>Total:</strong> <span id="footerTotal">{{ reviews|length }}</span> reviews</span>
+                <span class="footer-divider">|</span>
+                <span><strong>Average Rating:</strong> {{ avg_rating|default:0 }} ⭐</span>
+            </div>
+            <div class="footer-right">
+                <button class="pagination-btn" id="prevPage" disabled>← Prev</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled>Next →</button>
+            </div>
+        </div>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // TOGGLE FILTERS
+        // ============================================
+        const toggleBtn = document.getElementById('toggleFilters');
+        const filterGrid = document.getElementById('filterGrid');
+        let filtersVisible = true;
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                filtersVisible = !filtersVisible;
+                filterGrid.style.display = filtersVisible ? 'grid' : 'none';
+                this.textContent = filtersVisible ? '▼' : '▶';
+            });
+        }
+
+        // ============================================
+        // TABLE SEARCH
+        // ============================================
+        const tableSearch = document.getElementById('tableSearch');
+        const tableRows = document.querySelectorAll('.review-row');
+
+        if (tableSearch) {
+            tableSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visible = 0;
+
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const match = text.includes(query);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+
+                document.getElementById('recordCount').innerHTML = `Showing <strong>${visible}</strong> reviews`;
+                document.getElementById('footerTotal').textContent = visible;
+            });
+        }
+
+        // ============================================
+        // SORTING
+        // ============================================
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                const currentDir = this.classList.contains('asc') ? 'asc' : 'desc';
+                const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+                document.querySelectorAll('.sortable').forEach(h => {
+                    h.classList.remove('asc', 'desc');
+                });
+                this.classList.add(newDir);
+
+                sortTable(sortKey, newDir);
+            });
+        });
+
+        function sortTable(key, direction) {
+            const tbody = document.querySelector('#tableBody');
+            const rows = Array.from(tbody.querySelectorAll('.review-row'));
+
+            rows.sort((a, b) => {
+                let aVal, bVal;
+
+                switch(key) {
+                    case 'employee':
+                        aVal = a.dataset.employee || '';
+                        bVal = b.dataset.employee || '';
+                        break;
+                    case 'reviewer':
+                        aVal = a.dataset.reviewer || '';
+                        bVal = b.dataset.reviewer || '';
+                        break;
+                    case 'rating':
+                        aVal = parseInt(a.dataset.rating) || 0;
+                        bVal = parseInt(b.dataset.rating) || 0;
+                        break;
+                    case 'period':
+                        aVal = a.dataset.period || '';
+                        bVal = b.dataset.period || '';
+                        break;
+                    case 'date':
+                        aVal = a.dataset.date || '';
+                        bVal = b.dataset.date || '';
+                        break;
+                    default:
+                        aVal = '';
+                        bVal = '';
+                }
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                if (tableSearch && document.activeElement !== tableSearch) {
+                    e.preventDefault();
+                    tableSearch.focus();
+                    tableSearch.select();
+                }
+            }
+        });
+
+        // ============================================
+        // REFRESH
+        // ============================================
+        document.getElementById('refreshTable').addEventListener('click', function() {
+            location.reload();
+        });
+
+        // ============================================
+        // EXPORT
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const visibleRows = document.querySelectorAll('#tableBody .review-row:not([style*="display: none"])');
+
+            if (visibleRows.length === 0) {
+                alert('No records to export.');
+                return;
+            }
+
+            let csvContent = 'Employee,Reviewer,Rating,Period,Review,Date\n';
+
+            visibleRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const employee = cells[0]?.textContent?.trim() || '';
+                const reviewer = cells[1]?.textContent?.trim() || '';
+                const rating = cells[2]?.textContent?.trim() || '';
+                const period = cells[3]?.textContent?.trim() || '';
+                const review = cells[4]?.textContent?.trim() || '';
+                const date = cells[5]?.textContent?.trim() || '';
+
+                csvContent += `"${employee}","${reviewer}","${rating}","${period}","${review}","${date}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `performance_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        console.log('⭐ Performance Reviews initialized');
+        console.log(`📊 ${document.querySelectorAll('.review-row').length} reviews loaded`);
+    });
+</script>
 
 {% endblock %}

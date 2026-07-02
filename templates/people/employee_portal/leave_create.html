@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-portal">
+
+    <!-- ================= HEADER ================= -->
+    <div class="portal-header">
+        <div class="portal-header-content">
+            <div class="portal-header-left">
+                <div class="portal-header-icon">📝</div>
+                <div>
+                    <h1>Apply for Leave</h1>
+                    <p class="portal-header-subtitle">
+                        Submit a leave request for approval
+                    </p>
+                </div>
+            </div>
+            <div class="portal-header-right">
+                <a href="{% url 'employee_portal_leave' %}" class="btn-portal-secondary">
+                    ← Back to Leaves
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= LEAVE FORM ================= -->
+    <div class="portal-card">
+        <div class="portal-card-header">
+            <h3>📋 Leave Request Form</h3>
+        </div>
+        
+        <form method="POST" class="portal-form">
+            {% csrf_token %}
+            
+            <!-- Display non-field errors -->
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                <p class="error-message">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Employee Info (Read-only) -->
+            <div class="form-group">
+                <label>Employee</label>
+                <input type="text" value="{{ employee.user.get_full_name|default:employee.user.username }}" 
+                       class="form-control" disabled>
+                <small class="form-text text-muted">Leave request will be submitted for yourself</small>
+            </div>
+            
+            <!-- Leave Type -->
+            <div class="form-group">
+                <label for="id_leave_type">Leave Type *</label>
+                {{ form.leave_type }}
+                {% if form.leave_type.errors %}
+                <div class="field-errors">
+                    {% for error in form.leave_type.errors %}
+                    <span class="error-text">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- From Date -->
+            <div class="form-group">
+                <label for="id_from_date">From Date *</label>
+                {{ form.from_date }}
+                {% if form.from_date.errors %}
+                <div class="field-errors">
+                    {% for error in form.from_date.errors %}
+                    <span class="error-text">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- To Date -->
+            <div class="form-group">
+                <label for="id_to_date">To Date *</label>
+                {{ form.to_date }}
+                {% if form.to_date.errors %}
+                <div class="field-errors">
+                    {% for error in form.to_date.errors %}
+                    <span class="error-text">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Reason -->
+            <div class="form-group">
+                <label for="id_reason">Reason</label>
+                {{ form.reason }}
+                {% if form.reason.errors %}
+                <div class="field-errors">
+                    {% for error in form.reason.errors %}
+                    <span class="error-text">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="form-actions">
+                <a href="{% url 'employee_portal_leave' %}" class="btn-portal-secondary">
+                    Cancel
+                </a>
+                <button type="submit" class="btn-portal-primary">
+                    📤 Submit Leave Request
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<style>
+    .portal-form {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #e8edf5;
+    }
+    
+    .form-group .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+    
+    .form-group .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+    
+    .form-group .form-control:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .form-group select.form-control {
+        appearance: auto;
+        cursor: pointer;
+    }
+    
+    .form-group textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    
+    .text-muted {
+        color: #94a3b8;
+    }
+    
+    .form-errors {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+    }
+    
+    .error-message {
+        color: #f87171;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .field-errors {
+        margin-top: 4px;
+    }
+    
+    .error-text {
+        color: #f87171;
+        font-size: 0.8rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+        justify-content: flex-end;
+    }
+    
+    .btn-portal-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-portal-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+    
+    .btn-portal-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-portal-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+    
+    @media (max-width: 768px) {
+        .portal-form {
+            max-width: 100%;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .form-actions .btn-portal-primary,
+        .form-actions .btn-portal-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    // Auto-set from date to today if not set
+    document.addEventListener('DOMContentLoaded', function() {
+        const fromDateInput = document.querySelector('#id_from_date');
+        const toDateInput = document.querySelector('#id_to_date');
+        
+        if (fromDateInput && !fromDateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            fromDateInput.value = today;
+        }
+        
+        // Validate that to_date is after from_date
+        if (fromDateInput && toDateInput) {
+            fromDateInput.addEventListener('change', function() {
+                if (toDateInput.value && toDateInput.value < this.value) {
+                    toDateInput.value = this.value;
+                }
+                if (!toDateInput.value) {
+                    toDateInput.value = this.value;
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

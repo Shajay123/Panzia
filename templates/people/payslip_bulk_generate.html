@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/payslip_bulk_generate.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="payslip-bulk-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">📄</div>
+                <div>
+                    <h1>Bulk Generate Payslips</h1>
+                    <p class="header-subtitle">
+                        Generate payslips for all paid payroll records.
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'payslips' %}" class="btn-back">← Back to Payslips</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STATS ================= -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">📄</div>
+            <div>
+                <h2>{{ total_count }}</h2>
+                <p>Payrolls to Generate</p>
+            </div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">✅</div>
+            <div>
+                <h2>0</h2>
+                <p>Generated</p>
+            </div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-icon">⏳</div>
+            <div>
+                <h2>{{ total_count }}</h2>
+                <p>Pending</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CONFIRMATION ================= -->
+    <div class="confirmation-card">
+        <div class="confirmation-icon">⚠️</div>
+        <h3>Are you sure?</h3>
+        <p>
+            You are about to generate payslips for <strong>{{ total_count }}</strong> payroll record{{ total_count|pluralize }}.
+            This will create PDF payslips for all paid payrolls that don't have payslips yet.
+        </p>
+
+        {% if total_count > 0 %}
+        <div class="payroll-list">
+            <h4>Payrolls to be processed:</h4>
+            <ul>
+                {% for payroll in paid_payrolls %}
+                <li>
+                    <span class="employee-name">{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</span>
+                    <span class="month-year">{{ payroll.month }} {{ payroll.year }}</span>
+                    <span class="salary">₹{{ payroll.net_salary|floatformat:2 }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn-primary btn-generate">🚀 Generate All Payslips</button>
+                <a href="{% url 'payslips' %}" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🎉</div>
+            <h3>All Payslips Generated!</h3>
+            <p>All paid payrolls already have payslips generated.</p>
+            <a href="{% url 'payslips' %}" class="btn-primary">View Payslips</a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

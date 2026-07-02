@@ -1,0 +1,569 @@
+/* static/css/people/holiday_detail.css */
+
+.holiday-detail-page * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.holiday-detail-page {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #0b1120;
+    padding: 2.5rem 2rem;
+    color: #e8edf5;
+    max-width: 1000px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+.holiday-detail-page h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #f0f4fe;
+    margin: 0.25rem 0;
+}
+
+.holiday-detail-page h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e2eaf6;
+    margin: 0;
+}
+
+.holiday-detail-page p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.text-muted {
+    color: #64748b;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.page-header {
+    background: #182235;
+    border-radius: 1.5rem;
+    padding: 1.75rem 2.25rem;
+    margin-bottom: 2rem;
+    border: 1px solid #28344a;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.header-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.header-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+    color: #94a3b8;
+}
+
+.header-subtitle strong {
+    color: #e8edf5;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-edit,
+.btn-delete,
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 2.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.btn-edit {
+    background: #3b6aff;
+    color: white;
+    box-shadow: 0 4px 14px rgba(59, 106, 255, 0.3);
+}
+
+.btn-edit:hover {
+    background: #2a5af0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 106, 255, 0.4);
+}
+
+.btn-delete {
+    background: #dc2626;
+    color: white;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+}
+
+.btn-delete:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4);
+}
+
+.btn-back {
+    background: #28344a;
+    color: #d6e0f0;
+    border-color: #3a4862;
+}
+
+.btn-back:hover {
+    background: #33425c;
+    border-color: #5a6f92;
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   STATUS BANNER
+   ============================================ */
+.status-banner {
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid;
+}
+
+.status-banner.upcoming {
+    background: #3d2e1f;
+    border-color: #f59e0b33;
+    color: #fcd34d;
+}
+
+.status-banner.past {
+    background: #1f1f2a;
+    border-color: #64748b33;
+    color: #94a3b8;
+}
+
+.status-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-icon {
+    font-size: 1.5rem;
+}
+
+.status-text {
+    font-size: 1rem;
+}
+
+.status-badge.company {
+    background: #1a3a2a;
+    color: #86efac;
+    padding: 0.2rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* ============================================
+   DETAIL GRID
+   ============================================ */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.detail-card {
+    background: #182235;
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid #26314a;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #1f2d47;
+}
+
+.card-badge {
+    background: #101b2e;
+    padding: 0.15rem 0.7rem;
+    border-radius: 1rem;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: #94a3b8;
+    border: 1px solid #2a3852;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ============================================
+   DETAIL LIST
+   ============================================ */
+.detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(31, 45, 71, 0.5);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #d6e0f0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.holiday-name {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.holiday-icon {
+    font-size: 1.2rem;
+}
+
+.day-badge {
+    display: inline-block;
+    padding: 0.15rem 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: #101b2e;
+    border: 1px solid #2a3852;
+    color: #94a3b8;
+}
+
+/* ============================================
+   TYPE BADGES
+   ============================================ */
+.type-badge {
+    display: inline-block;
+    padding: 0.15rem 0.7rem;
+    border-radius: 2rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.type-national {
+    background: #1a3a6a;
+    color: #60a5fa;
+}
+
+.type-public {
+    background: #1a3a2a;
+    color: #34d399;
+}
+
+.type-company {
+    background: #3d2e1f;
+    color: #fcd34d;
+}
+
+.type-festival {
+    background: #3d1f2a;
+    color: #fca5a5;
+}
+
+.type-optional {
+    background: #1f1f2a;
+    color: #94a3b8;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+.badge {
+    padding: 0.15rem 0.7rem;
+    border-radius: 2rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge.company {
+    background: #1a3a2a;
+    color: #86efac;
+}
+
+.badge.not-company {
+    background: #3d1f2a;
+    color: #fca5a5;
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+.status-badge {
+    display: inline-block;
+    padding: 0.15rem 0.7rem;
+    border-radius: 2rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.status-badge.upcoming {
+    background: #3d2e1f;
+    color: #fcd34d;
+}
+
+.status-badge.past {
+    background: #1f1f2a;
+    color: #94a3b8;
+}
+
+/* ============================================
+   DESCRIPTION BOX
+   ============================================ */
+.description-box {
+    padding: 0.5rem 0;
+}
+
+.description-box p {
+    color: #d6e0f0;
+    line-height: 1.8;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* ============================================
+   ACTION GRID
+   ============================================ */
+.action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    background: #101b2e;
+    border: 1px solid #2a3852;
+    color: #d6e0f0;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.action-btn .action-icon {
+    font-size: 1rem;
+}
+
+.action-btn.edit {
+    color: #60a5fa;
+}
+
+.action-btn.edit:hover {
+    background: #1a3a6a;
+    border-color: #3b6aff;
+}
+
+.action-btn.delete {
+    color: #f87171;
+}
+
+.action-btn.delete:hover {
+    background: #3d1f2a;
+    border-color: #ef4444;
+}
+
+.action-btn.back {
+    color: #94a3b8;
+}
+
+.action-btn.back:hover {
+    background: #1f2d47;
+    border-color: #64748b;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .holiday-detail-page {
+        padding: 1.25rem 1rem;
+    }
+
+    .page-header {
+        padding: 1.5rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .header-left {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-icon {
+        font-size: 2rem;
+    }
+
+    .holiday-detail-page h1 {
+        font-size: 1.5rem;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .header-actions .btn-edit,
+    .header-actions .btn-delete,
+    .header-actions .btn-back {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-card {
+        padding: 1.25rem;
+    }
+
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+    }
+
+    .detail-value {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .status-banner-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .holiday-detail-page {
+        padding: 1rem 0.75rem;
+    }
+
+    .page-header {
+        padding: 1.25rem;
+    }
+
+    .detail-card {
+        padding: 1rem;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-header,
+.status-banner,
+.detail-card {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.detail-card:nth-child(2) { animation-delay: 0.05s; }
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+.holiday-detail-page::-webkit-scrollbar {
+    width: 6px;
+}
+
+.holiday-detail-page::-webkit-scrollbar-track {
+    background: #101b2e;
+}
+
+.holiday-detail-page::-webkit-scrollbar-thumb {
+    background: #28344a;
+    border-radius: 3px;
+}
+
+.holiday-detail-page::-webkit-scrollbar-thumb:hover {
+    background: #3a4862;
+}
+
+::selection {
+    background: #3b6aff66;
+    color: white;
+}

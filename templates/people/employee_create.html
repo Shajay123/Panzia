@@ -1,482 +1,752 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Add Employee
-{% endblock %}
+{% block title %}Add Employee{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/employee_create.css' %}">
+<style>
+    /* ===== ADDITIONAL STYLES ===== */
+    .no-departments-warning {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #fbbf24;
+    }
+    
+    .no-departments-warning .warning-icon {
+        font-size: 1.5rem;
+    }
+    
+    .no-departments-warning .warning-text {
+        flex: 1;
+    }
+    
+    .no-departments-warning .warning-text h4 {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    .no-departments-warning .warning-text p {
+        margin: 2px 0 0;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+    
+    .no-departments-warning .btn-create-dept {
+        padding: 6px 16px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    
+    .no-departments-warning .btn-create-dept:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+    
+    /* Timing Section */
+    .timing-grid-compact {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .timing-grid-compact .form-group {
+        margin-bottom: 0;
+    }
+    
+    .timing-grid-compact .form-group .help-text {
+        font-size: 0.7rem;
+    }
+    
+    .shift-presets {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+    
+    .shift-preset-btn {
+        padding: 4px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 16px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #94a3b8;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .shift-preset-btn:hover {
+        border-color: #7c3aed;
+        color: #a78bfa;
+        background: rgba(124, 58, 237, 0.05);
+    }
+    
+    .shift-preset-btn.active {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+    }
+    
+    @media (max-width: 768px) {
+        .timing-grid-compact {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .no-departments-warning {
+            flex-wrap: wrap;
+        }
+        
+        .no-departments-warning .btn-create-dept {
+            width: 100%;
+            text-align: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .timing-grid-compact {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
 <div class="employee-create-page">
 
-<div class="page-header">
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">👤</div>
+                <div>
+                    <h1>Add Employee</h1>
+                    <p class="header-subtitle">Create a new employee profile for your startup.</p>
+                </div>
+            </div>
+            <a href="{% url 'employees' %}" class="btn-back">← Back to Employees</a>
+        </div>
+    </div>
 
-<div>
+    <!-- ====== NO DEPARTMENTS WARNING ====== -->
+    {% if not departments %}
+    <div class="no-departments-warning">
+        <span class="warning-icon">⚠️</span>
+        <div class="warning-text">
+            <h4>No Departments Found</h4>
+            <p>You need at least one department to assign employees. Create a department first.</p>
+        </div>
+        <a href="{% url 'department_create' %}" class="btn-create-dept">
+            ➕ Create Department
+        </a>
+    </div>
+    {% endif %}
 
-<h1>👤 Add Employee</h1>
+    <!-- ================= FORM ================= -->
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
 
-<p>Create a new employee profile for your startup.</p>
+        <!-- ====== ERROR MESSAGES ====== -->
+        {% if form.errors or messages %}
+        <div class="error-alert">
+            <div class="error-alert-header">
+                <span class="error-icon">⚠️</span>
+                <h3>Form Submission Issues</h3>
+            </div>
+            <ul class="error-list">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
 
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <li>{{ message }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- ====== HIRING MODE ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>🚀 Hiring Mode</h2>
+                <span class="card-badge">Required</span>
+            </div>
+            <div class="form-group">
+                <label for="hire_mode" class="form-label required">Select Employee Source</label>
+                <select name="hire_mode" id="hire_mode" class="form-control">
+                    <option value="talent">🌟 Talent Pool Candidate</option>
+                    <option value="existing">👥 Existing User</option>
+                    <option value="new">➕ Create Brand New Employee</option>
+                </select>
+                <span class="help-text">Choose how you want to add this employee to the system.</span>
+            </div>
+        </div>
+
+        <!-- ====== TALENT POOL SECTION ====== -->
+        <div class="form-card" id="talent-section">
+            <div class="card-header">
+                <h2>🌟 Talent Pool</h2>
+                <span class="card-badge">Select Candidate</span>
+            </div>
+            <div class="form-group">
+                <label for="talent_user" class="form-label required">Select Candidate</label>
+                <select name="talent_user" id="talent_user" class="form-control">
+                    <option value="">— Select Candidate —</option>
+                    {% for user in talent_users %}
+                        <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+                    {% endfor %}
+                </select>
+                <span class="help-text">Choose a candidate from your talent pool.</span>
+            </div>
+        </div>
+
+        <!-- ====== EXISTING USER SECTION ====== -->
+        <div class="form-card d-none" id="existing-section">
+            <div class="card-header">
+                <h2>👥 Existing User</h2>
+                <span class="card-badge">Select User</span>
+            </div>
+            <div class="form-group">
+                <label for="existing_user" class="form-label required">Select Existing User</label>
+                <select name="existing_user" id="existing_user" class="form-control">
+                    <option value="">— Select Existing User —</option>
+                    {% for user in existing_users %}
+                        <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+                    {% endfor %}
+                </select>
+                <span class="help-text">Choose an existing user to convert to an employee.</span>
+            </div>
+        </div>
+
+        <!-- ====== NEW USER SECTION ====== -->
+        <div class="form-card d-none" id="new-section">
+            <div class="card-header">
+                <h2>➕ Create User Account</h2>
+                <span class="card-badge">Required</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="username" class="form-label required">Username</label>
+                    <input type="text" name="username" id="username" class="form-control" value="{{ request.POST.username }}" placeholder="Enter username">
+                    <span class="help-text">Unique username for login.</span>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label required">Email</label>
+                    <input type="email" name="email" id="email" class="form-control" value="{{ request.POST.email }}" placeholder="Enter email address">
+                    <span class="help-text">Valid email address for communication.</span>
+                </div>
+                <div class="form-group">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" name="first_name" id="first_name" class="form-control" value="{{ request.POST.first_name }}" placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" name="last_name" id="last_name" class="form-control" value="{{ request.POST.last_name }}" placeholder="Enter last name">
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== EMPLOYEE INFORMATION ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>👤 Employee Information</h2>
+                <span class="card-badge">Required</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.employee_id.id_for_label }}" class="form-label required">Employee ID</label>
+                    {{ form.employee_id }}
+                    {% if form.employee_id.errors %}
+                        <div class="field-error">{{ form.employee_id.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Unique identifier for the employee.</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.department.id_for_label }}" class="form-label required">Department</label>
+                    {% if departments %}
+                        {{ form.department }}
+                    {% else %}
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="form-control" style="background: rgba(245, 158, 11, 0.05); color: #fbbf24; border-color: rgba(245, 158, 11, 0.15);">
+                                ⚠️ No departments available
+                            </span>
+                            <a href="{% url 'department_create' %}" class="btn-create-dept" style="white-space: nowrap; padding: 8px 16px; font-size: 0.85rem;">
+                                ➕ Create
+                            </a>
+                        </div>
+                    {% endif %}
+                    {% if form.department.errors %}
+                        <div class="field-error">{{ form.department.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Assign the employee to a department.</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.designation.id_for_label }}" class="form-label required">Designation</label>
+                    {{ form.designation }}
+                    {% if form.designation.errors %}
+                        <div class="field-error">{{ form.designation.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.employment_type.id_for_label }}" class="form-label">Employment Type</label>
+                    {{ form.employment_type }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}" class="form-label required">Status</label>
+                    {{ form.status }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.hire_source.id_for_label }}" class="form-label">Hire Source</label>
+                    {{ form.hire_source }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.work_mode.id_for_label }}" class="form-label required">Work Mode</label>
+                    {{ form.work_mode }}
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== ATTENDANCE TIMING CONFIGURATION ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>⏰ Attendance Timing Configuration</h2>
+                <span class="card-badge">Recommended</span>
+            </div>
+            
+            <div style="margin-bottom: 12px;">
+                <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
+                    Set default timings for this employee. This will be used for attendance tracking.
+                </p>
+            </div>
+            
+            <!-- Shift Presets -->
+            <div class="form-group">
+                <label class="form-label">Quick Shift Presets</label>
+                <div class="shift-presets">
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('morning')">
+                        🌅 Morning (9:30 - 18:30)
+                    </button>
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('evening')">
+                        🌇 Evening (14:00 - 23:00)
+                    </button>
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('night')">
+                        🌙 Night (22:00 - 07:00)
+                    </button>
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('flexible')">
+                        🕐 Flexible
+                    </button>
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('remote')">
+                        🏠 Remote
+                    </button>
+                </div>
+                <span class="help-text">Click a preset to auto-fill the timing fields below.</span>
+            </div>
+            
+            <div class="timing-grid-compact">
+                <div class="form-group">
+                    <label for="default_check_in" class="form-label">Default Check In</label>
+                    <input type="time" name="default_check_in" id="default_check_in" class="form-control" value="09:30">
+                    <span class="help-text">Expected check-in time</span>
+                </div>
+                <div class="form-group">
+                    <label for="default_check_out" class="form-label">Default Check Out</label>
+                    <input type="time" name="default_check_out" id="default_check_out" class="form-control" value="18:30">
+                    <span class="help-text">Expected check-out time</span>
+                </div>
+                <div class="form-group">
+                    <label for="grace_period" class="form-label">Grace Period (minutes)</label>
+                    <input type="number" name="grace_period" id="grace_period" class="form-control" value="15" min="0" max="60">
+                    <span class="help-text">Minutes allowed after start time</span>
+                </div>
+                <div class="form-group">
+                    <label for="shift_type" class="form-label">Shift Type</label>
+                    <select name="shift_type" id="shift_type" class="form-control">
+                        <option value="morning">🌅 Morning Shift</option>
+                        <option value="evening">🌇 Evening Shift</option>
+                        <option value="night">🌙 Night Shift</option>
+                        <option value="flexible">🕐 Flexible Hours</option>
+                        <option value="remote">🏠 Remote Work</option>
+                    </select>
+                    <span class="help-text">Select the shift type</span>
+                </div>
+                <div class="form-group">
+                    <label for="half_day_hours" class="form-label">Half Day Hours</label>
+                    <input type="number" name="half_day_hours" id="half_day_hours" class="form-control" value="4" step="0.5" min="0">
+                    <span class="help-text">Hours for half day</span>
+                </div>
+                <div class="form-group">
+                    <label for="full_day_hours" class="form-label">Full Day Hours</label>
+                    <input type="number" name="full_day_hours" id="full_day_hours" class="form-control" value="8" step="0.5" min="0">
+                    <span class="help-text">Hours for full day</span>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 12px;">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" name="overtime_enabled" id="overtime_enabled" class="form-check-input">
+                    <label for="overtime_enabled" class="checkbox-label">
+                        <span class="checkbox-text">💰 Enable Overtime Tracking</span>
+                        <span class="checkbox-help">Track overtime for this employee</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== EMPLOYMENT TIMELINE ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>📅 Employment Timeline</h2>
+                <span class="card-badge">Optional</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.joining_date.id_for_label }}" class="form-label">Joining Date</label>
+                    {{ form.joining_date }}
+                    {% if form.joining_date.errors %}
+                        <div class="field-error">{{ form.joining_date.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.probation_end.id_for_label }}" class="form-label">Probation End</label>
+                    {{ form.probation_end }}
+                    {% if form.probation_end.errors %}
+                        <div class="field-error">{{ form.probation_end.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.confirmation_date.id_for_label }}" class="form-label">Confirmation Date</label>
+                    {{ form.confirmation_date }}
+                    {% if form.confirmation_date.errors %}
+                        <div class="field-error">{{ form.confirmation_date.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== CONTACT ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>📞 Contact</h2>
+                <span class="card-badge">Optional</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
+                    {{ form.phone }}
+                    <span class="help-text">Primary contact number.</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">Emergency Contact</label>
+                    {{ form.emergency_contact }}
+                    <span class="help-text">Emergency contact number.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== PAYROLL ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>💰 Payroll</h2>
+                <span class="card-badge">Optional</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.salary.id_for_label }}" class="form-label">Salary</label>
+                    {{ form.salary }}
+                    {% if form.salary.errors %}
+                        <div class="field-error">{{ form.salary.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Annual or monthly salary amount.</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.is_payroll_enabled.id_for_label }}" class="form-label">Payroll Enabled</label>
+                    {{ form.is_payroll_enabled }}
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== PROFILE IMAGE ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>🖼 Profile Image</h2>
+                <span class="card-badge">Optional</span>
+            </div>
+            <div class="form-group">
+                <div class="file-upload-wrapper">
+                    {{ form.profile_image }}
+                    <label for="{{ form.profile_image.id_for_label }}" class="file-upload-label">
+                        <span class="upload-icon">📤</span>
+                        <span class="upload-text">Choose Profile Image</span>
+                    </label>
+                    <span class="help-text">Upload a profile picture (JPEG, PNG, GIF).</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== NOTES ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>📝 Notes</h2>
+                <span class="card-badge">Optional</span>
+            </div>
+            <div class="form-group">
+                {{ form.notes }}
+                <span class="help-text">Any additional notes about the employee.</span>
+            </div>
+        </div>
+
+        <!-- ====== STATUS & ACTIVE ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>📊 Status & Active</h2>
+                <span class="card-badge">Required</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.is_active.id_for_label }}" class="form-label">Active Employee</label>
+                    <div class="checkbox-wrapper">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="checkbox-label">
+                            <span class="checkbox-text">✅ Active</span>
+                            <span class="checkbox-help">Make this employee active in the system.</span>
+                        </label>
+                    </div>
+                    <span class="help-text">Only active employees can log in and access the system.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== FORM ACTIONS ====== -->
+        <div class="form-actions">
+            <button type="submit" class="btn-primary btn-save">
+                🚀 Create Employee
+            </button>
+            <a href="{% url 'employees' %}" class="btn-secondary">
+                Cancel
+            </a>
+            <a href="#" class="btn-light" onclick="window.location.reload();">
+                🔄 Reset Form
+            </a>
+        </div>
+
+    </form>
 </div>
-
-<a href="{% url 'employees' %}" class="btn-back">
-
-← Back
-
-</a>
-
-</div>
-
-
-<form method="POST" enctype="multipart/form-data">
-
-{% csrf_token %}
-
-
-<!-- =================================== -->
-<!-- HIRING MODE -->
-<!-- =================================== -->
-
-<div class="form-card">
-
-<h2>🚀 Hiring Mode</h2>
-
-<div class="form-group">
-
-<label>Select Employee Source</label>
-
-<select name="hire_mode"
-        id="hire_mode"
-        class="form-control">
-
-<option value="talent">
-
-Talent Pool Candidate
-
-</option>
-
-<option value="existing">
-
-Existing User
-
-</option>
-
-<option value="new">
-
-Create Brand New Employee
-
-</option>
-
-</select>
-
-</div>
-
-</div>
-
-
-
-<!-- =================================== -->
-<!-- TALENT -->
-<!-- =================================== -->
-
-<div class="form-card"
-     id="talent-section">
-
-<h2>🌟 Talent Pool</h2>
-
-<div class="form-group">
-
-<label>Select Candidate</label>
-
-<select
-name="talent_user"
-class="form-control">
-
-<option value="">
-
-Select Candidate
-
-</option>
-
-{% for user in talent_users %}
-
-<option value="{{ user.id }}">
-
-{{ user.get_full_name|default:user.username }}
-
-</option>
-
-{% endfor %}
-
-</select>
-
-</div>
-
-</div>
-
-
-
-
-<!-- =================================== -->
-<!-- EXISTING -->
-<!-- =================================== -->
-
-<div class="form-card d-none"
-id="existing-section">
-
-<h2>👥 Existing User</h2>
-
-<div class="form-group">
-
-<label>Select User</label>
-
-<select
-name="existing_user"
-class="form-control">
-
-<option value="">
-
-Select Existing User
-
-</option>
-
-{% for user in existing_users %}
-
-<option value="{{ user.id }}">
-
-{{ user.get_full_name|default:user.username }}
-
-</option>
-
-{% endfor %}
-
-</select>
-
-</div>
-
-</div>
-
-
-
-
-<!-- =================================== -->
-<!-- NEW USER -->
-<!-- =================================== -->
-
-<div class="form-card d-none"
-id="new-section">
-
-<h2>➕ Create User Account</h2>
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Username</label>
-
-<input
-type="text"
-name="username"
-class="form-control">
-
-</div>
-
-<div class="form-group">
-
-<label>Email</label>
-
-<input
-type="email"
-name="email"
-class="form-control">
-
-</div>
-
-<div class="form-group">
-
-<label>First Name</label>
-
-<input
-type="text"
-name="first_name"
-class="form-control">
-
-</div>
-
-<div class="form-group">
-
-<label>Last Name</label>
-
-<input
-type="text"
-name="last_name"
-class="form-control">
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- =================================== -->
-<!-- BASIC INFO -->
-<!-- =================================== -->
-
-<div class="form-card">
-
-<h2>👤 Employee Information</h2>
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Employee ID</label>
-
-{{ form.employee_id }}
-
-</div>
-
-<div class="form-group">
-
-<label>Department</label>
-
-{{ form.department }}
-
-</div>
-
-<div class="form-group">
-
-<label>Designation</label>
-
-{{ form.designation }}
-
-</div>
-
-<div class="form-group">
-
-<label>Employment Type</label>
-
-{{ form.employment_type }}
-
-</div>
-
-<div class="form-group">
-
-<label>Status</label>
-
-{{ form.status }}
-
-</div>
-
-<div class="form-group">
-
-<label>Hire Source</label>
-
-{{ form.hire_source }}
-
-</div>
-
-<div class="form-group">
-
-<label>Work Mode</label>
-
-{{ form.work_mode }}
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- =================================== -->
-<!-- DATES -->
-<!-- =================================== -->
-
-<div class="form-card">
-
-<h2>📅 Employment Timeline</h2>
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Joining Date</label>
-
-{{ form.joining_date }}
-
-</div>
-
-<div class="form-group">
-
-<label>Probation End</label>
-
-{{ form.probation_end }}
-
-</div>
-
-<div class="form-group">
-
-<label>Confirmation Date</label>
-
-{{ form.confirmation_date }}
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- =================================== -->
-<!-- CONTACT -->
-<!-- =================================== -->
-
-<div class="form-card">
-
-<h2>📞 Contact</h2>
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Phone</label>
-
-{{ form.phone }}
-
-</div>
-
-<div class="form-group">
-
-<label>Emergency Contact</label>
-
-{{ form.emergency_contact }}
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- =================================== -->
-<!-- PAYROLL -->
-<!-- =================================== -->
-
-<div class="form-card">
-
-<h2>💰 Payroll</h2>
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Salary</label>
-
-{{ form.salary }}
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- =================================== -->
-<!-- PHOTO -->
-<!-- =================================== -->
-
-<div class="form-card">
-
-<h2>🖼 Profile Image</h2>
-
-{{ form.profile_image }}
-
-</div>
-
-
-
-<!-- =================================== -->
-<!-- NOTES -->
-<!-- =================================== -->
-
-<div class="form-card">
-
-<h2>📝 Notes</h2>
-
-{{ form.notes }}
-
-</div>
-
-
-
-<div class="submit-area">
-
-<button
-type="submit"
-class="btn-save">
-
-🚀 Create Employee
-
-</button>
-
-</div>
-
-</form>
-
-</div>
-
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // HIRING MODE TOGGLE
+        // ============================================
+        const hireMode = document.getElementById("hire_mode");
+        const talentSection = document.getElementById("talent-section");
+        const existingSection = document.getElementById("existing-section");
+        const newSection = document.getElementById("new-section");
 
-const hireMode=document.getElementById("hire_mode");
+        // Restore saved value from Django
+        const savedHireMode = "{{ request.POST.hire_mode|default:'' }}";
+        if (savedHireMode) {
+            hireMode.value = savedHireMode;
+        }
 
-const talent=document.getElementById("talent-section");
+        function toggleSections() {
+            talentSection.classList.add("d-none");
+            existingSection.classList.add("d-none");
+            newSection.classList.add("d-none");
 
-const existing=document.getElementById("existing-section");
+            if (hireMode.value === "talent") {
+                talentSection.classList.remove("d-none");
+            } else if (hireMode.value === "existing") {
+                existingSection.classList.remove("d-none");
+            } else if (hireMode.value === "new") {
+                newSection.classList.remove("d-none");
+            }
+        }
 
-const create=document.getElementById("new-section");
+        hireMode.addEventListener("change", toggleSections);
+        toggleSections();
 
-function toggleSections(){
+        // ============================================
+        // SHIFT PRESETS
+        // ============================================
+        const shiftPresets = {
+            morning: {
+                check_in: '09:30',
+                check_out: '18:30',
+                shift: 'morning',
+                label: 'Morning Shift'
+            },
+            evening: {
+                check_in: '14:00',
+                check_out: '23:00',
+                shift: 'evening',
+                label: 'Evening Shift'
+            },
+            night: {
+                check_in: '22:00',
+                check_out: '07:00',
+                shift: 'night',
+                label: 'Night Shift'
+            },
+            flexible: {
+                check_in: '',
+                check_out: '',
+                shift: 'flexible',
+                label: 'Flexible Hours'
+            },
+            remote: {
+                check_in: '',
+                check_out: '',
+                shift: 'remote',
+                label: 'Remote Work'
+            }
+        };
 
-talent.classList.add("d-none");
-existing.classList.add("d-none");
-create.classList.add("d-none");
+        window.applyShift = function(shiftKey) {
+            const preset = shiftPresets[shiftKey];
+            if (!preset) return;
 
-if(hireMode.value==="talent"){
+            // Update fields
+            document.getElementById('default_check_in').value = preset.check_in || '';
+            document.getElementById('default_check_out').value = preset.check_out || '';
+            document.getElementById('shift_type').value = preset.shift;
 
-talent.classList.remove("d-none");
+            // Highlight active preset
+            document.querySelectorAll('.shift-preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.shift-preset-btn[onclick="applyShift('${shiftKey}')"]`).classList.add('active');
 
-}
+            // Show notification
+            showNotification(`✅ ${preset.label} applied!`);
+        };
 
-else if(hireMode.value==="existing"){
+        // ============================================
+        // NOTIFICATION SYSTEM
+        // ============================================
+        function showNotification(message) {
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
 
-existing.classList.remove("d-none");
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: rgba(26, 16, 53, 0.95);
+                border: 1px solid rgba(167, 139, 250, 0.15);
+                border-radius: 8px;
+                color: #e8edf5;
+                font-size: 0.9rem;
+                z-index: 9999;
+                animation: slideUp 0.3s ease;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                backdrop-filter: blur(10px);
+            `;
+            document.body.appendChild(toast);
 
-}
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
-else{
+        // ============================================
+        // FILE INPUT LABEL UPDATE
+        // ============================================
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                const label = this.closest('.file-upload-wrapper').querySelector('.upload-text');
+                if (this.files && this.files[0]) {
+                    label.textContent = this.files[0].name;
+                } else {
+                    label.textContent = 'Choose Profile Image';
+                }
+            });
+        }
 
-create.classList.remove("d-none");
+        // ============================================
+        // AUTO-FOCUS ON FIRST FIELD
+        // ============================================
+        const firstInput = document.querySelector('input:not([type="file"]), select, textarea');
+        if (firstInput && !savedHireMode) {
+            firstInput.focus();
+        }
 
-}
+        // ============================================
+        // CONFIRMATION ON CANCEL IF DIRTY
+        // ============================================
+        let formChanged = false;
+        const form = document.querySelector('form');
 
-}
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
 
-hireMode.addEventListener("change",toggleSections);
+        const cancelBtn = document.querySelector('.btn-secondary');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
 
-toggleSections();
+        // ============================================
+        // KEYBOARD SHORTCUT: Ctrl+Enter to submit
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement && activeElement.tagName !== 'BUTTON') {
+                    e.preventDefault();
+                    form.querySelector('button[type="submit"]').click();
+                }
+            }
+        });
 
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .d-none { display: none; }
+        `;
+        document.head.appendChild(style);
+    });
 </script>
-
 {% endblock %}

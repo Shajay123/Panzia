@@ -14,242 +14,317 @@ Update Attendance
 <div class="attendance-update-page">
 
     <!-- Header -->
-
     <div class="page-header">
-
         <div>
-
             <div class="breadcrumb">
-
                 <a href="{% url 'attendance' %}">Attendance</a>
-
                 <span>/</span>
-
                 <a href="{% url 'attendance_detail' attendance.id %}">
-
                     {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
-
                 </a>
-
                 <span>/</span>
-
                 <strong>Edit</strong>
-
             </div>
-
-            <h1>✏ Update Attendance</h1>
-
-            <p>
-
-                Modify attendance information for this employee.
-
-            </p>
-
+            <h1>✏️ Update Attendance</h1>
+            <p>Modify attendance information for this employee.</p>
         </div>
-
-        <a href="{% url 'attendance_detail' attendance.id %}" class="btn-back">
-
-            ← Back
-
-        </a>
-
+        <div class="header-actions">
+            <a href="{% url 'attendance_detail' attendance.id %}" class="btn-back">
+                ← Back to Details
+            </a>
+        </div>
     </div>
 
-    <form method="POST">
-
+    <form method="POST" novalidate>
         {% csrf_token %}
 
         <div class="form-card">
-
             <div class="card-header">
-
                 <h2>🕒 Attendance Details</h2>
-
+                <span class="record-id">Record #{{ attendance.id }}</span>
             </div>
 
-            <div class="employee-preview">
-
-                {% if attendance.employee.profile_image %}
-
-                <img src="{{ attendance.employee.profile_image.url }}">
-
-                {% else %}
-
-                <div class="avatar">
-
-                    {{ attendance.employee.user.first_name|first|default:attendance.employee.user.username|first }}
-
-                </div>
-
-                {% endif %}
-
+            <!-- Display Form Errors -->
+            {% if form.errors %}
+            <div class="alert alert-error">
+                <div class="alert-icon">⚠️</div>
                 <div>
-
-                    <h3>
-
-                        {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
-
-                    </h3>
-
-                    <span>
-
-                        {{ attendance.employee.designation }}
-
-                    </span>
-
+                    <strong>Please correct the following errors:</strong>
+                    <ul>
+                        {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                        <li>
+                            {% if field == '__all__' %}
+                            General Error
+                            {% else %}
+                            {{ field|title }}
+                            {% endif %}
+                            : {{ error }}
+                        </li>
+                        {% endfor %}
+                        {% endfor %}
+                    </ul>
                 </div>
+            </div>
+            {% endif %}
 
+            <!-- Success Messages -->
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <div class="alert-icon">
+                        {% if message.tags == 'success' %}✅{% endif %}
+                        {% if message.tags == 'error' %}❌{% endif %}
+                        {% if message.tags == 'warning' %}⚠️{% endif %}
+                        {% if message.tags == 'info' %}ℹ️{% endif %}
+                    </div>
+                    <div>{{ message }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Employee Preview -->
+            <div class="employee-preview">
+                <div class="employee-avatar">
+                    {% if attendance.employee.profile_image %}
+                    <img src="{{ attendance.employee.profile_image.url }}"
+                        alt="{{ attendance.employee.user.get_full_name }}">
+                    {% else %}
+                    <div class="avatar">
+                        {{ attendance.employee.user.first_name|first|default:attendance.employee.user.username|first }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="employee-info">
+                    <h3>
+                        {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
+                    </h3>
+                    <span class="designation">
+                        {{ attendance.employee.designation }}
+                    </span>
+                    <span class="employee-id">
+                        ID: {{ attendance.employee.employee_id|default:"N/A" }}
+                    </span>
+                </div>
+                <div class="employee-status-badge">
+                    <span
+                        class="badge {% if attendance.status == 'Present' %}green{% elif attendance.status == 'Absent' %}red{% elif attendance.status == 'WFH' %}blue{% else %}orange{% endif %}">
+                        {{ attendance.status }}
+                    </span>
+                </div>
             </div>
 
+            <!-- Form Fields -->
             <div class="form-grid">
-
                 <div class="form-group">
-
-                    <label>Date</label>
-
+                    <label for="id_date">
+                        📅 Date <span class="required">*</span>
+                    </label>
                     {{ form.date }}
-
+                    {% if form.date.errors %}
+                    <div class="field-error">{{ form.date.errors.0 }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
-
-                    <label>Status</label>
-
+                    <label for="id_status">
+                        📊 Status <span class="required">*</span>
+                    </label>
                     {{ form.status }}
-
+                    {% if form.status.errors %}
+                    <div class="field-error">{{ form.status.errors.0 }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
-
-                    <label>Check In</label>
-
+                    <label for="id_check_in">
+                        ⏰ Check In
+                    </label>
                     {{ form.check_in }}
-
+                    {% if form.check_in.errors %}
+                    <div class="field-error">{{ form.check_in.errors.0 }}</div>
+                    {% endif %}
+                    <small class="field-help">Format: HH:MM:SS (e.g., 09:00:00)</small>
                 </div>
 
                 <div class="form-group">
-
-                    <label>Check Out</label>
-
+                    <label for="id_check_out">
+                        ⏰ Check Out
+                    </label>
                     {{ form.check_out }}
-
+                    {% if form.check_out.errors %}
+                    <div class="field-error">{{ form.check_out.errors.0 }}</div>
+                    {% endif %}
+                    <small class="field-help">Format: HH:MM:SS (e.g., 18:00:00)</small>
                 </div>
 
                 <div class="form-group full-width">
-
-                    <label>Notes</label>
-
+                    <label for="id_notes">
+                        📝 Notes
+                    </label>
                     {{ form.notes }}
-
+                    {% if form.notes.errors %}
+                    <div class="field-error">{{ form.notes.errors.0 }}</div>
+                    {% endif %}
+                    <small class="field-help">
+                        Add remarks like: Late Login, Early Logout, Half Day, Official Visit, etc.
+                    </small>
                 </div>
+            </div>
 
+            <!-- Calculated Working Hours -->
+            <div class="working-hours-display">
+                <div class="hours-card">
+                    <div class="hours-icon">⏱️</div>
+                    <div>
+                        <strong>Working Hours</strong>
+                        {% if attendance.working_hours %}
+                        <p class="hours-value">{{ attendance.working_hours }}</p>
+                        {% else %}
+                        <p class="hours-value">--:--</p>
+                        <small>Will be calculated after saving</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="hours-card">
+                    <div class="hours-icon">📊</div>
+                    <div>
+                        <strong>Status Summary</strong>
+                        <p class="hours-value">
+                            {{ attendance.status }}
+                        </p>
+                        <small>
+                            {% if attendance.status == 'Present' %}
+                            Regular working day
+                            {% elif attendance.status == 'WFH' %}
+                            Work From Home
+                            {% elif attendance.status == 'Leave' %}
+                            On Leave
+                            {% elif attendance.status == 'Absent' %}
+                            Absent without notice
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
             </div>
 
             <!-- Information Panel -->
-
             <div class="info-panel">
-
                 <div class="info-card">
-
-                    <div class="info-icon">
-                        📅
-                    </div>
-
+                    <div class="info-icon">📅</div>
                     <div>
-
-                        <strong>
-                            Attendance Date
-                        </strong>
-
-                        <p>
-                            Update attendance for the selected working day.
-                        </p>
-
+                        <strong>Attendance Date</strong>
+                        <p>Update attendance for the selected working day.</p>
+                        <small>Last updated: {{ attendance.updated_at|date:"M d, Y H:i" }}</small>
                     </div>
-
                 </div>
 
                 <div class="info-card">
-
-                    <div class="info-icon">
-                        ⏰
-                    </div>
-
+                    <div class="info-icon">⏰</div>
                     <div>
-
-                        <strong>
-                            Working Hours
-                        </strong>
-
+                        <strong>Working Hours</strong>
                         <p>
-
                             {% if attendance.working_hours %}
-
-                            Current :
-                            {{ attendance.working_hours }}
-
+                            Current: {{ attendance.working_hours }}
                             {% else %}
-
                             Automatically calculated after saving.
-
                             {% endif %}
-
                         </p>
-
+                        <small>Based on Check In and Check Out times</small>
                     </div>
-
                 </div>
 
                 <div class="info-card">
-
-                    <div class="info-icon">
-                        📝
-                    </div>
-
+                    <div class="info-icon">📝</div>
                     <div>
-
-                        <strong>
-                            Notes
-                        </strong>
-
+                        <strong>Notes</strong>
                         <p>
-
-                            Add remarks like Late Login,
-                            Early Logout,
-                            Half Day,
-                            Official Visit,
-                            etc.
-
+                            Add remarks like Late Login, Early Logout, Half Day, Official Visit, etc.
                         </p>
-
+                        <small>Optional field</small>
                     </div>
-
                 </div>
-
             </div>
 
+            <!-- Audit Trail -->
+            <div class="audit-trail">
+                <div class="audit-item">
+                    <span class="audit-label">Created:</span>
+                    <span class="audit-value">{{ attendance.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="audit-item">
+                    <span class="audit-label">Last Modified:</span>
+                    <span class="audit-value">{{ attendance.updated_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="audit-item">
+                    <span class="audit-label">Created By:</span>
+                    <span class="audit-value">{{ attendance.created_by|default:"System" }}</span>
+                </div>
+            </div>
         </div>
 
         <!-- Action Buttons -->
-
         <div class="action-bar">
-
             <button type="submit" class="btn-save">
-
                 💾 Save Changes
-
             </button>
-
             <a href="{% url 'attendance_detail' attendance.id %}" class="btn-cancel">
-
                 Cancel
-
             </a>
-
+            <a href="{% url 'attendance_delete' attendance.id %}" class="btn-delete">
+                🗑️ Delete Record
+            </a>
         </div>
 
     </form>
 
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-calculate working hours when check-in/out changes
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkIn = document.getElementById('id_check_in');
+        const checkOut = document.getElementById('id_check_out');
+        const statusSelect = document.getElementById('id_status');
+
+        function validateTimes() {
+            if (checkIn.value && checkOut.value) {
+                const inTime = checkIn.value;
+                const outTime = checkOut.value;
+                if (outTime <= inTime) {
+                    checkOut.setCustomValidity('Check Out time must be after Check In time');
+                } else {
+                    checkOut.setCustomValidity('');
+                }
+            }
+        }
+
+        checkIn.addEventListener('change', validateTimes);
+        checkOut.addEventListener('change', validateTimes);
+
+        // Auto-set status based on times
+        statusSelect.addEventListener('change', function () {
+            if (this.value === 'Present' || this.value === 'WFH') {
+                if (!checkIn.value) {
+                    checkIn.focus();
+                }
+            }
+        });
+
+        // Confirm before delete
+        const deleteBtn = document.querySelector('.btn-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function (e) {
+                if (!confirm('Are you sure you want to delete this attendance record? This action cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

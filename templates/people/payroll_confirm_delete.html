@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Payroll Record{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/payroll_confirm_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="payroll-delete-page">
+
+    <div class="delete-card">
+        <span class="delete-icon">🗑️</span>
+        
+        <h1>Delete Payroll Record</h1>
+        
+        <p class="delete-message">
+            Are you sure you want to delete the payroll record for 
+            <strong>{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</strong>?
+        </p>
+        
+        <div class="delete-details">
+            <div class="detail-row">
+                <span class="detail-label">Employee</span>
+                <span class="detail-value">
+                    <div class="employee-info">
+                        {% if payroll.employee.profile_image %}
+                        <img src="{{ payroll.employee.profile_image.url }}" alt="{{ payroll.employee.user.get_full_name }}" class="employee-avatar">
+                        {% else %}
+                        <div class="employee-avatar">
+                            {{ payroll.employee.user.first_name|first|default:payroll.employee.user.username|first|upper }}
+                        </div>
+                        {% endif %}
+                        <span>{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</span>
+                    </div>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Month</span>
+                <span class="detail-value">{{ payroll.month }} {{ payroll.year }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Basic Salary</span>
+                <span class="detail-value">₹{{ payroll.basic_salary|floatformat:2 }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Net Salary</span>
+                <span class="detail-value">₹{{ payroll.net_salary|floatformat:2 }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                    {% if payroll.paid %}
+                    <span class="badge paid">✅ Paid</span>
+                    {% else %}
+                    <span class="badge pending">⏳ Pending</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="delete-actions">
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">🗑️ Confirm Delete</button>
+            </form>
+            <a href="{% url 'payroll_detail' payroll.id %}" class="btn-secondary">Cancel</a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

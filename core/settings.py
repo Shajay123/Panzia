@@ -24,11 +24,14 @@ SECRET_KEY = 'django-insecure--cd4@!-=yy9dk+d48q^pa3rhv#y(lw5^*!etrf-j&&+$t6=)t7
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = ["8984-117-196-187-232.ngrok-free.app","127.0.0.1","*"]
+ALLOWED_HOSTS = [
+    "0f3a-2001-4490-4ec5-36cc-c56f-e9b0-8220-525c.ngrok-free.app",
+    "127.0.0.1",
+    "*",   # Remove in production
+]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://8984-117-196-187-232.ngrok-free.app",
+    "https://0f3a-2001-4490-4ec5-36cc-c56f-e9b0-8220-525c.ngrok-free.app",
 ]
 
 
@@ -85,6 +88,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.RoleBasedRedirectMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -102,6 +106,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.startup_context',
+                'core.context_processors.user_roles',
             ],
         },
     },

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/performance_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="performance-detail-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">{{ page_icon }}</div>
+                <div>
+                    <h1>Performance Review Details</h1>
+                    <p class="header-subtitle">
+                        <strong>{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>
+                        · Rating: {{ review.rating }}/5 ⭐
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'performance_update' review.id %}" class="btn-edit">✏️ Edit</a>
+                <a href="{% url 'performance_delete' review.id %}" class="btn-delete" onclick="return confirm('Delete this review?')">🗑️ Delete</a>
+                <a href="{% url 'performance' %}" class="btn-back">← Back</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= RATING BANNER ================= -->
+    <div class="rating-banner rating-{{ review.rating }}">
+        <div class="rating-banner-content">
+            <div class="rating-display">
+                <span class="rating-stars">{{ review.get_rating_stars }}</span>
+                <span class="rating-label">{{ review.get_rating_label }}</span>
+            </div>
+            <div class="rating-meta">
+                <span class="rating-period">{{ review.get_review_period_display }}</span>
+                <span class="rating-date">Reviewed on {{ review.created_at|date:"d M Y" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DETAIL GRID ================= -->
+    <div class="detail-grid">
+
+        <!-- Left Column -->
+        <div class="detail-left">
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📋 Review Information</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="detail-list">
+                    <div class="detail-item">
+                        <span class="detail-label">Employee</span>
+                        <span class="detail-value">
+                            <div class="employee-info">
+                                {% if review.employee.profile_image %}
+                                <img src="{{ review.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                {% else %}
+                                <div class="employee-avatar">
+                                    {{ review.employee.user.first_name|first|default:review.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>
+                                    <small>{{ review.employee.designation|default:"-" }}</small>
+                                </div>
+                            </div>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Reviewer</span>
+                        <span class="detail-value">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Rating</span>
+                        <span class="detail-value">
+                            <span class="rating-stars">{{ review.get_rating_stars }}</span>
+                            <span class="rating-number">{{ review.rating }}/5</span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Review Period</span>
+                        <span class="detail-value">{{ review.get_review_period_display }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created</span>
+                        <span class="detail-value">{{ review.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Last Updated</span>
+                        <span class="detail-value">{{ review.updated_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="detail-right">
+            <!-- Review -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📝 Review</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="review-box">
+                    <p>{{ review.review|linebreaks }}</p>
+                </div>
+            </div>
+
+            <!-- Strengths -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>💪 Strengths</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="strengths-box">
+                    {% if review.strengths %}
+                    <p>{{ review.strengths|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted">No strengths listed.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Areas for Improvement -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📈 Areas for Improvement</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="improvement-box">
+                    {% if review.areas_for_improvement %}
+                    <p>{{ review.areas_for_improvement|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted">No areas for improvement listed.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Goals -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>🎯 Goals</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="goals-box">
+                    {% if review.goals %}
+                    <p>{{ review.goals|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted">No goals set.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>⚡ Quick Actions</h3>
+                    <span class="card-badge">Actions</span>
+                </div>
+                <div class="action-grid">
+                    <a href="{% url 'performance_update' review.id %}" class="action-btn edit">
+                        <span class="action-icon">✏️</span>
+                        Edit Review
+                    </a>
+                    <a href="{% url 'performance_delete' review.id %}" class="action-btn delete" onclick="return confirm('Delete this review?')">
+                        <span class="action-icon">🗑️</span>
+                        Delete Review
+                    </a>
+                    <a href="{% url 'employee_detail' review.employee.id %}" class="action-btn profile">
+                        <span class="action-icon">👤</span>
+                        Employee Profile
+                    </a>
+                    <a href="{% url 'performance' %}" class="action-btn back">
+                        <span class="action-icon">📋</span>
+                        All Reviews
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete confirmation
+        document.querySelectorAll('.btn-delete, .action-btn.delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const confirmed = confirm('Are you sure you want to delete this performance review?');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        console.log('⭐ Performance Details loaded');
+    });
+</script>
+
+{% endblock %}

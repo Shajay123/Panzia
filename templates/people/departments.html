@@ -14,326 +14,196 @@ Departments
 <div class="departments-page">
 
     <!-- ================= HEADER ================= -->
-
     <div class="page-header">
-
         <div>
-
             <h1>🏢 Departments</h1>
-
-            <p>
-
-                Manage departments inside your startup.
-
-            </p>
-
+            <p>Manage departments inside your startup.</p>
         </div>
-
         <div class="header-actions">
-
             <a href="{% url 'department_create' %}" class="btn-primary">
-
                 ➕ Add Department
-
             </a>
-
-            <a href="#" class="btn-secondary">
-
+            <button class="btn-secondary" id="exportBtn">
                 📥 Export
-
-            </a>
-
+            </button>
+            
         </div>
-
     </div>
 
-
+    {% include 'people/includes/startup_banner.html' %}
 
     <!-- ================= SUMMARY ================= -->
-
     <div class="summary-grid">
-
         <div class="summary-card blue">
-
-            <h2>
-
-                {{ departments|length }}
-
-            </h2>
-
+            <h2>{{ departments|length }}</h2>
             <p>Total Departments</p>
-
+            <span class="trend up">↑ 12%</span>
         </div>
-
         <div class="summary-card green">
-
-            <h2>
-
-                {{ employee_count }}
-
-            </h2>
-
+            <h2>{{ employee_count }}</h2>
             <p>Total Employees</p>
-
+            <span class="trend up">↑ 8%</span>
         </div>
-
         <div class="summary-card orange">
-
-            <h2>
-
-                {{ active_departments }}
-
-            </h2>
-
+            <h2>{{ active_departments }}</h2>
             <p>Active Departments</p>
-
+            <span class="trend neutral">→ 0%</span>
         </div>
-
         <div class="summary-card purple">
-
-            <h2>
-
-                {{ startup.company_name }}
-
-            </h2>
-
+            <h2>{{ startup.company_name }}</h2>
             <p>Organization</p>
-
+            <span class="trend">{{ startup.employee_count|default:"-" }}</span>
         </div>
-
     </div>
 
-
-
-    <!-- ================= SEARCH ================= -->
-
-    <div class="filter-card">
-
-        <input type="text" placeholder="🔍 Search Department..." id="departmentSearch">
-
+    <!-- ================= TOOLBAR ================= -->
+    <div class="toolbar">
+        <div class="filter-card">
+            <input type="text" placeholder="🔍 Search by name, code, or description..." id="departmentSearch" autocomplete="off">
+            <button class="btn-clear" id="clearSearch" title="Clear search">✕</button>
+        </div>
+        
     </div>
 
-
-
-    <!-- ================= TABLE ================= -->
-
-    <div class="table-card">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>#</th>
-
-                    <th>Department</th>
-
-                    <th>Code</th>
-
-                    <th>Description</th>
-
-                    <th>Employees</th>
-
-                    <th>Created</th>
-
-                    <th>Actions</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for department in departments %}
-
-                <tr>
-
-                    <td>
-
-                        {{ forloop.counter }}
-
-                    </td>
-
-                    <td>
-
-                        <strong>
-
-                            🏢 {{ department.name }}
-
-                        </strong>
-
-                    </td>
-
-                    <td>
-
-                        {{ department.code|default:"--" }}
-
-                    </td>
-
-                    <td>
-
-                        {{ department.description|default:"No description available." }}
-
-                    </td>
-
-                    <td>
-
-                        {{ department.employee_set.count }}
-
-                    </td>
-
-                    <td>
-
-                        {{ department.created_at|date:"d M Y" }}
-
-                    </td>
-
-                    <td>
-
-                        <div class="table-actions">
-
-                            <a href="{% url 'department_detail' department.id %}" class="action-btn view">
-
-                                👁
-
-                            </a>
-
-                            <a href="{% url 'department_update' department.id %}" class="action-btn edit">
-
-                                ✏
-
-                            </a>
-
-                            <a href="{% url 'department_delete' department.id %}" class="action-btn delete">
-
-                                🗑
-
-                            </a>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="7">
-
-                        <div class="empty-state">
-
-                            <h3>
-
-                                🏢 No Departments Yet
-
-                            </h3>
-
-                            <p>
-
-                                Create your first department to organize employees.
-
-                            </p>
-
-                            <br>
-                            <br>
-                            <br>
-                            <br>
-
-                            <a href="{% url 'department_create' %}" class="btn-primary">
-
-                                ➕ Create Department
-
-                            </a>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-
-
-    <!-- ================= CARDS ================= -->
-
-    <div class="department-cards">
-
-        {% for department in departments %}
-
-        <div class="department-card">
-
-            <h3>
-
-                🏢 {{ department.name }}
-
-            </h3>
-
-            <p>
-
-                {{ department.description|default:"No Description" }}
-
-            </p>
-
-            <ul>
-
-                <li>
-
-                    <b>Code :</b>
-
-                    {{ department.code|default:"--" }}
-
-                </li>
-
-                <li>
-
-                    <b>Employees :</b>
-
-                    {{ department.employee_set.count }}
-
-                </li>
-
-                <li>
-
-                    <b>Created :</b>
-
-                    {{ department.created_at|date:"d M Y" }}
-
-                </li>
-
-            </ul>
-
-            <div class="card-actions">
-
-                <a href="{% url 'department_detail' department.id %}" class="btn-light">
-
-                    View
-
-                </a>
-
-                <a href="{% url 'department_update' department.id %}" class="btn-primary">
-
-                    Edit
-
-                </a>
-
+    <!-- ================= TABLE VIEW ================= -->
+    <div class="table-card" id="tableView">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th class="sortable" data-sort="name">Department ↕</th>
+                        <th>Code</th>
+                        <th>Description</th>
+                        <th class="sortable" data-sort="employees">Employees ↕</th>
+                        <th class="sortable" data-sort="created">Created ↕</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for department in departments %}
+                    <tr data-department-id="{{ department.id }}" data-status="{% if department.active %}active{% else %}inactive{% endif %}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <strong>
+                                <span class="dept-icon">🏢</span> {{ department.name }}
+                            </strong>
+                            {% if department.active %}
+                            <span class="badge success">Active</span>
+                            {% else %}
+                            <span class="badge danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td><code>{{ department.code|default:"--" }}</code></td>
+                        <td class="dept-description">{{ department.description|default:"No description available."|truncatechars:50 }}</td>
+                        <td>
+                            <span class="employee-count">{{ department.employee_set.count }}</span>
+                            {% if department.employee_set.count > 0 %}
+                            <span class="employee-indicator">👥</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ department.created_at|date:"d M Y" }}
+                            <span class="time-ago" data-timestamp="{{ department.created_at|date:'c' }}"></span>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="{% url 'department_detail' department.id %}" class="action-btn view" title="View Details">
+                                    👁
+                                </a>
+                                <a href="{% url 'department_update' department.id %}" class="action-btn edit" title="Edit Department">
+                                    ✏
+                                </a>
+                                <a href="{% url 'department_delete' department.id %}" class="action-btn delete" title="Delete Department">
+                                    🗑
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-icon">🏢</div>
+                                <h3>No Departments Yet</h3>
+                                <p>Create your first department to organize employees.</p>
+                                <a href="{% url 'department_create' %}" class="btn-primary">
+                                    ➕ Create Department
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Table Footer -->
+        <div class="table-footer">
+            <div class="table-info">
+                Showing <span id="visibleCount">{{ departments|length }}</span> of <span id="totalCount">{{ departments|length }}</span> departments
             </div>
-
+            <div class="table-pagination">
+                <button class="pagination-btn" id="prevPage" disabled>←</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled>→</button>
+            </div>
         </div>
-
-        {% endfor %}
-
     </div>
+
+    <!-- ================= CARDS VIEW ================= -->
+    <div class="department-cards" id="cardsView" style="display: none;">
+        {% for department in departments %}
+        <div class="department-card" data-department-id="{{ department.id }}" data-status="{% if department.active %}active{% else %}inactive{% endif %}">
+            <div class="card-header">
+                <h3>🏢 {{ department.name }}</h3>
+                {% if department.active %}
+                <span class="badge success">Active</span>
+                {% else %}
+                <span class="badge danger">Inactive</span>
+                {% endif %}
+            </div>
+            <p>{{ department.description|default:"No Description"|truncatechars:100 }}</p>
+            <ul>
+                <li>
+                    <b>Code :</b>
+                    <code>{{ department.code|default:"--" }}</code>
+                </li>
+                <li>
+                    <b>Employees :</b>
+                    <span class="employee-count">{{ department.employee_set.count }}</span>
+                </li>
+                <li>
+                    <b>Created :</b>
+                    {{ department.created_at|date:"d M Y" }}
+                    <span class="time-ago" data-timestamp="{{ department.created_at|date:'c' }}"></span>
+                </li>
+            </ul>
+            <div class="card-actions">
+                <a href="{% url 'department_detail' department.id %}" class="btn-light">
+                    👁 View
+                </a>
+                <a href="{% url 'department_update' department.id %}" class="btn-primary">
+                    ✏ Edit
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state full-width">
+            <div class="empty-icon">🏢</div>
+            <h3>No Departments Yet</h3>
+            <p>Create your first department to organize employees.</p>
+            <a href="{% url 'department_create' %}" class="btn-primary">
+                ➕ Create Department
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    
 
 </div>
+
+<script src="{% static 'js/departments.js' %}"></script>
 
 {% endblock %}

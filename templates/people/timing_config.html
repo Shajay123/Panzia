@@ -1,0 +1,717 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<style>
+    .timing-config-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .config-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .config-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .config-header p {
+        margin: 5px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .config-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .config-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .config-card-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .config-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    .form-label .help-icon {
+        color: #64748b;
+        cursor: help;
+        margin-left: 4px;
+    }
+
+    .form-control {
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-control:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    select[multiple].form-control {
+        background-image: none;
+        padding-right: 12px;
+        min-height: 100px;
+    }
+
+    select[multiple].form-control option {
+        padding: 6px 10px;
+        background: #1a1035;
+        color: #e8edf5;
+        border-radius: 4px;
+    }
+
+    select[multiple].form-control option:checked {
+        background: rgba(124, 58, 237, 0.3);
+    }
+
+    .help-text {
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #7c3aed;
+        cursor: pointer;
+    }
+
+    .checkbox-group label {
+        color: #d6e0f0;
+        cursor: pointer;
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.15);
+    }
+
+    .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+    }
+
+    .preview-box {
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-top: 16px;
+        border-left: 3px solid #7c3aed;
+    }
+
+    .preview-box h4 {
+        margin: 0 0 8px 0;
+        font-size: 0.9rem;
+        color: #a78bfa;
+    }
+
+    .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .preview-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .preview-item .label {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .preview-item .value {
+        font-size: 0.95rem;
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-badge.active {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .status-badge.inactive {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .shift-presets {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        margin-bottom: 16px;
+    }
+
+    .shift-preset-btn {
+        padding: 6px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 20px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #94a3b8;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .shift-preset-btn:hover {
+        border-color: #7c3aed;
+        color: #a78bfa;
+        background: rgba(124, 58, 237, 0.05);
+    }
+
+    .shift-preset-btn.active {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+    }
+
+    @media (max-width: 768px) {
+        .config-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .config-card {
+            padding: 16px;
+        }
+
+        .action-bar {
+            flex-direction: column;
+        }
+
+        .action-bar .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .preview-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .notification-toast {
+        animation: slideUp 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="timing-config-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="config-header">
+        <div>
+            <h1>⏰ Attendance Timing Configuration</h1>
+            <p>Configure default timings and attendance rules for {{ employee.user.get_full_name }}</p>
+        </div>
+        <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary">
+            ← Back to Employee
+        </a>
+    </div>
+
+    <!-- ================= FORM ================= -->
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <!-- ================= TIMING SETTINGS ================= -->
+        <div class="config-card">
+            <div class="config-card-header">
+                <h2>⏰ Timing Settings</h2>
+                <span class="status-badge {% if employee.default_check_in %}active{% else %}inactive{% endif %}">
+                    {% if employee.default_check_in %}Configured{% else %}Not Set{% endif %}
+                </span>
+            </div>
+
+            <!-- Shift Presets -->
+            <div class="form-group">
+                <label class="form-label">Quick Shift Presets</label>
+                <div class="shift-presets">
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('morning')">
+                        🌅 Morning (9:30 - 18:30)
+                    </button>
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('evening')">
+                        🌇 Evening (14:00 - 23:00)
+                    </button>
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('night')">
+                        🌙 Night (22:00 - 07:00)
+                    </button>
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('flexible')">
+                        🕐 Flexible
+                    </button>
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('remote')">
+                        🏠 Remote
+                    </button>
+                </div>
+                <span class="help-text">Click a preset to auto-fill the timing fields below.</span>
+            </div>
+
+            <div class="config-grid">
+                <div class="form-group">
+                    <label for="{{ form.default_check_in.id_for_label }}" class="form-label">
+                        Default Check In
+                        <span class="help-icon" title="Default time employee should check in">ℹ️</span>
+                    </label>
+                    {{ form.default_check_in }}
+                    <span class="help-text">Set default check-in time for this employee</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.default_check_out.id_for_label }}" class="form-label">
+                        Default Check Out
+                        <span class="help-icon" title="Default time employee should check out">ℹ️</span>
+                    </label>
+                    {{ form.default_check_out }}
+                    <span class="help-text">Set default check-out time for this employee</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.work_start_time.id_for_label }}" class="form-label">Work Start Time</label>
+                    {{ form.work_start_time }}
+                    <span class="help-text">Official work start time</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.work_end_time.id_for_label }}" class="form-label">Work End Time</label>
+                    {{ form.work_end_time }}
+                    <span class="help-text">Official work end time</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ATTENDANCE RULES ================= -->
+        <div class="config-card">
+            <div class="config-card-header">
+                <h2>📋 Attendance Rules</h2>
+            </div>
+            <div class="config-grid">
+                <div class="form-group">
+                    <label for="{{ form.grace_period_minutes.id_for_label }}" class="form-label">
+                        Grace Period (minutes)
+                        <span class="help-icon" title="Allowed time after start time without marking late">ℹ️</span>
+                    </label>
+                    {{ form.grace_period_minutes }}
+                    <span class="help-text">Minutes allowed after start time without being marked late</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.shift.id_for_label }}" class="form-label">Shift</label>
+                    {{ form.shift }}
+                    <span class="help-text">Select the shift type</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.half_day_hours.id_for_label }}" class="form-label">Half Day Hours</label>
+                    {{ form.half_day_hours }}
+                    <span class="help-text">Hours required for a half day</span>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.full_day_hours.id_for_label }}" class="form-label">Full Day Hours</label>
+                    {{ form.full_day_hours }}
+                    <span class="help-text">Hours required for a full day</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= OVERTIME SETTINGS ================= -->
+        <div class="config-card">
+            <div class="config-card-header">
+                <h2>💪 Overtime Settings</h2>
+            </div>
+            <div class="config-grid">
+                <div class="form-group full-width">
+                    <div class="checkbox-group">
+                        {{ form.overtime_enabled }}
+                        <label for="{{ form.overtime_enabled.id_for_label }}">Enable Overtime Tracking</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.overtime_rate.id_for_label }}" class="form-label">Overtime Rate</label>
+                    {{ form.overtime_rate }}
+                    <span class="help-text">Rate multiplier for overtime (e.g., 1.5 = 1.5x)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PREVIEW ================= -->
+        <div class="preview-box">
+            <h4>📊 Configuration Preview</h4>
+            <div class="preview-grid">
+                <div class="preview-item">
+                    <span class="label">Check In</span>
+                    <span class="value" id="previewCheckIn">{{ form.default_check_in.value|default:"Not Set" }}</span>
+                </div>
+                <div class="preview-item">
+                    <span class="label">Check Out</span>
+                    <span class="value" id="previewCheckOut">{{ form.default_check_out.value|default:"Not Set" }}</span>
+                </div>
+                <div class="preview-item">
+                    <span class="label">Grace Period</span>
+                    <span class="value" id="previewGracePeriod">{{ form.grace_period_minutes.value|default:"15" }} min</span>
+                </div>
+                <div class="preview-item">
+                    <span class="label">Half Day</span>
+                    <span class="value" id="previewHalfDay">{{ form.half_day_hours.value|default:"4.00" }} hrs</span>
+                </div>
+                <div class="preview-item">
+                    <span class="label">Full Day</span>
+                    <span class="value" id="previewFullDay">{{ form.full_day_hours.value|default:"8.00" }} hrs</span>
+                </div>
+                <div class="preview-item">
+                    <span class="label">Shift</span>
+                    <span class="value" id="previewShift">{{ form.shift.value|default:"Not Set" }}</span>
+                </div>
+                <div class="preview-item">
+                    <span class="label">Overtime</span>
+                    <span class="value" id="previewOvertime">
+                        {% if form.overtime_enabled.value %}
+                        ✅ Enabled ({{ form.overtime_rate.value|default:"1.5" }}x)
+                        {% else %}
+                        ❌ Disabled
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ACTION BUTTONS ================= -->
+        <div class="action-bar">
+            <button type="submit" class="btn btn-primary">
+                💾 Save Configuration
+            </button>
+            <button type="reset" class="btn btn-secondary">
+                🔄 Reset
+            </button>
+            <button type="button" class="btn btn-danger" onclick="resetToDefault()">
+                ⚠️ Reset to Default
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // ============================================
+        // SHIFT PRESETS
+        // ============================================
+        const shiftPresets = {
+            morning: {
+                check_in: '09:30',
+                check_out: '18:30',
+                shift: 'morning',
+                label: 'Morning Shift'
+            },
+            evening: {
+                check_in: '14:00',
+                check_out: '23:00',
+                shift: 'evening',
+                label: 'Evening Shift'
+            },
+            night: {
+                check_in: '22:00',
+                check_out: '07:00',
+                shift: 'night',
+                label: 'Night Shift'
+            },
+            flexible: {
+                check_in: '',
+                check_out: '',
+                shift: 'flexible',
+                label: 'Flexible Hours'
+            },
+            remote: {
+                check_in: '',
+                check_out: '',
+                shift: 'remote',
+                label: 'Remote Work'
+            }
+        };
+
+        window.applyShift = function(shiftKey) {
+            const preset = shiftPresets[shiftKey];
+            if (!preset) return;
+
+            // Update fields
+            const checkInField = document.getElementById('id_default_check_in');
+            const checkOutField = document.getElementById('id_default_check_out');
+            const shiftField = document.getElementById('id_shift');
+
+            if (checkInField) checkInField.value = preset.check_in || '';
+            if (checkOutField) checkOutField.value = preset.check_out || '';
+            if (shiftField) shiftField.value = preset.shift;
+
+            // Trigger change events for preview
+            if (checkInField) checkInField.dispatchEvent(new Event('change'));
+            if (checkOutField) checkOutField.dispatchEvent(new Event('change'));
+            if (shiftField) shiftField.dispatchEvent(new Event('change'));
+
+            // Highlight active preset
+            document.querySelectorAll('.shift-preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.shift-preset-btn[onclick="applyShift('${shiftKey}')"]`).classList.add('active');
+
+            showNotification(`✅ ${preset.label} applied!`);
+        };
+
+        // ============================================
+        // LIVE PREVIEW UPDATE
+        // ============================================
+        const form = document.querySelector('form');
+        const previewElements = {
+            checkIn: document.getElementById('previewCheckIn'),
+            checkOut: document.getElementById('previewCheckOut'),
+            gracePeriod: document.getElementById('previewGracePeriod'),
+            halfDay: document.getElementById('previewHalfDay'),
+            fullDay: document.getElementById('previewFullDay'),
+            shift: document.getElementById('previewShift'),
+            overtime: document.getElementById('previewOvertime')
+        };
+
+        // Update preview on any input change
+        form.addEventListener('input', function(e) {
+            const target = e.target;
+            const id = target.id;
+            
+            if (id && id.includes('default_check_in')) {
+                previewElements.checkIn.textContent = target.value || 'Not Set';
+            } else if (id && id.includes('default_check_out')) {
+                previewElements.checkOut.textContent = target.value || 'Not Set';
+            } else if (id && id.includes('grace_period_minutes')) {
+                previewElements.gracePeriod.textContent = (target.value || '15') + ' min';
+            } else if (id && id.includes('half_day_hours')) {
+                previewElements.halfDay.textContent = (target.value || '4.00') + ' hrs';
+            } else if (id && id.includes('full_day_hours')) {
+                previewElements.fullDay.textContent = (target.value || '8.00') + ' hrs';
+            } else if (id && id.includes('shift')) {
+                const select = target;
+                previewElements.shift.textContent = select.options[select.selectedIndex]?.text || 'Not Set';
+            }
+        });
+
+        // ============================================
+        // RESET TO DEFAULT
+        // ============================================
+        window.resetToDefault = function() {
+            if (confirm('Reset all timing configurations to default values?')) {
+                // Set default values
+                const defaults = {
+                    'id_default_check_in': '09:30',
+                    'id_default_check_out': '18:30',
+                    'id_work_start_time': '09:30',
+                    'id_work_end_time': '18:30',
+                    'id_grace_period_minutes': '15',
+                    'id_half_day_hours': '4.00',
+                    'id_full_day_hours': '8.00',
+                    'id_overtime_rate': '1.5',
+                    'id_shift': 'morning'
+                };
+
+                Object.entries(defaults).forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.value = value;
+                        element.dispatchEvent(new Event('input'));
+                        element.dispatchEvent(new Event('change'));
+                    }
+                });
+
+                // Uncheck overtime
+                const overtimeCheck = document.getElementById('id_overtime_enabled');
+                if (overtimeCheck) {
+                    overtimeCheck.checked = false;
+                    overtimeCheck.dispatchEvent(new Event('change'));
+                }
+
+                showNotification('🔄 Reset to default values');
+            }
+        };
+
+        // ============================================
+        // NOTIFICATION SYSTEM
+        // ============================================
+        function showNotification(message) {
+            const toast = document.createElement('div');
+            toast.className = 'notification-toast';
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: rgba(26, 16, 53, 0.95);
+                border: 1px solid rgba(167, 139, 250, 0.15);
+                border-radius: 8px;
+                color: #e8edf5;
+                font-size: 0.9rem;
+                z-index: 9999;
+                animation: slideUp 0.3s ease;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                backdrop-filter: blur(10px);
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        console.log('⏰ Timing Configuration loaded');
+        console.log('👤 Employee: {{ employee.user.get_full_name }}');
+    });
+</script>
+
+{% endblock %}

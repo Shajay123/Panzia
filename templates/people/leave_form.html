@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/leave_form.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="leave-form-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">{{ page_icon }}</div>
+                <div>
+                    <h1>{{ page_title }}</h1>
+                    <p class="header-subtitle">
+                        {% if is_edit %}
+                        Update leave request for <strong>{{ leave.employee.user.get_full_name|default:leave.employee.user.username }}</strong>
+                        {% else %}
+                        Create a new leave request for an employee.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'leave_dashboard' %}" class="btn-back">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FORM ================= -->
+    <form method="POST" novalidate id="leaveForm">
+        {% csrf_token %}
+
+        <!-- ====== ERROR MESSAGES ====== -->
+        {% if form.errors or messages %}
+        <div class="error-alert">
+            <div class="error-alert-header">
+                <span class="error-icon">⚠️</span>
+                <h3>Form Submission Issues</h3>
+            </div>
+            <ul class="error-list">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <li>{{ message }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- ====== FORM CARD ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>📝 Leave Details</h2>
+                <span class="card-badge">Required</span>
+            </div>
+
+            <div class="form-grid">
+                <!-- Employee -->
+                <div class="form-group full-width">
+                    <label for="id_employee" class="form-label required">Employee</label>
+                    <select name="employee" id="id_employee" class="form-control" required>
+                        <option value="">Select Employee</option>
+                        {% for emp in form.fields.employee.queryset %}
+                        <option value="{{ emp.id }}" {% if form.employee.value == emp.id %}selected{% endif %}>
+                            {{ emp.user.get_full_name|default:emp.user.username }} - {{ emp.employee_id }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.employee.errors %}
+                        <div class="field-error">{{ form.employee.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Select the employee requesting leave.</span>
+                </div>
+
+                <!-- Leave Type -->
+                <div class="form-group">
+                    <label for="id_leave_type" class="form-label required">Leave Type</label>
+                    <select name="leave_type" id="id_leave_type" class="form-control" required>
+                        <option value="">Select Leave Type</option>
+                        <option value="Annual Leave" {% if form.leave_type.value == "Annual Leave" %}selected{% endif %}>Annual Leave</option>
+                        <option value="Sick Leave" {% if form.leave_type.value == "Sick Leave" %}selected{% endif %}>Sick Leave</option>
+                        <option value="Casual Leave" {% if form.leave_type.value == "Casual Leave" %}selected{% endif %}>Casual Leave</option>
+                        <option value="Maternity Leave" {% if form.leave_type.value == "Maternity Leave" %}selected{% endif %}>Maternity Leave</option>
+                        <option value="Paternity Leave" {% if form.leave_type.value == "Paternity Leave" %}selected{% endif %}>Paternity Leave</option>
+                        <option value="Bereavement Leave" {% if form.leave_type.value == "Bereavement Leave" %}selected{% endif %}>Bereavement Leave</option>
+                        <option value="Study Leave" {% if form.leave_type.value == "Study Leave" %}selected{% endif %}>Study Leave</option>
+                        <option value="Other" {% if form.leave_type.value == "Other" %}selected{% endif %}>Other</option>
+                    </select>
+                    {% if form.leave_type.errors %}
+                        <div class="field-error">{{ form.leave_type.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Type of leave being requested.</span>
+                </div>
+
+                <!-- Status (Read-only for edit) -->
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    {% if is_edit %}
+                    <div class="status-display">
+                        <span class="status-badge status-{{ leave.status|lower }}">
+                            <span class="status-dot"></span>
+                            {{ leave.status }}
+                        </span>
+                        {% if leave.status == 'Pending' %}
+                        <span class="status-hint">(Can be modified)</span>
+                        {% else %}
+                        <span class="status-hint warning">(Cannot be modified)</span>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="status-display">
+                        <span class="status-badge status-pending">
+                            <span class="status-dot"></span>
+                            Pending (New)
+                        </span>
+                    </div>
+                    {% endif %}
+                    <!-- Hidden status field for form submission -->
+                    <input type="hidden" name="status" value="Pending">
+                </div>
+
+                <!-- From Date -->
+                <div class="form-group">
+                    <label for="id_from_date" class="form-label required">From Date</label>
+                    <input type="date" name="from_date" id="id_from_date" class="form-control" 
+                           value="{{ form.from_date.value|date:'Y-m-d' }}" required>
+                    {% if form.from_date.errors %}
+                        <div class="field-error">{{ form.from_date.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">First day of leave.</span>
+                </div>
+
+                <!-- To Date -->
+                <div class="form-group">
+                    <label for="id_to_date" class="form-label required">To Date</label>
+                    <input type="date" name="to_date" id="id_to_date" class="form-control" 
+                           value="{{ form.to_date.value|date:'Y-m-d' }}" required>
+                    {% if form.to_date.errors %}
+                        <div class="field-error">{{ form.to_date.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Last day of leave.</span>
+                </div>
+
+                <!-- Duration (Calculated) -->
+                <div class="form-group">
+                    <label class="form-label">Duration</label>
+                    <div class="duration-display" id="durationDisplay">
+                        <span class="duration-value">—</span>
+                        <span class="duration-label">days</span>
+                    </div>
+                    <span class="help-text">Total number of days (calculated automatically).</span>
+                </div>
+
+                <!-- Reason -->
+                <div class="form-group full-width">
+                    <label for="id_reason" class="form-label required">Reason</label>
+                    <textarea name="reason" id="id_reason" class="form-control" rows="5" 
+                              placeholder="Please provide a detailed reason for the leave request..." 
+                              required>{{ form.reason.value|default:'' }}</textarea>
+                    {% if form.reason.errors %}
+                        <div class="field-error">{{ form.reason.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Provide a detailed reason for the leave request (minimum 10 characters).</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== FORM ACTIONS ====== -->
+        <div class="form-actions">
+            <button type="submit" class="btn-primary btn-save">
+                {% if is_edit %}💾 Update Request{% else %}🚀 Create Request{% endif %}
+            </button>
+            <a href="{% url 'leave_dashboard' %}" class="btn-secondary">
+                Cancel
+            </a>
+            {% if is_edit %}
+            <a href="{% url 'leave_detail' leave.id %}" class="btn-light">
+                👁️ View Details
+            </a>
+            {% endif %}
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // DURATION CALCULATOR
+        // ============================================
+        const fromDate = document.getElementById('id_from_date');
+        const toDate = document.getElementById('id_to_date');
+        const durationDisplay = document.getElementById('durationDisplay');
+
+        function calculateDuration() {
+            if (fromDate && toDate && fromDate.value && toDate.value) {
+                const from = new Date(fromDate.value);
+                const to = new Date(toDate.value);
+                
+                if (to >= from) {
+                    const diffTime = Math.abs(to - from);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                    durationDisplay.innerHTML = `
+                        <span class="duration-value">${diffDays}</span>
+                        <span class="duration-label">day${diffDays > 1 ? 's' : ''}</span>
+                    `;
+                } else {
+                    durationDisplay.innerHTML = `
+                        <span class="duration-value" style="color: #f87171;">Invalid</span>
+                        <span class="duration-label">(To date must be after From date)</span>
+                    `;
+                }
+            } else {
+                durationDisplay.innerHTML = `
+                    <span class="duration-value">—</span>
+                    <span class="duration-label">days</span>
+                `;
+            }
+        }
+
+        if (fromDate && toDate) {
+            fromDate.addEventListener('change', calculateDuration);
+            toDate.addEventListener('change', calculateDuration);
+            // Calculate on load
+            calculateDuration();
+        }
+
+        // ============================================
+        // AUTO-FOCUS
+        // ============================================
+        const firstInput = document.querySelector('select:not([disabled]), input:not([type="hidden"]), textarea');
+        if (firstInput && !firstInput.disabled) {
+            firstInput.focus();
+        }
+
+        // ============================================
+        // CONFIRMATION ON CANCEL
+        // ============================================
+        let formChanged = false;
+        const form = document.querySelector('form');
+
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+
+        const cancelBtn = document.querySelector('.btn-secondary');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // DEBUG - Log form data on submit
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            console.log('Form submitted');
+            const formData = new FormData(form);
+            console.log('Form Data:');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+        });
+
+        console.log('📝 Leave Form initialized');
+    });
+</script>
+
+{% endblock %}

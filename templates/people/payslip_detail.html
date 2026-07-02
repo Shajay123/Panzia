@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/payslip_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="payslip-detail-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">📄</div>
+                <div>
+                    <h1>Payslip Details</h1>
+                    <p class="header-subtitle">
+                        <strong>{{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username }}</strong>
+                        · {{ payslip.payroll.month }} {{ payslip.payroll.year }}
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'payslip_preview' payslip.id %}" target="_blank" class="btn-preview">
+                    <span class="btn-icon">👁️</span> Preview
+                </a>
+                {% if payslip.is_generated %}
+                <a href="{% url 'payslip_download_pdf' payslip.id %}" class="btn-download">
+                    <span class="btn-icon">⬇️</span> Download PDF
+                </a>
+                {% else %}
+                <span class="btn-download disabled">
+                    <span class="btn-icon">⏳</span> Generating...
+                </span>
+                {% endif %}
+                <a href="{% url 'payslip_regenerate' payslip.id %}" class="btn-regenerate" onclick="return confirm('Regenerate this payslip?')">
+                    <span class="btn-icon">🔄</span> Regenerate
+                </a>
+                <a href="{% url 'payslip_update' payslip.id %}" class="btn-edit">
+                    <span class="btn-icon">✏️</span> Edit
+                </a>
+                <a href="{% url 'payslip_delete' payslip.id %}" class="btn-delete" onclick="return confirm('Delete this payslip?')">
+                    <span class="btn-icon">🗑️</span> Delete
+                </a>
+                <a href="{% url 'payslips' %}" class="btn-back">
+                    <span class="btn-icon">←</span> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STATUS BANNER ================= -->
+    <div class="status-banner {% if payslip.is_generated %}generated{% else %}pending{% endif %}">
+        <div class="status-banner-content">
+            <span class="status-icon">
+                {% if payslip.is_generated %}✅{% else %}⏳{% endif %}
+            </span>
+            <div class="status-text">
+                <strong>Status:</strong>
+                {% if payslip.is_generated %}
+                Generated on {{ payslip.generated_at|date:"d M Y, H:i" }}
+                <span class="status-time">({{ payslip.generated_at|timesince }} ago)</span>
+                {% else %}
+                Pending - Please regenerate or wait for auto-generation
+                {% endif %}
+            </div>
+            {% if payslip.is_generated and payslip.pdf %}
+            <span class="status-meta">
+                📄 {{ payslip.pdf.size|filesizeformat|default:"-" }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= DETAIL GRID ================= -->
+    <div class="detail-grid">
+
+        <!-- Left Column -->
+        <div class="detail-left">
+            <!-- Payslip Information -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📋 Payslip Information</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="detail-list">
+                    <div class="detail-item">
+                        <span class="detail-label">Employee</span>
+                        <span class="detail-value">
+                            <div class="employee-info">
+                                {% if payslip.payroll.employee.profile_image %}
+                                <img src="{{ payslip.payroll.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                {% else %}
+                                <div class="employee-avatar">
+                                    {{ payslip.payroll.employee.user.first_name|first|default:payslip.payroll.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username }}</strong>
+                                    <small>{{ payslip.payroll.employee.designation|default:"-" }}</small>
+                                </div>
+                            </div>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Employee ID</span>
+                        <span class="detail-value"><code>{{ payslip.payroll.employee.employee_id }}</code></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Department</span>
+                        <span class="detail-value">{{ payslip.payroll.employee.department.name|default:"-" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Month</span>
+                        <span class="detail-value">{{ payslip.payroll.month }} {{ payslip.payroll.year }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Payslip ID</span>
+                        <span class="detail-value"><code>#PS-{{ payslip.id|stringformat:"06d" }}</code></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Generated On</span>
+                        <span class="detail-value">
+                            {% if payslip.generated_at %}
+                            {{ payslip.generated_at|date:"d M Y, H:i" }}
+                            <span class="time-ago">({{ payslip.generated_at|timesince }} ago)</span>
+                            {% elif payslip.created_at %}
+                            {{ payslip.created_at|date:"d M Y, H:i" }}
+                            <span class="time-ago">({{ payslip.created_at|timesince }} ago)</span>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value">
+                            {% if payslip.is_generated %}
+                            <span class="status-badge generated">✅ Generated</span>
+                            {% else %}
+                            <span class="status-badge pending">⏳ Pending</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if payslip.is_generated and payslip.pdf %}
+                    <div class="detail-item">
+                        <span class="detail-label">PDF File</span>
+                        <span class="detail-value">
+                            <a href="{{ payslip.pdf.url }}" target="_blank" class="file-link">
+                                📄 {{ payslip.pdf.name|cut:"payslips/" }}
+                                <span class="file-size">({{ payslip.pdf.size|filesizeformat }})</span>
+                            </a>
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="detail-right">
+            <!-- Salary Breakdown -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>💰 Salary Breakdown</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="detail-list">
+                    <div class="detail-item highlight">
+                        <span class="detail-label">Basic Salary</span>
+                        <span class="detail-value">₹{{ payslip.payroll.basic_salary|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-item highlight">
+                        <span class="detail-label">Allowances</span>
+                        <span class="detail-value">+₹{{ payslip.payroll.allowances|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-item highlight">
+                        <span class="detail-label">Deductions</span>
+                        <span class="detail-value">-₹{{ payslip.payroll.deductions|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-item total">
+                        <span class="detail-label"><strong>Net Salary</strong></span>
+                        <span class="detail-value"><strong>₹{{ payslip.payroll.net_salary|floatformat:2 }}</strong></span>
+                    </div>
+                    <div class="detail-item paid-info">
+                        <span class="detail-label">Paid Status</span>
+                        <span class="detail-value">
+                            {% if payslip.payroll.paid %}
+                            <span class="badge paid">✅ Paid on {{ payslip.payroll.paid_date|date:"d M Y" }}</span>
+                            {% else %}
+                            <span class="badge pending">⏳ Not Paid</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>⚡ Quick Actions</h3>
+                    <span class="card-badge">Actions</span>
+                </div>
+                <div class="action-grid">
+                    <a href="{% url 'payslip_preview' payslip.id %}" target="_blank" class="action-btn preview">
+                        <span class="action-icon">👁️</span>
+                        Preview HTML
+                    </a>
+                    {% if payslip.is_generated %}
+                    <a href="{% url 'payslip_download_pdf' payslip.id %}" class="action-btn download">
+                        <span class="action-icon">⬇️</span>
+                        Download PDF
+                    </a>
+                    {% else %}
+                    <span class="action-btn disabled">
+                        <span class="action-icon">⏳</span>
+                        Not Generated
+                    </span>
+                    {% endif %}
+                    <a href="{% url 'payslip_regenerate' payslip.id %}" class="action-btn regenerate" onclick="return confirm('Regenerate this payslip?')">
+                        <span class="action-icon">🔄</span>
+                        Regenerate
+                    </a>
+                    <a href="{% url 'payslip_update' payslip.id %}" class="action-btn edit">
+                        <span class="action-icon">✏️</span>
+                        Edit Payslip
+                    </a>
+                    <a href="{% url 'payroll_detail' payslip.payroll.id %}" class="action-btn payroll">
+                        <span class="action-icon">💰</span>
+                        View Payroll
+                    </a>
+                    <a href="{% url 'employee_detail' payslip.payroll.employee.id %}" class="action-btn profile">
+                        <span class="action-icon">👤</span>
+                        Employee Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete confirmation
+        document.querySelectorAll('.btn-delete, .action-btn.delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const confirmed = confirm('Are you sure you want to delete this payslip? This action cannot be undone.');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Regenerate confirmation
+        document.querySelectorAll('.btn-regenerate, .action-btn.regenerate').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const confirmed = confirm('Regenerate this payslip? This will replace the existing PDF.');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        console.log('📄 Payslip Details loaded');
+        console.log(`Status: ${document.querySelector('.status-banner')?.classList.contains('generated') ? 'Generated' : 'Pending'}`);
+    });
+</script>
+
+{% endblock %}

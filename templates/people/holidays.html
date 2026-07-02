@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Holiday Calendar
-{% endblock %}
+{% block title %}Holiday Calendar{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/holidays.css' %}">
@@ -13,132 +11,337 @@ Holiday Calendar
 
 <div class="holiday-page">
 
+    <!-- ================= HEADER ================= -->
     <div class="page-header">
-
-        <div>
-
-            <h1>🎉 Holiday Calendar</h1>
-
-            <p>Manage company holidays and public holidays.</p>
-
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">🎉</div>
+                <div>
+                    <h1>Holiday Calendar</h1>
+                    <p class="header-subtitle">Manage company holidays and public holidays.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'holiday_create' %}" class="btn-primary">
+                    <span class="btn-icon">➕</span> Add Holiday
+                </a>
+            </div>
         </div>
-
-        <div class="header-actions">
-
-            <a href="#" class="btn-primary">
-
-                ➕ Add Holiday
-
-            </a>
-
-        </div>
-
     </div>
 
+    {% include 'people/includes/startup_banner.html' %}
+
+    <!-- ================= SUMMARY ================= -->
     <div class="summary-grid">
-
         <div class="summary-card blue">
-
-            <h2>{{ holidays|length }}</h2>
-
-            <p>Total Holidays</p>
-
+            <span class="icon">📅</span>
+            <div>
+                <h2>{{ total_holidays|default:0 }}</h2>
+                <p>Total Holidays</p>
+            </div>
+            <span class="trend up">↑ 12%</span>
         </div>
-
         <div class="summary-card green">
-
-            <h2>2026</h2>
-
-            <p>Current Year</p>
-
+            <span class="icon">📆</span>
+            <div>
+                <h2>{{ current_year }}</h2>
+                <p>Current Year</p>
+            </div>
+            <span class="trend neutral">→</span>
         </div>
-
         <div class="summary-card orange">
-
-            <h2>12</h2>
-
-            <p>Upcoming</p>
-
+            <span class="icon">⏳</span>
+            <div>
+                <h2>{{ upcoming_holidays|default:0 }}</h2>
+                <p>Upcoming</p>
+            </div>
+            <span class="trend up">↑ 5%</span>
         </div>
-
+        <div class="summary-card purple">
+            <span class="icon">✅</span>
+            <div>
+                <h2>{{ past_holidays|default:0 }}</h2>
+                <p>Past Holidays</p>
+            </div>
+            <span class="trend down">↓ 8%</span>
+        </div>
     </div>
 
+    <!-- ================= FILTERS ================= -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h3>🔍 Filter Holidays</h3>
+            <button class="btn-toggle-filters" id="toggleFilters" title="Toggle Filters">▼</button>
+        </div>
+        <form method="GET" id="filterForm">
+            <div class="filter-grid" id="filterGrid">
+                <div class="filter-group">
+                    <label>🏷️ Holiday Type</label>
+                    {{ filter_form.holiday_type }}
+                </div>
+                <div class="filter-group">
+                    <label>📅 Year</label>
+                    {{ filter_form.year }}
+                </div>
+                <div class="filter-group">
+                    <label>📊 Status</label>
+                    {{ filter_form.status }}
+                </div>
+                <div class="filter-group filter-actions">
+                    <label>&nbsp;</label>
+                    <div class="filter-buttons">
+                        <button type="submit" class="btn-primary btn-filter">🔍 Apply</button>
+                        <a href="{% url 'holidays' %}" class="btn-light btn-reset">↩️ Reset</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="filter-stats">
+            <span id="recordCount">Showing <strong>{{ holidays|length }}</strong> holidays</span>
+        </div>
+    </div>
+
+    <!-- ================= HOLIDAYS TABLE ================= -->
     <div class="table-card">
+        <div class="table-header">
+            <div class="table-header-left">
+                <h3>📋 Holiday List</h3>
+                <span class="record-badge">{{ holidays|length }}</span>
+            </div>
+            <div class="table-header-right">
+                <div class="table-search">
+                    <input type="text" id="tableSearch" placeholder="🔍 Search holidays..." class="search-input">
+                </div>
+                <button class="btn-light btn-sm" id="refreshTable">🔄 Refresh</button>
+            </div>
+        </div>
 
-        <table>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="name">Holiday Name ↕</th>
+                        <th class="sortable" data-sort="date">Date ↕</th>
+                        <th class="sortable" data-sort="day">Day ↕</th>
+                        <th class="sortable" data-sort="type">Type ↕</th>
+                        <th class="sortable" data-sort="status">Status ↕</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for holiday in holidays %}
+                    <tr class="holiday-row"
+                        data-name="{{ holiday.name|lower }}"
+                        data-date="{{ holiday.date|date:'Y-m-d' }}"
+                        data-day="{{ holiday.date|date:'l'|lower }}"
+                        data-type="{{ holiday.holiday_type|lower }}"
+                        data-status="{% if holiday.is_upcoming %}upcoming{% else %}past{% endif %}">
+                        <td>
+                            <div class="holiday-name">
+                                <span class="holiday-icon">🎉</span>
+                                <strong>{{ holiday.name }}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="date-cell">{{ holiday.date|date:"d M Y" }}</span>
+                        </td>
+                        <td>
+                            <span class="day-badge">{{ holiday.date|date:"l" }}</span>
+                        </td>
+                        <td>
+                            <span class="type-badge type-{{ holiday.holiday_type|lower }}">
+                                {{ holiday.holiday_type }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if holiday.is_upcoming %}
+                            <span class="status-badge upcoming">
+                                <span class="status-dot"></span>
+                                Upcoming
+                            </span>
+                            {% else %}
+                            <span class="status-badge past">
+                                <span class="status-dot"></span>
+                                Past
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'holiday_detail' holiday.id %}" class="action-btn view" title="View Details">
+                                    <span class="action-icon">📄</span>
+                                </a>
+                                <a href="{% url 'holiday_update' holiday.id %}" class="action-btn edit" title="Edit Holiday">
+                                    <span class="action-icon">✏️</span>
+                                </a>
+                                <a href="{% url 'holiday_delete' holiday.id %}" class="action-btn delete" title="Delete Holiday" onclick="return confirm('Delete this holiday?')">
+                                    <span class="action-icon">🗑️</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon">🎉</div>
+                                <h3>No Holidays Found</h3>
+                                <p>Add holidays to the calendar.</p>
+                                <a href="{% url 'holiday_create' %}" class="btn-primary">➕ Add Holiday</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-            <thead>
-
-                <tr>
-
-                    <th>Name</th>
-
-                    <th>Date</th>
-
-                    <th>Type</th>
-
-                    <th>Status</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% for holiday in holidays %}
-
-            <tr>
-
-                <td>
-
-                    🎉 {{ holiday.name }}
-
-                </td>
-
-                <td>
-
-                    {{ holiday.date }}
-
-                </td>
-
-                <td>
-
-                    {{ holiday.holiday_type }}
-
-                </td>
-
-                <td>
-
-                    <span class="badge success">
-
-                        Upcoming
-
-                    </span>
-
-                </td>
-
-            </tr>
-
-            {% empty %}
-
-            <tr>
-
-                <td colspan="4">
-
-                    No Holidays Added
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
+        <!-- Table Footer -->
+        <div class="table-footer">
+            <div class="footer-left">
+                <span><strong>Total:</strong> <span id="footerTotal">{{ holidays|length }}</span> holidays</span>
+                <span class="footer-divider">|</span>
+                <span><strong>Upcoming:</strong> {{ upcoming_holidays|default:0 }}</span>
+                <span class="footer-divider">|</span>
+                <span><strong>Past:</strong> {{ past_holidays|default:0 }}</span>
+            </div>
+            <div class="footer-right">
+                <button class="pagination-btn" id="prevPage" disabled>← Prev</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled>Next →</button>
+            </div>
+        </div>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // TOGGLE FILTERS
+        // ============================================
+        const toggleBtn = document.getElementById('toggleFilters');
+        const filterGrid = document.getElementById('filterGrid');
+        let filtersVisible = true;
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                filtersVisible = !filtersVisible;
+                filterGrid.style.display = filtersVisible ? 'grid' : 'none';
+                this.textContent = filtersVisible ? '▼' : '▶';
+            });
+        }
+
+        // ============================================
+        // TABLE SEARCH
+        // ============================================
+        const tableSearch = document.getElementById('tableSearch');
+        const tableRows = document.querySelectorAll('.holiday-row');
+
+        if (tableSearch) {
+            tableSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visible = 0;
+
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const match = text.includes(query);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+
+                document.getElementById('recordCount').innerHTML = `Showing <strong>${visible}</strong> holidays`;
+                document.getElementById('footerTotal').textContent = visible;
+            });
+        }
+
+        // ============================================
+        // SORTING
+        // ============================================
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                const currentDir = this.classList.contains('asc') ? 'asc' : 'desc';
+                const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+                document.querySelectorAll('.sortable').forEach(h => {
+                    h.classList.remove('asc', 'desc');
+                });
+                this.classList.add(newDir);
+
+                sortTable(sortKey, newDir);
+            });
+        });
+
+        function sortTable(key, direction) {
+            const tbody = document.querySelector('#tableBody');
+            const rows = Array.from(tbody.querySelectorAll('.holiday-row'));
+
+            rows.sort((a, b) => {
+                let aVal, bVal;
+
+                switch(key) {
+                    case 'name':
+                        aVal = a.dataset.name || '';
+                        bVal = b.dataset.name || '';
+                        break;
+                    case 'date':
+                        aVal = a.dataset.date || '';
+                        bVal = b.dataset.date || '';
+                        break;
+                    case 'day':
+                        aVal = a.dataset.day || '';
+                        bVal = b.dataset.day || '';
+                        break;
+                    case 'type':
+                        aVal = a.dataset.type || '';
+                        bVal = b.dataset.type || '';
+                        break;
+                    case 'status':
+                        aVal = a.dataset.status || '';
+                        bVal = b.dataset.status || '';
+                        break;
+                    default:
+                        aVal = '';
+                        bVal = '';
+                }
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                if (tableSearch && document.activeElement !== tableSearch) {
+                    e.preventDefault();
+                    tableSearch.focus();
+                    tableSearch.select();
+                }
+            }
+        });
+
+        // ============================================
+        // REFRESH
+        // ============================================
+        document.getElementById('refreshTable').addEventListener('click', function() {
+            location.reload();
+        });
+
+        console.log('🎉 Holidays initialized');
+        console.log(`📊 ${document.querySelectorAll('.holiday-row').length} holidays loaded`);
+    });
+</script>
 
 {% endblock %}

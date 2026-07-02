@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Attendance Report
-{% endblock %}
+{% block title %}Attendance Report{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/attendance_report.css' %}">
@@ -14,635 +12,461 @@ Attendance Report
 <div class="attendance-report-page">
 
     <!-- ================= HEADER ================= -->
-
     <div class="page-header">
-
         <div>
-
-            <span class="page-tag">
-                Attendance Analytics
-            </span>
-
-            <h1>
-                📊 Attendance Report
-            </h1>
-
-            <p>
-
-                Analyze attendance trends, employee working hours,
-                absenteeism and workforce productivity.
-
-            </p>
-
+            <span class="page-tag">📊 Attendance Analytics</span>
+            <h1>Attendance Report</h1>
+            <p>Analyze attendance trends, employee working hours, absenteeism and workforce productivity.</p>
         </div>
-
         <div class="header-actions">
-
-            <a href="{% url 'attendance' %}" class="btn-light">
-
-                ← Attendance
-
-            </a>
-
-            <a href="#" class="btn-secondary">
-
-                📥 Excel
-
-            </a>
-
-            <a href="#" class="btn-primary">
-
-                🖨 PDF
-
-            </a>
-
+            <a href="{% url 'attendance' %}" class="btn-light">← Attendance</a>
+            <button class="btn-secondary" id="exportExcel">📥 Excel</button>
+            <button class="btn-primary" id="exportPDF">🖨 PDF</button>
         </div>
-
     </div>
-
-
 
     <!-- ================= KPI CARDS ================= -->
-
     <div class="summary-grid">
-
         <div class="summary-card present">
-
-            <div class="card-icon">
-
-                ✅
-
-            </div>
-
+            <div class="card-icon">✅</div>
             <div>
-
-                <h2>
-
-                    {{ present_count }}
-
-                </h2>
-
-                <p>
-
-                    Present
-
-                </p>
-
+                <h2>{{ present_count|default:0 }}</h2>
+                <p>Present</p>
             </div>
-
+            <span class="trend up">↑ 8%</span>
         </div>
-
-
         <div class="summary-card absent">
-
-            <div class="card-icon">
-
-                ❌
-
-            </div>
-
+            <div class="card-icon">❌</div>
             <div>
-
-                <h2>
-
-                    {{ absent_count }}
-
-                </h2>
-
-                <p>
-
-                    Absent
-
-                </p>
-
+                <h2>{{ absent_count|default:0 }}</h2>
+                <p>Absent</p>
             </div>
-
+            <span class="trend down">↓ 3%</span>
         </div>
-
-
         <div class="summary-card leave">
-
-            <div class="card-icon">
-
-                🌴
-
-            </div>
-
+            <div class="card-icon">🌴</div>
             <div>
-
-                <h2>
-
-                    {{ leave_count }}
-
-                </h2>
-
-                <p>
-
-                    Leave
-
-                </p>
-
+                <h2>{{ leave_count|default:0 }}</h2>
+                <p>Leave</p>
             </div>
-
+            <span class="trend neutral">→ 0%</span>
         </div>
-
-
         <div class="summary-card wfh">
-
-            <div class="card-icon">
-
-                🏠
-
-            </div>
-
+            <div class="card-icon">🏠</div>
             <div>
-
-                <h2>
-
-                    {{ wfh_count }}
-
-                </h2>
-
-                <p>
-
-                    WFH
-
-                </p>
-
+                <h2>{{ wfh_count|default:0 }}</h2>
+                <p>WFH</p>
             </div>
-
+            <span class="trend up">↑ 5%</span>
         </div>
-
-
         <div class="summary-card percentage">
-
-            <div class="card-icon">
-
-                📈
-
-            </div>
-
+            <div class="card-icon">📈</div>
             <div>
-
-                <h2>
-
-                    {{ attendance_percentage }}%
-
-                </h2>
-
-                <p>
-
-                    Attendance
-
-                </p>
-
+                <h2>{{ attendance_percentage|default:0 }}%</h2>
+                <p>Attendance Rate</p>
             </div>
-
+            <span class="trend {% if attendance_percentage > 75 %}up{% elif attendance_percentage < 50 %}down{% else %}neutral{% endif %}">
+                {% if attendance_percentage > 75 %}↑{% elif attendance_percentage < 50 %}↓{% else %}→{% endif %}
+                {{ attendance_percentage|default:0 }}%
+            </span>
         </div>
-
     </div>
-
-
 
     <!-- ================= FILTERS ================= -->
-
     <div class="filter-card">
-
-        <form method="GET">
-
-            <div class="filter-grid">
-
+        <div class="filter-header">
+            <h3>🔍 Filter Records</h3>
+            <button class="btn-toggle-filters" id="toggleFilters">▼</button>
+        </div>
+        <form method="GET" id="filterForm">
+            <div class="filter-grid" id="filterGrid">
                 <div class="filter-group">
-
-                    <label>
-
-                        Employee
-
-                    </label>
-
-                    <select name="employee">
-
-                        <option value="">
-                            All Employees
-                        </option>
-
+                    <label>Employee</label>
+                    <select name="employee" id="employeeFilter" class="form-control">
+                        <option value="">All Employees</option>
                         {% for emp in employees %}
-
-                        <option value="{{ emp.id }}">
+                        <option value="{{ emp.id }}" {% if request.GET.employee == emp.id|stringformat:"s" %}selected{% endif %}>
                             {{ emp.user.get_full_name|default:emp.user.username }}
                         </option>
-
                         {% endfor %}
-
                     </select>
-
                 </div>
 
-
-
                 <div class="filter-group">
-
-                    <label>
-
-                        Status
-
-                    </label>
-
-                    <select name="status">
-
-                        <option value="">
-
-                            All Status
-
-                        </option>
-
-                        <option value="Present">
-
-                            Present
-
-                        </option>
-
-                        <option value="Absent">
-
-                            Absent
-
-                        </option>
-
-                        <option value="Leave">
-
-                            Leave
-
-                        </option>
-
-                        <option value="WFH">
-
-                            WFH
-
-                        </option>
-
+                    <label>Status</label>
+                    <select name="status" id="statusFilter" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="Present" {% if request.GET.status == "Present" %}selected{% endif %}>✅ Present</option>
+                        <option value="Absent" {% if request.GET.status == "Absent" %}selected{% endif %}>❌ Absent</option>
+                        <option value="Leave" {% if request.GET.status == "Leave" %}selected{% endif %}>🌴 Leave</option>
+                        <option value="WFH" {% if request.GET.status == "WFH" %}selected{% endif %}>🏠 WFH</option>
                     </select>
-
                 </div>
-
-
 
                 <div class="filter-group">
-
-                    <label>
-
-                        From Date
-
-                    </label>
-
-                    <input type="date" name="from" value="{{ request.GET.from }}">
-
+                    <label>From Date</label>
+                    <input type="date" name="from" id="fromDate" class="form-control" value="{{ request.GET.from }}">
                 </div>
-
-
 
                 <div class="filter-group">
-
-                    <label>
-
-                        To Date
-
-                    </label>
-
-                    <input type="date" name="to" value="{{ request.GET.to }}">
-
+                    <label>To Date</label>
+                    <input type="date" name="to" id="toDate" class="form-control" value="{{ request.GET.to }}">
                 </div>
 
+                <div class="filter-group filter-actions-group">
+                    <label>&nbsp;</label>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn-primary btn-filter">
+                            🔍 Apply Filters
+                        </button>
+                        <a href="{% url 'attendance_report' %}" class="btn-light btn-reset">
+                            ↩️ Reset
+                        </a>
+                    </div>
+                </div>
             </div>
-
-
-
-            <div class="filter-actions">
-
-                <button type="submit" class="btn-primary">
-
-                    🔍 Apply Filters
-
-                </button>
-
-                <a href="{% url 'attendance_report' %}" class="btn-light">
-
-                    Reset
-
-                </a>
-
-            </div>
-
         </form>
-
+        <div class="filter-stats">
+            <span id="recordCount">Showing {{ records|length }} records</span>
+            <div id="activeFilters" class="active-filters"></div>
+        </div>
     </div>
 
-
-
     <!-- ================= ATTENDANCE TABLE ================= -->
-
     <div class="table-card">
-
         <div class="table-header">
-
-            <h3>
-
-                Attendance Records
-
-            </h3>
-
-            <span>
-
-                {{ records|length }} Record{{ records|length|pluralize }}
-
-            </span>
-
+            <div class="table-header-left">
+                <h3>📋 Attendance Records</h3>
+                <span class="record-badge" id="totalRecords">{{ records|length }}</span>
+            </div>
+            <div class="table-header-right">
+                <div class="table-search">
+                    <input type="text" id="tableSearch" placeholder="🔍 Search in table..." class="search-input">
+                </div>
+                <button class="btn-light btn-sm" id="refreshTable">🔄 Refresh</button>
+            </div>
         </div>
 
         <div class="table-responsive">
-
-            <table class="attendance-table">
-
+            <table class="attendance-table" id="attendanceTable">
                 <thead>
-
                     <tr>
-
-                        <th>Employee</th>
-
-                        <th>Date</th>
-
+                        <th class="sortable" data-sort="employee">Employee ↕</th>
+                        <th class="sortable" data-sort="date">Date ↕</th>
                         <th>Check In</th>
-
                         <th>Check Out</th>
-
-                        <th>Working Hours</th>
-
-                        <th>Status</th>
-
+                        <th class="sortable" data-sort="hours">Working Hours ↕</th>
+                        <th class="sortable" data-sort="status">Status ↕</th>
                         <th>Notes</th>
-
                         <th>Actions</th>
-
                     </tr>
-
                 </thead>
-
-                <tbody>
-
+                <tbody id="tableBody">
                     {% for record in records %}
-
-                    <tr>
-
-                        <!-- Employee -->
-
+                    <tr class="record-row" 
+                        data-employee="{{ record.employee.user.get_full_name|default:record.employee.user.username|lower }}"
+                        data-date="{{ record.date|date:'Y-m-d' }}"
+                        data-status="{{ record.status|lower }}"
+                        data-hours="{{ record.working_hours|default:'0' }}">
                         <td>
-
                             <div class="employee-box">
-
                                 {% if record.employee.profile_image %}
-
-                                <img src="{{ record.employee.profile_image.url }}" alt="Employee">
-
+                                <img src="{{ record.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
                                 {% else %}
-
                                 <div class="avatar">
-
-                                    {{ record.employee.user.first_name|first|default:record.employee.user.username|first
-                                    }}
-
+                                    {{ record.employee.user.first_name|first|default:record.employee.user.username|first|upper }}
                                 </div>
-
                                 {% endif %}
-
                                 <div>
-
-                                    <strong>
-
-                                        {{ record.employee.user.get_full_name|default:record.employee.user.username }}
-
-                                    </strong>
-
-                                    <small>
-
-                                        {{ record.employee.designation }}
-
-                                    </small>
-
+                                    <strong>{{ record.employee.user.get_full_name|default:record.employee.user.username }}</strong>
+                                    <small>{{ record.employee.designation|default:"-" }}</small>
                                 </div>
-
                             </div>
-
                         </td>
-
-                        <!-- Date -->
-
+                        <td class="date-cell">{{ record.date|date:"d M Y" }}</td>
+                        <td>{% if record.check_in %}{{ record.check_in|time:"H:i" }}{% else %}--{% endif %}</td>
+                        <td>{% if record.check_out %}{{ record.check_out|time:"H:i" }}{% else %}--{% endif %}</td>
+                        <td><span class="working-hours">{{ record.working_hours|default:"0.0" }}h</span></td>
                         <td>
-
-                            {{ record.date|date:"d M Y" }}
-
-                        </td>
-
-                        <!-- Check In -->
-
-                        <td>
-
-                            {% if record.check_in %}
-
-                            {{ record.check_in }}
-
-                            {% else %}
-
-                            --
-
-                            {% endif %}
-
-                        </td>
-
-                        <!-- Check Out -->
-
-                        <td>
-
-                            {% if record.check_out %}
-
-                            {{ record.check_out }}
-
-                            {% else %}
-
-                            --
-
-                            {% endif %}
-
-                        </td>
-
-                        <!-- Working Hours -->
-
-                        <td>
-
-                            <span class="working-hours">
-
-                                {{ record.working_hours }}
-
+                            <span class="status-badge status-{{ record.status|lower }}">
+                                <span class="status-dot"></span>
+                                {{ record.status }}
                             </span>
-
                         </td>
-
-                        <!-- Status -->
-
+                        <td class="notes-cell">{{ record.notes|default:"-"|truncatechars:30 }}</td>
                         <td>
-
-                            {% if record.status == "Present" %}
-
-                            <span class="badge present">
-
-                                ✅ Present
-
-                            </span>
-
-                            {% elif record.status == "Absent" %}
-
-                            <span class="badge absent">
-
-                                ❌ Absent
-
-                            </span>
-
-                            {% elif record.status == "WFH" %}
-
-                            <span class="badge wfh">
-
-                                🏠 WFH
-
-                            </span>
-
-                            {% else %}
-
-                            <span class="badge leave">
-
-                                🌴 Leave
-
-                            </span>
-
-                            {% endif %}
-
-                        </td>
-
-                        <!-- Notes -->
-
-                        <td>
-
-                            {% if record.notes %}
-
-                            {{ record.notes|truncatechars:40 }}
-
-                            {% else %}
-
-                            -
-
-                            {% endif %}
-
-                        </td>
-
-                        <!-- Actions -->
-
-                        <td>
-
                             <div class="action-buttons">
-
-                                <a href="{% url 'attendance_detail' record.id %}" class="table-btn view">
-
-                                    👁
-
-                                </a>
-
-                                <a href="{% url 'attendance_update' record.id %}" class="table-btn edit">
-
-                                    ✏
-
-                                </a>
-
-                                <a href="{% url 'attendance_delete' record.id %}" class="table-btn delete">
-
-                                    🗑
-
-                                </a>
-
+                                <a href="{% url 'attendance_detail' record.id %}" class="table-btn view" title="View">👁️</a>
+                                <a href="{% url 'attendance_update' record.id %}" class="table-btn edit" title="Edit">✏️</a>
+                                <a href="{% url 'attendance_delete' record.id %}" class="table-btn delete" title="Delete">🗑️</a>
                             </div>
-
                         </td>
-
                     </tr>
-
                     {% empty %}
-
                     <tr>
-
                         <td colspan="8">
-
                             <div class="empty-state">
-
-                                <div class="empty-icon">
-
-                                    📋
-
-                                </div>
-
-                                <h3>
-
-                                    No Attendance Records Found
-
-                                </h3>
-
-                                <p>
-
-                                    No attendance data matches your selected filters.
-
-                                </p>
-
+                                <div class="empty-icon">📋</div>
+                                <h3>No Attendance Records Found</h3>
+                                <p>No attendance data matches your selected filters.</p>
+                                <a href="{% url 'attendance' %}" class="btn-primary btn-sm">➕ Mark Attendance</a>
                             </div>
-
                         </td>
-
                     </tr>
-
                     {% endfor %}
-
                 </tbody>
-
             </table>
-
         </div>
 
         <!-- Footer -->
-
         <div class="report-footer">
-
-            <div>
-
-                <strong>Total Records:</strong>
-
-                {{ records|length }}
-
+            <div class="footer-left">
+                <span><strong>Total Records:</strong> <span id="footerTotal">{{ records|length }}</span></span>
+                <span><strong>Attendance Rate:</strong> {{ attendance_percentage|default:0 }}%</span>
+                <span><strong>Generated:</strong> {% now "d M Y H:i" %}</span>
             </div>
-
-            <div>
-
-                <strong>Attendance Rate:</strong>
-
-                {{ attendance_percentage }}%
-
+            <div class="footer-right">
+                <button class="pagination-btn" id="prevPage" disabled>← Prev</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled>Next →</button>
             </div>
-
-            <div>
-
-                <strong>Generated:</strong>
-
-                {% now "d M Y H:i" %}
-
-            </div>
-
         </div>
-
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ============================================
+        // TOGGLE FILTERS
+        // ============================================
+        const toggleBtn = document.getElementById('toggleFilters');
+        const filterGrid = document.getElementById('filterGrid');
+        let filtersVisible = true;
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                filtersVisible = !filtersVisible;
+                filterGrid.style.display = filtersVisible ? 'grid' : 'none';
+                this.textContent = filtersVisible ? '▼' : '▶';
+            });
+        }
+
+        // ============================================
+        // TABLE SEARCH
+        // ============================================
+        const tableSearch = document.getElementById('tableSearch');
+        const tableRows = document.querySelectorAll('.record-row');
+
+        if (tableSearch) {
+            tableSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visible = 0;
+
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const match = text.includes(query);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+
+                document.getElementById('recordCount').textContent = `Showing ${visible} records`;
+                document.getElementById('totalRecords').textContent = visible;
+                document.getElementById('footerTotal').textContent = visible;
+            });
+        }
+
+        // ============================================
+        // SORTING
+        // ============================================
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                const currentDir = this.classList.contains('asc') ? 'asc' : 'desc';
+                const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+                // Remove sort classes from all headers
+                document.querySelectorAll('.sortable').forEach(h => {
+                    h.classList.remove('asc', 'desc');
+                });
+                this.classList.add(newDir);
+
+                sortTable(sortKey, newDir);
+            });
+        });
+
+        function sortTable(key, direction) {
+            const tbody = document.querySelector('#tableBody');
+            const rows = Array.from(tbody.querySelectorAll('.record-row'));
+
+            rows.sort((a, b) => {
+                let aVal, bVal;
+
+                switch(key) {
+                    case 'employee':
+                        aVal = a.dataset.employee || '';
+                        bVal = b.dataset.employee || '';
+                        break;
+                    case 'date':
+                        aVal = a.dataset.date || '';
+                        bVal = b.dataset.date || '';
+                        break;
+                    case 'hours':
+                        aVal = parseFloat(a.dataset.hours) || 0;
+                        bVal = parseFloat(b.dataset.hours) || 0;
+                        break;
+                    case 'status':
+                        aVal = a.dataset.status || '';
+                        bVal = b.dataset.status || '';
+                        break;
+                    default:
+                        aVal = '';
+                        bVal = '';
+                }
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // ============================================
+        // EXPORT EXCEL
+        // ============================================
+        document.getElementById('exportExcel').addEventListener('click', function() {
+            exportTable('excel');
+        });
+
+        // ============================================
+        // EXPORT PDF
+        // ============================================
+        document.getElementById('exportPDF').addEventListener('click', function() {
+            exportTable('pdf');
+        });
+
+        function exportTable(format) {
+            const rows = document.querySelectorAll('#tableBody .record-row:not([style*="display: none"])');
+            
+            if (rows.length === 0) {
+                alert('No records to export. Please adjust your filters.');
+                return;
+            }
+
+            let csvContent = 'Employee,Date,Check In,Check Out,Working Hours,Status,Notes\n';
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const employee = cells[0]?.textContent?.trim() || '';
+                const date = cells[1]?.textContent?.trim() || '';
+                const checkIn = cells[2]?.textContent?.trim() || '';
+                const checkOut = cells[3]?.textContent?.trim() || '';
+                const hours = cells[4]?.textContent?.trim() || '';
+                const status = cells[5]?.textContent?.trim() || '';
+                const notes = cells[6]?.textContent?.trim() || '';
+                
+                csvContent += `"${employee}","${date}","${checkIn}","${checkOut}","${hours}","${status}","${notes}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `attendance_report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            if (format === 'pdf') {
+                alert('PDF export will be available soon. CSV file has been downloaded.');
+            }
+        }
+
+        // ============================================
+        // REFRESH TABLE
+        // ============================================
+        document.getElementById('refreshTable').addEventListener('click', function() {
+            location.reload();
+        });
+
+        // ============================================
+        // ACTIVE FILTERS DISPLAY
+        // ============================================
+        function showActiveFilters() {
+            const params = new URLSearchParams(window.location.search);
+            const filters = [];
+            
+            const employee = params.get('employee');
+            if (employee) {
+                const name = document.querySelector('#employeeFilter option[value="' + employee + '"]')?.textContent;
+                if (name) filters.push(`Employee: ${name}`);
+            }
+            
+            const status = params.get('status');
+            if (status) filters.push(`Status: ${status}`);
+            
+            const from = params.get('from');
+            if (from) filters.push(`From: ${from}`);
+            
+            const to = params.get('to');
+            if (to) filters.push(`To: ${to}`);
+            
+            const container = document.getElementById('activeFilters');
+            if (filters.length > 0) {
+                container.innerHTML = filters.map(f => 
+                    `<span class="filter-chip">${f} <span class="remove-chip" onclick="removeFilter('${f}')">✕</span></span>`
+                ).join('');
+            } else {
+                container.innerHTML = '<span class="no-filters">No active filters</span>';
+            }
+        }
+
+        window.removeFilter = function(filter) {
+            // Remove filter by reloading without it
+            const url = new URL(window.location.href);
+            const params = ['employee', 'status', 'from', 'to'];
+            params.forEach(p => url.searchParams.delete(p));
+            window.location.href = url.toString();
+        };
+
+        showActiveFilters();
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                if (tableSearch && document.activeElement !== tableSearch) {
+                    e.preventDefault();
+                    tableSearch.focus();
+                    tableSearch.select();
+                }
+            }
+        });
+
+        // ============================================
+        // AUTO-SUBMIT ON FILTER CHANGE (optional)
+        // ============================================
+        // Uncomment to auto-submit when filters change
+        /*
+        document.querySelectorAll('#employeeFilter, #statusFilter, #fromDate, #toDate').forEach(input => {
+            input.addEventListener('change', function() {
+                document.getElementById('filterForm').submit();
+            });
+        });
+        */
+
+        console.log('📊 Attendance Report initialized');
+        console.log(`📋 ${document.querySelectorAll('.record-row').length} records loaded`);
+    });
+</script>
 
 {% endblock %}

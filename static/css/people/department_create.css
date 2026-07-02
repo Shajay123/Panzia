@@ -1,267 +1,464 @@
+/* static/css/people/department_create.css */
 
-.department-create-page{
-
-    max-width:900px;
-
-    margin:40px auto;
-
-    padding:20px;
-
+/* ----- RESET & BASE (Dark Theme) ----- */
+.department-create-page * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-
-.page-header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:30px;
-
+.department-create-page {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #0b1120;
+    padding: 2.5rem 2rem;
+    color: #e8edf5;
+    max-width: 900px;
+    margin: 0 auto;
+    min-height: 100vh;
 }
 
-
-.page-header h1{
-
-    font-size:32px;
-
-    margin-bottom:8px;
-
+/* ----- TYPOGRAPHY ----- */
+.department-create-page h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.25rem;
+    color: #f0f4fe;
 }
 
-
-.page-header p{
-
-    color:#666;
-
+.department-create-page h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #e2eaf6;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #1f2d47;
 }
 
-
-.btn-back{
-
-    padding:10px 20px;
-
-    background:#f4f4f4;
-
-    text-decoration:none;
-
-    border-radius:8px;
-
-    color:#333;
-
-    transition:.3s;
-
+.department-create-page p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
-
-.btn-back:hover{
-
-    background:#ddd;
-
+/* ----- PAGE HEADER ----- */
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    background: #182235;
+    padding: 1.75rem 2.25rem;
+    border-radius: 1.5rem;
+    border: 1px solid #28344a;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-
-.form-card{
-
-    background:#1e293b;   /* Dark Slate */
-
-    color:#f8fafc;
-
-    padding:30px;
-
-    border-radius:18px;
-
-    border:1px solid rgba(255,255,255,.08);
-
-    box-shadow:0 10px 35px rgba(0,0,0,.35);
-
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.5rem;
+    border-radius: 2.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: #28344a;
+    color: #d6e0f0;
+    border: 1px solid #3a4862;
 }
 
-
-.form-card h2{
-
-    margin-bottom:25px;
-
-    font-size:24px;
-
+.btn-back:hover {
+    background: #33425c;
+    border-color: #5a6f92;
+    transform: translateY(-2px);
 }
 
-
-.form-grid{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
-
-    gap:20px;
-
+/* ----- FORM CARD ----- */
+.form-card {
+    background: #182235;
+    border-radius: 1.5rem;
+    padding: 2rem 2.25rem;
+    border: 1px solid #26314a;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    margin-bottom: 2rem;
 }
 
-
-.form-group{
-
-    display:flex;
-
-    flex-direction:column;
-
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
 }
 
-
-.full-width{
-
-    grid-column:1 / span 2;
-
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-
-.form-group label{
-
-    margin-bottom:8px;
-
-    font-weight:600;
-
+.form-group.full-width {
+    grid-column: 1 / -1;
 }
 
-
-.form-control{
-
-    padding:12px;
-
-    border:1px solid #ddd;
-
-    border-radius:8px;
-
-    font-size:15px;
-
-    transition:.3s;
-
+.form-group label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #d6e0f0;
 }
 
-
-.form-control:focus{
-
-    outline:none;
-
-    border-color:#3b82f6;
-
-    box-shadow:0 0 0 3px rgba(59,130,246,.15);
-
+.form-group label:after {
+    content: " *";
+    color: #f87171;
+    font-weight: 600;
 }
 
-
-textarea.form-control{
-
-    resize:vertical;
-
-    min-height:120px;
-
+.form-group label:not([for*="name"])::after {
+    content: "";
 }
 
-
-.submit-area{
-
-    margin-top:30px;
-
-    display:flex;
-
-    gap:15px;
-
+/* ----- FORM INPUTS ----- */
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #101b2e;
+    border: 1px solid #2a3852;
+    border-radius: 0.75rem;
+    color: #e8edf5;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
 }
 
-
-.btn-save{
-
-    background:#2563eb;
-
-    color:white;
-
-    border:none;
-
-    padding:12px 28px;
-
-    border-radius:8px;
-
-    font-size:16px;
-
-    cursor:pointer;
-
-    transition:.3s;
-
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3b6aff;
+    box-shadow: 0 0 0 3px rgba(59, 106, 255, 0.15);
+    background: #101b2e;
 }
 
-
-.btn-save:hover{
-
-    background:#1d4ed8;
-
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #64748b;
 }
 
-
-.btn-cancel{
-
-    text-decoration:none;
-
-    background:#f3f4f6;
-
-    color:#333;
-
-    padding:12px 24px;
-
-    border-radius:8px;
-
-    transition:.3s;
-
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
 }
 
-
-.btn-cancel:hover{
-
-    background:#e5e7eb;
-
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
 }
 
-
-@media(max-width:768px){
-
-.form-grid{
-
-grid-template-columns:1fr;
-
+.form-group select option {
+    background: #182235;
+    color: #e8edf5;
 }
 
-.full-width{
-
-grid-column:auto;
-
+/* ----- FORM HELP TEXT / ERRORS ----- */
+.form-group .helptext {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 0.25rem;
 }
 
-.page-header{
-
-flex-direction:column;
-
-align-items:flex-start;
-
-gap:15px;
-
+.form-group .errorlist {
+    list-style: none;
+    padding: 0;
+    margin-top: 0.25rem;
 }
 
-.submit-area{
+.form-group .errorlist li {
+    color: #f87171;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.75rem;
+    background: #3d1f2a;
+    border-radius: 0.5rem;
+    border-left: 3px solid #ef4444;
+}
 
-flex-direction:column;
-
+/* ----- SUBMIT AREA ----- */
+.submit-area {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.5rem 0 1rem;
 }
 
 .btn-save,
-
-.btn-cancel{
-
-width:100%;
-
-text-align:center;
-
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 2.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
 }
 
+.btn-save {
+    background: #3b6aff;
+    color: white;
+    box-shadow: 0 4px 14px rgba(59, 106, 255, 0.3);
 }
 
+.btn-save:hover {
+    background: #2a5af0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 106, 255, 0.4);
+}
+
+.btn-save:active {
+    transform: translateY(0);
+}
+
+.btn-cancel {
+    background: #28344a;
+    color: #d6e0f0;
+    border-color: #3a4862;
+}
+
+.btn-cancel:hover {
+    background: #33425c;
+    border-color: #5a6f92;
+    transform: translateY(-2px);
+}
+
+/* ----- RESPONSIVE DESIGN ----- */
+@media (max-width: 768px) {
+    .department-create-page {
+        padding: 1.25rem 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+
+    .btn-back {
+        justify-content: center;
+    }
+
+    .form-card {
+        padding: 1.5rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .form-group.full-width {
+        grid-column: 1;
+    }
+
+    .submit-area {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-save,
+    .btn-cancel {
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .department-create-page {
+        padding: 1rem 0.75rem;
+    }
+
+    .page-header {
+        padding: 1.25rem;
+    }
+
+    .form-card {
+        padding: 1.25rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ----- ANIMATIONS ----- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-card,
+.page-header {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.form-card {
+    animation-delay: 0.1s;
+}
+
+.submit-area {
+    animation: fadeInUp 0.4s ease forwards;
+    animation-delay: 0.2s;
+}
+
+/* ----- LOADING STATE ----- */
+.btn-save.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
+    position: relative;
+}
+
+.btn-save.loading::after {
+    content: "";
+    position: absolute;
+    right: 1rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ----- SUCCESS STATE ----- */
+.btn-save.success {
+    background: #22c55e;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+}
+
+.btn-save.error {
+    background: #ef4444;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+/* ----- FIELD VALIDATION STYLES ----- */
+.form-group input:invalid:not(:placeholder-shown),
+.form-group textarea:invalid:not(:placeholder-shown) {
+    border-color: #ef4444;
+}
+
+.form-group input:invalid:not(:placeholder-shown):focus,
+.form-group textarea:invalid:not(:placeholder-shown):focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.form-group input:valid:not(:placeholder-shown),
+.form-group textarea:valid:not(:placeholder-shown) {
+    border-color: #22c55e;
+}
+
+.form-group input:valid:not(:placeholder-shown):focus,
+.form-group textarea:valid:not(:placeholder-shown):focus {
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+/* ----- REQUIRED FIELD INDICATOR ----- */
+.required-field::after {
+    content: " *";
+    color: #f87171;
+    font-weight: 600;
+}
+
+/* ----- TOOLTIP FOR HELP TEXT ----- */
+.form-group .helptext {
+    display: block;
+    font-size: 0.8rem;
+    color: #64748b;
+    padding: 0.25rem 0.5rem;
+    background: #101b2e;
+    border-radius: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+/* ----- SCROLLBAR STYLING ----- */
+.department-create-page::-webkit-scrollbar {
+    width: 8px;
+}
+
+.department-create-page::-webkit-scrollbar-track {
+    background: #101b2e;
+}
+
+.department-create-page::-webkit-scrollbar-thumb {
+    background: #28344a;
+    border-radius: 4px;
+}
+
+.department-create-page::-webkit-scrollbar-thumb:hover {
+    background: #3a4862;
+}
+
+/* ----- UTILITY CLASSES ----- */
+.text-muted {
+    color: #64748b;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-2 {
+    margin-top: 2rem;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+/* ----- DARK THEME SELECT DROPDOWN FIX ----- */
+select option:hover,
+select option:focus,
+select option:active {
+    background: #3b6aff;
+    color: white;
+}
+
+select::-webkit-listbox {
+    background: #182235;
+    color: #e8edf5;
+}
+
+/* ----- FOCUS VISIBLE FOR ACCESSIBILITY ----- */
+.form-group input:focus-visible,
+.form-group textarea:focus-visible,
+.form-group select:focus-visible {
+    outline: 2px solid #3b6aff;
+    outline-offset: 2px;
+}

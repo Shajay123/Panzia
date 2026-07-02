@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Payslips
-{% endblock %}
+{% block title %}Payslips{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/payslips.css' %}">
@@ -13,255 +11,439 @@ Payslips
 
 <div class="payslip-page">
 
-    <!-- Header -->
-
+    <!-- ================= HEADER ================= -->
     <div class="page-header">
-
-        <div>
-
-            <h1>🧾 Employee Payslips</h1>
-
-            <p>
-                Download and manage monthly salary slips.
-            </p>
-
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">🧾</div>
+                <div>
+                    <h1>Employee Payslips</h1>
+                    <p class="header-subtitle">Download and manage monthly salary slips.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'payslip_bulk_generate' %}" class="btn-secondary">
+                    <span class="btn-icon">📦</span> Bulk Generate
+                </a>
+                <button class="btn-secondary" id="exportBtn">
+                    <span class="btn-icon">📤</span> Export
+                </button>
+                <a href="{% url 'payslip_create' %}" class="btn-primary">
+                    <span class="btn-icon">➕</span> Generate Payslip
+                </a>
+            </div>
         </div>
-
-        <div class="header-actions">
-
-            <a href="#" class="btn-secondary">
-                📥 Export
-            </a>
-
-            <a href="#" class="btn-primary">
-                + Generate Payslip
-            </a>
-
-        </div>
-
     </div>
 
+    {% include 'people/includes/startup_banner.html' %}
 
-    <!-- Summary -->
-
+    <!-- ================= SUMMARY ================= -->
     <div class="summary-grid">
-
         <div class="summary-card blue">
-
-            <div class="icon">
-                📄
-            </div>
-
+            <span class="icon">📄</span>
             <div>
-
-                <h2>{{ payslips|length }}</h2>
-
+                <h2>{{ total_payslips|default:0 }}</h2>
                 <p>Total Payslips</p>
-
             </div>
-
+            <span class="trend up">↑ 12%</span>
         </div>
-
         <div class="summary-card green">
-
-            <div class="icon">
-                💰
-            </div>
-
+            <span class="icon">✅</span>
             <div>
-
-                <h2>{{ payrolls_paid }}</h2>
-
+                <h2>{{ paid_payrolls|default:0 }}</h2>
                 <p>Paid Employees</p>
-
             </div>
-
+            <span class="trend up">↑ 8%</span>
         </div>
-
         <div class="summary-card orange">
-
-            <div class="icon">
-                📅
-            </div>
-
+            <span class="icon">📅</span>
             <div>
-
                 <h2>{{ current_month }}</h2>
-
                 <p>Current Month</p>
-
             </div>
+            <span class="trend neutral">→</span>
+        </div>
+    </div>
 
+    <!-- ================= FILTERS ================= -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h3>🔍 Filter Payslips</h3>
+            <button class="btn-toggle-filters" id="toggleFilters" title="Toggle Filters">▼</button>
+        </div>
+        <form method="GET" id="filterForm">
+            <div class="filter-grid" id="filterGrid">
+                <div class="filter-group">
+                    <label>👤 Employee</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search by name or ID..." value="{{ request.GET.search }}">
+                </div>
+                <div class="filter-group">
+                    <label>📆 Month</label>
+                    <select name="month" class="form-control">
+                        <option value="">All Months</option>
+                        <option value="January" {% if request.GET.month == "January" %}selected{% endif %}>January</option>
+                        <option value="February" {% if request.GET.month == "February" %}selected{% endif %}>February</option>
+                        <option value="March" {% if request.GET.month == "March" %}selected{% endif %}>March</option>
+                        <option value="April" {% if request.GET.month == "April" %}selected{% endif %}>April</option>
+                        <option value="May" {% if request.GET.month == "May" %}selected{% endif %}>May</option>
+                        <option value="June" {% if request.GET.month == "June" %}selected{% endif %}>June</option>
+                        <option value="July" {% if request.GET.month == "July" %}selected{% endif %}>July</option>
+                        <option value="August" {% if request.GET.month == "August" %}selected{% endif %}>August</option>
+                        <option value="September" {% if request.GET.month == "September" %}selected{% endif %}>September</option>
+                        <option value="October" {% if request.GET.month == "October" %}selected{% endif %}>October</option>
+                        <option value="November" {% if request.GET.month == "November" %}selected{% endif %}>November</option>
+                        <option value="December" {% if request.GET.month == "December" %}selected{% endif %}>December</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>📅 Year</label>
+                    <select name="year" class="form-control">
+                        <option value="">All Years</option>
+                        <option value="2020" {% if request.GET.year == "2020" %}selected{% endif %}>2020</option>
+                        <option value="2021" {% if request.GET.year == "2021" %}selected{% endif %}>2021</option>
+                        <option value="2022" {% if request.GET.year == "2022" %}selected{% endif %}>2022</option>
+                        <option value="2023" {% if request.GET.year == "2023" %}selected{% endif %}>2023</option>
+                        <option value="2024" {% if request.GET.year == "2024" %}selected{% endif %}>2024</option>
+                        <option value="2025" {% if request.GET.year == "2025" %}selected{% endif %}>2025</option>
+                        <option value="2026" {% if request.GET.year == "2026" %}selected{% endif %}>2026</option>
+                        <option value="2027" {% if request.GET.year == "2027" %}selected{% endif %}>2027</option>
+                        <option value="2028" {% if request.GET.year == "2028" %}selected{% endif %}>2028</option>
+                    </select>
+                </div>
+                <div class="filter-group filter-actions">
+                    <label>&nbsp;</label>
+                    <div class="filter-buttons">
+                        <button type="submit" class="btn-primary btn-filter">🔍 Apply</button>
+                        <a href="{% url 'payslips' %}" class="btn-light btn-reset">↩️ Reset</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="filter-stats">
+            <span id="recordCount">Showing <strong>{{ payslips|length }}</strong> payslips</span>
+            <div id="activeFilters" class="active-filters"></div>
+        </div>
+    </div>
+
+    <!-- ================= TABLE ================= -->
+    <div class="table-card">
+        <div class="table-header">
+            <div class="table-header-left">
+                <h3>📋 Payslip Records</h3>
+                <span class="record-badge">{{ payslips|length }}</span>
+            </div>
+            <div class="table-header-right">
+                <div class="table-search">
+                    <input type="text" id="tableSearch" placeholder="🔍 Search in table..." class="search-input">
+                </div>
+                <button class="btn-light btn-sm" id="refreshTable">🔄 Refresh</button>
+            </div>
         </div>
 
-    </div>
-
-
-    <!-- Search -->
-
-    <div class="filter-card">
-
-        <form>
-
-            <input
-                type="text"
-                placeholder="🔍 Search Employee..."
-            >
-
-            <select>
-
-                <option>
-                    Select Month
-                </option>
-
-                <option>January</option>
-                <option>February</option>
-                <option>March</option>
-                <option>April</option>
-                <option>May</option>
-                <option>June</option>
-                <option>July</option>
-                <option>August</option>
-                <option>September</option>
-                <option>October</option>
-                <option>November</option>
-                <option>December</option>
-
-            </select>
-
-            <button class="btn-primary">
-
-                Search
-
-            </button>
-
-        </form>
-
-    </div>
-
-
-    <!-- Table -->
-
-    <div class="table-card">
-
-        <table>
-
-            <thead>
-
-            <tr>
-
-                <th>Employee</th>
-
-                <th>Month</th>
-
-                <th>Net Salary</th>
-
-                <th>Generated On</th>
-
-                <th>Download</th>
-
-            </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% for payslip in payslips %}
-
-            <tr>
-
-                <td>
-
-                    <div class="employee-box">
-
-                        {% if payslip.payroll.employee.profile_image %}
-
-                        <img src="{{ payslip.payroll.employee.profile_image.url }}">
-
-                        {% else %}
-
-                        <div class="avatar">
-
-                            {{ payslip.payroll.employee.user.first_name|first }}
-
-                        </div>
-
-                        {% endif %}
-
-                        <div>
-
-                            <strong>
-
-                                {{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username }}
-
-                            </strong>
-
-                            <small>
-
-                                {{ payslip.payroll.employee.designation }}
-
-                            </small>
-
-                        </div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    {{ payslip.payroll.month }}
-                    {{ payslip.payroll.year }}
-
-                </td>
-
-                <td>
-
-                    ₹ {{ payslip.payroll.net_salary }}
-
-                </td>
-
-                <td>
-
-                    {{ payslip.created_at|date:"d M Y" }}
-
-                </td>
-
-                <td>
-
-                    <a
-                        href="{{ payslip.pdf.url }}"
-                        target="_blank"
-                        class="download-btn">
-
-                        ⬇ Download
-
-                    </a>
-
-                </td>
-
-            </tr>
-
-            {% empty %}
-
-            <tr>
-
-                <td colspan="5">
-
-                    No Payslips Available.
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="employee">Employee ↕</th>
+                        <th class="sortable" data-sort="month">Month ↕</th>
+                        <th class="sortable" data-sort="salary">Net Salary ↕</th>
+                        <th class="sortable" data-sort="date">Generated On ↕</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for payslip in payslips %}
+                    <tr class="payslip-row"
+                        data-employee="{{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username|lower }}"
+                        data-month="{{ payslip.payroll.month|lower }}"
+                        data-year="{{ payslip.payroll.year }}"
+                        data-salary="{{ payslip.payroll.net_salary }}"
+                        data-date="{% if payslip.generated_at %}{{ payslip.generated_at|date:'Y-m-d' }}{% elif payslip.created_at %}{{ payslip.created_at|date:'Y-m-d' }}{% endif %}">
+                        <td>
+                            <div class="employee-box">
+                                {% if payslip.payroll.employee.profile_image %}
+                                <img src="{{ payslip.payroll.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                {% else %}
+                                <div class="avatar">
+                                    {{ payslip.payroll.employee.user.first_name|first|default:payslip.payroll.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div class="employee-details">
+                                    <strong class="employee-name">{{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username }}</strong>
+                                    <span class="employee-designation">{{ payslip.payroll.employee.designation|default:"-" }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="month-badge">{{ payslip.payroll.month }}</span>
+                            <span class="year-tag">{{ payslip.payroll.year }}</span>
+                        </td>
+                        <td class="salary-cell net-salary">₹{{ payslip.payroll.net_salary|floatformat:2 }}</td>
+                        <td>
+                            <span class="date-cell">
+                                {% if payslip.generated_at %}
+                                {{ payslip.generated_at|date:"d M Y" }}
+                                {% elif payslip.created_at %}
+                                {{ payslip.created_at|date:"d M Y" }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </span>
+                            <span class="time-ago">
+                                {% if payslip.generated_at %}
+                                {{ payslip.generated_at|timesince }} ago
+                                {% elif payslip.created_at %}
+                                {{ payslip.created_at|timesince }} ago
+                                {% else %}
+                                -
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if payslip.is_generated %}
+                            <span class="status-badge generated">
+                                <span class="status-dot"></span>
+                                Generated
+                            </span>
+                            {% else %}
+                            <span class="status-badge pending">
+                                <span class="status-dot"></span>
+                                Pending
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'payslip_detail' payslip.id %}" class="action-btn view" title="View Details">
+                                    <span class="action-icon">📄</span>
+                                </a>
+                                {% if payslip.is_generated %}
+                                <a href="{% url 'payslip_download_pdf' payslip.id %}" class="action-btn download" title="Download PDF">
+                                    <span class="action-icon">⬇️</span>
+                                </a>
+                                {% else %}
+                                <span class="action-btn disabled" title="Not generated yet">
+                                    <span class="action-icon">⏳</span>
+                                </span>
+                                {% endif %}
+                                <a href="{% url 'payslip_preview' payslip.id %}" target="_blank" class="action-btn preview" title="Preview HTML">
+                                    <span class="action-icon">👁️</span>
+                                </a>
+                                <a href="{% url 'payslip_regenerate' payslip.id %}" class="action-btn regenerate" title="Regenerate" onclick="return confirm('Regenerate this payslip?')">
+                                    <span class="action-icon">🔄</span>
+                                </a>
+                                <a href="{% url 'payslip_delete' payslip.id %}" class="action-btn delete" title="Delete" onclick="return confirm('Delete this payslip?')">
+                                    <span class="action-icon">🗑️</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon">🧾</div>
+                                <h3>No Payslips Found</h3>
+                                <p>Generate payslips for paid payroll records.</p>
+                                <a href="{% url 'payslip_create' %}" class="btn-primary">➕ Generate Payslip</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table Footer -->
+        <div class="table-footer">
+            <div class="footer-left">
+                <span><strong>Total:</strong> <span id="footerTotal">{{ payslips|length }}</span> payslips</span>
+                <span><strong>Generated:</strong> {% now "d M Y H:i" %}</span>
+                <span class="footer-divider">|</span>
+                <span><strong>Paid:</strong> {{ paid_payrolls|default:0 }}</span>
+            </div>
+            <div class="footer-right">
+                <button class="pagination-btn" id="prevPage" disabled>← Prev</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled>Next →</button>
+            </div>
+        </div>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // TOGGLE FILTERS
+        // ============================================
+        const toggleBtn = document.getElementById('toggleFilters');
+        const filterGrid = document.getElementById('filterGrid');
+        let filtersVisible = true;
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                filtersVisible = !filtersVisible;
+                filterGrid.style.display = filtersVisible ? 'grid' : 'none';
+                this.textContent = filtersVisible ? '▼' : '▶';
+            });
+        }
+
+        // ============================================
+        // TABLE SEARCH
+        // ============================================
+        const tableSearch = document.getElementById('tableSearch');
+        const tableRows = document.querySelectorAll('.payslip-row');
+
+        if (tableSearch) {
+            tableSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visible = 0;
+
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const match = text.includes(query);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+
+                document.getElementById('recordCount').innerHTML = `Showing <strong>${visible}</strong> payslips`;
+                document.getElementById('footerTotal').textContent = visible;
+            });
+        }
+
+        // ============================================
+        // SORTING
+        // ============================================
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                const currentDir = this.classList.contains('asc') ? 'asc' : 'desc';
+                const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+                document.querySelectorAll('.sortable').forEach(h => {
+                    h.classList.remove('asc', 'desc');
+                });
+                this.classList.add(newDir);
+
+                sortTable(sortKey, newDir);
+            });
+        });
+
+        function sortTable(key, direction) {
+            const tbody = document.querySelector('#tableBody');
+            const rows = Array.from(tbody.querySelectorAll('.payslip-row'));
+
+            rows.sort((a, b) => {
+                let aVal, bVal;
+
+                switch(key) {
+                    case 'employee':
+                        aVal = a.dataset.employee || '';
+                        bVal = b.dataset.employee || '';
+                        break;
+                    case 'month':
+                        aVal = a.dataset.month || '';
+                        bVal = b.dataset.month || '';
+                        break;
+                    case 'salary':
+                        aVal = parseFloat(a.dataset.salary) || 0;
+                        bVal = parseFloat(b.dataset.salary) || 0;
+                        break;
+                    case 'date':
+                        aVal = a.dataset.date || '';
+                        bVal = b.dataset.date || '';
+                        break;
+                    default:
+                        aVal = '';
+                        bVal = '';
+                }
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+F or Cmd+F to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                if (tableSearch && document.activeElement !== tableSearch) {
+                    e.preventDefault();
+                    tableSearch.focus();
+                    tableSearch.select();
+                }
+            }
+        });
+
+        // ============================================
+        // REFRESH
+        // ============================================
+        document.getElementById('refreshTable').addEventListener('click', function() {
+            location.reload();
+        });
+
+        // ============================================
+        // EXPORT
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const visibleRows = document.querySelectorAll('#tableBody .payslip-row:not([style*="display: none"])');
+
+            if (visibleRows.length === 0) {
+                alert('No records to export.');
+                return;
+            }
+
+            let csvContent = 'Employee,Month,Year,Net Salary,Generated On,Status\n';
+
+            visibleRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const employee = cells[0]?.textContent?.trim() || '';
+                const monthYear = cells[1]?.textContent?.trim() || '';
+                const salary = cells[2]?.textContent?.trim()?.replace('₹', '') || '0';
+                const date = cells[3]?.textContent?.trim() || '';
+                const status = cells[4]?.textContent?.trim() || '';
+
+                csvContent += `"${employee}","${monthYear}","","${salary}","${date}","${status}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `payslips_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        // ============================================
+        // DELETE CONFIRMATION (for action buttons)
+        // ============================================
+        document.querySelectorAll('.action-btn.delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const confirmed = confirm('Delete this payslip? This action cannot be undone.');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        console.log('🧾 Payslips initialized');
+        console.log(`📊 ${document.querySelectorAll('.payslip-row').length} payslips loaded`);
+    });
+</script>
 
 {% endblock %}

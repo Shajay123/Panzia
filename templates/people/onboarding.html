@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Employee Onboarding
-{% endblock %}
+{% block title %}Employee Onboarding{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/onboarding.css' %}">
@@ -13,205 +11,419 @@ Employee Onboarding
 
 <div class="onboarding-page">
 
-    <!-- Header -->
-
+    <!-- ================= HEADER ================= -->
     <div class="page-header">
-
-        <div>
-
-            <h1>🚀 Employee Onboarding</h1>
-
-            <p>
-                Manage new employees and monitor onboarding progress.
-            </p>
-
-        </div>
-
-        <div class="header-actions">
-
-            <a href="{% url 'employee_create' %}" class="btn-primary">
-
-                ➕ Add Employee
-
-            </a>
-
-            <a href="#" class="btn-secondary">
-
-                📥 Export
-
-            </a>
-
-        </div>
-
-    </div>
-
-    <!-- Summary -->
-
-    <div class="summary-grid">
-
-        <div class="summary-card blue">
-
-            <h2>{{ employees|length }}</h2>
-
-            <p>New Employees</p>
-
-        </div>
-
-        <div class="summary-card orange">
-
-            <h2>24</h2>
-
-            <p>Pending Tasks</p>
-
-        </div>
-
-        <div class="summary-card green">
-
-            <h2>16</h2>
-
-            <p>Completed</p>
-
-        </div>
-
-        <div class="summary-card purple">
-
-            <h2>6</h2>
-
-            <p>In Progress</p>
-
-        </div>
-
-    </div>
-
-    <!-- Overall Progress -->
-
-    <div class="dashboard-card">
-
-        <div class="card-title">
-
-            📈 Overall Onboarding Progress
-
-        </div>
-
-        <div class="progress-bar">
-
-            <div class="progress-fill" style="width:72%"></div>
-
-        </div>
-
-        <p class="progress-text">
-
-            72% Overall Completion
-
-        </p>
-
-    </div>
-
-    <!-- Employee Cards -->
-
-    <div class="employee-grid">
-
-        {% for employee in employees %}
-
-        <div class="employee-card">
-
-            <div class="employee-top">
-
-                {% if employee.profile_image %}
-
-                    <img src="{{ employee.profile_image.url }}">
-
-                {% else %}
-
-                    <div class="avatar">
-
-                        {{ employee.user.first_name|first|default:employee.user.username|first }}
-
-                    </div>
-
-                {% endif %}
-
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">🚀</div>
                 <div>
-
-                    <h3>
-
-                        {{ employee.user.get_full_name|default:employee.user.username }}
-
-                    </h3>
-
-                    <small>
-
-                        {{ employee.designation }}
-
-                    </small>
-
+                    <h1>Employee Onboarding</h1>
+                    <p class="header-subtitle">Manage new employees and monitor onboarding progress.</p>
                 </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" id="exportBtn">
+                    <span class="btn-icon">📥</span> Export
+                </button>
+                <a href="{% url 'employee_create' %}" class="btn-primary">
+                    <span class="btn-icon">➕</span> Add Employee
+                </a>
+            </div>
+        </div>
+    </div>
 
+    <!-- ============================================================ -->
+    <!-- ADD STARTUP BANNER HERE - RIGHT AFTER HEADER -->
+    <!-- ============================================================ -->
+    {% include 'people/includes/startup_banner.html' %}
+
+    <!-- ================= SUMMARY ================= -->
+    <div class="summary-grid">
+        <div class="summary-card blue">
+            <span class="icon">👥</span>
+            <div>
+                <h2>{{ total_employees|default:0 }}</h2>
+                <p>Total Employees</p>
+            </div>
+            <span class="trend up">↑ 12%</span>
+        </div>
+        <div class="summary-card orange">
+            <span class="icon">⏳</span>
+            <div>
+                <h2>{{ onboarding_count|default:0 }}</h2>
+                <p>Onboarding</p>
+            </div>
+            <span class="trend down">↓ 5%</span>
+        </div>
+        <div class="summary-card green">
+            <span class="icon">✅</span>
+            <div>
+                <h2>{{ active_count|default:0 }}</h2>
+                <p>Active</p>
+            </div>
+            <span class="trend up">↑ 8%</span>
+        </div>
+        <div class="summary-card purple">
+            <span class="icon">🔄</span>
+            <div>
+                <h2>{{ probation_count|default:0 }}</h2>
+                <p>Probation</p>
+            </div>
+            <span class="trend neutral">→</span>
+        </div>
+    </div>
+
+    <!-- ================= OVERALL PROGRESS ================= -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h3>📈 Overall Onboarding Progress</h3>
+            <span class="card-badge">{{ overall_progress|default:0 }}%</span>
+        </div>
+        <div class="progress-container">
+            
+        </div>
+        <div class="progress-stats">
+            <span><strong>Completed:</strong> {{ completed_tasks|default:0 }} tasks</span>
+            <span><strong>Pending:</strong> {{ pending_tasks|default:0 }} tasks</span>
+            <span><strong>Overall:</strong> {{ overall_progress|default:0 }}% complete</span>
+        </div>
+    </div>
+
+    <!-- ================= FILTERS ================= -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h3>🔍 Filter Employees</h3>
+            <button class="btn-toggle-filters" id="toggleFilters">▼</button>
+        </div>
+        <div class="filter-grid" id="filterGrid">
+            <div class="filter-group">
+                <label>Search</label>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name..." value="{{ request.GET.search }}">
+            </div>
+            <div class="filter-group">
+                <label>Department</label>
+                <select id="departmentFilter" class="form-control">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.name }}">{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Status</label>
+                <select id="statusFilter" class="form-control">
+                    <option value="">All Status</option>
+                    <option value="onboarding">Onboarding</option>
+                    <option value="active">Active</option>
+                    <option value="probation">Probation</option>
+                </select>
+            </div>
+            <div class="filter-group filter-actions">
+                <label>&nbsp;</label>
+                <div class="filter-buttons">
+                    <button class="btn-primary btn-filter" id="applyFilters">🔍 Apply</button>
+                    <button class="btn-light btn-reset" id="resetFilters">↩️ Reset</button>
+                </div>
+            </div>
+        </div>
+        <div class="filter-stats">
+            <span id="recordCount">Showing <strong>{{ employees|length }}</strong> employees</span>
+        </div>
+    </div>
+
+    <!-- ================= EMPLOYEE CARDS ================= -->
+    <div class="employee-grid" id="employeeGrid">
+        {% for employee in employees %}
+        <div class="employee-card"
+             data-name="{{ employee.user.get_full_name|default:employee.user.username|lower }}"
+             data-department="{{ employee.department.name|lower }}"
+             data-status="{{ employee.status|lower }}">
+            <div class="employee-top">
+                {% if employee.profile_image %}
+                    <img src="{{ employee.profile_image.url }}" alt="{{ employee.user.get_full_name }}" class="employee-avatar">
+                {% else %}
+                    <div class="avatar">
+                        {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+                    </div>
+                {% endif %}
+                <div class="employee-details">
+                    <h3>{{ employee.user.get_full_name|default:employee.user.username }}</h3>
+                    <span class="designation">{{ employee.designation|default:"-" }}</span>
+                    <span class="status-badge status-{{ employee.status|lower }}">
+                        <span class="status-dot"></span>
+                        {{ employee.status|title }}
+                    </span>
+                </div>
             </div>
 
             <div class="employee-info">
-
-                <p>
-
-                    🏢 {{ employee.department|default:"Not Assigned" }}
-
-                </p>
-
-                <p>
-
-                    📅 Joined :
-                    {{ employee.joining_date }}
-
-                </p>
-
+                <div class="info-item">
+                    <span class="info-icon">🏢</span>
+                    <span>{{ employee.department.name|default:"Not Assigned" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">📅</span>
+                    <span>Joined: {{ employee.joining_date|date:"d M Y"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">📧</span>
+                    <span>{{ employee.user.email }}</span>
+                </div>
             </div>
 
+            <!-- Checklist -->
             <div class="checklist">
-
-                <label><input type="checkbox" checked> Offer Letter</label>
-
-                <label><input type="checkbox" checked> Documents Verified</label>
-
-                <label><input type="checkbox"> Company Email</label>
-
-                <label><input type="checkbox"> Laptop Assigned</label>
-
-                <label><input type="checkbox"> ID Card</label>
-
-                <label><input type="checkbox"> HR Orientation</label>
-
+                <div class="checklist-header">
+                    <span class="checklist-title">📋 Onboarding Checklist</span>
+                    <span class="checklist-progress" id="checklistProgress{{ forloop.counter }}">0/6</span>
+                </div>
+                <div class="checklist-items">
+                    <label class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" data-employee="{{ employee.id }}" data-task="offer_letter" {% if employee.completed_tasks >= 1 %}checked{% endif %}>
+                        <span class="checklist-text">📄 Offer Letter</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" data-employee="{{ employee.id }}" data-task="documents" {% if employee.completed_tasks >= 2 %}checked{% endif %}>
+                        <span class="checklist-text">📎 Documents Verified</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" data-employee="{{ employee.id }}" data-task="email" {% if employee.completed_tasks >= 3 %}checked{% endif %}>
+                        <span class="checklist-text">📧 Company Email</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" data-employee="{{ employee.id }}" data-task="laptop" {% if employee.completed_tasks >= 4 %}checked{% endif %}>
+                        <span class="checklist-text">💻 Laptop Assigned</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" data-employee="{{ employee.id }}" data-task="id_card" {% if employee.completed_tasks >= 5 %}checked{% endif %}>
+                        <span class="checklist-text">🪪 ID Card</span>
+                    </label>
+                    <label class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" data-employee="{{ employee.id }}" data-task="orientation" {% if employee.completed_tasks >= 6 %}checked{% endif %}>
+                        <span class="checklist-text">🎓 HR Orientation</span>
+                    </label>
+                </div>
             </div>
 
-            <div class="progress-bar small">
-
-                <div class="progress-fill" style="width:50%"></div>
-
-            </div>
+            <!-- Progress -->
+            
 
             <div class="employee-actions">
-
                 <a href="{% url 'employee_detail' employee.id %}" class="btn-view">
-
-                    View Profile
-
+                    <span class="btn-icon">👤</span> View Profile
                 </a>
-
+                
             </div>
-
         </div>
-
         {% empty %}
-
         <div class="empty-card">
-
-            🚀 No employees available for onboarding.
-
+            <div class="empty-icon">🚀</div>
+            <h3>No Employees in Onboarding</h3>
+            <p>Add new employees to start the onboarding process.</p>
+            <a href="{% url 'employee_create' %}" class="btn-primary">➕ Add Employee</a>
         </div>
-
         {% endfor %}
-
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // ============================================
+        // TOGGLE FILTERS
+        // ============================================
+        const toggleBtn = document.getElementById('toggleFilters');
+        const filterGrid = document.getElementById('filterGrid');
+        let filtersVisible = true;
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                filtersVisible = !filtersVisible;
+                filterGrid.style.display = filtersVisible ? 'grid' : 'none';
+                this.textContent = filtersVisible ? '▼' : '▶';
+            });
+        }
+
+        // ============================================
+        // FILTER FUNCTIONALITY
+        // ============================================
+        const searchInput = document.getElementById('searchInput');
+        const departmentFilter = document.getElementById('departmentFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const applyBtn = document.getElementById('applyFilters');
+        const resetBtn = document.getElementById('resetFilters');
+        const employeeCards = document.querySelectorAll('.employee-card');
+
+        function filterEmployees() {
+            const search = searchInput.value.toLowerCase().trim();
+            const department = departmentFilter.value.toLowerCase().trim();
+            const status = statusFilter.value.toLowerCase().trim();
+            let visible = 0;
+
+            employeeCards.forEach(card => {
+                const name = card.dataset.name || '';
+                const cardDepartment = card.dataset.department || '';
+                const cardStatus = card.dataset.status || '';
+
+                const matchSearch = name.includes(search);
+                const matchDepartment = !department || cardDepartment === department;
+                const matchStatus = !status || cardStatus === status;
+
+                const show = matchSearch && matchDepartment && matchStatus;
+                card.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            document.getElementById('recordCount').innerHTML = `Showing <strong>${visible}</strong> employees`;
+        }
+
+        // Apply filters
+        if (applyBtn) {
+            applyBtn.addEventListener('click', filterEmployees);
+        }
+
+        // Reset filters
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                departmentFilter.value = '';
+                statusFilter.value = '';
+                filterEmployees();
+            });
+        }
+
+        // Real-time search with debounce
+        if (searchInput) {
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(filterEmployees, 300);
+            });
+        }
+
+        // Filter on change
+        [departmentFilter, statusFilter].forEach(filter => {
+            if (filter) {
+                filter.addEventListener('change', filterEmployees);
+            }
+        });
+
+        // ============================================
+        // CHECKLIST FUNCTIONALITY
+        // ============================================
+        document.querySelectorAll('.checklist-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.employee-card');
+                const checkboxes = card.querySelectorAll('.checklist-checkbox');
+                const total = checkboxes.length;
+                const checked = card.querySelectorAll('.checklist-checkbox:checked').length;
+                const percentage = Math.round((checked / total) * 100);
+
+                // Update progress
+                const progressFill = card.querySelector('.progress-fill');
+                const progressPercentage = card.querySelector('.progress-percentage');
+                const checklistProgress = card.querySelector('.checklist-progress');
+
+                if (progressFill) {
+                    progressFill.style.width = percentage + '%';
+                }
+                if (progressPercentage) {
+                    progressPercentage.textContent = percentage + '%';
+                }
+                if (checklistProgress) {
+                    checklistProgress.textContent = checked + '/' + total;
+                }
+
+                // Update card status based on progress
+                const cardStatus = card.querySelector('.status-badge');
+                if (percentage === 100) {
+                    cardStatus.className = 'status-badge status-completed';
+                    cardStatus.innerHTML = '<span class="status-dot"></span> Completed';
+                } else if (percentage >= 50) {
+                    cardStatus.className = 'status-badge status-progress';
+                    cardStatus.innerHTML = '<span class="status-dot"></span> In Progress';
+                } else {
+                    cardStatus.className = 'status-badge status-pending';
+                    cardStatus.innerHTML = '<span class="status-dot"></span> Pending';
+                }
+            });
+        });
+
+        // ============================================
+        // SEND REMINDER
+        // ============================================
+        window.sendReminder = function(employeeId, employeeName) {
+            const confirmed = confirm(`Send onboarding reminder to ${employeeName}?`);
+            if (confirmed) {
+                // Simulate sending reminder
+                const btn = document.querySelector(`button[onclick*="${employeeId}"]`);
+                if (btn) {
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✅ Sent!';
+                    btn.disabled = true;
+                    btn.style.opacity = '0.6';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                    }, 3000);
+                }
+                alert(`✅ Onboarding reminder sent to ${employeeName}!`);
+            }
+        };
+
+        // ============================================
+        // EXPORT
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const visibleCards = document.querySelectorAll('.employee-card:not([style*="display: none"])');
+            
+            if (visibleCards.length === 0) {
+                alert('No records to export.');
+                return;
+            }
+
+            let csvContent = 'Employee,Designation,Department,Status,Progress\n';
+            
+            visibleCards.forEach(card => {
+                const name = card.querySelector('h3')?.textContent?.trim() || '';
+                const designation = card.querySelector('.designation')?.textContent?.trim() || '';
+                const dept = card.querySelector('.info-item span:last-child')?.textContent?.trim() || '';
+                const status = card.querySelector('.status-badge')?.textContent?.trim() || '';
+                const progress = card.querySelector('.progress-percentage')?.textContent?.trim() || '0%';
+                
+                csvContent += `"${name}","${designation}","${dept}","${status}","${progress}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `onboarding_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                if (searchInput && document.activeElement !== searchInput) {
+                    e.preventDefault();
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }
+        });
+
+        console.log('🚀 Onboarding initialized');
+        console.log(`📊 ${document.querySelectorAll('.employee-card').length} employees in onboarding`);
+    });
+</script>
 
 {% endblock %}

@@ -1,0 +1,1062 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+<style>
+    .attendance-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    /* Camera Section */
+    .camera-section {
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .camera-container {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #1a1035;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+    }
+    
+    .camera-container video {
+        width: 100%;
+        height: auto;
+        display: block;
+        background: #000;
+    }
+    
+    .camera-container canvas {
+        display: none;
+        width: 100%;
+        height: auto;
+    }
+    
+    .camera-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: opacity 0.3s;
+    }
+    
+    .camera-overlay:hover {
+        opacity: 0.8;
+    }
+    
+    .camera-controls {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-camera {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-camera-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+    }
+    
+    .btn-camera-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+    
+    .btn-camera-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn-camera-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-camera-success {
+        background: #22c55e;
+        color: white;
+    }
+    
+    .btn-camera-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+    
+    .btn-camera-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+    
+    .photo-preview {
+        max-width: 200px;
+        margin: 10px auto;
+        border-radius: 8px;
+        display: none;
+    }
+    
+    .photo-preview img {
+        width: 100%;
+        border-radius: 8px;
+    }
+    
+    .photo-preview.has-photo {
+        display: block;
+    }
+    
+    /* Timeline */
+    .timeline-container {
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .timeline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: rgba(167, 139, 250, 0.15);
+        transform: translateY(-50%);
+    }
+    
+    .timeline-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .timeline-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        background: rgba(167, 139, 250, 0.06);
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        transition: all 0.3s;
+    }
+    
+    .timeline-dot.active {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.15);
+        box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+    }
+    
+    .timeline-dot.completed {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.15);
+    }
+    
+    .timeline-dot.warning {
+        border-color: #f59e0b;
+        background: rgba(245, 158, 11, 0.15);
+    }
+    
+    .timeline-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-align: center;
+    }
+    
+    .timeline-time {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-badge.early {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+    }
+    
+    .status-badge.on_time {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+    
+    .status-badge.slightly_late {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+    
+    .status-badge.late {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+    
+    .status-badge.very_late {
+        background: rgba(239, 68, 68, 0.25);
+        color: #ef4444;
+    }
+    
+    /* Location */
+    .location-info {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .location-info .loc-icon {
+        font-size: 1rem;
+    }
+    
+    /* Check-in Status Banner */
+    .checkin-banner {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .checkin-banner.success {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+    
+    .checkin-banner.warning {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+    
+    .checkin-banner.info {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+    
+    /* Disabled input style */
+    .form-control:disabled,
+    .form-control[readonly] {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    .form-control.checked-in {
+        background: rgba(34, 197, 94, 0.05) !important;
+        border-color: rgba(34, 197, 94, 0.2) !important;
+    }
+    
+    .form-control.checked-out {
+        background: rgba(59, 130, 246, 0.05) !important;
+        border-color: rgba(59, 130, 246, 0.2) !important;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .camera-container {
+            max-width: 100%;
+        }
+        
+        .timeline {
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .timeline::before {
+            display: none;
+        }
+        
+        .camera-controls {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .camera-controls .btn-camera {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-portal">
+    <div class="attendance-container">
+
+        <!-- ================= HEADER ================= -->
+        <div class="portal-header">
+            <div class="portal-header-content">
+                <div class="portal-header-left">
+                    <div class="portal-header-icon">📝</div>
+                    <div>
+                        <h1>Mark Attendance</h1>
+                        <p class="portal-header-subtitle">
+                            Record your attendance for today
+                        </p>
+                    </div>
+                </div>
+                <div class="portal-header-right">
+                    <a href="{% url 'employee_portal_attendance' %}" class="btn-portal-secondary">
+                        ← Back to Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CHECK-IN STATUS BANNER ================= -->
+        {% if existing_attendance and existing_attendance.check_in %}
+        <div class="checkin-banner success">
+            <span style="font-size: 1.2rem;">✅</span>
+            <div>
+                <strong>Checked In!</strong> 
+                You checked in at <strong>{{ existing_attendance.check_in|time:"H:i" }}</strong>
+                {% if existing_attendance.check_in_status %}
+                <span class="status-badge {{ existing_attendance.check_in_status }}">
+                    {% if existing_attendance.check_in_status == 'early' %}✅ Early
+                    {% elif existing_attendance.check_in_status == 'on_time' %}✓ On Time
+                    {% elif existing_attendance.check_in_status == 'slightly_late' %}⚠️ Slightly Late
+                    {% elif existing_attendance.check_in_status == 'late' %}⚠️ Late
+                    {% elif existing_attendance.check_in_status == 'very_late' %}❌ Very Late
+                    {% endif %}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if existing_attendance and existing_attendance.check_out %}
+        <div class="checkin-banner info">
+            <span style="font-size: 1.2rem;">🚀</span>
+            <div>
+                <strong>Checked Out!</strong> 
+                You checked out at <strong>{{ existing_attendance.check_out|time:"H:i" }}</strong>
+                {% if existing_attendance.check_in and existing_attendance.check_out %}
+                (Total: {{ existing_attendance.get_working_hours|floatformat:1 }} hrs)
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ================= TODAY'S STATUS ================= -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3>📊 Today's Status</h3>
+                <span class="date-badge">{{ today|date:"l, d M Y" }}</span>
+            </div>
+            {% if existing_attendance %}
+            <div class="today-status status-{{ existing_attendance.status|lower }}">
+                <div class="status-icon">
+                    {% if existing_attendance.status == 'Present' %}✅
+                    {% elif existing_attendance.status == 'Absent' %}❌
+                    {% elif existing_attendance.status == 'WFH' %}🏠
+                    {% elif existing_attendance.status == 'Leave' %}🌴
+                    {% endif %}
+                </div>
+                <div class="status-info">
+                    <h4>{{ existing_attendance.get_status_display }}</h4>
+                    <p>
+                        {% if existing_attendance.check_in and existing_attendance.check_out %}
+                            ⏰ {{ existing_attendance.check_in|time:"H:i" }} - {{ existing_attendance.check_out|time:"H:i" }}
+                            ({{ existing_attendance.get_working_hours|floatformat:1 }} hrs)
+                        {% elif existing_attendance.check_in %}
+                            ⏰ In: {{ existing_attendance.check_in|time:"H:i" }}
+                            <span style="color: #22c55e;">✅ Checked In</span>
+                        {% elif existing_attendance.check_out %}
+                            ⏰ Out: {{ existing_attendance.check_out|time:"H:i" }}
+                        {% else %}
+                            ⏰ No time recorded
+                        {% endif %}
+                    </p>
+                    {% if existing_attendance.check_in_status %}
+                    <p>
+                        Status: 
+                        <span class="status-badge {{ existing_attendance.check_in_status }}">
+                            {% if existing_attendance.check_in_status == 'early' %}✅ Early
+                            {% elif existing_attendance.check_in_status == 'on_time' %}✓ On Time
+                            {% elif existing_attendance.check_in_status == 'slightly_late' %}⚠️ Slightly Late
+                            {% elif existing_attendance.check_in_status == 'late' %}⚠️ Late
+                            {% elif existing_attendance.check_in_status == 'very_late' %}❌ Very Late
+                            {% endif %}
+                        </span>
+                    </p>
+                    {% endif %}
+                    {% if existing_attendance.notes %}
+                    <p class="notes">📝 {{ existing_attendance.notes }}</p>
+                    {% endif %}
+                    {% if existing_attendance.photo %}
+                    <div style="margin-top: 10px;">
+                        <img src="{{ existing_attendance.photo.url }}" alt="Attendance Photo" style="max-width: 100px; border-radius: 8px;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="today-status status-not-marked">
+                <div class="status-icon">⏳</div>
+                <div class="status-info">
+                    <h4>Not Marked Yet</h4>
+                    <p>Please mark your attendance for today</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ================= TIMELINE ================= -->
+        <div class="timeline-container">
+            <h4 style="margin: 0 0 10px 0; color: #94a3b8; font-weight: 500;">⏰ Attendance Timeline</h4>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot {% if existing_attendance and existing_attendance.check_in %}completed{% else %}active{% endif %}">
+                        {% if existing_attendance and existing_attendance.check_in %}✅{% else %}⏰{% endif %}
+                    </div>
+                    <span class="timeline-label">Check In</span>
+                    <span class="timeline-time">
+                        {% if existing_attendance and existing_attendance.check_in %}
+                            {{ existing_attendance.check_in|time:"H:i" }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot {% if existing_attendance and existing_attendance.check_out %}completed{% elif existing_attendance and existing_attendance.check_in %}active{% else %}warning{% endif %}">
+                        {% if existing_attendance and existing_attendance.check_out %}✅{% elif existing_attendance and existing_attendance.check_in %}⏰{% else %}⏳{% endif %}
+                    </div>
+                    <span class="timeline-label">Check Out</span>
+                    <span class="timeline-time">
+                        {% if existing_attendance and existing_attendance.check_out %}
+                            {{ existing_attendance.check_out|time:"H:i" }}
+                        {% elif existing_attendance and existing_attendance.check_in %}
+                            Pending
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CAMERA SECTION ================= -->
+        <div class="camera-section">
+            <h3>📸 Take Attendance Photo</h3>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">
+                {% if existing_attendance and existing_attendance.photo %}
+                    ✅ Photo already captured
+                {% else %}
+                    Capture a photo to verify your attendance
+                {% endif %}
+            </p>
+            
+            <div class="camera-container" id="cameraContainer">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+                <div class="camera-overlay" id="cameraOverlay" onclick="startCamera()">
+                    📷 Click to start camera
+                </div>
+            </div>
+            
+            <div class="photo-preview {% if existing_attendance and existing_attendance.photo %}has-photo{% endif %}" id="photoPreview">
+                {% if existing_attendance and existing_attendance.photo %}
+                <img src="{{ existing_attendance.photo.url }}" alt="Attendance Photo">
+                {% else %}
+                <img id="capturedPhoto" src="" alt="Captured Photo">
+                {% endif %}
+            </div>
+            
+            <div class="camera-controls">
+                {% if existing_attendance and existing_attendance.photo %}
+                <button class="btn-camera btn-camera-secondary" onclick="removePhoto()">
+                    🗑️ Remove Photo
+                </button>
+                <button class="btn-camera btn-camera-primary" onclick="startCamera()">
+                    📷 Retake Photo
+                </button>
+                {% else %}
+                <button class="btn-camera btn-camera-primary" id="startCameraBtn" onclick="startCamera()">
+                    📷 Start Camera
+                </button>
+                <button class="btn-camera btn-camera-success" id="captureBtn" onclick="capturePhoto()" style="display: none;">
+                    📸 Capture Photo
+                </button>
+                <button class="btn-camera btn-camera-danger" id="retakeBtn" onclick="retakePhoto()" style="display: none;">
+                    🔄 Retake
+                </button>
+                <button class="btn-camera btn-camera-secondary" onclick="stopCamera()">
+                    ⏹️ Stop Camera
+                </button>
+                {% endif %}
+            </div>
+            
+            <!-- Hidden input for photo data -->
+            <input type="hidden" id="photoData" name="photo_data" value="{% if existing_attendance and existing_attendance.photo %}existing{% endif %}">
+        </div>
+
+        <!-- ================= ATTENDANCE FORM ================= -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3>📋 Attendance Details</h3>
+            </div>
+            
+            <form method="POST" class="portal-form" id="attendanceForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Display messages -->
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Employee Info (Read-only) -->
+                <div class="form-group">
+                    <label>Employee</label>
+                    <input type="text" value="{{ employee.user.get_full_name|default:employee.user.username }}" 
+                           class="form-control" disabled>
+                    <small class="form-text text-muted">Attendance will be recorded for yourself</small>
+                </div>
+                
+                <!-- Date (Read-only) -->
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" value="{{ today|date:'d M Y' }}" 
+                           class="form-control" disabled>
+                    <small class="form-text text-muted">Attendance is only for today</small>
+                </div>
+                
+                <!-- Status -->
+                <div class="form-group">
+                    <label for="status">Status *</label>
+                    <select name="status" id="status" class="form-control" required>
+                        <option value="Present" {% if existing_attendance and existing_attendance.status == 'Present' %}selected{% endif %}>✅ Present</option>
+                        <option value="Absent" {% if existing_attendance and existing_attendance.status == 'Absent' %}selected{% endif %}>❌ Absent</option>
+                        <option value="WFH" {% if existing_attendance and existing_attendance.status == 'WFH' %}selected{% endif %}>🏠 Work From Home</option>
+                        <option value="Leave" {% if existing_attendance and existing_attendance.status == 'Leave' %}selected{% endif %}>🌴 Leave</option>
+                    </select>
+                    <small class="form-text text-muted">Select your attendance status for today</small>
+                </div>
+                
+                <!-- Check In Time -->
+                <div class="form-group">
+                    <label for="check_in">Check In Time</label>
+                    <input type="time" name="check_in" id="check_in" 
+                           value="{% if existing_attendance and existing_attendance.check_in %}{{ existing_attendance.check_in|time:'H:i' }}{% endif %}"
+                           class="form-control {% if existing_attendance and existing_attendance.check_in %}checked-in{% endif %}"
+                           {% if existing_attendance and existing_attendance.check_in %}readonly{% endif %}>
+                    <small class="form-text text-muted">
+                        {% if existing_attendance and existing_attendance.check_in %}
+                            ✅ Checked in at {{ existing_attendance.check_in|time:"H:i" }}
+                        {% else %}
+                            Enter your check-in time (Auto-filled if you use the button below)
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <!-- Check In / Check Out Buttons -->
+                <div style="text-align: center; margin: 10px 0;">
+                    {% if existing_attendance and existing_attendance.check_in %}
+                    <button type="button" class="btn-camera btn-camera-success" disabled>
+                        ✅ Checked In ({{ existing_attendance.check_in|time:"H:i" }})
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn-camera btn-camera-primary" onclick="autoCheckIn()">
+                        ⏰ Check In Now
+                    </button>
+                    {% endif %}
+                    
+                    {% if existing_attendance and existing_attendance.check_out %}
+                    <button type="button" class="btn-camera btn-camera-success" disabled>
+                        ✅ Checked Out ({{ existing_attendance.check_out|time:"H:i" }})
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn-camera btn-camera-secondary" onclick="autoCheckOut()" 
+                            {% if not existing_attendance or not existing_attendance.check_in %}disabled style="opacity: 0.5;"{% endif %}>
+                        ⏰ Check Out Now
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <!-- Check Out Time -->
+                <div class="form-group">
+                    <label for="check_out">Check Out Time</label>
+                    <input type="time" name="check_out" id="check_out" 
+                           value="{% if existing_attendance and existing_attendance.check_out %}{{ existing_attendance.check_out|time:'H:i' }}{% endif %}"
+                           class="form-control {% if existing_attendance and existing_attendance.check_out %}checked-out{% endif %}"
+                           {% if existing_attendance and existing_attendance.check_out %}readonly{% endif %}>
+                    <small class="form-text text-muted">
+                        {% if existing_attendance and existing_attendance.check_out %}
+                            ✅ Checked out at {{ existing_attendance.check_out|time:"H:i" }}
+                        {% else %}
+                            Enter your check-out time
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <!-- Location -->
+                <div class="form-group">
+                    <label>Location</label>
+                    <div class="location-info">
+                        <span class="loc-icon">📍</span>
+                        <span id="locationDisplay">
+                            {% if existing_attendance and existing_attendance.location_address %}
+                                {{ existing_attendance.location_address }}
+                            {% else %}
+                                Click "Get Location" to detect
+                            {% endif %}
+                        </span>
+                    </div>
+                    <button type="button" class="btn-camera btn-camera-secondary" onclick="getLocation()" style="margin-top: 8px;">
+                        📍 Get Location
+                    </button>
+                    <input type="hidden" name="location_lat" id="locationLat" value="{{ existing_attendance.location_lat|default:'' }}">
+                    <input type="hidden" name="location_lng" id="locationLng" value="{{ existing_attendance.location_lng|default:'' }}">
+                    <input type="hidden" name="location_address" id="locationAddress" value="{{ existing_attendance.location_address|default:'' }}">
+                </div>
+                
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea name="notes" id="notes" class="form-control" rows="3" 
+                              placeholder="Any additional notes...">{{ existing_attendance.notes|default:'' }}</textarea>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="form-actions">
+                    <a href="{% url 'employee_portal_attendance' %}" class="btn-portal-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-portal-primary" id="submitBtn">
+                        {% if existing_attendance %}
+                            🔄 Update Attendance
+                        {% else %}
+                            ✅ Mark Attendance
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // CAMERA HANDLING
+    // ============================================
+    let stream = null;
+    let capturedImageData = null;
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photoPreview = document.getElementById('photoPreview');
+    const capturedPhoto = document.getElementById('capturedPhoto');
+    const photoDataInput = document.getElementById('photoData');
+
+    function startCamera() {
+        const overlay = document.getElementById('cameraOverlay');
+        const startBtn = document.getElementById('startCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: false
+            })
+            .then(function(mediaStream) {
+                stream = mediaStream;
+                video.srcObject = stream;
+                video.play();
+                
+                overlay.style.display = 'none';
+                if (startBtn) startBtn.style.display = 'none';
+                if (captureBtn) captureBtn.style.display = 'inline-flex';
+                if (retakeBtn) retakeBtn.style.display = 'none';
+            })
+            .catch(function(err) {
+                console.error('Camera error:', err);
+                alert('Unable to access camera. Please ensure you have granted camera permissions.');
+            });
+        } else {
+            alert('Camera not supported on this device.');
+        }
+    }
+
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        video.srcObject = null;
+        document.getElementById('cameraOverlay').style.display = 'flex';
+        document.getElementById('startCameraBtn').style.display = 'inline-flex';
+        document.getElementById('captureBtn').style.display = 'none';
+        document.getElementById('retakeBtn').style.display = 'none';
+    }
+
+    function capturePhoto() {
+        if (!stream) {
+            alert('Please start the camera first.');
+            return;
+        }
+        
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to base64
+        capturedImageData = canvas.toDataURL('image/jpeg', 0.8);
+        
+        // Show preview
+        capturedPhoto.src = capturedImageData;
+        photoPreview.classList.add('has-photo');
+        photoDataInput.value = capturedImageData;
+        
+        // Show retake button
+        document.getElementById('retakeBtn').style.display = 'inline-flex';
+        document.getElementById('captureBtn').style.display = 'none';
+        
+        // Stop camera after capture
+        stopCamera();
+        showNotification('📸 Photo captured successfully!');
+    }
+
+    function retakePhoto() {
+        capturedImageData = null;
+        photoPreview.classList.remove('has-photo');
+        photoDataInput.value = '';
+        document.getElementById('retakeBtn').style.display = 'none';
+        startCamera();
+    }
+
+    function removePhoto() {
+        if (confirm('Remove the captured photo?')) {
+            capturedImageData = null;
+            photoPreview.classList.remove('has-photo');
+            photoDataInput.value = '';
+            document.getElementById('retakeBtn').style.display = 'none';
+            showNotification('🗑️ Photo removed');
+        }
+    }
+
+    // ============================================
+    // AUTO CHECK-IN / CHECK-OUT
+    // ============================================
+    function autoCheckIn() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const checkInInput = document.getElementById('check_in');
+        checkInInput.value = hours + ':' + minutes;
+        checkInInput.readOnly = true;
+        checkInInput.className = 'form-control checked-in';
+        
+        // Auto-set status to Present if not set
+        const status = document.getElementById('status');
+        if (!status.value || status.value === '') {
+            status.value = 'Present';
+        }
+        
+        // Update button
+        const checkInBtn = document.querySelector('[onclick="autoCheckIn()"]');
+        if (checkInBtn) {
+            checkInBtn.innerHTML = '✅ Checked In (' + hours + ':' + minutes + ')';
+            checkInBtn.disabled = true;
+            checkInBtn.className = 'btn-camera btn-camera-success';
+        }
+        
+        // Enable check-out button
+        const checkOutBtn = document.querySelector('[onclick="autoCheckOut()"]');
+        if (checkOutBtn) {
+            checkOutBtn.disabled = false;
+            checkOutBtn.style.opacity = '1';
+        }
+        
+        showNotification('✅ Check-in time set to ' + hours + ':' + minutes);
+        
+        // Update timeline
+        updateTimeline('check_in', hours + ':' + minutes);
+    }
+
+    function autoCheckOut() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const checkOutInput = document.getElementById('check_out');
+        checkOutInput.value = hours + ':' + minutes;
+        checkOutInput.readOnly = true;
+        checkOutInput.className = 'form-control checked-out';
+        
+        // Update button
+        const checkOutBtn = document.querySelector('[onclick="autoCheckOut()"]');
+        if (checkOutBtn) {
+            checkOutBtn.innerHTML = '✅ Checked Out (' + hours + ':' + minutes + ')';
+            checkOutBtn.disabled = true;
+            checkOutBtn.className = 'btn-camera btn-camera-success';
+        }
+        
+        showNotification('✅ Check-out time set to ' + hours + ':' + minutes);
+        
+        // Update timeline
+        updateTimeline('check_out', hours + ':' + minutes);
+    }
+
+    // ============================================
+    // TIMELINE UPDATE
+    // ============================================
+    function updateTimeline(type, time) {
+        const dots = document.querySelectorAll('.timeline-dot');
+        const times = document.querySelectorAll('.timeline-time');
+        
+        if (type === 'check_in') {
+            dots[0].className = 'timeline-dot completed';
+            dots[0].textContent = '✅';
+            times[0].textContent = time;
+            dots[1].className = 'timeline-dot active';
+            dots[1].textContent = '⏰';
+        } else if (type === 'check_out') {
+            dots[1].className = 'timeline-dot completed';
+            dots[1].textContent = '✅';
+            times[1].textContent = time;
+        }
+    }
+
+    // ============================================
+    // LOCATION
+    // ============================================
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    document.getElementById('locationLat').value = lat;
+                    document.getElementById('locationLng').value = lng;
+                    document.getElementById('locationDisplay').innerHTML = 
+                        `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    
+                    // Reverse geocode
+                    reverseGeocode(lat, lng);
+                    showNotification('📍 Location detected!');
+                },
+                function(error) {
+                    console.error('Location error:', error);
+                    alert('Unable to get location. Please enable location services.');
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by this browser.');
+        }
+    }
+
+    function reverseGeocode(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    document.getElementById('locationAddress').value = data.display_name;
+                    document.getElementById('locationDisplay').innerHTML = 
+                        `📍 ${data.display_name}`;
+                }
+            })
+            .catch(error => {
+                console.error('Reverse geocoding error:', error);
+            });
+    }
+
+    // ============================================
+    // NOTIFICATIONS
+    // ============================================
+    function showNotification(message) {
+        // Remove existing notifications
+        const existing = document.querySelectorAll('.message.success');
+        existing.forEach(el => el.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = 'message success';
+        notification.textContent = message;
+        notification.style.animation = 'fadeIn 0.3s ease';
+        
+        const messagesContainer = document.querySelector('.messages');
+        if (messagesContainer) {
+            messagesContainer.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+    }
+
+    // ============================================
+    // FORM VALIDATION
+    // ============================================
+    document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+        const status = document.getElementById('status').value;
+        const checkIn = document.getElementById('check_in').value;
+        const checkOut = document.getElementById('check_out').value;
+        
+        if (!status) {
+            e.preventDefault();
+            alert('Please select an attendance status.');
+            return false;
+        }
+        
+        // If Present or WFH, check-in is recommended
+        if ((status === 'Present' || status === 'WFH') && !checkIn) {
+            if (!confirm('You have not set a check-in time. Continue anyway?')) {
+                e.preventDefault();
+                return false;
+            }
+        }
+        
+        // Validate check-out is after check-in
+        if (checkIn && checkOut && checkOut <= checkIn) {
+            e.preventDefault();
+            alert('Check-out time must be after check-in time.');
+            return false;
+        }
+        
+        // Show loading state
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Saving...';
+        
+        return true;
+    });
+
+    // ============================================
+    // AUTO-FILL CHECK-IN ON STATUS CHANGE
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusSelect = document.getElementById('status');
+        const checkInInput = document.getElementById('check_in');
+        const checkOutInput = document.getElementById('check_out');
+        
+        // Check if already checked in
+        const alreadyCheckedIn = checkInInput.readOnly && checkInInput.value;
+        const alreadyCheckedOut = checkOutInput.readOnly && checkOutInput.value;
+        
+        // If not checked in, auto-fill on status change
+        {% if not existing_attendance or not existing_attendance.check_in %}
+        if (statusSelect && !alreadyCheckedIn) {
+            statusSelect.addEventListener('change', function() {
+                if ((this.value === 'Present' || this.value === 'WFH') && !checkInInput.value) {
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    checkInInput.value = hours + ':' + minutes;
+                    showNotification('⏰ Check-in time auto-set to ' + hours + ':' + minutes);
+                }
+            });
+        }
+        {% endif %}
+        
+        // Validate check-out is after check-in
+        if (checkInInput && checkOutInput && !alreadyCheckedOut) {
+            checkInInput.addEventListener('change', function() {
+                if (checkOutInput.value && checkOutInput.value <= this.value) {
+                    checkOutInput.value = '';
+                    showNotification('⚠️ Check-out time must be after check-in');
+                }
+            });
+        }
+        
+        // Auto-open camera if no photo exists
+        {% if not existing_attendance or not existing_attendance.photo %}
+        setTimeout(function() {
+            const hasPhoto = document.querySelector('.photo-preview.has-photo');
+            if (!hasPhoto) {
+                console.log('📷 No photo found. User can click "Start Camera"');
+            }
+        }, 1000);
+        {% endif %}
+    });
+
+    // ============================================
+    // CONSOLE LOG
+    // ============================================
+    console.log('📝 Attendance Mark Page Loaded');
+    console.log('👤 Employee: {{ employee.user.get_full_name }}');
+    console.log('📅 Date: {{ today }}');
+    console.log('⏰ Work Start: {{ work_start }}');
+    console.log('⏳ Grace Period: {{ grace_period }} minutes');
+    
+    {% if existing_attendance %}
+    console.log('✅ Existing attendance found');
+    console.log('🕐 Check In: {{ existing_attendance.check_in|time:"H:i"|default:"Not set" }}');
+    console.log('🕐 Check Out: {{ existing_attendance.check_out|time:"H:i"|default:"Not set" }}');
+    console.log('📸 Photo: {% if existing_attendance.photo %}Yes{% else %}No{% endif %}');
+    {% else %}
+    console.log('⏳ No attendance marked yet');
+    {% endif %}
+</script>
+
+{% endblock %}

@@ -1,0 +1,573 @@
+/* static/css/people/holiday_form.css */
+
+.holiday-form-page * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.holiday-form-page {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #0b1120;
+    padding: 2.5rem 2rem;
+    color: #e8edf5;
+    max-width: 900px;
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+.holiday-form-page h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #f0f4fe;
+    margin: 0.25rem 0;
+}
+
+.holiday-form-page h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #e2eaf6;
+    margin: 0;
+}
+
+.holiday-form-page p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.page-header {
+    background: #182235;
+    border-radius: 1.5rem;
+    padding: 1.75rem 2.25rem;
+    margin-bottom: 2rem;
+    border: 1px solid #28344a;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.header-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.header-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.95rem;
+    color: #94a3b8;
+}
+
+.header-subtitle strong {
+    color: #e8edf5;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 2.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: #28344a;
+    color: #d6e0f0;
+    border: 1px solid #3a4862;
+}
+
+.btn-back:hover {
+    background: #33425c;
+    border-color: #5a6f92;
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   ERROR ALERT
+   ============================================ */
+.error-alert {
+    background: #3d1f2a;
+    border: 1px solid #ef4444;
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+}
+
+.error-alert-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.error-icon {
+    font-size: 1.5rem;
+}
+
+.error-alert h3 {
+    color: #fca5a5;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.error-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.error-list li {
+    color: #fca5a5;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.error-list li:last-child {
+    border-bottom: none;
+}
+
+.error-list li strong {
+    color: #f87171;
+}
+
+/* ============================================
+   FORM CARD
+   ============================================ */
+.form-card {
+    background: #182235;
+    border-radius: 1.5rem;
+    padding: 1.75rem;
+    border: 1px solid #26314a;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #1f2d47;
+}
+
+.card-badge {
+    background: #101b2e;
+    padding: 0.2rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: #94a3b8;
+    border: 1px solid #2a3852;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ============================================
+   FORM GRID
+   ============================================ */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* ============================================
+   FORM GROUP
+   ============================================ */
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #d6e0f0;
+    margin-bottom: 0.35rem;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #f87171;
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    background: #101b2e;
+    border: 1px solid #2a3852;
+    border-radius: 0.75rem;
+    color: #e8edf5;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3b6aff;
+    box-shadow: 0 0 0 3px rgba(59, 106, 255, 0.15);
+}
+
+.form-control::placeholder {
+    color: #64748b;
+}
+
+.form-control option {
+    background: #182235;
+    color: #e8edf5;
+}
+
+select.form-control {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+textarea.form-control {
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+/* ============================================
+   HELP TEXT & ERRORS
+   ============================================ */
+.help-text {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+}
+
+.field-error {
+    color: #f87171;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+    padding: 0.2rem 0.6rem;
+    background: #3d1f2a;
+    border-radius: 0.5rem;
+    border-left: 3px solid #ef4444;
+}
+
+/* ============================================
+   CHECKBOX
+   ============================================ */
+.checkbox-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #101b2e;
+    border-radius: 0.75rem;
+    border: 1px solid #2a3852;
+    transition: border-color 0.2s ease;
+}
+
+.checkbox-wrapper:hover {
+    border-color: #3b6aff;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin-top: 0.1rem;
+    cursor: pointer;
+    accent-color: #3b6aff;
+}
+
+.checkbox-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    cursor: pointer;
+}
+
+.checkbox-text {
+    font-weight: 500;
+    color: #e8edf5;
+    font-size: 0.9rem;
+}
+
+.checkbox-help {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* ============================================
+   FORM ACTIONS
+   ============================================ */
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-light {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: 2.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #3b6aff;
+    color: white;
+    box-shadow: 0 4px 14px rgba(59, 106, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: #2a5af0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 106, 255, 0.4);
+}
+
+.btn-secondary {
+    background: #28344a;
+    color: #d6e0f0;
+    border-color: #3a4862;
+}
+
+.btn-secondary:hover {
+    background: #33425c;
+    border-color: #5a6f92;
+    transform: translateY(-2px);
+}
+
+.btn-light {
+    background: #101b2e;
+    color: #d6e0f0;
+    border-color: #2a3852;
+}
+
+.btn-light:hover {
+    background: #1f2d47;
+    border-color: #3b6aff;
+    transform: translateY(-2px);
+}
+
+.btn-save {
+    min-width: 180px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .holiday-form-page {
+        padding: 1.25rem 1rem;
+    }
+
+    .page-header {
+        padding: 1.5rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .header-left {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-icon {
+        font-size: 2rem;
+    }
+
+    .holiday-form-page h1 {
+        font-size: 1.5rem;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .btn-back {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .form-card {
+        padding: 1.25rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .form-group.full-width {
+        grid-column: 1;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-actions .btn-primary,
+    .form-actions .btn-secondary,
+    .form-actions .btn-light {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .btn-save {
+        min-width: unset;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .checkbox-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .holiday-form-page {
+        padding: 1rem 0.75rem;
+    }
+
+    .page-header {
+        padding: 1.25rem;
+    }
+
+    .form-card {
+        padding: 1rem;
+    }
+
+    .form-control {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .file-upload-label {
+        padding: 0.5rem 1rem;
+    }
+
+    .current-file {
+        flex-wrap: wrap;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-header,
+.form-card,
+.form-actions {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+.holiday-form-page::-webkit-scrollbar {
+    width: 6px;
+}
+
+.holiday-form-page::-webkit-scrollbar-track {
+    background: #101b2e;
+}
+
+.holiday-form-page::-webkit-scrollbar-thumb {
+    background: #28344a;
+    border-radius: 3px;
+}
+
+.holiday-form-page::-webkit-scrollbar-thumb:hover {
+    background: #3a4862;
+}
+
+::selection {
+    background: #3b6aff66;
+    color: white;
+}
+
+/* ============================================
+   FOCUS VISIBLE
+   ============================================ */
+.form-control:focus-visible {
+    outline: 2px solid #3b6aff;
+    outline-offset: 2px;
+}
+
+/* ============================================
+   DISABLED STATE
+   ============================================ */
+.form-control:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   READONLY STATE
+   ============================================ */
+.form-control:read-only {
+    opacity: 0.7;
+    cursor: default;
+}

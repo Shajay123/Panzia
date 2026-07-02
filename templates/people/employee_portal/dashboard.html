@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-portal">
+
+    <!-- ================= HEADER ================= -->
+    <div class="portal-header">
+        <div class="portal-header-content">
+            <div class="portal-header-left">
+                <div class="portal-header-icon">👤</div>
+                <div>
+                    <h1>Employee Dashboard</h1>
+                    <p class="portal-header-subtitle">
+                        Welcome back, <strong>{{ employee.user.get_full_name|default:employee.user.username }}</strong>!
+                    </p>
+                </div>
+            </div>
+            <div class="portal-header-right">
+                <div class="portal-date">
+                    <span class="date-icon">📅</span>
+                    <span>{% now "l, d M Y" %}</span>
+                </div>
+
+                <!-- ================= NOTIFICATIONS ================= -->
+                <div class="portal-notifications">
+                    <button class="notification-btn" onclick="toggleNotifications()">
+                        🔔
+                        <span class="notification-dot" {% if pending_leaves > 0 %}style="display:block;"{% else %}style="display:none;"{% endif %}></span>
+                        <span class="notification-count">{{ pending_leaves }}</span>
+                    </button>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-header">
+                            <span>🔔 Notifications</span>
+                            <a href="#" class="mark-all-read" onclick="markAllRead(); return false;">Mark all read</a>
+                        </div>
+                        <div class="notification-list">
+                            {% if pending_leaves > 0 %}
+                            <div class="notification-item unread">
+                                <span class="notif-icon">🌴</span>
+                                <div>
+                                    <p>You have <strong>{{ pending_leaves }}</strong> pending leave request{{ pending_leaves|pluralize }}</p>
+                                    <span class="notif-time">Just now</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if attendance_today %}
+                            <div class="notification-item">
+                                <span class="notif-icon">✅</span>
+                                <div>
+                                    <p>Attendance marked as <strong>{{ attendance_today.status }}</strong> today</p>
+                                    <span class="notif-time">Today</span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="notification-item">
+                                <span class="notif-icon">⏳</span>
+                                <div>
+                                    <p>Don't forget to mark your attendance today!</p>
+                                    <span class="notif-time">Today</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="notification-item">
+                                <span class="notif-icon">💰</span>
+                                <div>
+                                    <p>Payroll for {{ latest_payroll.month|default:"current" }} month is {{ latest_payroll.paid|yesno:"paid,pending" }}</p>
+                                    <span class="notif-time">This month</span>
+                                </div>
+                            </div>
+                            {% if upcoming_leaves %}
+                            <div class="notification-item">
+                                <span class="notif-icon">📅</span>
+                                <div>
+                                    <p>Upcoming leave: <strong>{{ upcoming_leaves|first|default:"" }}</strong></p>
+                                    <span class="notif-time">Soon</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{% url 'employee_portal_profile' %}" class="btn-portal-primary">
+                    <span class="btn-icon">👤</span> My Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STARTUP BANNER ================= -->
+    {% include 'people/includes/startup_banner.html' %}
+
+    <!-- ================= QUICK STATS ================= -->
+    <div class="portal-stats">
+        <div class="portal-stat-card blue">
+            <span class="stat-icon">📅</span>
+            <div>
+                <h2>{% if attendance_today %}{{ attendance_today.status }}{% else %}Not Marked{% endif %}</h2>
+                <p>Today's Attendance</p>
+            </div>
+        </div>
+        <div class="portal-stat-card orange">
+            <span class="stat-icon">⏳</span>
+            <div>
+                <h2>{{ pending_leaves }}</h2>
+                <p>Pending Leaves</p>
+            </div>
+        </div>
+        <div class="portal-stat-card green">
+            <span class="stat-icon">✅</span>
+            <div>
+                <h2>{{ approved_leaves }}</h2>
+                <p>Approved Leaves</p>
+            </div>
+        </div>
+        <div class="portal-stat-card purple">
+            <span class="stat-icon">💰</span>
+            <div>
+                <h2>₹{{ employee.salary|floatformat:0|default:"0" }}</h2>
+                <p>Monthly Salary</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= QUICK ACTIONS WITH BADGES ================= -->
+    <div class="portal-quick-actions">
+        <a href="{% url 'employee_portal_attendance_mark' %}" class="portal-quick-action">
+            <span class="action-icon">📝</span>
+            <span>Mark Attendance</span>
+            <span class="action-badge badge-new">Today</span>
+        </a>
+        <a href="{% url 'employee_portal_leave_create' %}" class="portal-quick-action">
+            <span class="action-icon">➕</span>
+            <span>Apply Leave</span>
+            <span class="action-badge badge-new">New</span>
+        </a>
+        <a href="{% url 'employee_portal_attendance' %}" class="portal-quick-action">
+            <span class="action-icon">📊</span>
+            <span>View Attendance</span>
+            <span class="action-badge">History</span>
+        </a>
+        <a href="{% url 'employee_portal_leave' %}" class="portal-quick-action">
+            <span class="action-icon">🌴</span>
+            <span>My Leaves</span>
+            <span class="action-badge badge-count">{{ pending_leaves }}</span>
+        </a>
+        <a href="{% url 'employee_portal_payroll' %}" class="portal-quick-action">
+            <span class="action-icon">💰</span>
+            <span>Payroll</span>
+            <span class="action-badge">Latest</span>
+        </a>
+        <a href="{% url 'employee_portal_payslips' %}" class="portal-quick-action">
+            <span class="action-icon">🧾</span>
+            <span>Payslips</span>
+            <span class="action-badge">Download</span>
+        </a>
+    </div>
+
+    <!-- ================= QUICK STATS CARDS ================= -->
+    <div class="portal-quick-stats">
+        <div class="quick-stat-item">
+            <span class="qs-icon">📅</span>
+            <div>
+                <span class="qs-label">Attendance Rate</span>
+                <span class="qs-value">{{ attendance_percentage|default:0 }}%</span>
+            </div>
+            <div class="qs-bar">
+                <div class="qs-fill" style="width: {{ attendance_percentage|default:0 }}%; background: linear-gradient(90deg, #7c3aed, #ec4899);"></div>
+            </div>
+        </div>
+        <div class="quick-stat-item">
+            <span class="qs-icon">🌴</span>
+            <div>
+                <span class="qs-label">Leaves Used</span>
+                <span class="qs-value">{{ approved_leaves|default:0 }} of 12</span>
+            </div>
+            <div class="qs-bar">
+                {% with leaves_percentage=approved_leaves|default:0|add:0 %}
+                <div class="qs-fill" style="width: {% if leaves_percentage >= 12 %}100{% else %}{{ leaves_percentage|floatformat:0|default:0 }}{% endif %}%; background: linear-gradient(90deg, #f59e0b, #f472b6);"></div>
+                {% endwith %}
+            </div>
+        </div>
+        <div class="quick-stat-item">
+            <span class="qs-icon">💰</span>
+            <div>
+                <span class="qs-label">Payroll Status</span>
+                <span class="qs-value">
+                    {% if latest_payroll.paid %}
+                        ✅ Paid
+                    {% else %}
+                        ⏳ Pending
+                    {% endif %}
+                </span>
+            </div>
+            <div class="qs-bar">
+                <div class="qs-fill" style="width: {% if latest_payroll.paid %}100{% else %}50{% endif %}%; background: linear-gradient(90deg, #22c55e, #a78bfa);"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TWO COLUMN LAYOUT ================= -->
+    <div class="portal-grid">
+
+        <!-- LEFT COLUMN -->
+        <div class="portal-left">
+
+            <!-- Upcoming Leaves -->
+            <div class="portal-card">
+                <div class="portal-card-header">
+                    <h3>📅 Upcoming Leaves</h3>
+                    <a href="{% url 'employee_portal_leave' %}" class="portal-view-all">View All →</a>
+                </div>
+                {% if upcoming_leaves %}
+                <div class="portal-leave-list">
+                    {% for leave in upcoming_leaves %}
+                    <div class="portal-leave-item">
+                        <div class="leave-info">
+                            <span class="leave-type">{{ leave.leave_type }}</span>
+                            <span class="leave-dates">{{ leave.from_date|date:"d M Y" }} - {{ leave.to_date|date:"d M Y" }}</span>
+                        </div>
+                        <span class="leave-status status-{{ leave.status|lower }}">
+                            {{ leave.status }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="portal-text-muted">No upcoming leaves.</p>
+                {% endif %}
+            </div>
+
+            <!-- Recent Attendance -->
+            <div class="portal-card">
+                <div class="portal-card-header">
+                    <h3>📊 Recent Attendance</h3>
+                    <a href="{% url 'employee_portal_attendance' %}" class="portal-view-all">View All →</a>
+                </div>
+                <div class="portal-attendance-chips">
+                    {% for att in recent_attendance %}
+                    <div class="attendance-chip {% if att.status == 'Present' %}present{% elif att.status == 'Absent' %}absent{% elif att.status == 'Leave' %}leave{% else %}wfh{% endif %}">
+                        <span class="chip-date">{{ att.date|date:"d M" }}</span>
+                        <span class="chip-status">{{ att.status }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="portal-text-muted">No attendance records found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="portal-right">
+
+            <!-- Attendance Summary -->
+            <div class="portal-card">
+                <div class="portal-card-header">
+                    <h3>📈 Attendance Summary</h3>
+                </div>
+                <div class="portal-attendance-summary">
+                    <div class="summary-circle">
+                        <svg viewBox="0 0 36 36">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1a1035" stroke-width="3" />
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="url(#gradient)" stroke-width="3" stroke-dasharray="{{ attendance_percentage }}, 100" />
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="summary-text">
+                            <strong>{{ attendance_percentage }}%</strong>
+                            <span>Attendance Rate</span>
+                        </div>
+                    </div>
+                    <div class="summary-details">
+                        <div class="summary-detail">
+                            <span class="detail-label">Present</span>
+                            <span class="detail-value present">{{ present_days }}</span>
+                        </div>
+                        <div class="summary-detail">
+                            <span class="detail-label">Absent</span>
+                            <span class="detail-value absent">{{ absent_days }}</span>
+                        </div>
+                        <div class="summary-detail">
+                            <span class="detail-label">Leave</span>
+                            <span class="detail-value leave">{{ leave_days }}</span>
+                        </div>
+                        <div class="summary-detail">
+                            <span class="detail-label">WFH</span>
+                            <span class="detail-value wfh">{{ wfh_days }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latest Payroll -->
+            <div class="portal-card">
+                <div class="portal-card-header">
+                    <h3>💰 Latest Payroll</h3>
+                    <a href="{% url 'employee_portal_payroll' %}" class="portal-view-all">View All →</a>
+                </div>
+                {% if latest_payroll %}
+                <div class="portal-payroll-item">
+                    <div class="payroll-meta">
+                        <span class="payroll-month">{{ latest_payroll.month }} {{ latest_payroll.year }}</span>
+                        <span class="payroll-status {% if latest_payroll.paid %}paid{% else %}pending{% endif %}">
+                            {% if latest_payroll.paid %}✅ Paid{% else %}⏳ Pending{% endif %}
+                        </span>
+                    </div>
+                    <div class="payroll-amount">₹{{ latest_payroll.net_salary|floatformat:2 }}</div>
+                </div>
+                {% else %}
+                <p class="portal-text-muted">No payroll records found.</p>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // ============================================
+    // TOGGLE NOTIFICATIONS
+    // ============================================
+    function toggleNotifications() {
+        const dropdown = document.getElementById('notificationDropdown');
+        dropdown.classList.toggle('show');
+    }
+
+    // ============================================
+    // CLOSE NOTIFICATION DROPDOWN ON OUTSIDE CLICK
+    // ============================================
+    document.addEventListener('click', function (event) {
+        const dropdown = document.getElementById('notificationDropdown');
+        const btn = document.querySelector('.notification-btn');
+        if (dropdown && btn && !dropdown.contains(event.target) && !btn.contains(event.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+    // ============================================
+    // CLOSE NOTIFICATION DROPDOWN ON ESCAPE
+    // ============================================
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            const dropdown = document.getElementById('notificationDropdown');
+            if (dropdown) {
+                dropdown.classList.remove('show');
+            }
+        }
+    });
+
+    // ============================================
+    // MARK ALL NOTIFICATIONS AS READ
+    // ============================================
+    function markAllRead() {
+        document.querySelectorAll('.notification-item.unread').forEach(function (item) {
+            item.classList.remove('unread');
+        });
+        const dot = document.querySelector('.notification-dot');
+        if (dot) {
+            dot.style.display = 'none';
+        }
+        const count = document.querySelector('.notification-count');
+        if (count) {
+            count.textContent = '0';
+        }
+        // Close dropdown after marking read
+        const dropdown = document.getElementById('notificationDropdown');
+        if (dropdown) {
+            dropdown.classList.remove('show');
+        }
+    }
+
+    console.log('👤 Employee Dashboard loaded');
+    console.log('📊 Attendance: {{ attendance_percentage }}%');
+    console.log('🌴 Pending Leaves: {{ pending_leaves }}');
+</script>
+
+{% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Department{% endblock %}
+{% block title %}Department - {{ department.name }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/department_detail.css' %}">
@@ -9,118 +9,180 @@
 
 {% block content %}
 
-<div class="department-detail">
+<div class="department-detail-page">
 
-<div class="header">
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div>
+                <div class="header-top">
+                    <h1>🏢 {{ department.name }}</h1>
+                    <div class="header-actions">
+                        <a href="{% url 'department_update' department.id %}" class="btn-primary">
+                            ✏️ Edit
+                        </a>
+                        <a href="{% url 'department_delete' department.id %}" class="btn-danger">
+                            🗑️ Delete
+                        </a>
+                        <a href="{% url 'departments' %}" class="btn-secondary">
+                            ← Back
+                        </a>
+                    </div>
+                </div>
+                <div class="header-meta">
+                    <span class="meta-item">
+                        <span class="meta-label">Code:</span>
+                        <code>{{ department.code|default:"N/A" }}</code>
+                    </span>
+                    <span class="meta-item">
+                        <span class="meta-label">Status:</span>
+                        {% if department.active %}
+                        <span class="badge success">● Active</span>
+                        {% else %}
+                        <span class="badge danger">● Inactive</span>
+                        {% endif %}
+                    </span>
+                    <span class="meta-item">
+                        <span class="meta-label">Members:</span>
+                        <strong>{{ employees|length }}</strong>
+                    </span>
+                    <span class="meta-item">
+                        <span class="meta-label">Created:</span>
+                        <span title="{{ department.created_at|date:'d M Y, H:i:s' }}">
+                            {{ department.created_at|date:"d M Y" }}
+                            <span class="time-ago">({{ department.created_at|timesince }} ago)</span>
+                        </span>
+                    </span>
+                    {% if department.updated_at %}
+                    <span class="meta-item">
+                        <span class="meta-label">Updated:</span>
+                        <span title="{{ department.updated_at|date:'d M Y, H:i:s' }}">
+                            {{ department.updated_at|date:"d M Y" }}
+                            <span class="time-ago">({{ department.updated_at|timesince }} ago)</span>
+                        </span>
+                    </span>
+                    {% endif %}
+                </div>
+                {% if department.description %}
+                <p class="department-description">{{ department.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
-<h1>
+    <!-- ================= EMPLOYEES TABLE ================= -->
+    <div class="card table-card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <h3>👥 Team Members</h3>
+                <span class="member-count">{{ employees|length }} members</span>
+            </div>
+            <div class="card-header-actions">
+                <input type="text" id="employeeSearch" placeholder="🔍 Search employees..." class="search-input">
+            </div>
+        </div>
 
-🏢 {{ department.name }}
-
-</h1>
-
-<p>
-
-{{ department.description }}
-
-</p>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Employee</th>
+                        <th>Designation</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                    {% for emp in employees %}
+                    <tr class="employee-row">
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <div class="employee-info">
+                                <!-- Profile Image -->
+                                <div class="profile-image">
+                                    {% if emp.profile_image %}
+                                        <img src="{{ emp.profile_image.url }}" alt="{{ emp.user.get_full_name }}">
+                                    {% else %}
+                                        <div class="avatar-fallback">
+                                            {{ emp.user.get_full_name|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                    <!-- Status dot -->
+                                    <span class="status-dot {% if emp.status == 'active' %}online{% elif emp.status == 'on_leave' %}away{% else %}offline{% endif %}"></span>
+                                </div>
+                                <div class="employee-details">
+                                    <span class="employee-name">{{ emp.user.get_full_name|default:emp.user.username }}</span>
+                                    <span class="employee-email">{{ emp.user.email }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="designation-badge">
+                                <span class="designation-icon">💼</span>
+                                {{ emp.designation|default:"-" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if emp.status == 'active' %}
+                            <span class="status-badge active">
+                                <span class="status-dot-small"></span>
+                                Active
+                            </span>
+                            {% elif emp.status == 'on_leave' %}
+                            <span class="status-badge on-leave">
+                                <span class="status-dot-small"></span>
+                                On Leave
+                            </span>
+                            {% else %}
+                            <span class="status-badge inactive">
+                                <span class="status-dot-small"></span>
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="joined-date" title="{{ emp.date_joined|date:'d M Y, H:i:s' }}">
+                                {{ emp.date_joined|date:"d M Y"|default:"-" }}
+                            </span>
+                            {% if emp.date_joined %}
+                            <span class="joined-ago">({{ emp.date_joined|timesince }} ago)</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <span class="empty-icon">👥</span>
+                                <p>No employees assigned to this department yet.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 </div>
 
-<div class="card">
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('employeeSearch');
+        const rows = document.querySelectorAll('.employee-row');
 
-<h3>
-
-Department Code
-
-</h3>
-
-<p>
-
-{{ department.code }}
-
-</p>
-
-</div>
-
-<div class="card">
-
-<h3>
-
-Employees
-
-</h3>
-
-<table>
-
-<tr>
-
-<th>Name</th>
-
-<th>Designation</th>
-
-<th>Status</th>
-
-</tr>
-
-{% for emp in employees %}
-
-<tr>
-
-<td>
-
-{{ emp.user.get_full_name }}
-
-</td>
-
-<td>
-
-{{ emp.designation }}
-
-</td>
-
-<td>
-
-{{ emp.status }}
-
-</td>
-
-</tr>
-
-{% empty %}
-
-<tr>
-
-<td colspan="3">
-
-No Employees Assigned
-
-</td>
-
-</tr>
-
-{% endfor %}
-
-</table>
-
-</div>
-
-<div class="buttons">
-
-<a href="{% url 'department_update' department.id %}" class="btn-primary">
-
-✏ Edit
-
-</a>
-
-<a href="{% url 'department_delete' department.id %}" class="btn-danger">
-
-🗑 Delete
-
-</a>
-
-</div>
-
-</div>
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
 
 {% endblock %}

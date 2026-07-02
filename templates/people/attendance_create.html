@@ -1,12 +1,546 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Mark Attendance
-{% endblock %}
+{% block title %}Mark Attendance{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/people/attendance_form.css' %}">
+<style>
+    /* ============================================
+       ATTENDANCE FORM - HRMS STYLES
+       ============================================ */
+    .attendance-form-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-header-left h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .page-header-left p {
+        margin: 5px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+
+    .breadcrumb a {
+        color: #a78bfa;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .breadcrumb a:hover {
+        color: #c4b5fd;
+        text-decoration: underline;
+    }
+
+    .breadcrumb-separator {
+        color: #64748b;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+    .btn-back:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateX(-2px);
+    }
+
+    /* ===== FORM CARDS ===== */
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: border-color 0.3s;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-badge {
+        font-size: 0.7rem;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .card-badge.required {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .card-badge.optional {
+        background: rgba(167, 139, 250, 0.1);
+        color: #94a3b8;
+    }
+
+    /* ===== FORM GRID ===== */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: #f87171;
+    }
+
+    .form-control {
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        background: rgba(167, 139, 250, 0.05);
+    }
+
+    .form-control::placeholder {
+        color: #64748b;
+    }
+
+    .form-control:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .form-control.error {
+        border-color: #f87171;
+    }
+
+    .form-control.error:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    select.form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
+    .help-text {
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .field-error {
+        font-size: 0.8rem;
+        color: #f87171;
+        margin-top: 2px;
+    }
+
+    /* ===== INFO BOX ===== */
+    .info-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 18px;
+        background: rgba(124, 58, 237, 0.06);
+        border-radius: 8px;
+        border-left: 3px solid #7c3aed;
+        margin-top: 16px;
+    }
+
+    .info-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .info-box strong {
+        display: block;
+        color: #e8edf5;
+        font-size: 0.9rem;
+    }
+
+    .info-box p {
+        margin: 2px 0 0;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    /* ===== ERROR ALERT ===== */
+    .error-alert {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+
+    .error-alert-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .error-alert-header .error-icon {
+        font-size: 1.2rem;
+    }
+
+    .error-alert-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #f87171;
+    }
+
+    .error-list {
+        margin: 0;
+        padding-left: 20px;
+        color: #fca5a5;
+        font-size: 0.9rem;
+    }
+
+    .error-list li {
+        margin-bottom: 2px;
+    }
+
+    /* ===== SUMMARY CARD ===== */
+    .summary-card {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(236, 72, 153, 0.03));
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-top: 20px;
+    }
+
+    .summary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .summary-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+    }
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .summary-icon {
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .summary-item > div {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .summary-item > div span {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+
+    .summary-item > div strong {
+        font-size: 0.95rem;
+        color: #e8edf5;
+        font-weight: 600;
+    }
+
+    /* ===== ACTION BAR ===== */
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .action-bar .btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-reset {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-reset:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: #64748b;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(239, 68, 68, 0.06);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.15);
+    }
+
+    /* ===== SUCCESS MESSAGE ===== */
+    .success-message {
+        background: rgba(34, 197, 94, 0.06);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #4ade80;
+    }
+
+    .success-message .success-icon {
+        font-size: 1.3rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .attendance-form-page {
+            padding: 12px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .page-header-left h1 {
+            font-size: 1.4rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-card {
+            padding: 16px;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .action-bar {
+            flex-direction: column;
+        }
+
+        .action-bar .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-save {
+            order: 1;
+        }
+        .btn-reset {
+            order: 2;
+        }
+        .btn-cancel {
+            order: 3;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card {
+        animation: fadeInUp 0.4s ease forwards;
+    }
+
+    .form-card:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+    .form-card:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+    .form-card:nth-child(4) {
+        animation-delay: 0.3s;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -14,496 +548,528 @@ Mark Attendance
 <div class="attendance-form-page">
 
     <!-- ================= PAGE HEADER ================= -->
-
     <div class="page-header">
-
-        <div>
-
+        <div class="page-header-left">
             <div class="breadcrumb">
-
-                <a href="{% url 'attendance' %}">
-
-                    Attendance
-
-                </a>
-
-                /
-
-                <span>
-
-                    Mark Attendance
-
-                </span>
-
+                <a href="{% url 'people_dashboard' %}">Dashboard</a>
+                <span class="breadcrumb-separator">/</span>
+                <a href="{% url 'attendance' %}">Attendance</a>
+                <span class="breadcrumb-separator">/</span>
+                <span>Mark Attendance</span>
             </div>
-
-            <h1>
-
-                🕒 Mark Employee Attendance
-
-            </h1>
-
-            <p>
-
-                Record today's attendance, working hours and notes.
-
-            </p>
-
+            <h1>🕒 Mark Employee Attendance</h1>
+            <p>Record today's attendance with timings, status, and notes.</p>
         </div>
-
         <a href="{% url 'attendance' %}" class="btn-back">
-
-            ← Back
-
+            ← Back to Attendance
         </a>
-
     </div>
 
+    <!-- ================= SUCCESS MESSAGES ================= -->
+    {% for message in messages %}
+    {% if message.tags == 'success' %}
+    <div class="success-message">
+        <span class="success-icon">✅</span>
+        <span>{{ message }}</span>
+    </div>
+    {% endif %}
+    {% endfor %}
 
-    <form method="POST">
-
+    <!-- ================= FORM ================= -->
+    <form method="POST" novalidate id="attendanceForm">
         {% csrf_token %}
 
-        <!-- ================= EMPLOYEE ================= -->
-
-        <div class="form-card">
-
-            <div class="card-title">
-
-                👤 Employee Information
-
+        <!-- ================= ERROR MESSAGES ================= -->
+        {% if form.errors %}
+        <div class="error-alert">
+            <div class="error-alert-header">
+                <span class="error-icon">⚠️</span>
+                <h3>Please fix the following errors</h3>
             </div>
+            <ul class="error-list">
+                {% for field, errors in form.errors.items %}
+                <li><strong>{{ field|title }}:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
 
+        <!-- ================= EMPLOYEE INFORMATION ================= -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>👤 Employee Information</h2>
+                <span class="card-badge required">Required</span>
+            </div>
             <div class="form-grid">
-
                 <div class="form-group full-width">
-
-                    <label>
-
-                        Employee
-
-                    </label>
-
-                    {{ form.employee }}
-
+                    <label for="{{ form.employee.id_for_label }}" class="form-label required">Select Employee</label>
+                    <select name="employee" id="id_employee" class="form-control {% if form.employee.errors %}error{% endif %}" required>
+                        <option value="">— Select an employee —</option>
+                        {% for emp in form.fields.employee.queryset %}
+                        <option value="{{ emp.id }}" {% if form.employee.value == emp.id %}selected{% endif %}>
+                            {{ emp.user.get_full_name|default:emp.user.username }} 
+                            {% if emp.employee_id %}({{ emp.employee_id }}){% endif %}
+                            {% if emp.department %}— {{ emp.department.name }}{% endif %}
+                        </option>
+                        {% empty %}
+                        <option value="">No employees available</option>
+                        {% endfor %}
+                    </select>
                     {% if form.employee.errors %}
-
-                    <span class="error">
-
-                        {{ form.employee.errors }}
-
-                    </span>
-
+                    <div class="field-error">{{ form.employee.errors.0 }}</div>
                     {% endif %}
-
+                    <span class="help-text">Select the employee whose attendance you want to mark.</span>
                 </div>
-
             </div>
-
         </div>
 
-
-        <!-- ================= ATTENDANCE ================= -->
-
+        <!-- ================= ATTENDANCE DETAILS ================= -->
         <div class="form-card">
-
-            <div class="card-title">
-
-                📅 Attendance Details
-
+            <div class="card-header">
+                <h2>📅 Attendance Details</h2>
+                <span class="card-badge required">Required</span>
             </div>
-
             <div class="form-grid">
-
                 <div class="form-group">
-
-                    <label>
-
-                        Attendance Date
-
-                    </label>
-
+                    <label for="{{ form.date.id_for_label }}" class="form-label required">Attendance Date</label>
                     {{ form.date }}
-
+                    {% if form.date.errors %}
+                    <div class="field-error">{{ form.date.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Select the date of attendance.</span>
                 </div>
-
                 <div class="form-group">
-
-                    <label>
-
-                        Attendance Status
-
-                    </label>
-
+                    <label for="{{ form.status.id_for_label }}" class="form-label required">Attendance Status</label>
                     {{ form.status }}
-
+                    {% if form.status.errors %}
+                    <div class="field-error">{{ form.status.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Select the attendance status.</span>
                 </div>
-
             </div>
-
         </div>
 
-
-        <!-- ================= TIMINGS ================= -->
-
+        <!-- ================= WORKING HOURS ================= -->
         <div class="form-card">
-
-            <div class="card-title">
-
-                ⏰ Working Hours
-
+            <div class="card-header">
+                <h2>⏰ Working Hours</h2>
+                <span class="card-badge optional">Optional</span>
             </div>
-
             <div class="form-grid">
-
                 <div class="form-group">
-
-                    <label>
-
-                        Check In
-
-                    </label>
-
+                    <label for="{{ form.check_in.id_for_label }}" class="form-label">Check In</label>
                     {{ form.check_in }}
-
+                    {% if form.check_in.errors %}
+                    <div class="field-error">{{ form.check_in.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Time when employee checked in.</span>
                 </div>
-
                 <div class="form-group">
-
-                    <label>
-
-                        Check Out
-
-                    </label>
-
+                    <label for="{{ form.check_out.id_for_label }}" class="form-label">Check Out</label>
                     {{ form.check_out }}
-
+                    {% if form.check_out.errors %}
+                    <div class="field-error">{{ form.check_out.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Time when employee checked out.</span>
                 </div>
-
+            </div>
+            
+            <!-- Quick Action Buttons -->
+            <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                <button type="button" class="btn" style="padding: 6px 16px; background: rgba(124, 58, 237, 0.1); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.15); border-radius: 6px; font-size: 0.8rem; cursor: pointer;" onclick="setCurrentTime('id_check_in')">
+                    ⏰ Set Check In Now
+                </button>
+                <button type="button" class="btn" style="padding: 6px 16px; background: rgba(124, 58, 237, 0.1); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.15); border-radius: 6px; font-size: 0.8rem; cursor: pointer;" onclick="setCurrentTime('id_check_out')">
+                    ⏰ Set Check Out Now
+                </button>
+                <button type="button" class="btn" style="padding: 6px 16px; background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.15); border-radius: 6px; font-size: 0.8rem; cursor: pointer;" onclick="setDefaultTimings()">
+                    🔄 Set Default (9:30 - 18:30)
+                </button>
             </div>
 
             <div class="info-box">
-
-                <div class="info-icon">
-
-                    💡
-
-                </div>
-
+                <div class="info-icon">💡</div>
                 <div>
-
-                    <strong>
-
-                        Tip
-
-                    </strong>
-
-                    <p>
-
-                        Working hours will automatically be calculated from
-                        Check In and Check Out.
-
-                    </p>
-
+                    <strong>Tip</strong>
+                    <p>Working hours will be automatically calculated from Check In and Check Out times.</p>
                 </div>
-
             </div>
-
         </div>
 
         <!-- ================= NOTES ================= -->
-
         <div class="form-card">
-
-            <div class="card-title">
-
-                📝 Additional Notes
-
+            <div class="card-header">
+                <h2>📝 Additional Notes</h2>
+                <span class="card-badge optional">Optional</span>
             </div>
-
             <div class="form-grid">
-
                 <div class="form-group full-width">
-
-                    <label>
-
-                        Notes
-
-                    </label>
-
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
                     {{ form.notes }}
-
-                    <small class="helper-text">
-
-                        Optional remarks like late arrival, client visit,
-                        half-day, training, medical emergency, etc.
-
-                    </small>
-
+                    {% if form.notes.errors %}
+                    <div class="field-error">{{ form.notes.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Optional remarks like late arrival, client visit, half-day, training, medical emergency, etc.</span>
                 </div>
-
             </div>
-
         </div>
-
 
         <!-- ================= SUMMARY ================= -->
-
         <div class="summary-card">
-
             <div class="summary-header">
-
-                <h3>
-
-                    📊 Attendance Summary
-
-                </h3>
-
+                <h3>📊 Attendance Summary</h3>
+                <span class="card-badge" style="background: rgba(167, 139, 250, 0.1); color: #94a3b8; font-size: 0.7rem;">Live Preview</span>
             </div>
-
             <div class="summary-grid">
-
                 <div class="summary-item">
-
-                    <div class="summary-icon">
-
-                        👤
-
-                    </div>
-
+                    <span class="summary-icon">👤</span>
                     <div>
-
-                        <span>
-
-                            Employee
-
-                        </span>
-
-                        <strong id="employeePreview">
-
-                            Select Employee
-
-                        </strong>
-
+                        <span>Employee</span>
+                        <strong id="employeePreview">Select Employee</strong>
                     </div>
-
                 </div>
-
                 <div class="summary-item">
-
-                    <div class="summary-icon">
-
-                        📅
-
-                    </div>
-
+                    <span class="summary-icon">📅</span>
                     <div>
-
-                        <span>
-
-                            Date
-
-                        </span>
-
-                        <strong id="datePreview">
-
-                            --
-
-                        </strong>
-
+                        <span>Date</span>
+                        <strong id="datePreview">--</strong>
                     </div>
-
                 </div>
-
                 <div class="summary-item">
-
-                    <div class="summary-icon">
-
-                        📍
-
-                    </div>
-
+                    <span class="summary-icon">📍</span>
                     <div>
-
-                        <span>
-
-                            Status
-
-                        </span>
-
-                        <strong id="statusPreview">
-
-                            --
-
-                        </strong>
-
+                        <span>Status</span>
+                        <strong id="statusPreview">--</strong>
                     </div>
-
                 </div>
-
                 <div class="summary-item">
-
-                    <div class="summary-icon">
-
-                        ⏰
-
-                    </div>
-
+                    <span class="summary-icon">⏰</span>
                     <div>
-
-                        <span>
-
-                            Working Hours
-
-                        </span>
-
-                        <strong id="hoursPreview">
-
-                            Auto Calculate
-
-                        </strong>
-
+                        <span>Working Hours</span>
+                        <strong id="hoursPreview">Auto Calculate</strong>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
 
-
         <!-- ================= ACTION BUTTONS ================= -->
-
         <div class="action-bar">
-
-            <button type="submit" class="btn-save">
-
+            <button type="submit" class="btn btn-save" id="submitBtn">
                 ✅ Save Attendance
-
             </button>
-
-            <button type="reset" class="btn-reset">
-
+            <button type="reset" class="btn btn-reset">
                 🔄 Reset
-
             </button>
-
-            <a href="{% url 'attendance' %}" class="btn-cancel">
-
+            <a href="{% url 'attendance' %}" class="btn btn-cancel">
                 Cancel
-
             </a>
-
         </div>
 
     </form>
 
 </div>
 
-
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
 
-    document.addEventListener("DOMContentLoaded", function () {
+        // ============================================
+        // ELEMENTS
+        // ============================================
+        const employee = document.getElementById("id_employee");
+        const date = document.getElementById("id_date");
+        const status = document.getElementById("id_status");
+        const checkIn = document.getElementById("id_check_in");
+        const checkOut = document.getElementById("id_check_out");
+        const submitBtn = document.getElementById("submitBtn");
 
-        const employee =
-            document.getElementById("id_employee");
+        // ============================================
+        // SET CURRENT TIME
+        // ============================================
+        window.setCurrentTime = function(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                input.value = hours + ':' + minutes;
+                // Trigger change event
+                input.dispatchEvent(new Event('change'));
+                // Show feedback
+                showNotification('⏰ Time set to ' + hours + ':' + minutes);
+            }
+        };
 
-        const date =
-            document.getElementById("id_date");
+        // ============================================
+        // SET DEFAULT TIMINGS
+        // ============================================
+        window.setDefaultTimings = function() {
+            if (checkIn) {
+                checkIn.value = '09:30';
+                checkIn.dispatchEvent(new Event('change'));
+            }
+            if (checkOut) {
+                checkOut.value = '18:30';
+                checkOut.dispatchEvent(new Event('change'));
+            }
+            showNotification('🔄 Default timings set (9:30 - 18:30)');
+        };
 
-        const status =
-            document.getElementById("id_status");
-
-        const checkIn =
-            document.getElementById("id_check_in");
-
-        const checkOut =
-            document.getElementById("id_check_out");
-
+        // ============================================
+        // CALCULATE WORKING HOURS
+        // ============================================
         function calculateHours() {
+            const hoursPreview = document.getElementById("hoursPreview");
+            
+            if (checkIn && checkOut && checkIn.value && checkOut.value) {
+                const start = checkIn.value.split(":");
+                const end = checkOut.value.split(":");
 
-            if (checkIn.value && checkOut.value) {
+                const startMinutes = parseInt(start[0]) * 60 + parseInt(start[1]);
+                const endMinutes = parseInt(end[0]) * 60 + parseInt(end[1]);
 
-                let start = checkIn.value.split(":");
-
-                let end = checkOut.value.split(":");
-
-                let startMinutes =
-                    parseInt(start[0]) * 60 +
-                    parseInt(start[1]);
-
-                let endMinutes =
-                    parseInt(end[0]) * 60 +
-                    parseInt(end[1]);
-
-                let diff =
-                    endMinutes - startMinutes;
+                let diff = endMinutes - startMinutes;
 
                 if (diff > 0) {
-
-                    let hrs =
-                        Math.floor(diff / 60);
-
-                    let mins =
-                        diff % 60;
-
-                    document.getElementById(
-                        "hoursPreview"
-                    ).innerHTML =
-                        hrs + "h " + mins + "m";
-
+                    const hrs = Math.floor(diff / 60);
+                    const mins = diff % 60;
+                    hoursPreview.innerHTML = hrs + "h " + mins + "m";
+                    
+                    // Color coding based on hours
+                    if (hrs >= 8) {
+                        hoursPreview.style.color = '#4ade80';
+                    } else if (hrs >= 6) {
+                        hoursPreview.style.color = '#fbbf24';
+                    } else {
+                        hoursPreview.style.color = '#f87171';
+                    }
+                } else if (diff === 0) {
+                    hoursPreview.innerHTML = "0h 0m";
+                    hoursPreview.style.color = '#f87171';
+                } else {
+                    hoursPreview.innerHTML = "⚠️ Invalid Time";
+                    hoursPreview.style.color = '#f87171';
                 }
-
+            } else {
+                hoursPreview.innerHTML = "Auto Calculate";
+                hoursPreview.style.color = '';
             }
-
         }
 
-        if (employee) {
-
-            employee.onchange = function () {
-
-                this.options[this.selectedIndex] &&
-                    (document.getElementById(
-                        "employeePreview"
-                    ).innerHTML =
-                        this.options[this.selectedIndex].text);
-
+        // ============================================
+        // UPDATE PREVIEW
+        // ============================================
+        function updatePreview() {
+            // Employee preview
+            if (employee && employee.options && employee.selectedIndex >= 0) {
+                const selectedOption = employee.options[employee.selectedIndex];
+                if (selectedOption && selectedOption.text && selectedOption.value) {
+                    document.getElementById("employeePreview").innerHTML = selectedOption.text;
+                }
             }
 
-        }
-
-        if (date) {
-
-            date.onchange = function () {
-
-                document.getElementById(
-                    "datePreview"
-                ).innerHTML = this.value;
-
+            // Date preview
+            if (date && date.value) {
+                const dateObj = new Date(date.value + 'T00:00:00');
+                document.getElementById("datePreview").innerHTML = dateObj.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
             }
 
-        }
-
-        if (status) {
-
-            status.onchange = function () {
-
-                document.getElementById(
-                    "statusPreview"
-                ).innerHTML = this.value;
-
+            // Status preview
+            if (status && status.value) {
+                const statusMap = {
+                    'Present': '✅ Present',
+                    'Absent': '❌ Absent',
+                    'WFH': '🏠 WFH',
+                    'Leave': '🌴 Leave'
+                };
+                document.getElementById("statusPreview").innerHTML = statusMap[status.value] || status.value;
             }
 
+            // Calculate hours
+            calculateHours();
         }
 
-        if (checkIn)
-            checkIn.onchange = calculateHours;
+        // ============================================
+        // SET DEFAULT DATE TO TODAY
+        // ============================================
+        if (date && !date.value) {
+            const today = new Date().toISOString().split('T')[0];
+            date.value = today;
+            updatePreview();
+        }
 
-        if (checkOut)
-            checkOut.onchange = calculateHours;
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        if (employee) employee.addEventListener("change", updatePreview);
+        if (date) date.addEventListener("change", updatePreview);
+        if (status) status.addEventListener("change", updatePreview);
+        if (checkIn) checkIn.addEventListener("change", updatePreview);
+        if (checkOut) checkOut.addEventListener("change", updatePreview);
 
+        // ============================================
+        // NOTIFICATION SYSTEM
+        // ============================================
+        function showNotification(message) {
+            // Check if notification already exists
+            let existing = document.querySelector('.notification-toast');
+            if (existing) {
+                existing.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = 'notification-toast';
+            toast.innerHTML = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: rgba(26, 16, 53, 0.95);
+                border: 1px solid rgba(167, 139, 250, 0.15);
+                border-radius: 8px;
+                color: #e8edf5;
+                font-size: 0.9rem;
+                z-index: 9999;
+                animation: slideUp 0.3s ease;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                backdrop-filter: blur(10px);
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ============================================
+        // FORM VALIDATION
+        // ============================================
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+            const employeeVal = employee.value;
+            const dateVal = date.value;
+            const statusVal = status.value;
+
+            if (!employeeVal) {
+                e.preventDefault();
+                employee.classList.add('error');
+                employee.focus();
+                showNotification('⚠️ Please select an employee');
+                return false;
+            }
+
+            if (!dateVal) {
+                e.preventDefault();
+                date.classList.add('error');
+                date.focus();
+                showNotification('⚠️ Please select a date');
+                return false;
+            }
+
+            if (!statusVal) {
+                e.preventDefault();
+                status.classList.add('error');
+                status.focus();
+                showNotification('⚠️ Please select a status');
+                return false;
+            }
+
+            // Check if already marked
+            // This would require an AJAX call - we'll add that later
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+        });
+
+        // ============================================
+        // REMOVE ERROR STATE ON INPUT
+        // ============================================
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+            input.addEventListener('change', function() {
+                this.classList.remove('error');
+            });
+        });
+
+        // ============================================
+        // CONFIRMATION ON CANCEL
+        // ============================================
+        let formChanged = false;
+        const form = document.querySelector('form');
+
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+
+        const cancelBtn = document.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // RESET BUTTON CONFIRMATION
+        // ============================================
+        const resetBtn = document.querySelector('.btn-reset');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const confirmReset = confirm('Reset all form fields?');
+                if (confirmReset) {
+                    form.reset();
+                    updatePreview();
+                    formChanged = false;
+                    showNotification('🔄 Form has been reset');
+                    
+                    // Reset date to today
+                    if (date) {
+                        const today = new Date().toISOString().split('T')[0];
+                        date.value = today;
+                        updatePreview();
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // INITIAL PREVIEW
+        // ============================================
+        updatePreview();
+
+        console.log('🕒 HRMS Attendance Form initialized');
+        console.log('📊 Form is ready for attendance marking');
     });
-
 </script>
 
 {% endblock %}

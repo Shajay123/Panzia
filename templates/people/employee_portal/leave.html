@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-portal">
+
+    <!-- ================= HEADER ================= -->
+    <div class="portal-header">
+        <div class="portal-header-content">
+            <div class="portal-header-left">
+                <div class="portal-header-icon">🌴</div>
+                <div>
+                    <h1>My Leaves</h1>
+                    <p class="portal-header-subtitle">View and manage your leave requests</p>
+                </div>
+            </div>
+            <div class="portal-header-right">
+                <a href="{% url 'employee_portal_leave_create' %}" class="btn-portal-primary">
+                    <span class="btn-icon">➕</span> Apply Leave
+                </a>
+                <a href="{% url 'employee_portal_dashboard' %}" class="btn-portal-secondary">← Back</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STATS ================= -->
+    <div class="portal-stats">
+        <div class="portal-stat-card orange">
+            <span class="stat-icon">⏳</span>
+            <div>
+                <h2>{{ pending_count }}</h2>
+                <p>Pending</p>
+            </div>
+        </div>
+        <div class="portal-stat-card green">
+            <span class="stat-icon">✅</span>
+            <div>
+                <h2>{{ approved_count }}</h2>
+                <p>Approved</p>
+            </div>
+        </div>
+        <div class="portal-stat-card red">
+            <span class="stat-icon">❌</span>
+            <div>
+                <h2>{{ rejected_count }}</h2>
+                <p>Rejected</p>
+            </div>
+        </div>
+        <div class="portal-stat-card purple">
+            <span class="stat-icon">📋</span>
+            <div>
+                <h2>{{ leaves|length }}</h2>
+                <p>Total</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FILTER ================= -->
+    <div class="portal-filter">
+        <form method="GET" class="portal-filter-form">
+            <select name="status" class="filter-select">
+                <option value="">All Status</option>
+                <option value="Pending" {% if request.GET.status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Approved" {% if request.GET.status == 'Approved' %}selected{% endif %}>Approved</option>
+                <option value="Rejected" {% if request.GET.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+            <button type="submit" class="btn-filter">🔍 Filter</button>
+            <a href="{% url 'employee_portal_leave' %}" class="btn-filter-reset">↩️ Reset</a>
+        </form>
+    </div>
+
+    <!-- ================= LEAVE TABLE ================= -->
+    <div class="portal-card">
+        <div class="portal-card-header">
+            <h3>📋 Leave Requests</h3>
+            <span class="record-count">{{ leaves|length }} records</span>
+        </div>
+        <div class="table-responsive">
+            <table class="portal-table">
+                <thead>
+                    <tr>
+                        <th>Leave Type</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td><strong>{{ leave.leave_type }}</strong></td>
+                        <td>{{ leave.from_date|date:"d M Y" }}</td>
+                        <td>{{ leave.to_date|date:"d M Y" }}</td>
+                        <td>
+                            <span class="duration-badge">
+                                {{ leave.to_date|timeuntil:leave.from_date }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ leave.status|lower }}">
+                                {{ leave.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'employee_portal_leave_detail' leave.id %}" class="btn-sm-view">👁️ View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No leave requests found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

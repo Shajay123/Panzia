@@ -1,244 +1,487 @@
-/* ==================================
-PANZIA STARTUP PROFILE SETUP
-================================== */
+/* static/css/profile_setup.css */
 
-.setup-section{
-    min-height:100vh;
-    position:relative;
-    padding:80px 20px;
-    overflow:hidden;
+/* ============================================
+   RESET & BASE
+   ============================================ */
+.setup-section * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.setup-section::before{
-    content:'';
-    position:absolute;
-    width:700px;
-    height:700px;
-    background:rgba(124,58,237,.15);
-    border-radius:50%;
-    filter:blur(180px);
-    top:-250px;
-    right:-200px;
-    z-index:-1;
+.setup-section {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #0b0a1a;
+    padding: 3rem 2rem;
+    color: #e8edf5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.setup-container{
-    max-width:900px;
-    margin:auto;
+.setup-container {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
 }
 
-/* ==================================
-HEADER
-================================== */
-
-.setup-header{
-    text-align:center;
-    margin-bottom:40px;
+/* ============================================
+   HEADER
+   ============================================ */
+.setup-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
 }
 
-.setup-badge{
-    display:inline-block;
-    padding:10px 18px;
-    border-radius:999px;
-    background:rgba(124,58,237,.15);
-    color:#c4b5fd;
-    font-size:13px;
-    font-weight:600;
-    margin-bottom:20px;
+.setup-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(236, 72, 153, 0.10));
+    color: #a78bfa;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 1.2rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(167, 139, 250, 0.08);
+    margin-bottom: 0.75rem;
 }
 
-.setup-header h1{
-    font-size:52px;
-    font-weight:800;
-    margin-bottom:15px;
+.setup-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #c4b5fd, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
 }
 
-.setup-header p{
-    color:#94a3b8;
-    max-width:650px;
-    margin:auto;
-    line-height:1.8;
+.setup-header p {
+    color: #94a3b8;
+    font-size: 1.05rem;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
 }
 
-/* ==================================
-CARD
-================================== */
-
-.setup-card{
-    background:rgba(255,255,255,.04);
-    backdrop-filter:blur(20px);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:30px;
-    padding:40px;
+/* ============================================
+   SETUP CARD
+   ============================================ */
+.setup-card {
+    background: linear-gradient(145deg, #1a1035, #2d1b4a);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    border: 1px solid rgba(167, 139, 250, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* ==================================
-LOGO
-================================== */
-
-.logo-section{
-    text-align:center;
-    margin-bottom:35px;
+/* ============================================
+   ERROR & SUCCESS ALERTS
+   ============================================ */
+.error-alert {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
-.logo-preview{
-    width:120px;
-    height:120px;
-    margin:auto;
-    border-radius:50%;
-    background:rgba(124,58,237,.15);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:48px;
-    color:white;
-    border:2px solid rgba(124,58,237,.3);
+.error-alert-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
-.upload-label{
-    display:block;
-    margin:15px 0;
-    color:#cbd5e1;
-    font-weight:600;
+.error-icon {
+    font-size: 1.2rem;
 }
 
-/* ==================================
-FORM
-================================== */
-
-.form-group{
-    margin-bottom:25px;
+.error-alert h3 {
+    color: #fca5a5;
+    font-size: 0.95rem;
+    margin: 0;
 }
 
-.form-group label{
-    display:block;
-    margin-bottom:10px;
-    font-weight:600;
-    color:white;
+.error-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-/* Django Form Inputs */
-
-.form-group input,
-.form-group textarea,
-.form-group select,
-input[type="text"],
-input[type="url"],
-textarea,
-select{
-
-    width:100%;
-    padding:15px 18px;
-
-    background:rgba(255,255,255,.05);
-
-    border:1px solid rgba(255,255,255,.08);
-
-    border-radius:16px;
-
-    color:white;
-
-    transition:.3s ease;
-
+.error-list li {
+    color: #fca5a5;
+    font-size: 0.85rem;
+    padding: 0.15rem 0;
 }
 
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus,
-input:focus,
-textarea:focus,
-select:focus{
-
-    outline:none;
-
-    border-color:#7c3aed;
-
-    box-shadow:0 0 0 4px rgba(124,58,237,.15);
-
+.error-list li strong {
+    color: #f87171;
 }
 
-/* Placeholder */
-
-::placeholder{
-    color:#94a3b8;
+.success-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: #86efac;
 }
 
-/* Description */
-
-textarea{
-    min-height:180px;
-    resize:vertical;
+.success-icon {
+    font-size: 1.2rem;
 }
 
-/* File Upload */
-
-input[type="file"]{
-    width:100%;
-    padding:12px;
-    border-radius:16px;
-    background:rgba(255,255,255,.05);
-    color:#cbd5e1;
-    border:1px solid rgba(255,255,255,.08);
+/* ============================================
+   LOGO SECTION
+   ============================================ */
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 1rem;
+    border: 1px solid rgba(167, 139, 250, 0.04);
+    margin-bottom: 2rem;
 }
 
-/* ==================================
-BUTTON
-================================== */
-
-.save-btn{
-
-    width:100%;
-
-    border:none;
-
-    padding:18px;
-
-    border-radius:18px;
-
-    background:linear-gradient(
-        135deg,
-        #7c3aed,
-        #2563eb
-    );
-
-    color:white;
-
-    font-size:16px;
-
-    font-weight:700;
-
-    cursor:pointer;
-
-    transition:.3s ease;
-
+.logo-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 1rem;
+    background: rgba(167, 139, 250, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed rgba(167, 139, 250, 0.15);
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
-.save-btn:hover{
-
-    transform:translateY(-3px);
-
-    box-shadow:0 15px 35px rgba(124,58,237,.3);
-
+.logo-preview .logo-placeholder {
+    font-size: 3rem;
 }
 
-/* ==================================
-RESPONSIVE
-================================== */
+.logo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-@media(max-width:768px){
+.logo-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
 
-    .setup-header h1{
-        font-size:36px;
+.logo-upload input[type="file"] {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    z-index: -1;
+}
+
+.upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    background: rgba(124, 58, 237, 0.08);
+    color: #a78bfa;
+    border: 1px solid rgba(167, 139, 250, 0.08);
+    border-radius: 2rem;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.upload-label:hover {
+    background: rgba(124, 58, 237, 0.15);
+    border-color: rgba(167, 139, 250, 0.15);
+}
+
+.upload-icon {
+    font-size: 1rem;
+}
+
+.upload-help {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* ============================================
+   FORM SECTIONS
+   ============================================ */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e2eaf6;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+}
+
+/* ============================================
+   FORM GRID
+   ============================================ */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+/* ============================================
+   FORM LABELS
+   ============================================ */
+.form-label {
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #d6e0f0;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #f87171;
+    font-weight: 600;
+}
+
+/* ============================================
+   FORM INPUTS
+   ============================================ */
+.form-control {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(167, 139, 250, 0.06);
+    border-radius: 0.75rem;
+    color: #e8edf5;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.form-control::placeholder {
+    color: #64748b;
+}
+
+textarea.form-control {
+    resize: vertical;
+    line-height: 1.6;
+    min-height: 80px;
+}
+
+select.form-control {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+/* ============================================
+   HELP TEXT
+   ============================================ */
+.help-text {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* ============================================
+   FORM ACTIONS
+   ============================================ */
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(167, 139, 250, 0.04);
+}
+
+.btn-save,
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: 2.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    color: white;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.25);
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(124, 58, 237, 0.35);
+}
+
+.btn-save .btn-icon {
+    font-size: 1rem;
+}
+
+.btn-cancel {
+    background: rgba(124, 58, 237, 0.06);
+    color: #a78bfa;
+    border: 1px solid rgba(167, 139, 250, 0.06);
+}
+
+.btn-cancel:hover {
+    background: rgba(124, 58, 237, 0.12);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .setup-section {
+        padding: 2rem 1rem;
     }
 
-    .setup-card{
-        padding:25px;
+    .setup-card {
+        padding: 1.5rem;
     }
 
-    .logo-preview{
-        width:90px;
-        height:90px;
-        font-size:36px;
+    .setup-header h1 {
+        font-size: 1.8rem;
     }
 
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group.full-width {
+        grid-column: 1;
+    }
+
+    .logo-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .logo-preview {
+        width: 80px;
+        height: 80px;
+    }
+
+    .upload-label {
+        align-self: center;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn-save,
+    .btn-cancel {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .setup-card {
+        padding: 1rem;
+    }
+
+    .setup-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .logo-preview {
+        width: 60px;
+        height: 60px;
+    }
+
+    .logo-preview .logo-placeholder {
+        font-size: 2rem;
+    }
+
+    .form-control {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.setup-header,
+.setup-card {
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+.setup-section::-webkit-scrollbar {
+    width: 5px;
+}
+
+.setup-section::-webkit-scrollbar-track {
+    background: #0b0a1a;
+}
+
+.setup-section::-webkit-scrollbar-thumb {
+    background: #2d1b4a;
+    border-radius: 3px;
+}
+
+.setup-section::-webkit-scrollbar-thumb:hover {
+    background: #3d2b5a;
+}
+
+::selection {
+    background: rgba(124, 58, 237, 0.3);
+    color: white;
 }

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/exit_confirm_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="exit-delete-page">
+
+    <div class="delete-card">
+        <span class="delete-icon">🗑️</span>
+        
+        <h1>Delete Exit Request</h1>
+        
+        <p class="delete-message">
+            Are you sure you want to delete the exit request for 
+            <strong>{{ exit_request.employee.user.get_full_name|default:exit_request.employee.user.username }}</strong>?
+        </p>
+        
+        <div class="delete-details">
+            <div class="detail-row">
+                <span class="detail-label">Employee</span>
+                <span class="detail-value">
+                    <div class="employee-info">
+                        {% if exit_request.employee.profile_image %}
+                        <img src="{{ exit_request.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                        {% else %}
+                        <div class="employee-avatar">
+                            {{ exit_request.employee.user.first_name|first|default:exit_request.employee.user.username|first|upper }}
+                        </div>
+                        {% endif %}
+                        <span>{{ exit_request.employee.user.get_full_name|default:exit_request.employee.user.username }}</span>
+                    </div>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Resignation Date</span>
+                <span class="detail-value">{{ exit_request.resignation_date|date:"d M Y" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Last Working Day</span>
+                <span class="detail-value">{{ exit_request.last_working_day|date:"d M Y" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Reason</span>
+                <span class="detail-value">{{ exit_request.get_exit_reason_display }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">
+                    <span class="status-badge status-{{ exit_request.status|lower }}">
+                        <span class="status-dot"></span>
+                        {{ exit_request.status }}
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        <div class="delete-actions">
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">🗑️ Confirm Delete</button>
+            </form>
+            <a href="{% url 'exit_detail' exit_request.id %}" class="btn-secondary">Cancel</a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

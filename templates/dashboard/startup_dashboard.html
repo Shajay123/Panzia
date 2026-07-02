@@ -45,7 +45,7 @@ Startup Dashboard
                 <li class="has-submenu">
 
                     <a href="#" class="menu-link">
-                        👥 People
+                        👥 HR
                         <span class="menu-arrow">▶</span>
                     </a>
 
@@ -448,53 +448,29 @@ Startup Dashboard
                 <div class="header-left">
 
                     <div class="company-logo-wrapper">
-
-                        {% if startup_profile.logo %}
-
-                        <img src="{{ startup_profile.logo.url }}" alt="{{ startup_profile.company_name }}"
+                        {% if user_startup.logo %}
+                        <img src="{{ user_startup.logo.url }}" alt="{{ user_startup.company_name }}"
                             class="company-logo">
-
                         {% else %}
-
                         <div class="company-logo-placeholder">
-                            {{ startup_profile.company_name|first|upper }}
+                            {{ user_startup.company_name|first|upper }}
                         </div>
-
                         {% endif %}
-
                     </div>
 
                     <div>
-
                         <span class="dashboard-badge">
                             Startup Workspace
                         </span>
-
-                        <h1>
-                            {{ startup_profile.company_name }}
-                        </h1>
-
-                        <p class="tagline">
-                            {{ startup_profile.tagline }}
-                        </p>
-
+                        <h1>{{ user_startup.company_name }}</h1>
+                        <p class="tagline">{{ user_startup.tagline }}</p>
                         <div class="company-meta">
-
-                            <span>
-                                🏭 {{ startup_profile.industry }}
-                            </span>
-
-                            {% if startup_profile.website %}
-                            <span>
-                                🌐
-                                <a href="{{ startup_profile.website }}" target="_blank" class="website-link">
-                                    {{ startup_profile.website }}
-                                </a>
-                            </span>
+                            <span>🏭 {{ user_startup.industry }}</span>
+                            {% if user_startup.website %}
+                            <span>🌐 <a href="{{ user_startup.website }}" target="_blank" class="website-link">{{
+                                    user_startup.website }}</a></span>
                             {% endif %}
-
                         </div>
-
                     </div>
 
                 </div>

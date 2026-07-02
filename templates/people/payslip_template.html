@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payslip - {{ employee.user.get_full_name }}</title>
+    <style>
+        /* ============================================
+           PAYSLIP STYLES (For PDF Generation)
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background: #ffffff;
+            color: #1a1a2e;
+            padding: 40px;
+            font-size: 12px;
+        }
+        
+        .payslip-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .payslip-header {
+            background: linear-gradient(135deg, #1a1a2e, #2d2d4a);
+            color: #ffffff;
+            padding: 30px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .payslip-header .company-name {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .payslip-header .company-name span {
+            color: #4a9eff;
+        }
+        
+        .payslip-header .payslip-title {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+        
+        .payslip-header .payslip-id {
+            text-align: right;
+        }
+        
+        .payslip-header .payslip-id .label {
+            font-size: 10px;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .payslip-header .payslip-id .value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        
+        /* Body */
+        .payslip-body {
+            padding: 30px 35px;
+        }
+        
+        /* Employee Info */
+        .employee-info {
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 25px;
+        }
+        
+        .employee-details h2 {
+            font-size: 20px;
+            color: #1a1a2e;
+            margin-bottom: 2px;
+        }
+        
+        .employee-details .designation {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .employee-details .employee-id {
+            color: #888;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        
+        .employee-meta {
+            text-align: right;
+        }
+        
+        .employee-meta .meta-item {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .employee-meta .meta-item strong {
+            color: #1a1a2e;
+        }
+        
+        /* Salary Table */
+        .salary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        
+        .salary-table th {
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            padding: 8px 12px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .salary-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+        
+        .salary-table .amount {
+            text-align: right;
+            font-weight: 500;
+        }
+        
+        .salary-table .positive {
+            color: #22c55e;
+        }
+        
+        .salary-table .negative {
+            color: #ef4444;
+        }
+        
+        .salary-table .total-row td {
+            border-top: 2px solid #1a1a2e;
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 15px;
+            padding-top: 12px;
+        }
+        
+        .salary-table .total-row .amount {
+            color: #3b6aff;
+            font-size: 16px;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-badge.paid {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        /* Footer */
+        .payslip-footer {
+            background: #f8f8f8;
+            padding: 20px 35px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #e0e0e0;
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .payslip-footer .signature {
+            text-align: right;
+        }
+        
+        .payslip-footer .signature .line {
+            border-top: 1px solid #ccc;
+            width: 200px;
+            margin-left: auto;
+            margin-top: 20px;
+            padding-top: 4px;
+            font-size: 10px;
+            color: #aaa;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            .payslip-container {
+                box-shadow: none;
+                border: none;
+                border-radius: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="payslip-container">
+        <!-- Header -->
+        <div class="payslip-header">
+            <div>
+                <div class="company-name">{{ startup.company_name|default:"Company Name" }}</div>
+                <div class="payslip-title">Monthly Payslip</div>
+            </div>
+            <div class="payslip-id">
+                <div class="label">Payslip #</div>
+                <div class="value">{{ payslip.get_payslip_id|default:"PS-000001" }}</div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="payslip-body">
+            <!-- Employee Info -->
+            <div class="employee-info">
+                <div class="employee-details">
+                    <h2>{{ employee.user.get_full_name|default:employee.user.username }}</h2>
+                    <div class="designation">{{ employee.designation|default:"-" }}</div>
+                    <div class="employee-id">Employee ID: {{ employee.employee_id }}</div>
+                </div>
+                <div class="employee-meta">
+                    <div class="meta-item"><strong>Month:</strong> {{ payroll.month }} {{ payroll.year }}</div>
+                    <div class="meta-item"><strong>Department:</strong> {{ employee.department.name|default:"-" }}</div>
+                    <div class="meta-item"><strong>Generated:</strong> {{ generated_date }}</div>
+                </div>
+            </div>
+
+            <!-- Salary Table -->
+            <table class="salary-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th style="text-align:right;">Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Basic Salary</td>
+                        <td class="amount positive">₹{{ payroll.basic_salary|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Allowances</td>
+                        <td class="amount positive">+₹{{ payroll.allowances|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Deductions</td>
+                        <td class="amount negative">-₹{{ payroll.deductions|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td><strong>Net Salary</strong></td>
+                        <td class="amount"><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Status -->
+            <div style="text-align:center; margin-top:10px;">
+                <span class="status-badge paid">✅ Paid</span>
+                <span style="margin-left:20px; color:#666; font-size:12px;">
+                    Paid on: {{ payroll.paid_date|date:"d M Y"|default:"-" }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="payslip-footer">
+            <div>
+                <div>This is a computer-generated payslip.</div>
+                <div style="margin-top:4px;">For any queries, please contact HR.</div>
+            </div>
+            <div class="signature">
+                <div>Authorized Signature</div>
+                <div class="line">_________________________</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:20px; font-size:11px; color:#999;">
+        Generated on {{ generated_date }} at {{ generated_time|default:"" }}
+    </div>
+</body>
+</html>

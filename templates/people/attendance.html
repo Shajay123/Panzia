@@ -2,289 +2,640 @@
 {% load static %}
 
 {% block title %}
-Attendance
+Attendance Dashboard
 {% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/attendance.css' %}">
+<style>
+    /* ===== ADDITIONAL STYLES ===== */
+    .attendance-photo-thumb {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .attendance-photo-thumb:hover {
+        transform: scale(1.2);
+        border-color: #7c3aed;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+    
+    .no-photo {
+        color: #64748b;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .no-photo::before {
+        content: '📷';
+        font-size: 1rem;
+    }
+    
+    /* Photo Modal */
+    .photo-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .photo-modal.show {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .photo-modal-content {
+        background: #1a1035;
+        border-radius: 16px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow: auto;
+        position: relative;
+        animation: scaleIn 0.3s ease;
+    }
+    
+    .photo-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+    
+    .photo-modal-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+    
+    .photo-modal-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        line-height: 1;
+        padding: 0 8px;
+    }
+    
+    .photo-modal-close:hover {
+        color: #f87171;
+        transform: rotate(90deg);
+    }
+    
+    .photo-modal-body {
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .photo-modal-body img {
+        max-width: 100%;
+        max-height: 500px;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .photo-modal-footer {
+        padding: 12px 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+    
+    .photo-modal-footer .photo-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .photo-modal-footer .photo-info span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .photo-modal-content {
+            width: 95%;
+        }
+        
+        .photo-modal-body img {
+            max-height: 300px;
+        }
+        
+        .photo-modal-footer {
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
 <div class="attendance-page">
 
+    <!-- ================= PAGE HEADER ================= -->
     <div class="page-header">
-
         <div>
+            <div class="breadcrumb">
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <span>/</span>
+                <strong>Attendance</strong>
+            </div>
             <h1>🕒 Daily Attendance</h1>
             <p>Monitor employee attendance in real time.</p>
         </div>
-
         <div class="header-actions">
-
             <a href="{% url 'attendance_report' %}" class="btn-secondary">
-                📊 Attendance Report
+                <i class="fas fa-chart-bar"></i> Attendance Report
             </a>
-
             <a href="{% url 'attendance_create' %}" class="btn-primary">
-                ➕ Mark Attendance
+                <i class="fas fa-plus-circle"></i> Mark Attendance
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- STARTUP BANNER - RIGHT AFTER HEADER -->
+    <!-- ============================================================ -->
+    {% include 'people/includes/startup_banner.html' %}
+    {% if is_super_admin %}
+    <div class="current-startup-banner">
+        <span class="banner-icon">🏢</span>
+        {% if current_startup %}
+            <span class="banner-text">Viewing: <strong>{{ current_startup.company_name }}</strong></span>
+            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="banner-reset">↺ View All</a>
+        {% else %}
+            <span class="banner-text">Viewing: <strong>All Startups</strong></span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ================= SUMMARY CARDS ================= -->
+    <div class="summary-grid">
+        <div class="summary-card present">
+            <div class="card-icon">📊</div>
+            <div class="card-content">
+                <h2>{{ attendance|length }}</h2>
+                <p>Total Records</p>
+            </div>
+        </div>
+        <div class="summary-card success">
+            <div class="card-icon">✅</div>
+            <div class="card-content">
+                <h2>{{ present_count }}</h2>
+                <p>Present</p>
+                <span class="card-percentage">{{ present_percentage|default:"0" }}%</span>
+            </div>
+        </div>
+        <div class="summary-card warning">
+            <div class="card-icon">🏡</div>
+            <div class="card-content">
+                <h2>{{ wfh_count }}</h2>
+                <p>WFH</p>
+                <span class="card-percentage">{{ wfh_percentage|default:"0" }}%</span>
+            </div>
+        </div>
+        <div class="summary-card danger">
+            <div class="card-icon">🌴</div>
+            <div class="card-content">
+                <h2>{{ leave_count }}</h2>
+                <p>Leave</p>
+                <span class="card-percentage">{{ leave_percentage|default:"0" }}%</span>
+            </div>
+        </div>
+        <div class="summary-card absent">
+            <div class="card-icon">❌</div>
+            <div class="card-content">
+                <h2>{{ absent_count }}</h2>
+                <p>Absent</p>
+                <span class="card-percentage">{{ absent_percentage|default:"0" }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= FILTERS ================= -->
+    <div class="filter-section">
+        <form method="GET" class="filter-bar" id="filterForm">
+            <div class="filter-group">
+                <div class="filter-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="employee" id="employeeSearch" 
+                           value="{{ request.GET.employee }}" 
+                           placeholder="Search by employee name..." 
+                           class="filter-input">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-input-wrapper">
+                    <i class="fas fa-calendar-alt"></i>
+                    <input type="date" name="date" id="dateFilter" 
+                           value="{{ request.GET.date }}" 
+                           class="filter-input">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-input-wrapper">
+                    <i class="fas fa-filter"></i>
+                    <select name="status" id="statusFilter" class="filter-input">
+                        <option value="">All Status</option>
+                        <option value="Present" {% if request.GET.status == "Present" %}selected{% endif %}>
+                            ✅ Present
+                        </option>
+                        <option value="Absent" {% if request.GET.status == "Absent" %}selected{% endif %}>
+                            ❌ Absent
+                        </option>
+                        <option value="WFH" {% if request.GET.status == "WFH" %}selected{% endif %}>
+                            🏡 WFH
+                        </option>
+                        <option value="Leave" {% if request.GET.status == "Leave" %}selected{% endif %}>
+                            🌴 Leave
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-filter">
+                <i class="fas fa-sliders-h"></i> Apply Filters
+            </button>
+
+            <a href="{% url 'attendance' %}" class="btn-clear">
+                <i class="fas fa-times"></i> Clear
             </a>
 
-        </div>
-
+            <span class="filter-results" id="filterResults">
+                Showing <strong id="recordCount">{{ attendance|length }}</strong> records
+            </span>
+        </form>
     </div>
 
-
-    <!-- Summary Cards -->
-
-    <div class="summary-grid">
-
-        <div class="summary-card present">
-
-            <h2>{{ attendance|length }}</h2>
-
-            <p>Total Records</p>
-
-        </div>
-
-        <div class="summary-card success">
-            <h2>{{ present_count }}</h2>
-            <p>Present</p>
-        </div>
-
-        <div class="summary-card warning">
-            <h2>{{ wfh_count }}</h2>
-            <p>WFH</p>
-        </div>
-
-        <div class="summary-card danger">
-            <h2>{{ leave_count }}</h2>
-            <p>Leave</p>
-        </div>
-
-        <div class="summary-card absent">
-            <h2>{{ absent_count }}</h2>
-            <p>Absent</p>
-        </div>
-
-    </div>
-
-
-    <!-- Filters -->
-
-    <form method="GET" class="filter-bar">
-
-        <input type="text" name="employee" value="{{ request.GET.employee }}" placeholder="🔍 Search Employee">
-
-        <input type="date" name="date" value="{{ request.GET.date }}">
-
-        <select name="status">
-
-            <option value="">All Status</option>
-
-            <option value="Present">Present</option>
-
-            <option value="Absent">Absent</option>
-
-            <option value="WFH">WFH</option>
-
-            <option value="Leave">Leave</option>
-
-        </select>
-
-        <button class="btn-primary">
-
-            Filter
-
-        </button>
-
-    </form>
-
-
-    <!-- Attendance Table -->
-
+    <!-- ================= ATTENDANCE TABLE ================= -->
     <div class="table-card">
+        <div class="table-header">
+            <div class="table-title">
+                <i class="fas fa-list"></i> Attendance Records
+            </div>
+            <div class="table-actions">
+                <button class="btn-export" onclick="exportTable()">
+                    <i class="fas fa-file-export"></i> Export
+                </button>
+                <button class="btn-print" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
 
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Employee</th>
-
-                    <th>Date</th>
-
-                    <th>Check In</th>
-
-                    <th>Check Out</th>
-
-                    <th>Status</th>
-
-                    <th>Working Hours</th>
-                    <th>Notes</th>
-                    <th>Actions</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for item in attendance %}
-
-                <tr>
-
-                    <td>
-
-                        <div class="employee-info">
-
-                            {% if item.employee.profile_image %}
-
-                            <img src="{{ item.employee.profile_image.url }}">
-
+        <div class="table-responsive">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="employee">
+                            Employee <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="date">
+                            Date <i class="fas fa-sort"></i>
+                        </th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th class="sortable" data-sort="status">
+                            Status <i class="fas fa-sort"></i>
+                        </th>
+                        <th>Photo</th>
+                        <th>Working Hours</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceBody">
+                    {% for item in attendance %}
+                    <tr class="attendance-row" 
+                        data-status="{{ item.status }}" 
+                        data-employee="{{ item.employee.user.get_full_name|default:item.employee.user.username|lower }}">
+                        <td>
+                            <div class="employee-info">
+                                {% if item.employee.profile_image %}
+                                <img src="{{ item.employee.profile_image.url }}" 
+                                     alt="{{ item.employee.user.get_full_name }}"
+                                     loading="lazy"
+                                     class="employee-avatar">
+                                {% else %}
+                                <div class="avatar">
+                                    {{ item.employee.user.first_name|first|default:item.employee.user.username|first }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>
+                                        {{ item.employee.user.get_full_name|default:item.employee.user.username }}
+                                    </strong>
+                                    <small>
+                                        {{ item.employee.designation }}
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-date="{{ item.date|date:'Y-m-d' }}">
+                            {{ item.date|date:"d M Y" }}
+                        </td>
+                        <td>
+                            {% if item.check_in %}
+                            <span class="time-badge">{{ item.check_in|time:"H:i" }}</span>
                             {% else %}
-
-                            <div class="avatar">
-
-                                {{ item.employee.user.first_name|first|default:item.employee.user.username|first }}
-
-                            </div>
-
+                            <span class="time-badge empty">--</span>
                             {% endif %}
-
-                            <div>
-
-                                <strong>
-
-                                    {{ item.employee.user.get_full_name|default:item.employee.user.username }}
-
-                                </strong>
-
-                                <small>
-
-                                    {{ item.employee.designation }}
-
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        {{ item.date }}
-
-                    </td>
-
-                    <td>
-
-                        {{ item.check_in|default:"--" }}
-
-                    </td>
-
-                    <td>
-
-                        {{ item.check_out|default:"--" }}
-
-                    </td>
-
-                    <td>
-
-                        {% if item.status == "Present" %}
-
-                        <span class="badge green">
-
-                            ✅ Present
-
-                        </span>
-
-                        {% elif item.status == "Absent" %}
-
-                        <span class="badge red">
-
-                            ❌ Absent
-
-                        </span>
-
-                        {% elif item.status == "WFH" %}
-
-                        <span class="badge blue">
-
-                            🏡 WFH
-
-                        </span>
-
-                        {% else %}
-
-                        <span class="badge orange">
-
-                            🌴 Leave
-
-                        </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        {{ item.working_hours }}
-
-                    </td>
-
-                    <td>
-
-                        {{ item.notes|default:"-" }}
-
-                    </td>
-
-                    <td class="action-buttons">
-
-                        <a href="{% url 'attendance_detail' item.id %}" title="View">
-
-                            👁
-
-                        </a>
-
-                        <a href="{% url 'attendance_update' item.id %}" title="Edit">
-
-                            ✏
-
-                        </a>
-
-                        <a href="{% url 'attendance_delete' item.id %}" title="Delete">
-
-                            🗑
-
-                        </a>
-
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="6">
-
-                        No attendance records found.
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
+                        </td>
+                        <td>
+                            {% if item.check_out %}
+                            <span class="time-badge">{{ item.check_out|time:"H:i" }}</span>
+                            {% else %}
+                            <span class="time-badge empty">--</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.status == "Present" %}
+                            <span class="badge green">
+                                <i class="fas fa-check-circle"></i> Present
+                            </span>
+                            {% elif item.status == "Absent" %}
+                            <span class="badge red">
+                                <i class="fas fa-times-circle"></i> Absent
+                            </span>
+                            {% elif item.status == "WFH" %}
+                            <span class="badge blue">
+                                <i class="fas fa-home"></i> WFH
+                            </span>
+                            {% else %}
+                            <span class="badge orange">
+                                <i class="fas fa-umbrella-beach"></i> Leave
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.photo %}
+                            <img src="{{ item.photo.url }}" 
+                                 alt="Attendance Photo" 
+                                 class="attendance-photo-thumb"
+                                 onclick="openPhotoModal('{{ item.photo.url }}', '{{ item.employee.user.get_full_name }}', '{{ item.date|date:"d M Y" }}')"
+                                 loading="lazy"
+                                 title="Click to view full photo">
+                            {% else %}
+                            <span class="no-photo">No photo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="hours-badge">
+                                {% if item.check_in and item.check_out %}
+                                    {{ item.get_working_hours|floatformat:1 }}h
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="notes-text" title="{{ item.notes|default:'-' }}">
+                                {{ item.notes|default:"-"|truncatechars:30 }}
+                            </span>
+                        </td>
+                        <td class="action-buttons">
+                            <a href="{% url 'attendance_detail' item.id %}" 
+                               class="action-btn view-btn" 
+                               title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'attendance_update' item.id %}" 
+                               class="action-btn edit-btn" 
+                               title="Edit Record">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'attendance_delete' item.id %}" 
+                               class="action-btn delete-btn" 
+                               title="Delete Record"
+                               onclick="return confirmDelete(event)">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <h3>No attendance records found</h3>
+                            <p>Try adjusting your filters or mark attendance for today.</p>
+                            <a href="{% url 'attendance_create' %}" class="btn-primary">
+                                <i class="fas fa-plus-circle"></i> Mark Attendance
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ================= TABLE FOOTER ================= -->
+        <div class="table-footer">
+            <div class="pagination-info">
+                Showing <span id="startRecord">1</span> to <span id="endRecord">{{ attendance|length }}</span> 
+                of <span id="totalRecords">{{ attendance|length }}</span> records
+            </div>
+            <div class="pagination-controls" id="paginationControls">
+                <!-- Pagination will be rendered by JavaScript -->
+            </div>
+        </div>
     </div>
 
 </div>
+
+<!-- ================= PHOTO MODAL ================= -->
+<div class="photo-modal" id="photoModal">
+    <div class="photo-modal-content">
+        <div class="photo-modal-header">
+            <h2>📸 Attendance Photo</h2>
+            <button class="photo-modal-close" onclick="closePhotoModal()">&times;</button>
+        </div>
+        <div class="photo-modal-body">
+            <img id="photoModalImage" src="" alt="Attendance Photo">
+        </div>
+        <div class="photo-modal-footer">
+            <div class="photo-info">
+                <span id="photoEmployee">👤 Employee</span>
+                <span id="photoDate">📅 Date</span>
+            </div>
+            <span>Captured during attendance marking</span>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/attendance.js' %}"></script>
+<script>
+    // ============================================
+    // CONFIRM DELETE
+    // ============================================
+    function confirmDelete(event) {
+        event.preventDefault();
+        if (confirm('Are you sure you want to delete this attendance record?')) {
+            window.location.href = event.currentTarget.href;
+        }
+        return false;
+    }
+
+    // ============================================
+    // PHOTO MODAL
+    // ============================================
+    function openPhotoModal(imageUrl, employeeName, date) {
+        const modal = document.getElementById('photoModal');
+        const img = document.getElementById('photoModalImage');
+        const employeeSpan = document.getElementById('photoEmployee');
+        const dateSpan = document.getElementById('photoDate');
+        
+        img.src = imageUrl;
+        employeeSpan.textContent = '👤 ' + (employeeName || 'Employee');
+        dateSpan.textContent = '📅 ' + (date || '');
+        
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closePhotoModal() {
+        const modal = document.getElementById('photoModal');
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+    
+    // Close modal on background click
+    document.getElementById('photoModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePhotoModal();
+        }
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closePhotoModal();
+        }
+    });
+
+    // ============================================
+    // EXPORT TABLE
+    // ============================================
+    function exportTable() {
+        const table = document.getElementById('attendanceTable');
+        let csv = [];
+        const rows = table.querySelectorAll('tr');
+        
+        for (let row of rows) {
+            const cols = row.querySelectorAll('td, th');
+            const rowData = [];
+            for (let col of cols) {
+                let text = col.innerText.trim();
+                // Remove emojis and icons for clean CSV
+                text = text.replace(/[^\w\s,.-]/g, '').trim();
+                if (text) rowData.push(text);
+            }
+            if (rowData.length) csv.push(rowData.join(','));
+        }
+        
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `attendance_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+
+    // ============================================
+    // PASS DJANGO CONTEXT TO JAVASCRIPT
+    // ============================================
+    (function() {
+        try {
+            const attendanceData = {
+                totalRecords: parseInt('{{ attendance|length|default:"0" }}') || 0,
+                presentCount: parseInt('{{ present_count|default:"0" }}') || 0,
+                wfhCount: parseInt('{{ wfh_count|default:"0" }}') || 0,
+                leaveCount: parseInt('{{ leave_count|default:"0" }}') || 0,
+                absentCount: parseInt('{{ absent_count|default:"0" }}') || 0
+            };
+
+            window.attendanceData = attendanceData;
+            console.log('📊 Attendance data loaded:', attendanceData);
+
+            function initAttendance() {
+                if (typeof initializeAttendance === 'function') {
+                    initializeAttendance();
+                } else {
+                    console.warn('initializeAttendance function not found. Make sure attendance.js is loaded.');
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initAttendance);
+            } else {
+                initAttendance();
+            }
+        } catch (error) {
+            console.error('Error initializing attendance data:', error);
+        }
+    })();
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + F for focus on search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            document.getElementById('employeeSearch').focus();
+        }
+        // Ctrl + R for refresh
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            if (e.shiftKey) {
+                e.preventDefault();
+                window.location.reload();
+            }
+        }
+    });
+
+    console.log('🕒 Attendance Dashboard loaded');
+    console.log('📋 Total records: {{ attendance|length }}');
+</script>
 
 {% endblock %}

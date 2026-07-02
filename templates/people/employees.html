@@ -1,12 +1,173 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Employees
-{% endblock %}
+{% block title %}Employees{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/employee.css' %}">
+<style>
+    /* ===== ADDITIONAL STYLES ===== */
+    .btn-timing {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    .btn-timing:hover {
+        background: rgba(167, 139, 250, 0.15);
+        border-color: rgba(167, 139, 250, 0.2);
+        transform: scale(1.1);
+    }
+    
+    .btn-timing.active {
+        background: rgba(34, 197, 94, 0.15);
+        border-color: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+    }
+    
+    .action-buttons-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+    
+    .action-buttons-group .action-btn {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+    }
+    
+    .action-buttons-group .action-btn.view {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+    }
+    
+    .action-buttons-group .action-btn.view:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+    
+    .action-buttons-group .action-btn.edit {
+        background: rgba(245, 158, 11, 0.1);
+        color: #fbbf24;
+    }
+    
+    .action-buttons-group .action-btn.edit:hover {
+        background: rgba(245, 158, 11, 0.2);
+    }
+    
+    .action-buttons-group .action-btn.timing {
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+    }
+    
+    .action-buttons-group .action-btn.timing:hover {
+        background: rgba(167, 139, 250, 0.2);
+    }
+    
+    .action-buttons-group .action-btn.delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+    
+    .action-buttons-group .action-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+    
+    /* Timing badge in mobile card */
+    .card-timing-action {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: rgba(167, 139, 250, 0.06);
+        border-radius: 6px;
+        text-decoration: none;
+        color: #a78bfa;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    
+    .card-timing-action:hover {
+        background: rgba(167, 139, 250, 0.12);
+    }
+    
+    /* Quick action dropdown */
+    .quick-actions-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .quick-actions-dropdown .dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: #1a1035;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        min-width: 180px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        padding: 4px 0;
+    }
+    
+    .quick-actions-dropdown .dropdown-menu.show {
+        display: block;
+        animation: slideDown 0.2s ease;
+    }
+    
+    .quick-actions-dropdown .dropdown-menu a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        color: #d6e0f0;
+        text-decoration: none;
+        transition: background 0.2s;
+        font-size: 0.85rem;
+    }
+    
+    .quick-actions-dropdown .dropdown-menu a:hover {
+        background: rgba(167, 139, 250, 0.06);
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .btn-more {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+    
+    .btn-more:hover {
+        background: rgba(167, 139, 250, 0.06);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -14,474 +175,586 @@ Employees
 <div class="employee-page">
 
     <!-- ================= HEADER ================= -->
-
     <div class="page-header">
-
         <div>
-
-            <h1>👥 Employee Directory</h1>
-
-            <p>
-                Manage your employees, attendance, payroll and HR records.
-            </p>
-
+            <div class="header-badge">👥 People Management</div>
+            <h1>Employee Directory</h1>
+            <p>Manage your employees, attendance, payroll and HR records.</p>
         </div>
-
         <div class="header-buttons">
-
+            <button class="btn-secondary" id="exportBtn">
+                <span class="btn-icon">📥</span> Export
+            </button>
             <a href="{% url 'employee_create' %}" class="btn-primary">
-
-                ➕ Add Employee
-
+                <span class="btn-icon">➕</span> Add Employee
             </a>
-
         </div>
-
     </div>
 
+    <!-- ============================================================ -->
+    <!-- STARTUP BANNER - RIGHT AFTER HEADER -->
+    <!-- ============================================================ -->
+    {% include 'people/includes/startup_banner.html' %}
+    {% if is_super_admin %}
+    <div class="current-startup-banner">
+        <span class="banner-icon">🏢</span>
+        {% if current_startup %}
+            <span class="banner-text">Viewing: <strong>{{ current_startup.company_name }}</strong></span>
+            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="banner-reset">↺ View All</a>
+        {% else %}
+            <span class="banner-text">Viewing: <strong>All Startups</strong></span>
+        {% endif %}
+    </div>
+    {% endif %}
 
     <!-- ================= STATS ================= -->
-
     <div class="stats-grid">
-
-        <div class="stat-card">
-
-            <div class="icon blue">👥</div>
-
+        <div class="stat-card blue">
+            <div class="icon">👥</div>
             <div>
-
                 <h2>{{ employees|length }}</h2>
-
                 <p>Total Employees</p>
-
             </div>
-
+            <span class="trend up">↑ 12%</span>
         </div>
-
-        <div class="stat-card">
-
-            <div class="icon green">🟢</div>
-
+        <div class="stat-card green">
+            <div class="icon">🟢</div>
             <div>
-
-                <h2>
-
-                    {% for employee in employees %}
-                    {% if employee.is_active %}
-                    {% endif %}
-                    {% endfor %}
-
-                    {{ employees|length }}
-
-                </h2>
-
+                <h2>{{ active_count|default:0 }}</h2>
                 <p>Active Employees</p>
-
             </div>
-
+            <span class="trend up">↑ 8%</span>
         </div>
-
-        <div class="stat-card">
-
-            <div class="icon orange">🏢</div>
-
+        <div class="stat-card orange">
+            <div class="icon">🏢</div>
             <div>
-
                 <h2>{{ departments|length }}</h2>
-
                 <p>Departments</p>
-
             </div>
-
+            <span class="trend neutral">→</span>
         </div>
-
-        <div class="stat-card">
-
-            <div class="icon purple">💰</div>
-
+        <div class="stat-card purple">
+            <div class="icon">💰</div>
             <div>
-
-                <h2>Payroll</h2>
-
-                <p>Enabled</p>
-
+                <h2>{{ payroll_enabled|default:0 }}</h2>
+                <p>Payroll Enabled</p>
             </div>
-
+            <span class="trend up">↑ 5%</span>
         </div>
-
     </div>
-
 
     <!-- ================= FILTER ================= -->
-
     <div class="filter-card">
-
-        <div class="filter-grid">
-
-            <input type="text" placeholder="🔍 Search Employee..." class="search-box">
-
-            <select>
-
-                <option>All Departments</option>
-
-                {% for dept in departments %}
-
-                <option>
-
-                    {{ dept.name }}
-
-                </option>
-
-                {% endfor %}
-
-            </select>
-
-            <select>
-
-                <option>Status</option>
-
-                <option>Active</option>
-
-                <option>Onboarding</option>
-
-                <option>Probation</option>
-
-                <option>Notice Period</option>
-
-                <option>Exited</option>
-
-            </select>
-
-            <select>
-
-                <option>Work Mode</option>
-
-                <option>Office</option>
-
-                <option>Hybrid</option>
-
-                <option>Remote</option>
-
-            </select>
-
-            <button>
-
-                Filter
-
-            </button>
-
+        <div class="filter-header">
+            <h3>🔍 Filter Employees</h3>
+            <button class="btn-toggle-filters" id="toggleFilters" title="Toggle Filters">▼</button>
         </div>
-
+        <div class="filter-grid" id="filterGrid">
+            <div class="filter-input-wrapper">
+                <input type="text" placeholder="Search by name, email, or ID..." id="searchInput" class="search-box">
+                <button class="clear-btn" id="clearSearch" style="display:none;">✕</button>
+            </div>
+            <select id="departmentFilter">
+                <option value="">All Departments</option>
+                {% for dept in departments %}
+                <option value="{{ dept.name }}">
+                    {{ dept.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <select id="statusFilter">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="onboarding">Onboarding</option>
+                <option value="probation">Probation</option>
+                <option value="notice_period">Notice Period</option>
+                <option value="exited">Exited</option>
+            </select>
+            <select id="workModeFilter">
+                <option value="">All Work Modes</option>
+                <option value="office">Office</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="remote">Remote</option>
+            </select>
+            <button id="filterBtn" class="btn-filter">
+                🔍 Apply
+            </button>
+            <button id="resetBtn" class="btn-reset">
+                ↩️ Reset
+            </button>
+        </div>
+        <div class="filter-stats">
+            <span id="resultCount">Showing <strong>{{ employees|length }}</strong> employees</span>
+            <span id="filterChips" class="filter-chips"></span>
+        </div>
     </div>
-
 
     <!-- ================= DESKTOP TABLE ================= -->
-
     <div class="table-card">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Employee</th>
-
-                    <th>ID</th>
-
-                    <th>Department</th>
-
-                    <th>Designation</th>
-
-                    <th>Status</th>
-
-                    <th>Work Mode</th>
-
-                    <th>Salary</th>
-
-                    <th>Payroll</th>
-
-                    <th>Actions</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for employee in employees %}
-
-                <tr>
-
-                    <td>
-
-                        <div class="employee-info">
-
-                            {% if employee.profile_image %}
-
-                            <img src="{{ employee.profile_image.url }}">
-
-                            {% else %}
-
-                            <div class="avatar">
-
-                                {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
-
-                            </div>
-
-                            {% endif %}
-
-                            <div>
-
-                                <strong>
-
-                                    {{ employee.user.get_full_name|default:employee.user.username }}
-
-                                </strong>
-
-                                <span>
-
-                                    {{ employee.phone }}
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        {{ employee.employee_id }}
-
-                    </td>
-
-                    <td>
-
-                        {{ employee.department.name }}
-
-                    </td>
-
-                    <td>
-
-                        {{ employee.designation }}
-
-                    </td>
-
-                    <td>
-
-                        <span class="badge status">
-
-                            {{ employee.status }}
-
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        {{ employee.work_mode }}
-
-                    </td>
-
-                    <td>
-
-                        ₹{{ employee.salary }}
-
-                    </td>
-
-                    <td>
-
-                        {% if employee.is_payroll_enabled %}
-
-                        <span class="badge payroll">
-
-                            Enabled
-
-                        </span>
-
-                        {% else %}
-
-                        <span class="badge disabled">
-
-                            Disabled
-
-                        </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        <div class="table-actions">
-
-                            <a href="{% url 'employee_detail' employee.id %}">
-
-                                👁
-
-                            </a>
-
-                            <a href="{% url 'employee_update' employee.id %}" class="btn btn-sm btn-outline-warning">
-
-                                ✏
-
-                            </a>
-
-                            <a href="{% url 'employee_delete' employee.id %}" class="btn btn-sm btn-outline-danger">
-
-                                🗑
-
-                            </a>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="9">
-
-                        <div class="empty-state">
-
-                            <h2>
-
-                                👥 No Employees Found
-
-                            </h2>
-
-                            <p>
-
-                                Start by creating your first employee.
-
-                            </p>
-
-                            <a href="{% url 'employee_create' %}" class="btn-primary">
-
-                                ➕ Create Employee
-
-                            </a>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-
-    <!-- ================= MOBILE CARDS ================= -->
-
-    <div class="mobile-employees">
-
-        {% for employee in employees %}
-
-        <div class="employee-card">
-
-            <div class="employee-top">
-
-                {% if employee.profile_image %}
-
-                <img src="{{ employee.profile_image.url }}">
-
-                {% else %}
-
-                <div class="avatar">
-
-                    {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
-
-                </div>
-
-                {% endif %}
-
-                <div>
-
-                    <h3>
-
-                        {{ employee.user.get_full_name|default:employee.user.username }}
-
-                    </h3>
-
-                    <p>
-
-                        {{ employee.designation }}
-
-                    </p>
-
-                </div>
-
+        <div class="table-header">
+            <div class="table-header-left">
+                <h3>👥 Employee List</h3>
+                <span class="employee-count-badge" id="totalCount">{{ employees|length }}</span>
             </div>
-
-            <ul>
-
-                <li>
-
-                    <strong>ID</strong>
-
-                    {{ employee.employee_id }}
-
-                </li>
-
-                <li>
-
-                    <strong>Department</strong>
-
-                    {{ employee.department }}
-
-                </li>
-
-                <li>
-
-                    <strong>Status</strong>
-
-                    {{ employee.status }}
-
-                </li>
-
-                <li>
-
-                    <strong>Salary</strong>
-
-                    ₹{{ employee.salary }}
-
-                </li>
-
-            </ul>
-
-            <div class="card-actions">
-
-                <a href="{% url 'employee_detail' employee.id %}">
-
-                    View
-
-                </a>
-
-                <a href="#">
-
-                    Edit
-
-                </a>
-
+            <div class="table-header-right">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="selectAll">
+                    <span>Select All</span>
+                </label>
             </div>
-
         </div>
 
-        {% endfor %}
+        <div class="table-responsive">
+            <table>
+                <colgroup>
+                    <col class="col-select">
+                    <col class="col-employee">
+                    <col class="col-id">
+                    <col class="col-department">
+                    <col class="col-designation">
+                    <col class="col-status">
+                    <col class="col-workmode">
+                    <col class="col-salary">
+                    <col class="col-payroll">
+                    <col class="col-timing">
+                    <col class="col-portal">
+                    <col class="col-actions">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAllCheckbox"></th>
+                        <th class="sortable" data-sort="name">Employee ↕</th>
+                        <th class="sortable" data-sort="id">ID ↕</th>
+                        <th class="sortable" data-sort="department">Department ↕</th>
+                        <th class="sortable" data-sort="designation">Designation ↕</th>
+                        <th class="sortable" data-sort="status">Status ↕</th>
+                        <th class="sortable" data-sort="workmode">Work Mode ↕</th>
+                        <th class="sortable" data-sort="salary">Salary ↕</th>
+                        <th>Payroll</th>
+                        <th>⏰ Timing</th>
+                        <th>Portal</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                    {% for employee in employees %}
+                    <tr class="employee-row"
+                        data-name="{{ employee.user.get_full_name|default:employee.user.username|lower }}"
+                        data-email="{{ employee.user.email|lower }}" data-id="{{ employee.employee_id|lower }}"
+                        data-department="{{ employee.department.name|lower }}" data-status="{{ employee.status|lower }}"
+                        data-workmode="{{ employee.work_mode|lower }}" data-salary="{{ employee.salary }}">
+                        <td><input type="checkbox" class="row-checkbox" value="{{ employee.id }}"></td>
+                        <td>
+                            <div class="employee-info">
+                                {% if employee.profile_image %}
+                                <img src="{{ employee.profile_image.url }}" alt="{{ employee.user.get_full_name }}"
+                                    class="profile-img">
+                                {% else %}
+                                <div class="avatar">
+                                    {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div class="employee-details">
+                                    <span class="employee-name">
+                                        {{ employee.user.get_full_name|default:employee.user.username }}
+                                    </span>
+                                    <span class="employee-email">{{ employee.user.email }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><code class="employee-id">{{ employee.employee_id }}</code></td>
+                        <td>{{ employee.department.name|default:"-" }}</td>
+                        <td>{{ employee.designation|default:"-" }}</td>
+                        <td>
+                            <span class="status-badge status-{{ employee.status|lower }}">
+                                <span class="status-dot"></span>
+                                {{ employee.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="work-mode-badge work-{{ employee.work_mode|lower }}">
+                                {{ employee.work_mode|title|default:"-" }}
+                            </span>
+                        </td>
+                        <td>₹{{ employee.salary|floatformat:0 }}</td>
+                        <td>
+                            {% if employee.is_payroll_enabled %}
+                            <span class="badge payroll enabled">● Enabled</span>
+                            {% else %}
+                            <span class="badge payroll disabled">● Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'employee_timing_config' employee.id %}" 
+                               class="btn-timing {% if employee.default_check_in %}active{% endif %}" 
+                               title="Configure Timings">
+                                ⏰
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'employee_portal_dashboard' %}" class="portal-link user" target="_blank"
+                                title="Open Employee Portal">
+                                🚀
+                            </a>
+                        </td>
+                        <td>
+                            <div class="action-buttons-group">
+                                <a href="{% url 'employee_detail' employee.id %}" class="action-btn view" title="View">
+                                    👁️
+                                </a>
+                                <a href="{% url 'employee_update' employee.id %}" class="action-btn edit" title="Edit">
+                                    ✏️
+                                </a>
+                                <a href="{% url 'employee_timing_config' employee.id %}" class="action-btn timing" title="Configure Timings">
+                                    ⏰
+                                </a>
+                                <a href="{% url 'employee_delete' employee.id %}" class="action-btn delete" title="Delete">
+                                    🗑️
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="12">
+                            <div class="empty-state">
+                                <div class="empty-icon">👥</div>
+                                <h3>No Employees Found</h3>
+                                <p>Start by creating your first employee.</p>
+                                <a href="{% url 'employee_create' %}" class="btn-primary">
+                                    ➕ Create Employee
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
+        <!-- Table Footer -->
+        <div class="table-footer">
+            <div class="table-info">
+                Showing <span id="visibleCount">{{ employees|length }}</span> of <span id="totalCount2">{{
+                    employees|length }}</span> employees
+            </div>
+            <div class="table-pagination">
+                <button class="pagination-btn" id="prevPage" disabled>← Previous</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled>Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MOBILE CARDS ================= -->
+    <div class="mobile-employees" id="mobileCards">
+        {% for employee in employees %}
+        <div class="employee-card employee-row"
+            data-name="{{ employee.user.get_full_name|default:employee.user.username|lower }}"
+            data-department="{{ employee.department.name|lower }}" data-status="{{ employee.status|lower }}"
+            data-workmode="{{ employee.work_mode|lower }}">
+            <div class="employee-top">
+                {% if employee.profile_image %}
+                <img src="{{ employee.profile_image.url }}" alt="{{ employee.user.get_full_name }}" class="profile-img">
+                {% else %}
+                <div class="avatar">
+                    {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+                </div>
+                {% endif %}
+                <div>
+                    <h3>{{ employee.user.get_full_name|default:employee.user.username }}</h3>
+                    <p>{{ employee.designation|default:"-" }}</p>
+                    <span class="status-badge status-{{ employee.status|lower }}">
+                        <span class="status-dot"></span>
+                        {{ employee.status|title }}
+                    </span>
+                </div>
+            </div>
+            <ul>
+                <li>
+                    <strong>ID</strong>
+                    <span>{{ employee.employee_id }}</span>
+                </li>
+                <li>
+                    <strong>Department</strong>
+                    <span>{{ employee.department.name|default:"-" }}</span>
+                </li>
+                <li>
+                    <strong>Work Mode</strong>
+                    <span>{{ employee.work_mode|title|default:"-" }}</span>
+                </li>
+                <li>
+                    <strong>Salary</strong>
+                    <span>₹{{ employee.salary|floatformat:0 }}</span>
+                </li>
+                <li>
+                    <strong>Email</strong>
+                    <span>{{ employee.user.email }}</span>
+                </li>
+                <li>
+                    <strong>Timing</strong>
+                    <span>
+                        {% if employee.default_check_in and employee.default_check_out %}
+                            {{ employee.default_check_in|time:"H:i" }} - {{ employee.default_check_out|time:"H:i" }}
+                        {% else %}
+                            <span style="color: #64748b;">Not configured</span>
+                        {% endif %}
+                    </span>
+                </li>
+            </ul>
+            <div class="card-actions">
+                <a href="{% url 'employee_timing_config' employee.id %}" class="card-timing-action" title="Configure Timings">
+                    ⏰ Configure Timings
+                </a>
+                <a href="{% url 'employee_portal_dashboard' %}" target="_blank" class="btn-portal">🚀 Portal</a>
+                <a href="{% url 'employee_detail' employee.id %}" class="btn-light">👁️ View</a>
+                <a href="{% url 'employee_update' employee.id %}" class="btn-primary">✏️ Edit</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state full-width">
+            <div class="empty-icon">👥</div>
+            <h3>No Employees Found</h3>
+            <p>Start by creating your first employee.</p>
+            <a href="{% url 'employee_create' %}" class="btn-primary">➕ Create Employee</a>
+        </div>
+        {% endfor %}
     </div>
 
 </div>
+
+<script src="{% static 'js/employee.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // TIMING BUTTON TOOLTIP
+        // ============================================
+        document.querySelectorAll('.btn-timing').forEach(btn => {
+            const hasTiming = btn.classList.contains('active');
+            btn.title = hasTiming ? '⏰ Timing configured' : '⏰ Configure timing';
+        });
+        
+        // ============================================
+        // EXPORT FUNCTIONALITY
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const selected = document.querySelectorAll('.row-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Please select at least one employee to export.');
+                return;
+            }
+            
+            // Build export data
+            const exportData = [];
+            selected.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const name = row.querySelector('.employee-name')?.textContent || '';
+                const email = row.querySelector('.employee-email')?.textContent || '';
+                const id = row.querySelector('.employee-id')?.textContent || '';
+                const dept = row.querySelector('td:nth-child(4)')?.textContent || '';
+                const status = row.querySelector('.status-badge')?.textContent?.trim() || '';
+                
+                exportData.push({
+                    name: name.trim(),
+                    email: email.trim(),
+                    id: id.trim(),
+                    department: dept.trim(),
+                    status: status.trim()
+                });
+            });
+            
+            // Create CSV
+            let csv = 'Name,Email,Employee ID,Department,Status\n';
+            exportData.forEach(emp => {
+                csv += `${emp.name},${emp.email},${emp.id},${emp.department},${emp.status}\n`;
+            });
+            
+            // Download CSV
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `employees_export_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+        
+        // ============================================
+        // SELECT ALL
+        // ============================================
+        document.getElementById('selectAllCheckbox').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            
+            // Update the other select all checkbox
+            document.getElementById('selectAll').checked = this.checked;
+        });
+        
+        document.getElementById('selectAll').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            
+            // Update the other select all checkbox
+            document.getElementById('selectAllCheckbox').checked = this.checked;
+        });
+        
+        // ============================================
+        // FILTER FUNCTIONALITY
+        // ============================================
+        function filterEmployees() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const department = document.getElementById('departmentFilter').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value.toLowerCase();
+            const workMode = document.getElementById('workModeFilter').value.toLowerCase();
+            
+            const rows = document.querySelectorAll('.employee-row');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const name = row.dataset.name || '';
+                const email = row.dataset.email || '';
+                const id = row.dataset.id || '';
+                const rowDept = row.dataset.department || '';
+                const rowStatus = row.dataset.status || '';
+                const rowWorkMode = row.dataset.workmode || '';
+                
+                let show = true;
+                
+                if (search && !name.includes(search) && !email.includes(search) && !id.includes(search)) {
+                    show = false;
+                }
+                if (department && rowDept !== department) {
+                    show = false;
+                }
+                if (status && rowStatus !== status) {
+                    show = false;
+                }
+                if (workMode && rowWorkMode !== workMode) {
+                    show = false;
+                }
+                
+                row.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            });
+            
+            // Update counts
+            document.getElementById('visibleCount').textContent = visibleCount;
+            document.getElementById('resultCount').innerHTML = `Showing <strong>${visibleCount}</strong> employees`;
+            
+            // Update mobile cards
+            const cards = document.querySelectorAll('.employee-card');
+            cards.forEach((card, index) => {
+                const row = rows[index];
+                card.style.display = row && row.style.display !== 'none' ? '' : 'none';
+            });
+        }
+        
+        // ============================================
+        // RESET FILTERS
+        // ============================================
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('departmentFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('workModeFilter').value = '';
+            document.getElementById('clearSearch').style.display = 'none';
+            filterEmployees();
+        });
+        
+        // ============================================
+        // APPLY FILTERS
+        // ============================================
+        document.getElementById('filterBtn').addEventListener('click', filterEmployees);
+        document.getElementById('searchInput').addEventListener('input', function() {
+            document.getElementById('clearSearch').style.display = this.value ? 'block' : 'none';
+            filterEmployees();
+        });
+        
+        document.getElementById('clearSearch').addEventListener('click', function() {
+            document.getElementById('searchInput').value = '';
+            this.style.display = 'none';
+            filterEmployees();
+        });
+        
+        // ============================================
+        // TOGGLE FILTERS
+        // ============================================
+        document.getElementById('toggleFilters').addEventListener('click', function() {
+            const grid = document.getElementById('filterGrid');
+            grid.classList.toggle('collapsed');
+            this.textContent = grid.classList.contains('collapsed') ? '▶' : '▼';
+        });
+        
+        // ============================================
+        // SORT FUNCTIONALITY
+        // ============================================
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                const tbody = document.getElementById('employeeTableBody');
+                const rows = Array.from(tbody.querySelectorAll('.employee-row'));
+                
+                // Determine sort direction
+                const isAsc = !this.dataset.asc;
+                this.dataset.asc = isAsc;
+                
+                rows.sort((a, b) => {
+                    let aVal, bVal;
+                    
+                    switch(sortKey) {
+                        case 'name':
+                            aVal = a.dataset.name || '';
+                            bVal = b.dataset.name || '';
+                            break;
+                        case 'id':
+                            aVal = a.dataset.id || '';
+                            bVal = b.dataset.id || '';
+                            break;
+                        case 'department':
+                            aVal = a.dataset.department || '';
+                            bVal = b.dataset.department || '';
+                            break;
+                        case 'designation':
+                            aVal = a.querySelector('td:nth-child(5)')?.textContent?.trim() || '';
+                            bVal = b.querySelector('td:nth-child(5)')?.textContent?.trim() || '';
+                            break;
+                        case 'status':
+                            aVal = a.dataset.status || '';
+                            bVal = b.dataset.status || '';
+                            break;
+                        case 'workmode':
+                            aVal = a.dataset.workmode || '';
+                            bVal = b.dataset.workmode || '';
+                            break;
+                        case 'salary':
+                            aVal = parseFloat(a.dataset.salary) || 0;
+                            bVal = parseFloat(b.dataset.salary) || 0;
+                            break;
+                        default:
+                            aVal = '';
+                            bVal = '';
+                    }
+                    
+                    if (typeof aVal === 'string') {
+                        return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    } else {
+                        return isAsc ? aVal - bVal : bVal - aVal;
+                    }
+                });
+                
+                // Reorder rows
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+        
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        console.log('👥 Employee Directory loaded');
+        console.log(`📊 Total employees: ${document.querySelectorAll('.employee-row').length}`);
+    });
+</script>
 
 {% endblock %}

@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Payroll
-{% endblock %}
+{% block title %}Payroll Management{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/payroll.css' %}">
@@ -13,301 +11,444 @@ Payroll
 
 <div class="payroll-page">
 
-    <!-- Header -->
-
+    <!-- ================= HEADER ================= -->
     <div class="page-header">
-
-        <div>
-
-            <h1>💰 Payroll Management</h1>
-
-            <p>
-                Manage employee salaries, payroll processing and payment status.
-            </p>
-
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">💰</div>
+                <div>
+                    <h1>Payroll Management</h1>
+                    <p class="header-subtitle">Manage employee salaries, payroll processing and payment status.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" id="exportBtn">
+                    📥 Export
+                </button>
+                <a href="{% url 'payroll_create' %}" class="btn-primary">
+                    ➕ Add Payroll
+                </a>
+            </div>
         </div>
-
-        <div class="header-actions">
-
-            <a href="#" class="btn-secondary">
-                📥 Export
-            </a>
-
-            <a href="#" class="btn-primary">
-                💵 Process Payroll
-            </a>
-
-        </div>
-
     </div>
 
-    <!-- Summary -->
+    <!-- ============================================================ -->
+    <!-- STARTUP BANNER - RIGHT AFTER HEADER -->
+    <!-- ============================================================ -->
+    {% include 'people/includes/startup_banner.html' %}
+    {% if is_super_admin %}
+    <div class="current-startup-banner">
+        <span class="banner-icon">🏢</span>
+        {% if current_startup %}
+            <span class="banner-text">Viewing: <strong>{{ current_startup.company_name }}</strong></span>
+            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="banner-reset">↺ View All</a>
+        {% else %}
+            <span class="banner-text">Viewing: <strong>All Startups</strong></span>
+        {% endif %}
+    </div>
+    {% endif %}
 
+    <!-- ================= SUMMARY CARDS ================= -->
     <div class="summary-grid">
-
         <div class="summary-card blue">
-
-            <span class="icon">👥</span>
-
-            <div>
-
-                <h2>{{ payrolls|length }}</h2>
-
+            <div class="card-icon">👥</div>
+            <div class="card-content">
+                <h2>{{ total_payrolls|default:0 }}</h2>
                 <p>Total Payrolls</p>
-
             </div>
-
+            <span class="trend up">↑ 12%</span>
         </div>
-
         <div class="summary-card green">
-
-            <span class="icon">✅</span>
-
-            <div>
-
-                <h2>Paid</h2>
-
-                <p>Completed Payments</p>
-
+            <div class="card-icon">✅</div>
+            <div class="card-content">
+                <h2>{{ paid_count|default:0 }}</h2>
+                <p>Paid</p>
             </div>
-
+            <span class="trend up">↑ 8%</span>
         </div>
-
         <div class="summary-card orange">
-
-            <span class="icon">⏳</span>
-
-            <div>
-
-                <h2>Pending</h2>
-
-                <p>Awaiting Payment</p>
-
+            <div class="card-icon">⏳</div>
+            <div class="card-content">
+                <h2>{{ pending_count|default:0 }}</h2>
+                <p>Pending</p>
             </div>
-
+            <span class="trend down">↓ 3%</span>
         </div>
-
         <div class="summary-card purple">
-
-            <span class="icon">💸</span>
-
-            <div>
-
-                <h2>Salary</h2>
-
-                <p>Monthly Payroll</p>
-
+            <div class="card-icon">💸</div>
+            <div class="card-content">
+                <h2>₹{{ total_salary|floatformat:0|default:"0" }}</h2>
+                <p>Total Salary</p>
             </div>
+            <span class="trend neutral">→</span>
+        </div>
+    </div>
 
+    <!-- ================= FILTERS ================= -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h3>🔍 Filter Records</h3>
+            <div class="filter-header-actions">
+                <button class="btn-toggle-filters" id="toggleFilters" title="Toggle Filters">▼</button>
+                <button class="btn-reset-filters" id="resetFilters" title="Reset All Filters">↺</button>
+            </div>
+        </div>
+        <form method="GET" id="filterForm">
+            <div class="filter-grid" id="filterGrid">
+                <div class="filter-group">
+                    <label for="{{ filter_form.employee.id_for_label }}">
+                        <span class="filter-icon">👤</span> Employee
+                    </label>
+                    {{ filter_form.employee }}
+                </div>
+                <div class="filter-group">
+                    <label for="{{ filter_form.month.id_for_label }}">
+                        <span class="filter-icon">📅</span> Month
+                    </label>
+                    {{ filter_form.month }}
+                </div>
+                <div class="filter-group">
+                    <label for="{{ filter_form.year.id_for_label }}">
+                        <span class="filter-icon">📆</span> Year
+                    </label>
+                    {{ filter_form.year }}
+                </div>
+                <div class="filter-group">
+                    <label for="{{ filter_form.status.id_for_label }}">
+                        <span class="filter-icon">📊</span> Status
+                    </label>
+                    {{ filter_form.status }}
+                </div>
+                <div class="filter-group filter-actions">
+                    <label>&nbsp;</label>
+                    <div class="filter-buttons">
+                        <button type="submit" class="btn-primary btn-filter">
+                            🔍 Apply Filters
+                        </button>
+                        <a href="{% url 'payroll' %}" class="btn-light btn-reset">
+                            ↩️ Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="filter-stats">
+            <span id="recordCount">Showing {{ payrolls|length }} records</span>
+            <div id="activeFilters" class="active-filters">
+                {% if request.GET.employee or request.GET.month or request.GET.year or request.GET.status %}
+                <span class="filter-chip">Active Filters</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAYROLL TABLE ================= -->
+    <div class="table-card">
+        <div class="table-header">
+            <div class="table-header-left">
+                <h3>📋 Payroll Records</h3>
+                <span class="record-badge" id="totalRecords">{{ payrolls|length }}</span>
+            </div>
+            <div class="table-header-right">
+                <div class="table-search">
+                    <input type="text" id="tableSearch" placeholder="🔍 Search..." class="search-input">
+                </div>
+                <button class="btn-light btn-sm" id="refreshTable">🔄 Refresh</button>
+            </div>
         </div>
 
-    </div>
-
-    <!-- Filters -->
-
-    <div class="filter-card">
-
-        <form>
-
-            <input
-                type="text"
-                placeholder="🔍 Search Employee"
-            >
-
-            <select>
-
-                <option>Month</option>
-
-                <option>January</option>
-
-                <option>February</option>
-
-                <option>March</option>
-
-            </select>
-
-            <select>
-
-                <option>Status</option>
-
-                <option>Paid</option>
-
-                <option>Pending</option>
-
-            </select>
-
-            <button class="btn-primary">
-
-                Filter
-
-            </button>
-
-        </form>
-
-    </div>
-
-    <!-- Payroll Table -->
-
-    <div class="table-card">
-
-        <table>
-
-            <thead>
-
-            <tr>
-
-                <th>Employee</th>
-
-                <th>Month</th>
-
-                <th>Basic Salary</th>
-
-                <th>Allowances</th>
-
-                <th>Deductions</th>
-
-                <th>Net Salary</th>
-
-                <th>Status</th>
-
-                <th>Action</th>
-
-            </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% for payroll in payrolls %}
-
-            <tr>
-
-                <td>
-
-                    <div class="employee-box">
-
-                        {% if payroll.employee.profile_image %}
-
-                            <img src="{{ payroll.employee.profile_image.url }}">
-
-                        {% else %}
-
-                            <div class="avatar">
-
-                                {{ payroll.employee.user.first_name|first|default:payroll.employee.user.username|first }}
-
+        <div class="table-responsive">
+            <table id="payrollTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="employee">Employee ↕</th>
+                        <th class="sortable" data-sort="month">Month ↕</th>
+                        <th class="sortable" data-sort="basic">Basic Salary ↕</th>
+                        <th class="sortable" data-sort="allowances">Allowances ↕</th>
+                        <th class="sortable" data-sort="deductions">Deductions ↕</th>
+                        <th class="sortable" data-sort="net">Net Salary ↕</th>
+                        <th class="sortable" data-sort="status">Status ↕</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for payroll in payrolls %}
+                    <tr class="payroll-row" 
+                        data-employee="{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username|lower }}"
+                        data-month="{{ payroll.month|lower }}"
+                        data-year="{{ payroll.year }}"
+                        data-status="{% if payroll.paid %}paid{% else %}pending{% endif %}"
+                        data-basic="{{ payroll.basic_salary }}"
+                        data-net="{{ payroll.net_salary }}">
+                        <td>
+                            <div class="employee-box">
+                                {% if payroll.employee.profile_image %}
+                                <img src="{{ payroll.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                {% else %}
+                                <div class="avatar">
+                                    {{ payroll.employee.user.first_name|first|default:payroll.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div class="employee-details">
+                                    <strong class="employee-name">{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</strong>
+                                    <span class="employee-designation">{{ payroll.employee.designation|default:"-" }}</span>
+                                </div>
                             </div>
+                        </td>
+                        <td class="month-cell">
+                            <span class="month-badge">{{ payroll.month }}</span>
+                            <span class="year-tag">{{ payroll.year }}</span>
+                        </td>
+                        <td class="salary-cell">₹{{ payroll.basic_salary|floatformat:2 }}</td>
+                        <td class="salary-cell">₹{{ payroll.allowances|floatformat:2 }}</td>
+                        <td class="salary-cell deduction">-₹{{ payroll.deductions|floatformat:2 }}</td>
+                        <td class="salary-cell net-salary"><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
+                        <td>
+                            {% if payroll.paid %}
+                            <span class="status-badge paid">
+                                <span class="status-dot"></span>
+                                Paid
+                            </span>
+                            {% if payroll.paid_date %}
+                            <span class="paid-date">{{ payroll.paid_date|date:"d M Y" }}</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="status-badge pending">
+                                <span class="status-dot"></span>
+                                Pending
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'payroll_detail' payroll.id %}" class="action-btn view" title="View Details">👁️</a>
+                                {% if not payroll.paid %}
+                                <a href="{% url 'payroll_update' payroll.id %}" class="action-btn edit" title="Edit Payroll">✏️</a>
+                                <a href="{% url 'payroll_mark_paid' payroll.id %}" class="action-btn paid" title="Mark as Paid" onclick="return confirm('Mark this payroll as paid?')">✅</a>
+                                <a href="{% url 'payroll_delete' payroll.id %}" class="action-btn delete" title="Delete Payroll" onclick="return confirm('Delete this payroll record?')">🗑️</a>
+                                {% else %}
+                                <span class="locked-badge">🔒</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="empty-icon">💰</div>
+                                <h3>No Payroll Records Found</h3>
+                                <p>Start by creating your first payroll record.</p>
+                                <a href="{% url 'payroll_create' %}" class="btn-primary">➕ Add Payroll</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-                        {% endif %}
-
-                        <div>
-
-                            <strong>
-
-                                {{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}
-
-                            </strong>
-
-                            <small>
-
-                                {{ payroll.employee.designation }}
-
-                            </small>
-
-                        </div>
-
-                    </div>
-
-                </td>
-
-                <td>
-
-                    {{ payroll.month }} {{ payroll.year }}
-
-                </td>
-
-                <td>
-
-                    ₹{{ payroll.basic_salary }}
-
-                </td>
-
-                <td>
-
-                    ₹{{ payroll.allowances }}
-
-                </td>
-
-                <td>
-
-                    ₹{{ payroll.deductions }}
-
-                </td>
-
-                <td>
-
-                    <strong>
-
-                        ₹{{ payroll.net_salary }}
-
-                    </strong>
-
-                </td>
-
-                <td>
-
-                    {% if payroll.paid %}
-
-                        <span class="badge paid">
-
-                            ✅ Paid
-
-                        </span>
-
-                    {% else %}
-
-                        <span class="badge pending">
-
-                            ⏳ Pending
-
-                        </span>
-
-                    {% endif %}
-
-                </td>
-
-                <td>
-
-                    <a href="#" class="view-btn">
-
-                        👁 View
-
-                    </a>
-
-                </td>
-
-            </tr>
-
-            {% empty %}
-
-            <tr>
-
-                <td colspan="8">
-
-                    No Payroll Records Found
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
+        <!-- ================= TABLE FOOTER ================= -->
+        <div class="table-footer">
+            <div class="footer-left">
+                <span><strong>Total:</strong> <span id="footerTotal">{{ payrolls|length }}</span> records</span>
+                <span><strong>Paid:</strong> {{ paid_count|default:0 }}</span>
+                <span><strong>Pending:</strong> {{ pending_count|default:0 }}</span>
+                <span><strong>Total Salary:</strong> ₹{{ total_salary|floatformat:0|default:"0" }}</span>
+            </div>
+            <div class="footer-right">
+                <button class="pagination-btn" id="prevPage" disabled>← Prev</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled>Next →</button>
+            </div>
+        </div>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ============================================
+        // TOGGLE FILTERS
+        // ============================================
+        const toggleBtn = document.getElementById('toggleFilters');
+        const filterGrid = document.getElementById('filterGrid');
+        let filtersVisible = true;
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                filtersVisible = !filtersVisible;
+                filterGrid.style.display = filtersVisible ? 'grid' : 'none';
+                this.textContent = filtersVisible ? '▼' : '▶';
+            });
+        }
+
+        // ============================================
+        // RESET FILTERS
+        // ============================================
+        const resetBtn = document.getElementById('resetFilters');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                window.location.href = "{% url 'payroll' %}";
+            });
+        }
+
+        // ============================================
+        // AUTO-SUBMIT ON FILTER CHANGE
+        // ============================================
+        document.querySelectorAll('.filter-group select').forEach(select => {
+            select.addEventListener('change', function() {
+                this.closest('form').submit();
+            });
+        });
+
+        // ============================================
+        // TABLE SEARCH
+        // ============================================
+        const tableSearch = document.getElementById('tableSearch');
+        const tableRows = document.querySelectorAll('.payroll-row');
+
+        if (tableSearch) {
+            tableSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visible = 0;
+
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const match = text.includes(query);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+
+                document.getElementById('recordCount').textContent = `Showing ${visible} records`;
+                document.getElementById('totalRecords').textContent = visible;
+                document.getElementById('footerTotal').textContent = visible;
+            });
+
+            // Keyboard shortcut: Ctrl+F
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    if (tableSearch && document.activeElement !== tableSearch) {
+                        e.preventDefault();
+                        tableSearch.focus();
+                        tableSearch.select();
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // REFRESH TABLE
+        // ============================================
+        document.getElementById('refreshTable').addEventListener('click', function() {
+            location.reload();
+        });
+
+        // ============================================
+        // SORTING
+        // ============================================
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                const currentDir = this.classList.contains('asc') ? 'asc' : 'desc';
+                const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+                document.querySelectorAll('.sortable').forEach(h => {
+                    h.classList.remove('asc', 'desc');
+                });
+                this.classList.add(newDir);
+
+                sortTable(sortKey, newDir);
+            });
+        });
+
+        function sortTable(key, direction) {
+            const tbody = document.querySelector('#tableBody');
+            const rows = Array.from(tbody.querySelectorAll('.payroll-row'));
+
+            rows.sort((a, b) => {
+                let aVal, bVal;
+
+                switch(key) {
+                    case 'employee':
+                        aVal = a.dataset.employee || '';
+                        bVal = b.dataset.employee || '';
+                        break;
+                    case 'month':
+                        aVal = a.dataset.month || '';
+                        bVal = b.dataset.month || '';
+                        break;
+                    case 'basic':
+                        aVal = parseFloat(a.dataset.basic) || 0;
+                        bVal = parseFloat(b.dataset.basic) || 0;
+                        break;
+                    case 'net':
+                        aVal = parseFloat(a.dataset.net) || 0;
+                        bVal = parseFloat(b.dataset.net) || 0;
+                        break;
+                    case 'status':
+                        aVal = a.dataset.status || '';
+                        bVal = b.dataset.status || '';
+                        break;
+                    default:
+                        aVal = '';
+                        bVal = '';
+                }
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // ============================================
+        // EXPORT FUNCTIONALITY
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const visibleRows = document.querySelectorAll('#tableBody .payroll-row:not([style*="display: none"])');
+            
+            if (visibleRows.length === 0) {
+                alert('No records to export. Please adjust your filters.');
+                return;
+            }
+
+            let csvContent = 'Employee,Month,Year,Basic Salary,Allowances,Deductions,Net Salary,Status,Paid Date\n';
+            
+            visibleRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const employee = cells[0]?.textContent?.trim() || '';
+                const monthYear = cells[1]?.textContent?.trim() || '';
+                const basic = cells[2]?.textContent?.trim()?.replace('₹', '') || '0';
+                const allowances = cells[3]?.textContent?.trim()?.replace('₹', '') || '0';
+                const deductions = cells[4]?.textContent?.trim()?.replace('-₹', '').replace('₹', '') || '0';
+                const net = cells[5]?.textContent?.trim()?.replace('₹', '') || '0';
+                const status = cells[6]?.textContent?.trim() || '';
+                
+                csvContent += `"${employee}","${monthYear}","","${basic}","${allowances}","${deductions}","${net}","${status}",""\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `payroll_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        console.log('💰 Payroll Management initialized');
+        console.log(`📊 ${document.querySelectorAll('.payroll-row').length} records loaded`);
+    });
+</script>
 
 {% endblock %}

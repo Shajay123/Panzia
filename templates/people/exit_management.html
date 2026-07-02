@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Exit Management
-{% endblock %}
+{% block title %}Exit Management{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/exit_management.css' %}">
@@ -13,125 +11,366 @@ Exit Management
 
 <div class="exit-page">
 
+    <!-- ================= HEADER ================= -->
     <div class="page-header">
-
-        <div>
-
-            <h1>🚪 Exit Management</h1>
-
-            <p>Manage employee resignations and offboarding.</p>
-
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">🚪</div>
+                <div>
+                    <h1>Exit Management</h1>
+                    <p class="header-subtitle">Manage employee resignations and offboarding process.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" id="exportBtn">
+                    <span class="btn-icon">📥</span> Export
+                </button>
+                <a href="{% url 'exit_create' %}" class="btn-primary">
+                    <span class="btn-icon">➕</span> New Exit
+                </a>
+            </div>
         </div>
-
-        <div class="header-actions">
-
-            <a href="#" class="btn-primary">
-                ➕ New Exit
-            </a>
-
-            <a href="#" class="btn-secondary">
-                📥 Export
-            </a>
-
-        </div>
-
     </div>
 
+    {% include 'people/includes/startup_banner.html' %}
+
+    <!-- ================= SUMMARY ================= -->
     <div class="summary-grid">
-
         <div class="summary-card blue">
-            <h2>{{ exited_employees|length }}</h2>
-            <p>Total Exit Requests</p>
+            <span class="icon">📋</span>
+            <div>
+                <h2>{{ total_exits|default:0 }}</h2>
+                <p>Total Exits</p>
+            </div>
+            <span class="trend up">↑ 5%</span>
         </div>
-
         <div class="summary-card orange">
-            <h2>4</h2>
-            <p>Pending Approval</p>
+            <span class="icon">⏳</span>
+            <div>
+                <h2>{{ pending_count|default:0 }}</h2>
+                <p>Pending Approval</p>
+            </div>
+            <span class="trend down">↓ 3%</span>
         </div>
-
         <div class="summary-card green">
-            <h2>18</h2>
-            <p>Completed Exit</p>
+            <span class="icon">✅</span>
+            <div>
+                <h2>{{ completed_count|default:0 }}</h2>
+                <p>Completed</p>
+            </div>
+            <span class="trend up">↑ 8%</span>
         </div>
-
+        <div class="summary-card purple">
+            <span class="icon">📊</span>
+            <div>
+                <h2>{{ approved_count|default:0 }}</h2>
+                <p>Approved</p>
+            </div>
+            <span class="trend neutral">→</span>
+        </div>
     </div>
 
+    <!-- ================= FILTERS ================= -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h3>🔍 Filter Exits</h3>
+            <button class="btn-toggle-filters" id="toggleFilters">▼</button>
+        </div>
+        <form method="GET" id="filterForm">
+            <div class="filter-grid" id="filterGrid">
+                <div class="filter-group">
+                    <label>👤 Employee</label>
+                    {{ filter_form.employee }}
+                </div>
+                <div class="filter-group">
+                    <label>📊 Status</label>
+                    {{ filter_form.status }}
+                </div>
+                <div class="filter-group">
+                    <label>📝 Reason</label>
+                    {{ filter_form.reason }}
+                </div>
+                <div class="filter-group">
+                    <label>📅 From Date</label>
+                    {{ filter_form.from_date }}
+                </div>
+                <div class="filter-group">
+                    <label>📅 To Date</label>
+                    {{ filter_form.to_date }}
+                </div>
+                <div class="filter-group filter-actions">
+                    <label>&nbsp;</label>
+                    <div class="filter-buttons">
+                        <button type="submit" class="btn-primary btn-filter">🔍 Apply</button>
+                        <a href="{% url 'exit_management' %}" class="btn-light btn-reset">↩️ Reset</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="filter-stats">
+            <span id="recordCount">Showing <strong>{{ exit_requests|length }}</strong> exit requests</span>
+        </div>
+    </div>
+
+    <!-- ================= TABLE ================= -->
     <div class="table-card">
+        <div class="table-header">
+            <div class="table-header-left">
+                <h3>📋 Exit Requests</h3>
+                <span class="record-badge">{{ exit_requests|length }}</span>
+            </div>
+            <div class="table-header-right">
+                <div class="table-search">
+                    <input type="text" id="tableSearch" placeholder="🔍 Search..." class="search-input">
+                </div>
+                <button class="btn-light btn-sm" id="refreshTable">🔄 Refresh</button>
+            </div>
+        </div>
 
-        <table>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="employee">Employee ↕</th>
+                        <th class="sortable" data-sort="department">Department ↕</th>
+                        <th class="sortable" data-sort="date">Resignation Date ↕</th>
+                        <th class="sortable" data-sort="lastday">Last Working Day ↕</th>
+                        <th class="sortable" data-sort="reason">Reason ↕</th>
+                        <th class="sortable" data-sort="status">Status ↕</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for exit in exit_requests %}
+                    <tr class="exit-row"
+                        data-employee="{{ exit.employee.user.get_full_name|default:exit.employee.user.username|lower }}"
+                        data-department="{{ exit.employee.department.name|lower }}"
+                        data-date="{{ exit.resignation_date|date:'Y-m-d' }}"
+                        data-lastday="{{ exit.last_working_day|date:'Y-m-d' }}"
+                        data-reason="{{ exit.get_exit_reason_display|lower }}"
+                        data-status="{{ exit.status|lower }}">
+                        <td>
+                            <div class="employee-box">
+                                {% if exit.employee.profile_image %}
+                                <img src="{{ exit.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                {% else %}
+                                <div class="avatar">
+                                    {{ exit.employee.user.first_name|first|default:exit.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div class="employee-details">
+                                    <strong class="employee-name">{{ exit.employee.user.get_full_name|default:exit.employee.user.username }}</strong>
+                                    <span class="employee-designation">{{ exit.employee.designation|default:"-" }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ exit.employee.department.name|default:"-" }}</td>
+                        <td>{{ exit.resignation_date|date:"d M Y" }}</td>
+                        <td>
+                            {{ exit.last_working_day|date:"d M Y" }}
+                            {% if exit.status == 'Pending' %}
+                            <span class="days-remaining">{{ exit.get_days_remaining }} days left</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="reason-badge">{{ exit.get_exit_reason_display }}</span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ exit.status|lower }}">
+                                <span class="status-dot"></span>
+                                {{ exit.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'exit_detail' exit.id %}" class="action-btn view" title="View">👁️</a>
+                                {% if exit.status == 'Pending' %}
+                                <a href="{% url 'exit_update' exit.id %}" class="action-btn edit" title="Edit">✏️</a>
+                                <a href="{% url 'exit_approve' exit.id %}" class="action-btn approve" title="Approve" onclick="return confirm('Approve this exit request?')">✅</a>
+                                <a href="{% url 'exit_reject' exit.id %}" class="action-btn reject" title="Reject" onclick="return confirm('Reject this exit request?')">❌</a>
+                                {% endif %}
+                                {% if exit.status == 'Approved' %}
+                                <a href="{% url 'exit_complete' exit.id %}" class="action-btn complete" title="Mark Complete" onclick="return confirm('Mark this exit as completed?')">📋</a>
+                                {% endif %}
+                                {% if exit.status == 'Pending' or exit.status == 'Rejected' %}
+                                <a href="{% url 'exit_delete' exit.id %}" class="action-btn delete" title="Delete" onclick="return confirm('Delete this exit request?')">🗑️</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-icon">🚪</div>
+                                <h3>No Exit Requests Found</h3>
+                                <p>Start by creating a new exit request.</p>
+                                <a href="{% url 'exit_create' %}" class="btn-primary">➕ New Exit Request</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-            <thead>
-
-                <tr>
-
-                    <th>Employee</th>
-
-                    <th>Department</th>
-
-                    <th>Last Working Day</th>
-
-                    <th>Status</th>
-
-                    <th>Action</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% for emp in exited_employees %}
-
-            <tr>
-
-                <td>{{ emp.user.get_full_name|default:emp.user.username }}</td>
-
-                <td>{{ emp.department }}</td>
-
-                <td>--</td>
-
-                <td>
-
-                    <span class="badge warning">
-
-                        Pending
-
-                    </span>
-
-                </td>
-
-                <td>
-
-                    <a href="#" class="action-btn">
-
-                        View
-
-                    </a>
-
-                </td>
-
-            </tr>
-
-            {% empty %}
-
-            <tr>
-
-                <td colspan="5">
-
-                    🚀 No Exit Requests Available
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
+        <!-- Table Footer -->
+        <div class="table-footer">
+            <div class="footer-left">
+                <span><strong>Total:</strong> <span id="footerTotal">{{ exit_requests|length }}</span> exits</span>
+                <span class="footer-divider">|</span>
+                <span><strong>Pending:</strong> {{ pending_count|default:0 }}</span>
+                <span class="footer-divider">|</span>
+                <span><strong>Completed:</strong> {{ completed_count|default:0 }}</span>
+            </div>
+            <div class="footer-right">
+                <button class="pagination-btn" id="prevPage" disabled>← Prev</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled>Next →</button>
+            </div>
+        </div>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // TOGGLE FILTERS
+        // ============================================
+        const toggleBtn = document.getElementById('toggleFilters');
+        const filterGrid = document.getElementById('filterGrid');
+        let filtersVisible = true;
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                filtersVisible = !filtersVisible;
+                filterGrid.style.display = filtersVisible ? 'grid' : 'none';
+                this.textContent = filtersVisible ? '▼' : '▶';
+            });
+        }
+
+        // ============================================
+        // TABLE SEARCH
+        // ============================================
+        const tableSearch = document.getElementById('tableSearch');
+        const tableRows = document.querySelectorAll('.exit-row');
+
+        if (tableSearch) {
+            tableSearch.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visible = 0;
+
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const match = text.includes(query);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+
+                document.getElementById('recordCount').innerHTML = `Showing <strong>${visible}</strong> exit requests`;
+                document.getElementById('footerTotal').textContent = visible;
+            });
+        }
+
+        // ============================================
+        // SORTING
+        // ============================================
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                const currentDir = this.classList.contains('asc') ? 'asc' : 'desc';
+                const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+                document.querySelectorAll('.sortable').forEach(h => {
+                    h.classList.remove('asc', 'desc');
+                });
+                this.classList.add(newDir);
+
+                sortTable(sortKey, newDir);
+            });
+        });
+
+        function sortTable(key, direction) {
+            const tbody = document.querySelector('#tableBody');
+            const rows = Array.from(tbody.querySelectorAll('.exit-row'));
+
+            rows.sort((a, b) => {
+                let aVal, bVal;
+
+                switch(key) {
+                    case 'employee':
+                        aVal = a.dataset.employee || '';
+                        bVal = b.dataset.employee || '';
+                        break;
+                    case 'department':
+                        aVal = a.dataset.department || '';
+                        bVal = b.dataset.department || '';
+                        break;
+                    case 'date':
+                        aVal = a.dataset.date || '';
+                        bVal = b.dataset.date || '';
+                        break;
+                    case 'lastday':
+                        aVal = a.dataset.lastday || '';
+                        bVal = b.dataset.lastday || '';
+                        break;
+                    case 'reason':
+                        aVal = a.dataset.reason || '';
+                        bVal = b.dataset.reason || '';
+                        break;
+                    case 'status':
+                        aVal = a.dataset.status || '';
+                        bVal = b.dataset.status || '';
+                        break;
+                    default:
+                        aVal = '';
+                        bVal = '';
+                }
+
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                if (tableSearch && document.activeElement !== tableSearch) {
+                    e.preventDefault();
+                    tableSearch.focus();
+                    tableSearch.select();
+                }
+            }
+        });
+
+        // ============================================
+        // REFRESH
+        // ============================================
+        document.getElementById('refreshTable').addEventListener('click', function() {
+            location.reload();
+        });
+
+        // ============================================
+        // EXPORT
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            alert('📥 Export functionality coming soon!');
+        });
+
+        console.log('🚪 Exit Management initialized');
+        console.log(`📊 ${document.querySelectorAll('.exit-row').length} exit requests loaded`);
+    });
+</script>
 
 {% endblock %}

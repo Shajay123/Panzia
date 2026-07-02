@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/exit_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="exit-detail-page">
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">{{ page_icon }}</div>
+                <div>
+                    <h1>Exit Request Details</h1>
+                    <p class="header-subtitle">
+                        <strong>{{ exit_request.employee.user.get_full_name|default:exit_request.employee.user.username }}</strong>
+                        · {{ exit_request.status }}
+                    </p>
+                </div>
+            </div>
+            <div class="header-actions">
+                {% if exit_request.status == 'Pending' %}
+                <a href="{% url 'exit_update' exit_request.id %}" class="btn-edit">✏️ Edit</a>
+                <a href="{% url 'exit_approve' exit_request.id %}" class="btn-approve" onclick="return confirm('Approve this exit request?')">✅ Approve</a>
+                <a href="{% url 'exit_reject' exit_request.id %}" class="btn-reject" onclick="return confirm('Reject this exit request?')">❌ Reject</a>
+                <a href="{% url 'exit_delete' exit_request.id %}" class="btn-delete" onclick="return confirm('Delete this exit request?')">🗑️ Delete</a>
+                {% elif exit_request.status == 'Approved' %}
+                <a href="{% url 'exit_complete' exit_request.id %}" class="btn-complete" onclick="return confirm('Mark this exit as completed?')">📋 Mark Complete</a>
+                {% endif %}
+                <a href="{% url 'exit_management' %}" class="btn-back">← Back</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STATUS BANNER ================= -->
+    <div class="status-banner status-{{ exit_request.status|lower }}">
+        <div class="status-banner-content">
+            <span class="status-icon">
+                {% if exit_request.status == 'Pending' %}⏳
+                {% elif exit_request.status == 'Approved' %}✅
+                {% elif exit_request.status == 'Completed' %}📋
+                {% elif exit_request.status == 'Rejected' %}❌
+                {% else %}🔄{% endif %}
+            </span>
+            <span class="status-text">
+                <strong>Status:</strong> {{ exit_request.status }}
+                {% if exit_request.approved_by %}
+                · Processed by: {{ exit_request.approved_by.get_full_name|default:exit_request.approved_by.username }}
+                {% endif %}
+                {% if exit_request.approved_date %}
+                · Date: {{ exit_request.approved_date|date:"d M Y" }}
+                {% endif %}
+            </span>
+            {% if exit_request.is_eligible_for_rehire %}
+            <span class="status-badge eligible">🔄 Eligible for Rehire</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= DETAIL GRID ================= -->
+    <div class="detail-grid">
+
+        <!-- Left Column -->
+        <div class="detail-left">
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📋 Exit Information</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="detail-list">
+                    <div class="detail-item">
+                        <span class="detail-label">Employee</span>
+                        <span class="detail-value">
+                            <div class="employee-info">
+                                {% if exit_request.employee.profile_image %}
+                                <img src="{{ exit_request.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                {% else %}
+                                <div class="employee-avatar">
+                                    {{ exit_request.employee.user.first_name|first|default:exit_request.employee.user.username|first|upper }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ exit_request.employee.user.get_full_name|default:exit_request.employee.user.username }}</strong>
+                                    <small>{{ exit_request.employee.designation|default:"-" }}</small>
+                                </div>
+                            </div>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Department</span>
+                        <span class="detail-value">{{ exit_request.employee.department.name|default:"-" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Resignation Date</span>
+                        <span class="detail-value">{{ exit_request.resignation_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Last Working Day</span>
+                        <span class="detail-value">
+                            {{ exit_request.last_working_day|date:"d M Y" }}
+                            {% if exit_request.status == 'Pending' %}
+                            <span class="days-remaining">({{ exit_request.get_days_remaining }} days left)</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Notice Period</span>
+                        <span class="detail-value">{{ exit_request.get_notice_period_days }} days</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Exit Reason</span>
+                        <span class="detail-value">
+                            <span class="reason-badge">{{ exit_request.get_exit_reason_display }}</span>
+                        </span>
+                    </div>
+                    {% if exit_request.reason_description %}
+                    <div class="detail-item">
+                        <span class="detail-label">Reason Description</span>
+                        <span class="detail-value">{{ exit_request.reason_description }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="detail-item">
+                        <span class="detail-label">Created</span>
+                        <span class="detail-value">{{ exit_request.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Last Updated</span>
+                        <span class="detail-value">{{ exit_request.updated_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="detail-right">
+            <!-- Exit Interview -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>📝 Exit Interview</h3>
+                    <span class="card-badge">Details</span>
+                </div>
+                <div class="detail-list">
+                    <div class="detail-item">
+                        <span class="detail-label">Interview Date</span>
+                        <span class="detail-value">
+                            {% if exit_request.exit_interview_date %}
+                            {{ exit_request.exit_interview_date|date:"d M Y" }}
+                            {% else %}
+                            <span class="text-muted">Not scheduled</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if exit_request.exit_interview_notes %}
+                    <div class="detail-item">
+                        <span class="detail-label">Notes</span>
+                        <span class="detail-value">{{ exit_request.exit_interview_notes|linebreaks }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Employee Feedback -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>💬 Employee Feedback</h3>
+                    <span class="card-badge">Feedback</span>
+                </div>
+                <div class="feedback-box">
+                    {% if exit_request.feedback %}
+                    <p>{{ exit_request.feedback|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted">No feedback provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h3>⚡ Quick Actions</h3>
+                    <span class="card-badge">Actions</span>
+                </div>
+                <div class="action-grid">
+                    <a href="{% url 'employee_detail' exit_request.employee.id %}" class="action-btn profile">
+                        <span class="action-icon">👤</span>
+                        Employee Profile
+                    </a>
+                    {% if exit_request.status == 'Pending' %}
+                    <a href="{% url 'exit_update' exit_request.id %}" class="action-btn edit">
+                        <span class="action-icon">✏️</span>
+                        Edit Request
+                    </a>
+                    <a href="{% url 'exit_approve' exit_request.id %}" class="action-btn approve" onclick="return confirm('Approve this exit?')">
+                        <span class="action-icon">✅</span>
+                        Approve
+                    </a>
+                    <a href="{% url 'exit_reject' exit_request.id %}" class="action-btn reject" onclick="return confirm('Reject this exit?')">
+                        <span class="action-icon">❌</span>
+                        Reject
+                    </a>
+                    {% endif %}
+                    {% if exit_request.status == 'Approved' %}
+                    <a href="{% url 'exit_complete' exit_request.id %}" class="action-btn complete" onclick="return confirm('Mark as completed?')">
+                        <span class="action-icon">📋</span>
+                        Mark Complete
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'exit_management' %}" class="action-btn back">
+                        <span class="action-icon">📋</span>
+                        All Exits
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete confirmation
+        document.querySelectorAll('.btn-delete, .action-btn.delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const confirmed = confirm('Are you sure you want to delete this exit request?');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        console.log('🚪 Exit Details loaded');
+    });
+</script>
+
+{% endblock %}

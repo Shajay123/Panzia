@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/performance_confirm_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="performance-delete-page">
+
+    <div class="delete-card">
+        <span class="delete-icon">🗑️</span>
+        
+        <h1>Delete Performance Review</h1>
+        
+        <p class="delete-message">
+            Are you sure you want to delete the performance review for 
+            <strong>{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>?
+        </p>
+        
+        <div class="delete-details">
+            <div class="detail-row">
+                <span class="detail-label">Employee</span>
+                <span class="detail-value">
+                    <div class="employee-info">
+                        {% if review.employee.profile_image %}
+                        <img src="{{ review.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                        {% else %}
+                        <div class="employee-avatar">
+                            {{ review.employee.user.first_name|first|default:review.employee.user.username|first|upper }}
+                        </div>
+                        {% endif %}
+                        <span>{{ review.employee.user.get_full_name|default:review.employee.user.username }}</span>
+                    </div>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Reviewer</span>
+                <span class="detail-value">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Rating</span>
+                <span class="detail-value">
+                    <span class="rating-stars">{{ review.get_rating_stars }}</span>
+                    <span class="rating-number">{{ review.rating }}/5</span>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Review Period</span>
+                <span class="detail-value">{{ review.get_review_period_display }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date</span>
+                <span class="detail-value">{{ review.created_at|date:"d M Y" }}</span>
+            </div>
+        </div>
+
+        <div class="delete-actions">
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">🗑️ Confirm Delete</button>
+            </form>
+            <a href="{% url 'performance_detail' review.id %}" class="btn-secondary">Cancel</a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

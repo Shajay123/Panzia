@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Payslip{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/payslip_confirm_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="payslip-delete-page">
+
+    <div class="delete-card">
+        <span class="delete-icon">🗑️</span>
+        
+        <h1>Delete Payslip</h1>
+        
+        <p class="delete-message">
+            Are you sure you want to delete the payslip for 
+            <strong>{{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username }}</strong>?
+        </p>
+        
+        <div class="delete-details">
+            <div class="detail-row">
+                <span class="detail-label">Employee</span>
+                <span class="detail-value">
+                    <div class="employee-info">
+                        {% if payslip.payroll.employee.profile_image %}
+                        <img src="{{ payslip.payroll.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                        {% else %}
+                        <div class="employee-avatar">
+                            {{ payslip.payroll.employee.user.first_name|first|default:payslip.payroll.employee.user.username|first|upper }}
+                        </div>
+                        {% endif %}
+                        <span>{{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username }}</span>
+                    </div>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Month</span>
+                <span class="detail-value">{{ payslip.payroll.month }} {{ payslip.payroll.year }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Net Salary</span>
+                <span class="detail-value">₹{{ payslip.payroll.net_salary|floatformat:2 }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Generated On</span>
+                <span class="detail-value">{{ payslip.created_at|date:"d M Y" }}</span>
+            </div>
+        </div>
+
+        <div class="delete-actions">
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">🗑️ Confirm Delete</button>
+            </form>
+            <a href="{% url 'payslip_detail' payslip.id %}" class="btn-secondary">Cancel</a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
