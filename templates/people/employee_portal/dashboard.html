@@ -1,10 +1,144 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load people_filters %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+<style>
+    /* ===== ADDITIONAL STYLES ===== */
+    .portal-quick-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .quick-stat-item {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .quick-stat-item:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .quick-stat-item .qs-icon {
+        font-size: 1.8rem;
+        flex-shrink: 0;
+    }
+
+    .quick-stat-item > div {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .quick-stat-item .qs-label {
+        display: block;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+
+    .quick-stat-item .qs-value {
+        display: block;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #e8edf5;
+    }
+
+    .quick-stat-item .qs-bar {
+        width: 80px;
+        height: 6px;
+        background: rgba(167, 139, 250, 0.06);
+        border-radius: 3px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .quick-stat-item .qs-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.8s ease;
+    }
+
+    .notification-dot {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 10px;
+        height: 10px;
+        background: #ef4444;
+        border-radius: 50%;
+        border: 2px solid #1a1035;
+        display: none;
+    }
+
+    .notification-count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: #ef4444;
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 10px;
+        border: 2px solid #1a1035;
+        min-width: 18px;
+        text-align: center;
+    }
+
+    /* Quick Stats Badge Colors */
+    .stat-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .stat-badge.good {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .stat-badge.warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .stat-badge.danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .stat-badge.info {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    @media (max-width: 768px) {
+        .portal-quick-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .quick-stat-item .qs-bar {
+            width: 60px;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -164,30 +298,40 @@
         </a>
     </div>
 
-    <!-- ================= QUICK STATS CARDS ================= -->
-    <div class="portal-quick-stats">
+    <!-- ================= QUICK STATS CARDS - USING DATA ATTRIBUTES ================= -->
+    <div class="portal-quick-stats" 
+         id="quickStats"
+         data-attendance="{{ attendance_percentage|default:0 }}"
+         data-leaves="{{ approved_leaves|default:0 }}"
+         data-payroll="{% if latest_payroll.paid %}true{% else %}false{% endif %}">
+        
+        <!-- Attendance Card -->
         <div class="quick-stat-item">
             <span class="qs-icon">📅</span>
             <div>
                 <span class="qs-label">Attendance Rate</span>
                 <span class="qs-value">{{ attendance_percentage|default:0 }}%</span>
+                <span class="stat-badge" id="attendanceBadge"></span>
             </div>
             <div class="qs-bar">
-                <div class="qs-fill" style="width: {{ attendance_percentage|default:0 }}%; background: linear-gradient(90deg, #7c3aed, #ec4899);"></div>
+                <div class="qs-fill" id="attendanceBar" style="width: 0%; background: linear-gradient(90deg, #7c3aed, #ec4899);"></div>
             </div>
         </div>
+
+        <!-- Leaves Card -->
         <div class="quick-stat-item">
             <span class="qs-icon">🌴</span>
             <div>
                 <span class="qs-label">Leaves Used</span>
                 <span class="qs-value">{{ approved_leaves|default:0 }} of 12</span>
+                <span class="stat-badge" id="leavesBadge"></span>
             </div>
             <div class="qs-bar">
-                {% with leaves_percentage=approved_leaves|default:0|add:0 %}
-                <div class="qs-fill" style="width: {% if leaves_percentage >= 12 %}100{% else %}{{ leaves_percentage|floatformat:0|default:0 }}{% endif %}%; background: linear-gradient(90deg, #f59e0b, #f472b6);"></div>
-                {% endwith %}
+                <div class="qs-fill" id="leavesBar" style="width: 0%; background: linear-gradient(90deg, #f59e0b, #f472b6);"></div>
             </div>
         </div>
+
+        <!-- Payroll Card -->
         <div class="quick-stat-item">
             <span class="qs-icon">💰</span>
             <div>
@@ -199,9 +343,10 @@
                         ⏳ Pending
                     {% endif %}
                 </span>
+                <span class="stat-badge" id="payrollBadge"></span>
             </div>
             <div class="qs-bar">
-                <div class="qs-fill" style="width: {% if latest_payroll.paid %}100{% else %}50{% endif %}%; background: linear-gradient(90deg, #22c55e, #a78bfa);"></div>
+                <div class="qs-fill" id="payrollBar" style="width: 0%; background: linear-gradient(90deg, #22c55e, #a78bfa);"></div>
             </div>
         </div>
     </div>
@@ -377,12 +522,117 @@
         if (count) {
             count.textContent = '0';
         }
-        // Close dropdown after marking read
         const dropdown = document.getElementById('notificationDropdown');
         if (dropdown) {
             dropdown.classList.remove('show');
         }
     }
+
+    // ============================================
+    // QUICK STATS - CALCULATE AND UPDATE - USING DATA ATTRIBUTES
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            // Get data from data attributes (NO Django template tags inside JavaScript)
+            const statsContainer = document.getElementById('quickStats');
+            if (!statsContainer) {
+                console.error('Quick stats container not found');
+                return;
+            }
+            
+            const attendancePercent = parseInt(statsContainer.dataset.attendance) || 0;
+            const leavesUsed = parseInt(statsContainer.dataset.leaves) || 0;
+            const isPayrollPaid = statsContainer.dataset.payroll === 'true';
+            const totalLeaves = 12;
+
+            // Calculate leaves percentage
+            let leavesPercent = Math.round((leavesUsed / totalLeaves) * 100);
+            leavesPercent = Math.min(leavesPercent, 100);
+
+            // Update Attendance Bar
+            const attendanceBar = document.getElementById('attendanceBar');
+            const attendanceBadge = document.getElementById('attendanceBadge');
+            if (attendanceBar) {
+                attendanceBar.style.width = Math.min(attendancePercent, 100) + '%';
+            }
+            if (attendanceBadge) {
+                if (attendancePercent >= 90) {
+                    attendanceBadge.textContent = '✅ Excellent';
+                    attendanceBadge.className = 'stat-badge good';
+                } else if (attendancePercent >= 75) {
+                    attendanceBadge.textContent = '👍 Good';
+                    attendanceBadge.className = 'stat-badge info';
+                } else if (attendancePercent >= 50) {
+                    attendanceBadge.textContent = '⚠️ Average';
+                    attendanceBadge.className = 'stat-badge warning';
+                } else {
+                    attendanceBadge.textContent = '❌ Poor';
+                    attendanceBadge.className = 'stat-badge danger';
+                }
+            }
+
+            // Update Leaves Bar
+            const leavesBar = document.getElementById('leavesBar');
+            const leavesBadge = document.getElementById('leavesBadge');
+            if (leavesBar) {
+                leavesBar.style.width = leavesPercent + '%';
+            }
+            if (leavesBadge) {
+                if (leavesUsed <= 3) {
+                    leavesBadge.textContent = '✅ Low usage';
+                    leavesBadge.className = 'stat-badge good';
+                } else if (leavesUsed <= 6) {
+                    leavesBadge.textContent = '⚠️ Moderate';
+                    leavesBadge.className = 'stat-badge warning';
+                } else {
+                    leavesBadge.textContent = '⚠️ High usage';
+                    leavesBadge.className = 'stat-badge danger';
+                }
+            }
+
+            // Update Payroll Bar
+            const payrollBar = document.getElementById('payrollBar');
+            const payrollBadge = document.getElementById('payrollBadge');
+            if (payrollBar) {
+                payrollBar.style.width = isPayrollPaid ? '100%' : '50%';
+            }
+            if (payrollBadge) {
+                if (isPayrollPaid) {
+                    payrollBadge.textContent = '✅ Paid';
+                    payrollBadge.className = 'stat-badge good';
+                } else {
+                    payrollBadge.textContent = '⏳ Pending';
+                    payrollBadge.className = 'stat-badge warning';
+                }
+            }
+
+            console.log('📊 Quick Stats Updated:');
+            console.log('Attendance:', attendancePercent + '%');
+            console.log('Leaves:', leavesUsed + '/' + totalLeaves);
+            console.log('Payroll:', isPayrollPaid ? 'Paid' : 'Pending');
+            
+        } catch (error) {
+            console.error('Error updating quick stats:', error);
+            // Set default values if error occurs
+            document.querySelectorAll('.qs-fill').forEach(function(bar) {
+                bar.style.width = '0%';
+            });
+        }
+    });
+
+    // ============================================
+    // ANIMATE PROGRESS BARS ON LOAD
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const fillBars = document.querySelectorAll('.qs-fill');
+        fillBars.forEach(function(bar) {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(function() {
+                bar.style.width = width;
+            }, 300);
+        });
+    });
 
     console.log('👤 Employee Dashboard loaded');
     console.log('📊 Attendance: {{ attendance_percentage }}%');

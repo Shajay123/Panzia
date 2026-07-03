@@ -131,45 +131,72 @@ class DepartmentForm(forms.ModelForm):
 # ATTENDANCE
 # =====================================================
 
-# forms.py - AttendanceForm (Final Version)
+# people/forms.py - Updated AttendanceForm
 
 class AttendanceForm(forms.ModelForm):
+    """Form for creating/updating attendance records."""
+    
     class Meta:
         model = Attendance
-        fields = "__all__"
+        fields = [
+            'employee',
+            'date',
+            'status',
+            'check_in',
+            'check_out',
+            'notes',
+        ]
         widgets = {
-            "date": forms.DateInput(attrs={"type": "date"}),
-            "check_in": forms.TimeInput(attrs={"type": "time"}),
-            "check_out": forms.TimeInput(attrs={"type": "time"}),
-            "notes": forms.Textarea(attrs={"rows": 3}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'check_in': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'check_out': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'employee': forms.Select(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Add any notes...'}),
         }
-
+    
     def __init__(self, *args, **kwargs):
-        # Extract startup from kwargs
         self.startup = kwargs.pop('startup', None)
-        
         super().__init__(*args, **kwargs)
-
-        for field in self.fields.values():
-            if 'class' not in field.widget.attrs:
-                field.widget.attrs.update({
-                    "class": "form-control"
-                })
-
-        # Filter employees by startup
+        
+        # If it's an update (instance exists)
+        if self.instance and self.instance.pk:
+            # If employee is missing, add it back
+            if not self.instance.employee:
+                # Try to find an employee for this startup
+                if self.startup:
+                    default_employee = Employee.objects.filter(startup=self.startup, is_active=True).first()
+                    if default_employee:
+                        self.instance.employee = default_employee
+            
+            self.fields['employee'].required = False
+            self.fields['employee'].widget.attrs['disabled'] = True
+            self.fields['employee'].help_text = "Employee cannot be changed"
+        
+        # Filter employee queryset by startup
         if self.startup:
-            self.fields["employee"].queryset = Employee.objects.filter(
-                startup=self.startup,
+            self.fields['employee'].queryset = Employee.objects.filter(
+                startup=self.startup, 
                 is_active=True
             ).select_related("user")
-        else:
-            self.fields["employee"].queryset = Employee.objects.none()
+    
+    def clean(self):
+        cleaned_data = super().clean()
         
-        # Make employee field required
-        self.fields["employee"].required = True
+        # Ensure employee is set
+        if not cleaned_data.get('employee'):
+            if self.instance and self.instance.pk and self.instance.employee:
+                cleaned_data['employee'] = self.instance.employee
+            else:
+                raise forms.ValidationError("Employee is required.")
         
-        # IMPORTANT: REMOVE the disabled line below
-        # self.fields["employee"].disabled = True  # <-- DELETE THIS LINE!
+        check_in = cleaned_data.get('check_in')
+        check_out = cleaned_data.get('check_out')
+        
+        if check_in and check_out and check_in >= check_out:
+            raise forms.ValidationError("Check Out time must be after Check In time.")
+        
+        return cleaned_data
 # forms.py - Complete Leave Forms with Startup Filtering
 
 from django import forms

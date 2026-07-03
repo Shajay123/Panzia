@@ -4,336 +4,34 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+<link rel="stylesheet" href="{% static 'css/people/employee_portal_attendance_mark.css' %}">
 <style>
-    .attendance-container {
-        max-width: 800px;
-        margin: 0 auto;
-    }
+    /* ... existing styles ... */
     
-    /* Camera Section */
-    .camera-section {
+    /* Default timings banner */
+    .default-timings-banner {
         background: rgba(167, 139, 250, 0.04);
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .camera-container {
-        position: relative;
-        width: 100%;
-        max-width: 400px;
-        margin: 0 auto;
-        border-radius: 12px;
-        overflow: hidden;
-        background: #1a1035;
-        border: 2px solid rgba(167, 139, 250, 0.1);
-    }
-    
-    .camera-container video {
-        width: 100%;
-        height: auto;
-        display: block;
-        background: #000;
-    }
-    
-    .camera-container canvas {
-        display: none;
-        width: 100%;
-        height: auto;
-    }
-    
-    .camera-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        font-size: 1.2rem;
-        cursor: pointer;
-        transition: opacity 0.3s;
-    }
-    
-    .camera-overlay:hover {
-        opacity: 0.8;
-    }
-    
-    .camera-controls {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        margin-top: 15px;
-        flex-wrap: wrap;
-    }
-    
-    .btn-camera {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .btn-camera-primary {
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-    }
-    
-    .btn-camera-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
-    }
-    
-    .btn-camera-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    .btn-camera-danger {
-        background: #ef4444;
-        color: white;
-    }
-    
-    .btn-camera-success {
-        background: #22c55e;
-        color: white;
-    }
-    
-    .btn-camera-secondary {
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
         border: 1px solid rgba(167, 139, 250, 0.08);
-    }
-    
-    .btn-camera-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-    }
-    
-    .photo-preview {
-        max-width: 200px;
-        margin: 10px auto;
         border-radius: 8px;
-        display: none;
-    }
-    
-    .photo-preview img {
-        width: 100%;
-        border-radius: 8px;
-    }
-    
-    .photo-preview.has-photo {
-        display: block;
-    }
-    
-    /* Timeline */
-    .timeline-container {
-        background: rgba(167, 139, 250, 0.04);
-        border-radius: 12px;
-        padding: 20px;
-        margin: 20px 0;
-    }
-    
-    .timeline {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;
-        padding: 20px 0;
-    }
-    
-    .timeline::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 10%;
-        right: 10%;
-        height: 2px;
-        background: rgba(167, 139, 250, 0.15);
-        transform: translateY(-50%);
-    }
-    
-    .timeline-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .timeline-dot {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        background: rgba(167, 139, 250, 0.06);
-        border: 2px solid rgba(167, 139, 250, 0.1);
-        transition: all 0.3s;
-    }
-    
-    .timeline-dot.active {
-        border-color: #7c3aed;
-        background: rgba(124, 58, 237, 0.15);
-        box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
-    }
-    
-    .timeline-dot.completed {
-        border-color: #22c55e;
-        background: rgba(34, 197, 94, 0.15);
-    }
-    
-    .timeline-dot.warning {
-        border-color: #f59e0b;
-        background: rgba(245, 158, 11, 0.15);
-    }
-    
-    .timeline-label {
-        font-size: 0.75rem;
-        color: #94a3b8;
-        text-align: center;
-    }
-    
-    .timeline-time {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #e8edf5;
-    }
-    
-    /* Status Badges */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    
-    .status-badge.early {
-        background: rgba(34, 197, 94, 0.15);
-        color: #22c55e;
-    }
-    
-    .status-badge.on_time {
-        background: rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-    }
-    
-    .status-badge.slightly_late {
-        background: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
-    }
-    
-    .status-badge.late {
-        background: rgba(239, 68, 68, 0.15);
-        color: #f87171;
-    }
-    
-    .status-badge.very_late {
-        background: rgba(239, 68, 68, 0.25);
-        color: #ef4444;
-    }
-    
-    /* Location */
-    .location-info {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    
-    .location-info .loc-icon {
-        font-size: 1rem;
-    }
-    
-    /* Check-in Status Banner */
-    .checkin-banner {
-        padding: 12px 16px;
-        border-radius: 8px;
+        padding: 10px 16px;
         margin-bottom: 16px;
         display: flex;
         align-items: center;
         gap: 12px;
+        color: #94a3b8;
+        font-size: 0.85rem;
     }
     
-    .checkin-banner.success {
-        background: rgba(34, 197, 94, 0.1);
-        border: 1px solid rgba(34, 197, 94, 0.15);
-        color: #4ade80;
+    .default-timings-banner .timing-icon {
+        font-size: 1.1rem;
     }
     
-    .checkin-banner.warning {
-        background: rgba(245, 158, 11, 0.1);
-        border: 1px solid rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
+    .default-timings-banner .timing-value {
+        color: #e8edf5;
+        font-weight: 500;
     }
     
-    .checkin-banner.info {
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-    }
-    
-    /* Disabled input style */
-    .form-control:disabled,
-    .form-control[readonly] {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-    
-    .form-control.checked-in {
-        background: rgba(34, 197, 94, 0.05) !important;
-        border-color: rgba(34, 197, 94, 0.2) !important;
-    }
-    
-    .form-control.checked-out {
-        background: rgba(59, 130, 246, 0.05) !important;
-        border-color: rgba(59, 130, 246, 0.2) !important;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .camera-container {
-            max-width: 100%;
-        }
-        
-        .timeline {
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
-        
-        .timeline::before {
-            display: none;
-        }
-        
-        .camera-controls {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .camera-controls .btn-camera {
-            width: 100%;
-            justify-content: center;
-        }
-    }
+    /* ... rest of existing styles ... */
 </style>
 {% endblock %}
 
@@ -361,6 +59,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- ================= DEFAULT TIMINGS BANNER ================= -->
+        {% if default_check_in or default_check_out %}
+        <div class="default-timings-banner">
+            <span class="timing-icon">⏰</span>
+            <span>
+                Default timings:
+                {% if default_check_in %}
+                <span class="timing-value">In: {{ default_check_in|time:"H:i" }}</span>
+                {% endif %}
+                {% if default_check_in and default_check_out %} | {% endif %}
+                {% if default_check_out %}
+                <span class="timing-value">Out: {{ default_check_out|time:"H:i" }}</span>
+                {% endif %}
+                <span style="color: #64748b; font-size: 0.75rem;">
+                    (Configured by HR)
+                </span>
+            </span>
+        </div>
+        {% endif %}
 
         <!-- ================= CHECK-IN STATUS BANNER ================= -->
         {% if existing_attendance and existing_attendance.check_in %}
@@ -390,7 +108,7 @@
                 <strong>Checked Out!</strong> 
                 You checked out at <strong>{{ existing_attendance.check_out|time:"H:i" }}</strong>
                 {% if existing_attendance.check_in and existing_attendance.check_out %}
-                (Total: {{ existing_attendance.get_working_hours|floatformat:1 }} hrs)
+                (Total: {{ existing_attendance.working_hours_decimal|floatformat:1 }} hrs)
                 {% endif %}
             </div>
         </div>
@@ -416,7 +134,7 @@
                     <p>
                         {% if existing_attendance.check_in and existing_attendance.check_out %}
                             ⏰ {{ existing_attendance.check_in|time:"H:i" }} - {{ existing_attendance.check_out|time:"H:i" }}
-                            ({{ existing_attendance.get_working_hours|floatformat:1 }} hrs)
+                            ({{ existing_attendance.working_hours_decimal|floatformat:1 }} hrs)
                         {% elif existing_attendance.check_in %}
                             ⏰ In: {{ existing_attendance.check_in|time:"H:i" }}
                             <span style="color: #22c55e;">✅ Checked In</span>
@@ -444,7 +162,7 @@
                     {% endif %}
                     {% if existing_attendance.photo %}
                     <div style="margin-top: 10px;">
-                        <img src="{{ existing_attendance.photo.url }}" alt="Attendance Photo" style="max-width: 100px; border-radius: 8px;">
+                        <img src="{{ existing_attendance.photo.url }}" alt="Attendance Photo" style="max-width: 100px; border-radius: 8px; border: 2px solid rgba(167, 139, 250, 0.1);">
                     </div>
                     {% endif %}
                 </div>
@@ -602,14 +320,16 @@
                 <div class="form-group">
                     <label for="check_in">Check In Time</label>
                     <input type="time" name="check_in" id="check_in" 
-                           value="{% if existing_attendance and existing_attendance.check_in %}{{ existing_attendance.check_in|time:'H:i' }}{% endif %}"
+                           value="{% if existing_attendance and existing_attendance.check_in %}{{ existing_attendance.check_in|time:'H:i' }}{% elif default_check_in %}{{ default_check_in|time:'H:i' }}{% endif %}"
                            class="form-control {% if existing_attendance and existing_attendance.check_in %}checked-in{% endif %}"
                            {% if existing_attendance and existing_attendance.check_in %}readonly{% endif %}>
                     <small class="form-text text-muted">
                         {% if existing_attendance and existing_attendance.check_in %}
                             ✅ Checked in at {{ existing_attendance.check_in|time:"H:i" }}
+                        {% elif default_check_in %}
+                            Default: {{ default_check_in|time:"H:i" }}
                         {% else %}
-                            Enter your check-in time (Auto-filled if you use the button below)
+                            Enter your check-in time
                         {% endif %}
                     </small>
                 </div>
@@ -642,12 +362,14 @@
                 <div class="form-group">
                     <label for="check_out">Check Out Time</label>
                     <input type="time" name="check_out" id="check_out" 
-                           value="{% if existing_attendance and existing_attendance.check_out %}{{ existing_attendance.check_out|time:'H:i' }}{% endif %}"
+                           value="{% if existing_attendance and existing_attendance.check_out %}{{ existing_attendance.check_out|time:'H:i' }}{% elif default_check_out %}{{ default_check_out|time:'H:i' }}{% endif %}"
                            class="form-control {% if existing_attendance and existing_attendance.check_out %}checked-out{% endif %}"
                            {% if existing_attendance and existing_attendance.check_out %}readonly{% endif %}>
                     <small class="form-text text-muted">
                         {% if existing_attendance and existing_attendance.check_out %}
                             ✅ Checked out at {{ existing_attendance.check_out|time:"H:i" }}
+                        {% elif default_check_out %}
+                            Default: {{ default_check_out|time:"H:i" }}
                         {% else %}
                             Enter your check-out time
                         {% endif %}
@@ -770,19 +492,15 @@
         canvas.height = video.videoHeight || 480;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Convert to base64
         capturedImageData = canvas.toDataURL('image/jpeg', 0.8);
         
-        // Show preview
         capturedPhoto.src = capturedImageData;
         photoPreview.classList.add('has-photo');
         photoDataInput.value = capturedImageData;
         
-        // Show retake button
         document.getElementById('retakeBtn').style.display = 'inline-flex';
         document.getElementById('captureBtn').style.display = 'none';
         
-        // Stop camera after capture
         stopCamera();
         showNotification('📸 Photo captured successfully!');
     }
@@ -817,13 +535,11 @@
         checkInInput.readOnly = true;
         checkInInput.className = 'form-control checked-in';
         
-        // Auto-set status to Present if not set
         const status = document.getElementById('status');
         if (!status.value || status.value === '') {
             status.value = 'Present';
         }
         
-        // Update button
         const checkInBtn = document.querySelector('[onclick="autoCheckIn()"]');
         if (checkInBtn) {
             checkInBtn.innerHTML = '✅ Checked In (' + hours + ':' + minutes + ')';
@@ -831,7 +547,6 @@
             checkInBtn.className = 'btn-camera btn-camera-success';
         }
         
-        // Enable check-out button
         const checkOutBtn = document.querySelector('[onclick="autoCheckOut()"]');
         if (checkOutBtn) {
             checkOutBtn.disabled = false;
@@ -839,8 +554,6 @@
         }
         
         showNotification('✅ Check-in time set to ' + hours + ':' + minutes);
-        
-        // Update timeline
         updateTimeline('check_in', hours + ':' + minutes);
     }
 
@@ -853,7 +566,6 @@
         checkOutInput.readOnly = true;
         checkOutInput.className = 'form-control checked-out';
         
-        // Update button
         const checkOutBtn = document.querySelector('[onclick="autoCheckOut()"]');
         if (checkOutBtn) {
             checkOutBtn.innerHTML = '✅ Checked Out (' + hours + ':' + minutes + ')';
@@ -862,8 +574,6 @@
         }
         
         showNotification('✅ Check-out time set to ' + hours + ':' + minutes);
-        
-        // Update timeline
         updateTimeline('check_out', hours + ':' + minutes);
     }
 
@@ -902,7 +612,6 @@
                     document.getElementById('locationDisplay').innerHTML = 
                         `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                     
-                    // Reverse geocode
                     reverseGeocode(lat, lng);
                     showNotification('📍 Location detected!');
                 },
@@ -935,7 +644,6 @@
     // NOTIFICATIONS
     // ============================================
     function showNotification(message) {
-        // Remove existing notifications
         const existing = document.querySelectorAll('.message.success');
         existing.forEach(el => el.remove());
         
@@ -969,7 +677,6 @@
             return false;
         }
         
-        // If Present or WFH, check-in is recommended
         if ((status === 'Present' || status === 'WFH') && !checkIn) {
             if (!confirm('You have not set a check-in time. Continue anyway?')) {
                 e.preventDefault();
@@ -977,14 +684,12 @@
             }
         }
         
-        // Validate check-out is after check-in
         if (checkIn && checkOut && checkOut <= checkIn) {
             e.preventDefault();
             alert('Check-out time must be after check-in time.');
             return false;
         }
         
-        // Show loading state
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '⏳ Saving...';
@@ -993,20 +698,21 @@
     });
 
     // ============================================
-    // AUTO-FILL CHECK-IN ON STATUS CHANGE
+    // AUTO-FILL CHECK-IN ON STATUS CHANGE - FIXED
     // ============================================
     document.addEventListener('DOMContentLoaded', function() {
         const statusSelect = document.getElementById('status');
         const checkInInput = document.getElementById('check_in');
         const checkOutInput = document.getElementById('check_out');
         
-        // Check if already checked in
         const alreadyCheckedIn = checkInInput.readOnly && checkInInput.value;
         const alreadyCheckedOut = checkOutInput.readOnly && checkOutInput.value;
         
+        // Check if attendance exists using JavaScript
+        const hasAttendance = alreadyCheckedIn || (checkInInput.value && checkInInput.readOnly);
+        
         // If not checked in, auto-fill on status change
-        {% if not existing_attendance or not existing_attendance.check_in %}
-        if (statusSelect && !alreadyCheckedIn) {
+        if (!hasAttendance && statusSelect && !alreadyCheckedIn) {
             statusSelect.addEventListener('change', function() {
                 if ((this.value === 'Present' || this.value === 'WFH') && !checkInInput.value) {
                     const now = new Date();
@@ -1017,7 +723,6 @@
                 }
             });
         }
-        {% endif %}
         
         // Validate check-out is after check-in
         if (checkInInput && checkOutInput && !alreadyCheckedOut) {
@@ -1028,16 +733,6 @@
                 }
             });
         }
-        
-        // Auto-open camera if no photo exists
-        {% if not existing_attendance or not existing_attendance.photo %}
-        setTimeout(function() {
-            const hasPhoto = document.querySelector('.photo-preview.has-photo');
-            if (!hasPhoto) {
-                console.log('📷 No photo found. User can click "Start Camera"');
-            }
-        }, 1000);
-        {% endif %}
     });
 
     // ============================================
@@ -1046,17 +741,8 @@
     console.log('📝 Attendance Mark Page Loaded');
     console.log('👤 Employee: {{ employee.user.get_full_name }}');
     console.log('📅 Date: {{ today }}');
-    console.log('⏰ Work Start: {{ work_start }}');
-    console.log('⏳ Grace Period: {{ grace_period }} minutes');
-    
-    {% if existing_attendance %}
-    console.log('✅ Existing attendance found');
-    console.log('🕐 Check In: {{ existing_attendance.check_in|time:"H:i"|default:"Not set" }}');
-    console.log('🕐 Check Out: {{ existing_attendance.check_out|time:"H:i"|default:"Not set" }}');
-    console.log('📸 Photo: {% if existing_attendance.photo %}Yes{% else %}No{% endif %}');
-    {% else %}
-    console.log('⏳ No attendance marked yet');
-    {% endif %}
+    console.log('⏰ Default Check In: {% if default_check_in %}{{ default_check_in|time:"H:i" }}{% else %}Not set{% endif %}');
+    console.log('⏰ Default Check Out: {% if default_check_out %}{{ default_check_out|time:"H:i" }}{% else %}Not set{% endif %}');
 </script>
 
 {% endblock %}

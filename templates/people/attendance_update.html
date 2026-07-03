@@ -7,13 +7,315 @@ Update Attendance
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/attendance_update.css' %}">
+<style>
+    /* ===== ADDITIONAL STYLES ===== */
+    .employee-display {
+        padding: 12px 16px;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .employee-display .employee-avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+    }
+
+    .employee-display .avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: white;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-display .employee-name {
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .employee-display .employee-meta {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .employee-display .employee-note {
+        color: #64748b;
+        font-size: 0.75rem;
+        margin-left: auto;
+    }
+
+    /* Form Styles */
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .record-id {
+        font-size: 0.8rem;
+        color: #64748b;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+    }
+
+    .form-control {
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-control:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    select.form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
+    .field-error {
+        font-size: 0.8rem;
+        color: #f87171;
+        margin-top: 2px;
+    }
+
+    .field-help {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    /* Alert Styles */
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .alert-success {
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .alert-warning {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .alert-info {
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .alert-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .alert ul {
+        margin: 4px 0 0 16px;
+        padding: 0;
+    }
+
+    .alert ul li {
+        margin-bottom: 2px;
+    }
+
+    /* Action Bar */
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .action-bar .btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-cancel {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.15);
+    }
+
+    .btn-delete:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-card {
+            padding: 16px;
+        }
+
+        .action-bar {
+            flex-direction: column;
+        }
+
+        .action-bar .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .employee-display {
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .employee-display .employee-note {
+            margin-left: 0;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
 <div class="attendance-update-page">
 
-    <!-- Header -->
+    <!-- ================= PAGE HEADER ================= -->
     <div class="page-header">
         <div>
             <div class="breadcrumb">
@@ -38,85 +340,87 @@ Update Attendance
     <form method="POST" novalidate>
         {% csrf_token %}
 
+        <!-- ================= ERROR MESSAGES ================= -->
+        {% if form.errors %}
+        <div class="alert alert-error">
+            <div class="alert-icon">⚠️</div>
+            <div>
+                <strong>Please correct the following errors:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <li>
+                        {% if field == '__all__' %}
+                        General Error
+                        {% else %}
+                        {{ field|title }}
+                        {% endif %}
+                        : {{ error }}
+                    </li>
+                    {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ================= SUCCESS MESSAGES ================= -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <div class="alert-icon">
+                    {% if message.tags == 'success' %}✅{% endif %}
+                    {% if message.tags == 'error' %}❌{% endif %}
+                    {% if message.tags == 'warning' %}⚠️{% endif %}
+                    {% if message.tags == 'info' %}ℹ️{% endif %}
+                </div>
+                <div>{{ message }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ================= EMPLOYEE DISPLAY ================= -->
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label>👤 Employee</label>
+            <div class="employee-display">
+                {% if attendance.employee %}
+                    {% if attendance.employee.profile_image %}
+                    <img src="{{ attendance.employee.profile_image.url }}" 
+                         alt="{{ attendance.employee.user.get_full_name }}"
+                         class="employee-avatar-small">
+                    {% else %}
+                    <div class="avatar-placeholder">
+                        {{ attendance.employee.user.first_name|first|default:attendance.employee.user.username|first|upper }}
+                    </div>
+                    {% endif %}
+                    <span class="employee-name">
+                        {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
+                    </span>
+                    <span class="employee-meta">
+                        ({{ attendance.employee.employee_id|default:"N/A" }})
+                    </span>
+                    <span class="employee-note">
+                        ⚠️ Employee cannot be changed
+                    </span>
+                {% else %}
+                    <div class="avatar-placeholder" style="background: #ef4444;">!</div>
+                    <span class="employee-name" style="color: #f87171;">No Employee Assigned</span>
+                    <span class="employee-meta">This record has no employee linked</span>
+                {% endif %}
+            </div>
+            <!-- Hidden employee field -->
+            <input type="hidden" name="employee" value="{{ attendance.employee.id|default:'' }}">
+        </div>
+
+        <!-- ================= ATTENDANCE DETAILS ================= -->
         <div class="form-card">
             <div class="card-header">
                 <h2>🕒 Attendance Details</h2>
                 <span class="record-id">Record #{{ attendance.id }}</span>
             </div>
 
-            <!-- Display Form Errors -->
-            {% if form.errors %}
-            <div class="alert alert-error">
-                <div class="alert-icon">⚠️</div>
-                <div>
-                    <strong>Please correct the following errors:</strong>
-                    <ul>
-                        {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                        <li>
-                            {% if field == '__all__' %}
-                            General Error
-                            {% else %}
-                            {{ field|title }}
-                            {% endif %}
-                            : {{ error }}
-                        </li>
-                        {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Success Messages -->
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    <div class="alert-icon">
-                        {% if message.tags == 'success' %}✅{% endif %}
-                        {% if message.tags == 'error' %}❌{% endif %}
-                        {% if message.tags == 'warning' %}⚠️{% endif %}
-                        {% if message.tags == 'info' %}ℹ️{% endif %}
-                    </div>
-                    <div>{{ message }}</div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- Employee Preview -->
-            <div class="employee-preview">
-                <div class="employee-avatar">
-                    {% if attendance.employee.profile_image %}
-                    <img src="{{ attendance.employee.profile_image.url }}"
-                        alt="{{ attendance.employee.user.get_full_name }}">
-                    {% else %}
-                    <div class="avatar">
-                        {{ attendance.employee.user.first_name|first|default:attendance.employee.user.username|first }}
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="employee-info">
-                    <h3>
-                        {{ attendance.employee.user.get_full_name|default:attendance.employee.user.username }}
-                    </h3>
-                    <span class="designation">
-                        {{ attendance.employee.designation }}
-                    </span>
-                    <span class="employee-id">
-                        ID: {{ attendance.employee.employee_id|default:"N/A" }}
-                    </span>
-                </div>
-                <div class="employee-status-badge">
-                    <span
-                        class="badge {% if attendance.status == 'Present' %}green{% elif attendance.status == 'Absent' %}red{% elif attendance.status == 'WFH' %}blue{% else %}orange{% endif %}">
-                        {{ attendance.status }}
-                    </span>
-                </div>
-            </div>
-
-            <!-- Form Fields -->
             <div class="form-grid">
                 <div class="form-group">
                     <label for="id_date">
@@ -126,6 +430,7 @@ Update Attendance
                     {% if form.date.errors %}
                     <div class="field-error">{{ form.date.errors.0 }}</div>
                     {% endif %}
+                    <small class="field-help">Select the attendance date</small>
                 </div>
 
                 <div class="form-group">
@@ -136,6 +441,7 @@ Update Attendance
                     {% if form.status.errors %}
                     <div class="field-error">{{ form.status.errors.0 }}</div>
                     {% endif %}
+                    <small class="field-help">Select attendance status</small>
                 </div>
 
                 <div class="form-group">
@@ -146,7 +452,7 @@ Update Attendance
                     {% if form.check_in.errors %}
                     <div class="field-error">{{ form.check_in.errors.0 }}</div>
                     {% endif %}
-                    <small class="field-help">Format: HH:MM:SS (e.g., 09:00:00)</small>
+                    <small class="field-help">Format: HH:MM (e.g., 09:30)</small>
                 </div>
 
                 <div class="form-group">
@@ -157,7 +463,7 @@ Update Attendance
                     {% if form.check_out.errors %}
                     <div class="field-error">{{ form.check_out.errors.0 }}</div>
                     {% endif %}
-                    <small class="field-help">Format: HH:MM:SS (e.g., 18:00:00)</small>
+                    <small class="field-help">Format: HH:MM (e.g., 18:30)</small>
                 </div>
 
                 <div class="form-group full-width">
@@ -173,107 +479,48 @@ Update Attendance
                     </small>
                 </div>
             </div>
+        </div>
 
-            <!-- Calculated Working Hours -->
-            <div class="working-hours-display">
-                <div class="hours-card">
-                    <div class="hours-icon">⏱️</div>
-                    <div>
-                        <strong>Working Hours</strong>
-                        {% if attendance.working_hours %}
-                        <p class="hours-value">{{ attendance.working_hours }}</p>
-                        {% else %}
-                        <p class="hours-value">--:--</p>
-                        <small>Will be calculated after saving</small>
-                        {% endif %}
-                    </div>
+        <!-- ================= WORKING HOURS SUMMARY ================= -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>⏱️ Working Hours Summary</h2>
+                <span class="record-id">Auto Calculated</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                <div style="background: rgba(167, 139, 250, 0.03); padding: 12px 16px; border-radius: 8px; text-align: center; border: 1px solid rgba(167, 139, 250, 0.06);">
+                    <span style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Check In</span>
+                    <p style="margin: 4px 0 0; font-size: 1.1rem; font-weight: 600; color: #e8edf5;">
+                        {% if attendance.check_in %}{{ attendance.check_in|time:"H:i" }}{% else %}--:--{% endif %}
+                    </p>
                 </div>
-                <div class="hours-card">
-                    <div class="hours-icon">📊</div>
-                    <div>
-                        <strong>Status Summary</strong>
-                        <p class="hours-value">
-                            {{ attendance.status }}
-                        </p>
-                        <small>
-                            {% if attendance.status == 'Present' %}
-                            Regular working day
-                            {% elif attendance.status == 'WFH' %}
-                            Work From Home
-                            {% elif attendance.status == 'Leave' %}
-                            On Leave
-                            {% elif attendance.status == 'Absent' %}
-                            Absent without notice
-                            {% endif %}
-                        </small>
-                    </div>
+                <div style="background: rgba(167, 139, 250, 0.03); padding: 12px 16px; border-radius: 8px; text-align: center; border: 1px solid rgba(167, 139, 250, 0.06);">
+                    <span style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Check Out</span>
+                    <p style="margin: 4px 0 0; font-size: 1.1rem; font-weight: 600; color: #e8edf5;">
+                        {% if attendance.check_out %}{{ attendance.check_out|time:"H:i" }}{% else %}--:--{% endif %}
+                    </p>
+                </div>
+                <div style="background: rgba(167, 139, 250, 0.03); padding: 12px 16px; border-radius: 8px; text-align: center; border: 1px solid rgba(167, 139, 250, 0.06);">
+                    <span style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Total Hours</span>
+                    <p style="margin: 4px 0 0; font-size: 1.1rem; font-weight: 600; color: #a78bfa;">
+                        {% if attendance.working_hours %}{{ attendance.working_hours }}{% else %}--:--{% endif %}
+                    </p>
                 </div>
             </div>
-
-            <!-- Information Panel -->
-            <div class="info-panel">
-                <div class="info-card">
-                    <div class="info-icon">📅</div>
-                    <div>
-                        <strong>Attendance Date</strong>
-                        <p>Update attendance for the selected working day.</p>
-                        <small>Last updated: {{ attendance.updated_at|date:"M d, Y H:i" }}</small>
-                    </div>
-                </div>
-
-                <div class="info-card">
-                    <div class="info-icon">⏰</div>
-                    <div>
-                        <strong>Working Hours</strong>
-                        <p>
-                            {% if attendance.working_hours %}
-                            Current: {{ attendance.working_hours }}
-                            {% else %}
-                            Automatically calculated after saving.
-                            {% endif %}
-                        </p>
-                        <small>Based on Check In and Check Out times</small>
-                    </div>
-                </div>
-
-                <div class="info-card">
-                    <div class="info-icon">📝</div>
-                    <div>
-                        <strong>Notes</strong>
-                        <p>
-                            Add remarks like Late Login, Early Logout, Half Day, Official Visit, etc.
-                        </p>
-                        <small>Optional field</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Audit Trail -->
-            <div class="audit-trail">
-                <div class="audit-item">
-                    <span class="audit-label">Created:</span>
-                    <span class="audit-value">{{ attendance.created_at|date:"M d, Y H:i" }}</span>
-                </div>
-                <div class="audit-item">
-                    <span class="audit-label">Last Modified:</span>
-                    <span class="audit-value">{{ attendance.updated_at|date:"M d, Y H:i" }}</span>
-                </div>
-                <div class="audit-item">
-                    <span class="audit-label">Created By:</span>
-                    <span class="audit-value">{{ attendance.created_by|default:"System" }}</span>
-                </div>
+            <div style="margin-top: 12px; text-align: center; font-size: 0.8rem; color: #64748b;">
+                <span>💡 Working hours will be updated automatically when you save changes</span>
             </div>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- ================= ACTION BUTTONS ================= -->
         <div class="action-bar">
-            <button type="submit" class="btn-save">
+            <button type="submit" class="btn btn-save">
                 💾 Save Changes
             </button>
-            <a href="{% url 'attendance_detail' attendance.id %}" class="btn-cancel">
+            <a href="{% url 'attendance_detail' attendance.id %}" class="btn btn-cancel">
                 Cancel
             </a>
-            <a href="{% url 'attendance_delete' attendance.id %}" class="btn-delete">
+            <a href="{% url 'attendance_delete' attendance.id %}" class="btn btn-delete" onclick="return confirmDelete(event)">
                 🗑️ Delete Record
             </a>
         </div>
@@ -286,8 +533,21 @@ Update Attendance
 
 {% block extra_js %}
 <script>
-    // Auto-calculate working hours when check-in/out changes
-    document.addEventListener('DOMContentLoaded', function () {
+    // ============================================
+    // CONFIRM DELETE
+    // ============================================
+    function confirmDelete(event) {
+        event.preventDefault();
+        if (confirm('Are you sure you want to delete this attendance record? This action cannot be undone.')) {
+            window.location.href = event.currentTarget.href;
+        }
+        return false;
+    }
+
+    // ============================================
+    // AUTO-CALCULATE WORKING HOURS
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
         const checkIn = document.getElementById('id_check_in');
         const checkOut = document.getElementById('id_check_out');
         const statusSelect = document.getElementById('id_status');
@@ -304,27 +564,31 @@ Update Attendance
             }
         }
 
-        checkIn.addEventListener('change', validateTimes);
-        checkOut.addEventListener('change', validateTimes);
+        if (checkIn) checkIn.addEventListener('change', validateTimes);
+        if (checkOut) checkOut.addEventListener('change', validateTimes);
 
         // Auto-set status based on times
-        statusSelect.addEventListener('change', function () {
-            if (this.value === 'Present' || this.value === 'WFH') {
-                if (!checkIn.value) {
-                    checkIn.focus();
-                }
-            }
-        });
-
-        // Confirm before delete
-        const deleteBtn = document.querySelector('.btn-delete');
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', function (e) {
-                if (!confirm('Are you sure you want to delete this attendance record? This action cannot be undone.')) {
-                    e.preventDefault();
+        if (statusSelect) {
+            statusSelect.addEventListener('change', function() {
+                if ((this.value === 'Present' || this.value === 'WFH') && !checkIn.value) {
+                    if (checkIn) checkIn.focus();
                 }
             });
         }
+
+        // Show loading state on submit
+        const form = document.querySelector('form');
+        const submitBtn = document.querySelector('.btn-save');
+        if (form && submitBtn) {
+            form.addEventListener('submit', function() {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '⏳ Saving...';
+            });
+        }
+
+        console.log('✏️ Attendance Update Form loaded');
+        console.log('📋 Record ID: {{ attendance.id }}');
+        console.log('👤 Employee: {{ attendance.employee.user.get_full_name }}');
     });
 </script>
 {% endblock %}

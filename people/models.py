@@ -443,12 +443,38 @@ class Attendance(models.Model):
             return f"{hours}h {minutes}m"
         return "-"
 
+    # people/models.py - Update working_hours_decimal property
+
     @property
     def working_hours_decimal(self):
         """Get working hours as decimal (e.g., 8.5 for 8h 30m)."""
+        from datetime import datetime
+        
         if self.check_in and self.check_out:
-            start = datetime.combine(self.date, self.check_in)
-            end = datetime.combine(self.date, self.check_out)
+            # Convert to time objects if they are strings
+            check_in_time = self.check_in
+            check_out_time = self.check_out
+            
+            if isinstance(check_in_time, str):
+                try:
+                    check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+                except ValueError:
+                    try:
+                        check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
+                    except ValueError:
+                        return 0
+            
+            if isinstance(check_out_time, str):
+                try:
+                    check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+                except ValueError:
+                    try:
+                        check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
+                    except ValueError:
+                        return 0
+            
+            start = datetime.combine(self.date, check_in_time)
+            end = datetime.combine(self.date, check_out_time)
             
             if end < start:
                 end += timedelta(days=1)
@@ -670,6 +696,71 @@ class Attendance(models.Model):
         """Get weekday name."""
         weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         return weekdays[self.date.weekday()]
+    
+
+# people/models.py - Fix the calculate_overtime method
+
+def calculate_overtime(self, work_end=None):
+    """Calculate overtime hours if any."""
+    if not self.check_in or not self.check_out:
+        return 0
+    
+    # Convert string to time if needed
+    from datetime import datetime, time
+    
+    check_in_time = self.check_in
+    check_out_time = self.check_out
+    
+    # If they are strings, convert to time objects
+    if isinstance(check_in_time, str):
+        try:
+            check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+        except ValueError:
+            try:
+                check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
+            except ValueError:
+                return 0
+    
+    if isinstance(check_out_time, str):
+        try:
+            check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+        except ValueError:
+            try:
+                check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
+            except ValueError:
+                return 0
+    
+    # Get work end time
+    if work_end:
+        if isinstance(work_end, str):
+            try:
+                work_end = datetime.strptime(work_end, '%H:%M').time()
+            except ValueError:
+                try:
+                    work_end = datetime.strptime(work_end, '%H:%M:%S').time()
+                except ValueError:
+                    work_end = datetime.strptime('18:30', '%H:%M').time()
+    else:
+        work_end = self.work_end_time or datetime.strptime('18:30', '%H:%M').time()
+        if isinstance(work_end, str):
+            try:
+                work_end = datetime.strptime(work_end, '%H:%M').time()
+            except ValueError:
+                try:
+                    work_end = datetime.strptime(work_end, '%H:%M:%S').time()
+                except ValueError:
+                    work_end = datetime.strptime('18:30', '%H:%M').time()
+    
+    # Calculate overtime
+    check_out_dt = datetime.combine(self.date, check_out_time)
+    work_end_dt = datetime.combine(self.date, work_end)
+    
+    if check_out_dt > work_end_dt:
+        diff = check_out_dt - work_end_dt
+        overtime = diff.total_seconds() / 3600
+        return round(overtime, 2)
+    
+    return 0
 # =====================================
 
 # LEAVE REQUEST

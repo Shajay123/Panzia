@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
+
 {% block title %}
 Attendance Dashboard
 {% endblock %}
@@ -145,6 +146,89 @@ Attendance Dashboard
         to { opacity: 1; transform: scale(1); }
     }
     
+    /* Quick Stats Improvements */
+    .summary-card .card-percentage {
+        font-size: 0.7rem;
+        opacity: 0.8;
+        margin-top: 2px;
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .time-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        background: rgba(167, 139, 250, 0.06);
+        color: #d6e0f0;
+    }
+    
+    .time-badge.empty {
+        color: #64748b;
+        background: transparent;
+    }
+    
+    .hours-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.06);
+        color: #a78bfa;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .action-btn.view-btn {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+    }
+    
+    .action-btn.view-btn:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+    
+    .action-btn.edit-btn {
+        background: rgba(245, 158, 11, 0.1);
+        color: #fbbf24;
+    }
+    
+    .action-btn.edit-btn:hover {
+        background: rgba(245, 158, 11, 0.2);
+    }
+    
+    .action-btn.delete-btn {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+    
+    .action-btn.delete-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+    
     /* Responsive */
     @media (max-width: 768px) {
         .photo-modal-content {
@@ -159,6 +243,30 @@ Attendance Dashboard
             flex-direction: column;
             gap: 8px;
             align-items: flex-start;
+        }
+        
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .action-buttons {
+            gap: 2px;
+        }
+        
+        .action-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 0.7rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
         }
     }
 </style>
@@ -206,7 +314,7 @@ Attendance Dashboard
     {% endif %}
 
     <!-- ================= SUMMARY CARDS ================= -->
-    <div class="summary-grid">
+    <div class="summary-grid" id="summaryGrid">
         <div class="summary-card present">
             <div class="card-icon">📊</div>
             <div class="card-content">
@@ -364,7 +472,7 @@ Attendance Dashboard
                                         {{ item.employee.user.get_full_name|default:item.employee.user.username }}
                                     </strong>
                                     <small>
-                                        {{ item.employee.designation }}
+                                        {{ item.employee.designation|default:"-" }}
                                     </small>
                                 </div>
                             </div>
@@ -410,7 +518,10 @@ Attendance Dashboard
                             <img src="{{ item.photo.url }}" 
                                  alt="Attendance Photo" 
                                  class="attendance-photo-thumb"
-                                 onclick="openPhotoModal('{{ item.photo.url }}', '{{ item.employee.user.get_full_name }}', '{{ item.date|date:"d M Y" }}')"
+                                 data-photo-url="{{ item.photo.url }}"
+                                 data-employee-name="{{ item.employee.user.get_full_name|default:'' }}"
+                                 data-photo-date="{{ item.date|date:'d M Y' }}"
+                                 onclick="openPhotoModal(this)"
                                  loading="lazy"
                                  title="Click to view full photo">
                             {% else %}
@@ -420,7 +531,9 @@ Attendance Dashboard
                         <td>
                             <span class="hours-badge">
                                 {% if item.check_in and item.check_out %}
-                                    {{ item.get_working_hours|floatformat:1 }}h
+                                    {% with hours=item.working_hours_decimal|default:0 %}
+                                        {{ hours|floatformat:1 }}h
+                                    {% endwith %}
                                 {% else %}
                                     --
                                 {% endif %}
@@ -514,17 +627,27 @@ Attendance Dashboard
     }
 
     // ============================================
-    // PHOTO MODAL
+    // PHOTO MODAL - USING DATA ATTRIBUTES
     // ============================================
-    function openPhotoModal(imageUrl, employeeName, date) {
+    function openPhotoModal(element) {
         const modal = document.getElementById('photoModal');
         const img = document.getElementById('photoModalImage');
         const employeeSpan = document.getElementById('photoEmployee');
         const dateSpan = document.getElementById('photoDate');
         
+        // Get data from data attributes
+        const imageUrl = element.dataset.photoUrl;
+        const employeeName = element.dataset.employeeName || 'Employee';
+        const photoDate = element.dataset.photoDate || '';
+        
+        if (!imageUrl) {
+            console.error('No photo URL found');
+            return;
+        }
+        
         img.src = imageUrl;
-        employeeSpan.textContent = '👤 ' + (employeeName || 'Employee');
-        dateSpan.textContent = '📅 ' + (date || '');
+        employeeSpan.textContent = '👤 ' + employeeName;
+        dateSpan.textContent = '📅 ' + photoDate;
         
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
@@ -583,20 +706,53 @@ Attendance Dashboard
     }
 
     // ============================================
-    // PASS DJANGO CONTEXT TO JAVASCRIPT
+    // PASS DJANGO CONTEXT TO JAVASCRIPT - FIXED
     // ============================================
     (function() {
         try {
+            const totalRecords = parseInt('{{ attendance|length|default:"0" }}') || 0;
+            const presentCount = parseInt('{{ present_count|default:"0" }}') || 0;
+            const wfhCount = parseInt('{{ wfh_count|default:"0" }}') || 0;
+            const leaveCount = parseInt('{{ leave_count|default:"0" }}') || 0;
+            const absentCount = parseInt('{{ absent_count|default:"0" }}') || 0;
+
             const attendanceData = {
-                totalRecords: parseInt('{{ attendance|length|default:"0" }}') || 0,
-                presentCount: parseInt('{{ present_count|default:"0" }}') || 0,
-                wfhCount: parseInt('{{ wfh_count|default:"0" }}') || 0,
-                leaveCount: parseInt('{{ leave_count|default:"0" }}') || 0,
-                absentCount: parseInt('{{ absent_count|default:"0" }}') || 0
+                totalRecords: totalRecords,
+                presentCount: presentCount,
+                wfhCount: wfhCount,
+                leaveCount: leaveCount,
+                absentCount: absentCount
             };
 
             window.attendanceData = attendanceData;
             console.log('📊 Attendance data loaded:', attendanceData);
+
+            // Update summary card percentages if needed
+            const summaryCards = document.querySelectorAll('.summary-card .card-percentage');
+            if (summaryCards.length > 0 && totalRecords > 0) {
+                const percentages = {
+                    'Present': Math.round((presentCount / totalRecords) * 100),
+                    'WFH': Math.round((wfhCount / totalRecords) * 100),
+                    'Leave': Math.round((leaveCount / totalRecords) * 100),
+                    'Absent': Math.round((absentCount / totalRecords) * 100)
+                };
+                
+                // Update the second card (Present), third (WFH), fourth (Leave), fifth (Absent)
+                const statusCards = document.querySelectorAll('.summary-card');
+                if (statusCards.length >= 5) {
+                    // Skip first card (Total Records)
+                    const cardLabels = ['Present', 'WFH', 'Leave', 'Absent'];
+                    cardLabels.forEach((label, index) => {
+                        const card = statusCards[index + 1];
+                        if (card) {
+                            const percentSpan = card.querySelector('.card-percentage');
+                            if (percentSpan) {
+                                percentSpan.textContent = (percentages[label] || 0) + '%';
+                            }
+                        }
+                    });
+                }
+            }
 
             function initAttendance() {
                 if (typeof initializeAttendance === 'function') {
@@ -625,12 +781,57 @@ Attendance Dashboard
             e.preventDefault();
             document.getElementById('employeeSearch').focus();
         }
-        // Ctrl + R for refresh
-        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-            if (e.shiftKey) {
+        // Ctrl + Shift + R for refresh
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r' && e.shiftKey) {
+            e.preventDefault();
+            window.location.reload();
+        }
+        // Escape to close modal
+        if (e.key === 'Escape') {
+            closePhotoModal();
+        }
+    });
+
+    // ============================================
+    // FILTER AUTO-SUBMIT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('filterForm');
+        const statusFilter = document.getElementById('statusFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        
+        // Auto-submit on filter change
+        if (statusFilter) {
+            statusFilter.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        }
+        
+        if (dateFilter) {
+            dateFilter.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        }
+        
+        // Search with debounce
+        const searchInput = document.getElementById('employeeSearch');
+        let searchTimeout;
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    filterForm.submit();
+                }, 500);
+            });
+        }
+        
+        // Clear button functionality
+        const clearBtn = document.querySelector('.btn-clear');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.reload();
-            }
+                window.location.href = this.href;
+            });
         }
     });
 
