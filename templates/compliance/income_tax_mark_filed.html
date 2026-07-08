@@ -1,0 +1,165 @@
+{% extends 'compliance/base_compliance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'compliance:income_tax_dashboard' %}" class="btn btn-secondary btn-sm">← Back to Income Tax</a>
+{% endblock %}
+
+{% block compliance_content %}
+<style>
+    .mark-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .mark-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 32px 24px;
+        text-align: center;
+    }
+
+    .mark-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    .mark-card h2 {
+        color: #34d399;
+        font-size: 1.4rem;
+        margin: 0 0 8px 0;
+    }
+
+    .mark-card .mark-message {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+
+    .mark-card .mark-details {
+        background: rgba(52, 211, 153, 0.05);
+        border: 1px solid rgba(52, 211, 153, 0.08);
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0 24px 0;
+        text-align: left;
+    }
+
+    .mark-card .mark-details .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.9rem;
+    }
+
+    .mark-card .mark-details .detail-row .label {
+        color: #94a3b8;
+    }
+
+    .mark-card .mark-details .detail-row .value {
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    .mark-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    .btn-success {
+        padding: 10px 28px;
+        background: linear-gradient(135deg, #059669, #047857);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-cancel {
+        padding: 10px 28px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .info-text {
+        color: #60a5fa;
+        font-size: 0.85rem;
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: rgba(96, 165, 250, 0.06);
+        border-radius: 6px;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+</style>
+
+<div class="mark-container">
+    <div class="mark-card">
+        <span class="mark-icon">✅</span>
+        <h2>Mark as Filed</h2>
+        <p class="mark-message">
+            Confirm that this Income Tax filing has been completed.
+            <br>
+            This will mark the entry as <strong>Filed</strong>.
+        </p>
+
+        <div class="mark-details">
+            <div class="detail-row">
+                <span class="label">Assessment Year</span>
+                <span class="value">{{ income_tax_filing.assessment_year }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Taxable Income</span>
+                <span class="value">₹{{ income_tax_filing.taxable_income|floatformat:0 }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Tax Amount</span>
+                <span class="value">₹{{ income_tax_filing.tax_amount|floatformat:0 }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Due Date</span>
+                <span class="value">{{ income_tax_filing.due_date|date:"d M Y" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Current Status</span>
+                <span class="value" style="color: #fbbf24;">{{ income_tax_filing.status }}</span>
+            </div>
+        </div>
+
+        <div class="info-text">
+            💡 After marking as filed, this entry will be moved to your filed records.
+        </div>
+
+        <div class="mark-actions">
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-success">✅ Confirm Filing</button>
+            </form>
+            <a href="{% url 'compliance:income_tax_dashboard' %}" class="btn-cancel">Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

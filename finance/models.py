@@ -147,7 +147,7 @@ class Vendor(models.Model):
     startup = models.ForeignKey(
     StartupProfile,
     on_delete=models.CASCADE,
-    related_name="sales_leads"
+    related_name="vendors"
 )
 
     vendor_name = models.CharField(

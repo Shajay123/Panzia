@@ -1,0 +1,141 @@
+{% extends 'compliance/base_compliance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'compliance:esic_dashboard' %}" class="btn btn-secondary btn-sm">← Back to ESIC</a>
+{% endblock %}
+
+{% block compliance_content %}
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+
+    .form-group label.required::after {
+        content: '*';
+        color: #ef4444;
+        margin-left: 4px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-group .help-text {
+        display: block;
+        color: #64748b;
+        font-size: 0.78rem;
+        margin-top: 4px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-submit {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-cancel {
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card">
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                <span class="help-text">{{ field.help_text }}</span>
+                {% endif %}
+                {% if field.errors %}
+                <span class="help-text" style="color: #f87171;">{{ field.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    {% if is_edit %}💾 Update{% else %}✅ Save{% endif %}
+                </button>
+                <a href="{% url 'compliance:esic_dashboard' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -7,6 +7,459 @@ Login - PANZIA
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<style>
+    /* ============================================
+       ENHANCED LOGIN PAGE STYLES
+       ============================================ */
+    
+    .auth-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at top, #1a1035, #0a0618);
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Background decorative elements */
+    .auth-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 50%, rgba(124, 58, 237, 0.03), transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(236, 72, 153, 0.03), transparent 50%);
+        animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(2%, -2%) rotate(2deg); }
+    }
+
+    .auth-container {
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.85), rgba(45, 27, 74, 0.85));
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 24px;
+        padding: 40px 48px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 8px 64px rgba(0, 0, 0, 0.4);
+        animation: slideUp 0.6s ease forwards;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .auth-container .brand-icon {
+        text-align: center;
+        font-size: 3rem;
+        margin-bottom: 8px;
+    }
+
+    .auth-container h2 {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a78bfa, #f472b6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 4px;
+    }
+
+    .auth-container .auth-subtitle {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0 0 28px;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+    }
+
+    /* ============================================
+       FORM STYLES
+       ============================================ */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+        margin-bottom: 4px;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+        margin-left: 2px;
+    }
+
+    .form-group .form-control-custom {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 10px;
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .form-group .form-control-custom:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .form-group .form-control-custom::placeholder {
+        color: #64748b;
+    }
+
+    .form-group .form-control-custom.error {
+        border-color: #f87171;
+    }
+
+    .form-group .form-control-custom.error:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+    }
+
+    /* Password toggle */
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-wrapper .form-control-custom {
+        padding-right: 48px;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 1.1rem;
+        padding: 4px;
+        transition: color 0.2s;
+    }
+
+    .password-toggle:hover {
+        color: #a78bfa;
+    }
+
+    /* ============================================
+       REMEMBER ME & FORGOT PASSWORD
+       ============================================ */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .remember-me input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #7c3aed;
+        cursor: pointer;
+        border-radius: 4px;
+        border: 1px solid rgba(167, 139, 250, 0.15);
+        background: rgba(167, 139, 250, 0.03);
+    }
+
+    .forgot-password {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .forgot-password:hover {
+        color: #a78bfa;
+        text-decoration: underline;
+    }
+
+    /* ============================================
+       ERROR MESSAGES
+       ============================================ */
+    .auth-error {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.12);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #f87171;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .auth-error::before {
+        content: '⚠️';
+        font-size: 1.1rem;
+    }
+
+    .auth-error ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .auth-error ul li {
+        margin-bottom: 2px;
+    }
+
+    .auth-success {
+        background: rgba(34, 197, 94, 0.06);
+        border: 1px solid rgba(34, 197, 94, 0.12);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #4ade80;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .auth-success::before {
+        content: '✅';
+        font-size: 1.1rem;
+    }
+
+    /* ============================================
+       SUBMIT BUTTON
+       ============================================ */
+    .auth-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .auth-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 24px rgba(124, 58, 237, 0.3);
+    }
+
+    .auth-btn:active {
+        transform: scale(0.98);
+    }
+
+    .auth-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .auth-btn .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ============================================
+       SOCIAL LOGIN
+       ============================================ */
+    .social-login {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .social-login .divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #64748b;
+        font-size: 0.8rem;
+        margin-bottom: 16px;
+    }
+
+    .social-login .divider::before,
+    .social-login .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .social-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .social-btn:hover {
+        background: rgba(167, 139, 250, 0.06);
+        border-color: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .social-btn .social-icon {
+        font-size: 1.2rem;
+    }
+
+    .social-btn.google:hover {
+        border-color: rgba(234, 67, 53, 0.3);
+        color: #ea4335;
+    }
+
+    .social-btn.github:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #e8edf5;
+    }
+
+    /* ============================================
+       AUTH FOOTER
+       ============================================ */
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .auth-footer p {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .auth-footer a {
+        color: #a78bfa;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .auth-footer a:hover {
+        color: #c4b5fd;
+        text-decoration: underline;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 480px) {
+        .auth-container {
+            padding: 28px 20px;
+            border-radius: 16px;
+            max-width: 100%;
+        }
+
+        .auth-container h2 {
+            font-size: 1.4rem;
+        }
+
+        .auth-container .auth-subtitle {
+            font-size: 0.8rem;
+        }
+
+        .form-group .form-control-custom {
+            font-size: 0.9rem;
+            padding: 10px 14px;
+        }
+
+        .social-buttons {
+            grid-template-columns: 1fr;
+        }
+
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .auth-btn {
+            font-size: 0.95rem;
+            padding: 10px;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .auth-container {
+            padding: 20px 16px;
+        }
+
+        .auth-container h2 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -15,18 +468,57 @@ Login - PANZIA
 
     <div class="auth-container">
 
+        <!-- Brand Icon -->
+        <div class="brand-icon">🚀</div>
+
         <h2>Welcome Back</h2>
 
         <p class="auth-subtitle">
             Build. Execute. Deploy.
         </p>
 
-        <form method="POST">
+        <!-- ============================================ -->
+        <!-- ERROR MESSAGES                              -->
+        <!-- ============================================ -->
+        {% if form.errors %}
+        <div class="auth-error">
+            <div>
+                <strong>Please correct the following errors:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ============================================ -->
+        <!-- SUCCESS MESSAGES                            -->
+        <!-- ============================================ -->
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                <div class="auth-success">
+                    {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <!-- ============================================ -->
+        <!-- LOGIN FORM                                   -->
+        <!-- ============================================ -->
+        <form method="POST" id="loginForm" novalidate>
             {% csrf_token %}
 
+            <!-- Username -->
             <div class="form-group">
                 <label for="username">
-                    Username
+                    👤 Username
+                    <span class="required">*</span>
                 </label>
 
                 <input
@@ -35,36 +527,78 @@ Login - PANZIA
                     name="username"
                     class="form-control-custom"
                     placeholder="Enter your username"
+                    value="{{ request.POST.username }}"
                     required
+                    autofocus
                 >
             </div>
 
+            <!-- Password -->
             <div class="form-group">
                 <label for="password">
-                    Password
+                    🔒 Password
+                    <span class="required">*</span>
                 </label>
 
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    class="form-control-custom"
-                    placeholder="Enter your password"
-                    required
-                >
+                <div class="password-wrapper">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-control-custom"
+                        placeholder="Enter your password"
+                        required
+                    >
+                    <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
+                        👁️
+                    </button>
+                </div>
             </div>
 
-            <button type="submit" class="primary-btn auth-btn">
-                Login
+            <!-- Remember Me & Forgot Password -->
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember_me" id="remember_me" checked>
+                    Remember me
+                </label>
+                <a href="#" class="forgot-password">
+                    Forgot password?
+                </a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="auth-btn" id="loginBtn">
+                🚀 Login
             </button>
 
         </form>
 
+        <!-- ============================================ -->
+        <!-- SOCIAL LOGIN                                 -->
+        <!-- ============================================ -->
+        <div class="social-login">
+            <div class="divider">Or continue with</div>
+
+            <div class="social-buttons">
+                <a href="#" class="social-btn google">
+                    <span class="social-icon">🔴</span>
+                    Google
+                </a>
+                <a href="#" class="social-btn github">
+                    <span class="social-icon">🐙</span>
+                    GitHub
+                </a>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- FOOTER                                       -->
+        <!-- ============================================ -->
         <div class="auth-footer">
             <p>
                 Don't have an account?
                 <a href="{% url 'register' %}">
-                    Register Now
+                    🚀 Register Now
                 </a>
             </p>
         </div>
@@ -72,5 +606,122 @@ Login - PANZIA
     </div>
 
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // PASSWORD TOGGLE VISIBILITY
+        // ============================================
+        const passwordToggle = document.getElementById('passwordToggle');
+        const passwordInput = document.getElementById('password');
+
+        if (passwordToggle && passwordInput) {
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.textContent = type === 'password' ? '👁️' : '🙈';
+                this.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
+            });
+        }
+
+        // ============================================
+        // REMEMBER ME - Save to localStorage
+        // ============================================
+        const rememberMe = document.getElementById('remember_me');
+        const usernameInput = document.getElementById('username');
+
+        // Load saved username
+        const savedUsername = localStorage.getItem('savedUsername');
+        if (savedUsername && usernameInput) {
+            usernameInput.value = savedUsername;
+            if (rememberMe) rememberMe.checked = true;
+        }
+
+        if (rememberMe) {
+            rememberMe.addEventListener('change', function() {
+                if (this.checked && usernameInput.value) {
+                    localStorage.setItem('savedUsername', usernameInput.value);
+                } else {
+                    localStorage.removeItem('savedUsername');
+                }
+            });
+        }
+
+        // Save username on input
+        if (usernameInput) {
+            usernameInput.addEventListener('input', function() {
+                if (rememberMe && rememberMe.checked) {
+                    localStorage.setItem('savedUsername', this.value);
+                }
+            });
+        }
+
+        // ============================================
+        // FORM VALIDATION
+        // ============================================
+        const form = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+
+        form.addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Validate username
+            if (!username) {
+                e.preventDefault();
+                document.getElementById('username').classList.add('error');
+                alert('Please enter your username.');
+                document.getElementById('username').focus();
+                return false;
+            }
+
+            // Validate password
+            if (!password) {
+                e.preventDefault();
+                document.getElementById('password').classList.add('error');
+                alert('Please enter your password.');
+                document.getElementById('password').focus();
+                return false;
+            }
+
+            // Show loading state
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner"></span> Logging in...';
+        });
+
+        // ============================================
+        // REMOVE ERROR STATE ON INPUT
+        // ============================================
+        document.querySelectorAll('.form-control-custom').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Enter to submit
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement && activeElement.tagName !== 'BUTTON') {
+                    e.preventDefault();
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        // ============================================
+        // AUTO-FOCUS ON USERNAME
+        // ============================================
+        const username = document.getElementById('username');
+        if (username && !username.value) {
+            setTimeout(() => username.focus(), 100);
+        }
+
+        console.log('🔐 Login page loaded');
+    });
+</script>
 
 {% endblock %}

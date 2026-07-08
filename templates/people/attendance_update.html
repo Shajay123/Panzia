@@ -279,6 +279,67 @@ Update Attendance
         color: #fca5a5;
     }
 
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .page-header .breadcrumb {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .page-header .breadcrumb a {
+        color: #a78bfa;
+        text-decoration: none;
+    }
+
+    .page-header .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+
+    .page-header .breadcrumb span {
+        margin: 0 4px;
+    }
+
+    .page-header h1 {
+        margin: 4px 0 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .page-header p {
+        margin: 2px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateX(-2px);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .form-grid {
@@ -306,6 +367,11 @@ Update Attendance
 
         .employee-display .employee-note {
             margin-left: 0;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
     }
 </style>
@@ -410,8 +476,12 @@ Update Attendance
                     <span class="employee-meta">This record has no employee linked</span>
                 {% endif %}
             </div>
-            <!-- Hidden employee field -->
+            <!-- Hidden employee field with proper value -->
             <input type="hidden" name="employee" value="{{ attendance.employee.id|default:'' }}">
+            <!-- Hidden form employee field (disabled but present for validation) -->
+            <div style="display: none;">
+                {{ form.employee }}
+            </div>
         </div>
 
         <!-- ================= ATTENDANCE DETAILS ================= -->
@@ -583,6 +653,34 @@ Update Attendance
             form.addEventListener('submit', function() {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '⏳ Saving...';
+                // Re-enable after 5 seconds if something goes wrong
+                setTimeout(function() {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '💾 Save Changes';
+                }, 5000);
+            });
+        }
+
+        // ============================================
+        // CONFIRMATION ON CANCEL IF DIRTY
+        // ============================================
+        let formChanged = false;
+        const formElement = document.querySelector('form');
+        formElement.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+
+        const cancelBtn = document.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
             });
         }
 

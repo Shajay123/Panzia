@@ -1,0 +1,272 @@
+{% extends 'compliance/base_compliance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'compliance:esic_create' %}" class="btn btn-primary btn-sm">
+    <span class="nav-icon">➕</span> Add ESIC Contribution
+</a>
+<a href="{% url 'compliance:compliance_dashboard' %}" class="btn btn-secondary btn-sm">
+    ← Dashboard
+</a>
+{% endblock %}
+
+{% block compliance_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        text-align: center;
+    }
+
+    .summary-card .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .summary-card .label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    table {
+        width: 100%;
+        min-width: 700px;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    thead {
+        background: rgba(167, 139, 250, 0.04);
+    }
+
+    th {
+        text-align: left;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+
+    tr:hover td {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .status-badge.paid {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .status-badge.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+    }
+
+    .status-badge.overdue {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .action-btns a {
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+    .action-btns .mark-paid {
+        background: rgba(34, 197, 94, 0.1);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .action-btns .mark-paid:hover {
+        background: rgba(34, 197, 94, 0.2);
+    }
+
+    .action-btns .edit {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .action-btns .edit:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+
+    .action-btns .delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+
+    .action-btns .delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        .summary-cards {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ===== PRIMARY BUTTON STYLES ===== */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+}
+</style>
+
+<div class="page-content">
+    <div class="summary-cards">
+        <div class="summary-card">
+            <div class="value">{{ esic_contributions|length }}</div>
+            <div class="label">Total Contributions</div>
+        </div>
+        <div class="summary-card">
+            <div class="value">₹{{ total_amount|floatformat:0 }}</div>
+            <div class="label">Total ESIC Amount</div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Month</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for esic in esic_contributions %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ esic.month }}</td>
+                    <td>₹{{ esic.amount|floatformat:0 }}</td>
+                    <td>{{ esic.due_date|date:"d M Y" }}</td>
+                    <td>
+                        <span class="status-badge {% if esic.paid %}paid{% elif esic.due_date < today %}overdue{% else %}pending{% endif %}">
+                            {% if esic.paid %}✅ Paid{% else %}⏳ Pending{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            {% if not esic.paid %}
+                            <a href="{% url 'compliance:esic_mark_paid' esic.id %}" class="mark-paid">✅ Mark Paid</a>
+                            {% endif %}
+                            <a href="{% url 'compliance:esic_edit' esic.id %}" class="edit">✏️ Edit</a>
+                            <a href="{% url 'compliance:esic_delete' esic.id %}" class="delete">🗑️ Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <span class="empty-icon">🏥</span>
+                            <h3>No ESIC Contributions</h3>
+                            <p>Start by adding your first ESIC contribution.</p>
+                            <a href="{% url 'compliance:esic_create' %}" class="btn btn-primary">➕ Add ESIC Contribution</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

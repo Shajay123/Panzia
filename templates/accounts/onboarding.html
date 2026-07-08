@@ -1,0 +1,716 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Onboarding - PANZIA
+{% endblock %}
+
+{% block css %}
+<style>
+    /* ============================================
+       ONBOARDING PAGE STYLES
+       ============================================ */
+    
+    .onboarding-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at top, #1a1035, #0a0618);
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .onboarding-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 50%, rgba(124, 58, 237, 0.03), transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(236, 72, 153, 0.03), transparent 50%);
+        animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(2%, -2%) rotate(2deg); }
+    }
+
+    .onboarding-container {
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.85), rgba(45, 27, 74, 0.85));
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 24px;
+        padding: 40px 48px;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 8px 64px rgba(0, 0, 0, 0.4);
+        animation: slideUp 0.6s ease forwards;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .onboarding-container .brand-icon {
+        text-align: center;
+        font-size: 3rem;
+        margin-bottom: 8px;
+    }
+
+    .onboarding-container h2 {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a78bfa, #f472b6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 4px;
+    }
+
+    .onboarding-container .subtitle {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0 0 28px;
+    }
+
+    /* ============================================
+       STEP PROGRESS
+       ============================================ */
+    .step-progress {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 8px;
+    }
+
+    .step-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.06);
+        border: 2px solid rgba(167, 139, 250, 0.08);
+        color: #94a3b8;
+        transition: all 0.3s ease;
+    }
+
+    .step-dot.active {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+        box-shadow: 0 0 20px rgba(124, 58, 237, 0.1);
+    }
+
+    .step-dot.completed {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
+        color: #4ade80;
+    }
+
+    .step-line {
+        width: 40px;
+        height: 2px;
+        background: rgba(167, 139, 250, 0.08);
+        transition: background 0.3s ease;
+    }
+
+    .step-line.completed {
+        background: #22c55e;
+    }
+
+    /* ============================================
+       STEP CONTENT
+       ============================================ */
+    .step-content {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .step-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .step-content .step-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #e8edf5;
+        margin: 0 0 4px;
+    }
+
+    .step-content .step-description {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0 0 20px;
+    }
+
+    /* ============================================
+       FORM STYLES
+       ============================================ */
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+        margin-bottom: 4px;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+        margin-left: 2px;
+    }
+
+    .form-group .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 10px;
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-group .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .form-group .form-control::placeholder {
+        color: #64748b;
+    }
+
+    .form-group .form-control.error {
+        border-color: #f87171;
+    }
+
+    .form-group .form-control.error:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+    }
+
+    .form-group select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    .form-group select.form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    .field-error {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.75rem;
+        color: #f87171;
+    }
+
+    /* ============================================
+       STEP ACTIONS
+       ============================================ */
+    .step-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-next {
+        flex: 1;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-next:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-next:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-prev {
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-prev:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-submit .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ============================================
+       SKIP OPTION
+       ============================================ */
+    .skip-option {
+        text-align: center;
+        margin-top: 16px;
+    }
+
+    .skip-option a {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .skip-option a:hover {
+        color: #a78bfa;
+        text-decoration: underline;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 480px) {
+        .onboarding-container {
+            padding: 24px 16px;
+            border-radius: 16px;
+        }
+
+        .onboarding-container h2 {
+            font-size: 1.4rem;
+        }
+
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            font-size: 0.7rem;
+        }
+
+        .step-line {
+            width: 20px;
+        }
+
+        .step-actions {
+            flex-direction: column;
+        }
+
+        .step-actions .btn-next,
+        .step-actions .btn-prev,
+        .step-actions .btn-submit {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="onboarding-section">
+
+    <div class="onboarding-container">
+
+        <!-- Brand Icon -->
+        <div class="brand-icon">🚀</div>
+
+        <h2>Complete Your Profile</h2>
+        <p class="subtitle">Let's get to know you better</p>
+
+        <!-- ============================================ -->
+        <!-- STEP PROGRESS                                -->
+        <!-- ============================================ -->
+        <div class="step-progress" id="stepProgress">
+            <div class="step-dot active" data-step="1">1</div>
+            <div class="step-line" data-step="1"></div>
+            <div class="step-dot" data-step="2">2</div>
+            <div class="step-line" data-step="2"></div>
+            <div class="step-dot" data-step="3">3</div>
+        </div>
+
+        <form method="POST" id="onboardingForm" novalidate>
+            {% csrf_token %}
+
+            <!-- ============================================ -->
+            <!-- STEP 1: Personal Information                 -->
+            <!-- ============================================ -->
+            <div class="step-content active" data-step="1">
+                <h3 class="step-title">👤 Personal Information</h3>
+                <p class="step-description">Tell us about yourself</p>
+
+                <div class="form-group">
+                    <label for="full_name">Full Name <span class="required">*</span></label>
+                    <input type="text" name="full_name" id="full_name" class="form-control" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" name="email" id="email" class="form-control" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" name="phone" id="phone" class="form-control" placeholder="Enter your phone number">
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn-next" onclick="goToStep(2)">Next →</button>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- STEP 2: Role-Specific Information            -->
+            <!-- ============================================ -->
+            <div class="step-content" data-step="2">
+                <h3 class="step-title">🏢 Organization Details</h3>
+                <p class="step-description" id="roleStepDescription">Tell us about your organization</p>
+
+                <!-- Startup Owner Fields -->
+                <div id="startup_owner_fields" class="role-fields">
+                    <div class="form-group">
+                        <label for="company_name">Company Name <span class="required">*</span></label>
+                        <input type="text" name="company_name" id="company_name" class="form-control" placeholder="Enter your company name">
+                    </div>
+                    <div class="form-group">
+                        <label for="industry">Industry <span class="required">*</span></label>
+                        <select name="industry" id="industry" class="form-control">
+                            <option value="">Select Industry</option>
+                            <option value="technology">Technology</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="finance">Finance</option>
+                            <option value="education">Education</option>
+                            <option value="retail">Retail</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="company_size">Company Size</label>
+                        <select name="company_size" id="company_size" class="form-control">
+                            <option value="1-10">1-10 employees</option>
+                            <option value="11-50">11-50 employees</option>
+                            <option value="51-200">51-200 employees</option>
+                            <option value="201-500">201-500 employees</option>
+                            <option value="500+">500+ employees</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- HRMS Fields -->
+                <div id="hrms_fields" class="role-fields" style="display:none;">
+                    <div class="form-group">
+                        <label for="hr_department">HR Department</label>
+                        <input type="text" name="hr_department" id="hr_department" class="form-control" placeholder="Enter your HR department name">
+                    </div>
+                    <div class="form-group">
+                        <label for="hr_role">Your Role</label>
+                        <select name="hr_role" id="hr_role" class="form-control">
+                            <option value="hr_manager">HR Manager</option>
+                            <option value="hr_executive">HR Executive</option>
+                            <option value="recruiter">Recruiter</option>
+                            <option value="payroll_specialist">Payroll Specialist</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Employee Fields -->
+                <div id="employee_fields" class="role-fields" style="display:none;">
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select name="department" id="department" class="form-control">
+                            <option value="">Select Department</option>
+                            <option value="engineering">Engineering</option>
+                            <option value="sales">Sales</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="hr">Human Resources</option>
+                            <option value="finance">Finance</option>
+                            <option value="operations">Operations</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="designation">Designation</label>
+                        <input type="text" name="designation" id="designation" class="form-control" placeholder="Enter your designation">
+                    </div>
+                </div>
+
+                <!-- Talent Fields -->
+                <div id="talent_fields" class="role-fields" style="display:none;">
+                    <div class="form-group">
+                        <label for="skills">Skills <span class="required">*</span></label>
+                        <input type="text" name="skills" id="skills" class="form-control" placeholder="Enter your skills (comma separated)">
+                    </div>
+                    <div class="form-group">
+                        <label for="experience">Years of Experience</label>
+                        <select name="experience" id="experience" class="form-control">
+                            <option value="0-1">Less than 1 year</option>
+                            <option value="1-3">1-3 years</option>
+                            <option value="3-5">3-5 years</option>
+                            <option value="5-10">5-10 years</option>
+                            <option value="10+">10+ years</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="portfolio">Portfolio Link</label>
+                        <input type="url" name="portfolio" id="portfolio" class="form-control" placeholder="https://your-portfolio.com">
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn-prev" onclick="goToStep(1)">← Back</button>
+                    <button type="button" class="btn-next" onclick="goToStep(3)">Next →</button>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- STEP 3: Confirmation                         -->
+            <!-- ============================================ -->
+            <div class="step-content" data-step="3">
+                <h3 class="step-title">✅ Almost Done!</h3>
+                <p class="step-description">Review your information and submit</p>
+
+                <div id="summaryContainer">
+                    <!-- Summary will be populated by JavaScript -->
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn-prev" onclick="goToStep(2)">← Back</button>
+                    <button type="submit" class="btn-submit" id="submitBtn">🚀 Complete Onboarding</button>
+                </div>
+
+                <div class="skip-option">
+                    <a href="{% url 'dashboard' %}">Skip for now →</a>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // GET SELECTED ROLE FROM URL PARAMETERS
+        // ============================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const role = urlParams.get('role') || 'startup_owner';
+        
+        // ============================================
+        // SHOW/HIDE ROLE FIELDS
+        // ============================================
+        function updateRoleFields(role) {
+            document.querySelectorAll('.role-fields').forEach(el => el.style.display = 'none');
+            const fieldId = role + '_fields';
+            const fields = document.getElementById(fieldId);
+            if (fields) fields.style.display = 'block';
+            
+            // Update step description
+            const descriptions = {
+                'startup_owner': 'Set up your startup profile',
+                'hrms': 'Configure your HR settings',
+                'employee': 'Tell us about your role',
+                'talent': 'Showcase your skills'
+            };
+            document.getElementById('roleStepDescription').textContent = descriptions[role] || 'Tell us about your organization';
+        }
+
+        updateRoleFields(role);
+
+        // ============================================
+        // STEP NAVIGATION
+        // ============================================
+        window.goToStep = function(step) {
+            const steps = document.querySelectorAll('.step-content');
+            const dots = document.querySelectorAll('.step-dot');
+            const lines = document.querySelectorAll('.step-line');
+            
+            // Update content
+            steps.forEach(s => s.classList.remove('active'));
+            document.querySelector(`.step-content[data-step="${step}"]`).classList.add('active');
+            
+            // Update dots
+            dots.forEach((dot, index) => {
+                const num = index + 1;
+                dot.classList.remove('active', 'completed');
+                if (num === step) dot.classList.add('active');
+                else if (num < step) dot.classList.add('completed');
+            });
+            
+            // Update lines
+            lines.forEach((line, index) => {
+                const num = index + 1;
+                line.classList.toggle('completed', num < step);
+            });
+
+            // If step 3, generate summary
+            if (step === 3) generateSummary();
+            
+            // Scroll to top of container
+            document.querySelector('.onboarding-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        // ============================================
+        // GENERATE SUMMARY
+        // ============================================
+        function generateSummary() {
+            const container = document.getElementById('summaryContainer');
+            const form = document.getElementById('onboardingForm');
+            const formData = new FormData(form);
+            
+            let html = `
+                <div style="background: rgba(167, 139, 250, 0.03); border-radius: 12px; padding: 16px; border: 1px solid rgba(167, 139, 250, 0.06);">
+                    <h4 style="color: #e8edf5; margin: 0 0 12px;">📋 Profile Summary</h4>
+            `;
+            
+            // Get all form fields with values
+            const fields = form.querySelectorAll('input, select');
+            fields.forEach(field => {
+                const value = field.value.trim();
+                if (value && field.name && !field.type.includes('hidden')) {
+                    const label = field.previousElementSibling ? 
+                        field.previousElementSibling.textContent.replace('*', '').trim() : 
+                        field.name.replace('_', ' ').toUpperCase();
+                    html += `
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                            <span style="color: #94a3b8; font-size: 0.85rem;">${label}</span>
+                            <span style="color: #e8edf5; font-size: 0.85rem; font-weight: 500;">${value}</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += `
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(167, 139, 250, 0.06);">
+                        <span style="color: #a78bfa; font-size: 0.8rem;">📌 Role: ${role.replace('_', ' ').toUpperCase()}</span>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // FORM SUBMISSION
+        // ============================================
+        const form = document.getElementById('onboardingForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                submitBtn.innerHTML = '✅ Success!';
+                submitBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                
+                // Redirect to dashboard based on role
+                setTimeout(() => {
+                    const redirects = {
+                        'startup_owner': '{% url "startup_dashboard" %}',
+                        'hrms': '{% url "people_dashboard" %}',
+                        'employee': '{% url "employee_portal_dashboard" %}',
+                        'talent': '{% url "talent_dashboard" %}'
+                    };
+                    window.location.href = redirects[role] || '{% url "dashboard" %}';
+                }, 1500);
+            }, 2000);
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const activeStep = document.querySelector('.step-content.active');
+                const nextBtn = activeStep?.querySelector('.btn-next');
+                if (nextBtn) nextBtn.click();
+            }
+            if (e.key === 'Escape') {
+                const backBtn = document.querySelector('.step-content.active .btn-prev');
+                if (backBtn) backBtn.click();
+            }
+        });
+
+        console.log('🚀 Onboarding page loaded for role:', role);
+    });
+</script>
+
+{% endblock %}

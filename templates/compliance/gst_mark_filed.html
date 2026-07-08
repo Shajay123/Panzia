@@ -1,0 +1,492 @@
+{% extends 'compliance/base_compliance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'compliance:gst_dashboard' %}" class="btn-action btn-secondary-action">
+        <span class="btn-icon">←</span>
+        <span class="btn-text">Back to GST</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block compliance_content %}
+<style>
+    .mark-container {
+        max-width: 500px;
+        margin: 0 auto;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    .mark-card {
+        background: linear-gradient(145deg, rgba(167, 139, 250, 0.04), rgba(167, 139, 250, 0.01));
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 32px 24px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .mark-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .mark-icon {
+        font-size: 4.5rem;
+        display: block;
+        margin-bottom: 16px;
+        animation: bounce 2s infinite;
+    }
+
+    .mark-card h2 {
+        color: #34d399;
+        font-size: 1.5rem;
+        margin: 0 0 8px 0;
+        font-weight: 700;
+    }
+
+    .mark-card .mark-message {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        line-height: 1.6;
+    }
+
+    .mark-card .mark-message strong {
+        color: #34d399;
+    }
+
+    /* ===== DETAILS SECTION ===== */
+    .mark-card .mark-details {
+        background: rgba(52, 211, 153, 0.04);
+        border: 1px solid rgba(52, 211, 153, 0.08);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin: 16px 0 24px 0;
+        text-align: left;
+    }
+
+    .mark-card .mark-details .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 0.9rem;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .mark-card .mark-details .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .mark-card .mark-details .detail-row .label {
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .mark-card .mark-details .detail-row .value {
+        color: #e8edf5;
+        font-weight: 600;
+    }
+
+    .mark-card .mark-details .detail-row .value.status-pending {
+        color: #fbbf24;
+    }
+
+    .mark-card .mark-details .detail-row .value.status-filed {
+        color: #34d399;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .btn-action::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-action:active::after {
+        width: 300px;
+        height: 300px;
+    }
+
+    .btn-action .btn-icon {
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-action:hover .btn-icon {
+        transform: scale(1.2) rotate(-5deg);
+    }
+
+    .btn-action .btn-text {
+        font-weight: 600;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-action:active {
+        transform: translateY(0px);
+    }
+
+    .btn-secondary-action {
+        background: rgba(167, 139, 250, 0.08);
+        color: #94a3b8;
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .btn-secondary-action:hover {
+        background: rgba(167, 139, 250, 0.15);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.2);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== MARK ACTIONS ===== */
+    .mark-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-success {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 32px;
+        background: linear-gradient(135deg, #059669, #047857);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+    }
+
+    .btn-success::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-success:active::after {
+        width: 300px;
+        height: 300px;
+    }
+
+    .btn-success:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.35);
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .btn-success:active {
+        transform: translateY(0px);
+    }
+
+    .btn-success .btn-icon {
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-success:hover .btn-icon {
+        transform: scale(1.2);
+    }
+
+    .btn-success .btn-shortcut {
+        font-size: 0.6rem;
+        color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-left: 2px;
+    }
+
+    .btn-success:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 28px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-cancel:active {
+        transform: translateY(0px);
+    }
+
+    .btn-cancel .btn-icon {
+        font-size: 1.1rem;
+    }
+
+    /* ===== INFO TEXT ===== */
+    .info-text {
+        color: #60a5fa;
+        font-size: 0.85rem;
+        margin-top: 12px;
+        padding: 10px 16px;
+        background: rgba(96, 165, 250, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(96, 165, 250, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .mark-container {
+            padding: 0 10px;
+        }
+
+        .mark-card {
+            padding: 24px 16px;
+        }
+
+        .mark-icon {
+            font-size: 3.5rem;
+        }
+
+        .mark-card h2 {
+            font-size: 1.2rem;
+        }
+
+        .action-buttons {
+            width: 100%;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .mark-actions {
+            flex-direction: column;
+        }
+
+        .btn-success,
+        .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .mark-card .mark-details {
+            padding: 12px 16px;
+        }
+
+        .mark-card .mark-details .detail-row {
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .mark-card {
+            padding: 20px 14px;
+        }
+
+        .mark-icon {
+            font-size: 3rem;
+        }
+
+        .mark-card h2 {
+            font-size: 1.1rem;
+        }
+
+        .mark-card .mark-message {
+            font-size: 0.85rem;
+        }
+
+        .btn-success,
+        .btn-cancel {
+            padding: 8px 20px;
+            font-size: 0.85rem;
+        }
+
+        .info-text {
+            font-size: 0.8rem;
+            padding: 8px 12px;
+        }
+    }
+
+    /* ===== CONFETTI EFFECT (optional) ===== */
+    .confetti {
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+    }
+</style>
+
+<div class="mark-container">
+    <div class="mark-card">
+        <span class="mark-icon">✅</span>
+        <h2>Mark as Filed</h2>
+        <p class="mark-message">
+            Confirm that this GST filing has been completed.
+            <br>
+            This will mark the entry as <strong>Filed</strong>.
+        </p>
+
+        <div class="mark-details">
+            <div class="detail-row">
+                <span class="label">Return Type</span>
+                <span class="value">{{ gst_filing.get_return_type_display }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Month</span>
+                <span class="value">{{ gst_filing.month }} {{ gst_filing.year }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Turnover</span>
+                <span class="value">₹{{ gst_filing.turnover|floatformat:0 }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Tax Payable</span>
+                <span class="value">₹{{ gst_filing.tax_payable|floatformat:0 }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Current Status</span>
+                <span class="value status-pending">⏳ {{ gst_filing.status }}</span>
+            </div>
+        </div>
+
+        <div class="info-text">
+            💡 After marking as filed, this entry will be moved to your filed records.
+        </div>
+
+        <div class="mark-actions">
+            <form method="POST" id="markForm">
+                {% csrf_token %}
+                <button type="submit" class="btn-success" id="confirmBtn">
+                    <span class="btn-icon">✅</span>
+                    <span class="btn-text">Confirm Filing</span>
+                    <span class="btn-shortcut">Ctrl+Enter</span>
+                </button>
+            </form>
+            <a href="{% url 'compliance:gst_dashboard' %}" class="btn-cancel">
+                <span class="btn-icon">✕</span>
+                Cancel
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('markForm');
+        const confirmBtn = document.getElementById('confirmBtn');
+
+        // Prevent double submission
+        form.addEventListener('submit', function(e) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = `
+                <span class="btn-icon">⏳</span>
+                <span class="btn-text">Processing...</span>
+            `;
+        });
+
+        // Keyboard shortcut: Ctrl+Enter to submit
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        console.log('✅ Mark as Filed page loaded');
+        console.log('📊 GST Filing: {{ gst_filing.get_return_type_display }} - {{ gst_filing.month }} {{ gst_filing.year }}');
+        console.log('💰 Amount: ₹{{ gst_filing.tax_payable|floatformat:0 }}');
+    });
+</script>
+{% endblock %}

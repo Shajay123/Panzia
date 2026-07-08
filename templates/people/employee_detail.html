@@ -5,16 +5,722 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/employee_detail.css' %}">
+<style>
+    /* ============================================
+       ENHANCED EMPLOYEE DETAIL STYLES
+       ============================================ */
+    
+    .employee-profile-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        color: #e8edf5;
+    }
+
+    /* ===== PAGE NAV ===== */
+    .page-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .page-nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateX(-2px);
+    }
+
+    .btn-back-dashboard {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back-dashboard:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateX(-2px);
+    }
+
+    .btn-timing-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-timing-nav:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    /* ===== PROFILE CARD ===== */
+    .profile-card {
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 24px 28px;
+        display: flex;
+        gap: 32px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .profile-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .profile-left {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .profile-image-wrapper {
+        position: relative;
+        width: 140px;
+        height: 140px;
+    }
+
+    .profile-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(167, 139, 250, 0.15);
+    }
+
+    .avatar {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #7c3aed, #ec4899);
+        color: white;
+        border: 3px solid rgba(167, 139, 250, 0.15);
+        position: relative;
+    }
+
+    .status-dot {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 3px solid #1a1035;
+    }
+
+    .status-dot.online {
+        background: #22c55e;
+    }
+
+    .status-dot.offline {
+        background: #94a3b8;
+    }
+
+    .profile-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .profile-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .profile-header h3 {
+        margin: 2px 0 0;
+        font-size: 1rem;
+        font-weight: 400;
+        color: #94a3b8;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.status-active {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .status-badge.status-onboarding {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+    }
+
+    .status-badge.status-probation {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+    }
+
+    .status-badge.status-notice_period {
+        background: rgba(236, 72, 153, 0.12);
+        color: #f472b6;
+    }
+
+    .status-badge.status-exited {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .status-dot-small {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.status-active .status-dot-small { background: #22c55e; }
+    .status-badge.status-onboarding .status-dot-small { background: #3b82f6; }
+    .status-badge.status-probation .status-dot-small { background: #f59e0b; }
+    .status-badge.status-notice_period .status-dot-small { background: #f472b6; }
+    .status-badge.status-exited .status-dot-small { background: #ef4444; }
+
+    .profile-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 24px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+    }
+
+    .meta-icon {
+        font-size: 0.9rem;
+    }
+
+    .meta-label {
+        color: #94a3b8;
+    }
+
+    .meta-value {
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    .meta-value code {
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        color: #a78bfa;
+    }
+
+    .text-muted {
+        color: #94a3b8;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+    }
+
+    .profile-actions .btn {
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-light {
+        background: rgba(167, 139, 250, 0.03);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-light:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+    }
+
+    .btn-timing {
+        background: linear-gradient(135deg, #ec4899, #f472b6);
+        color: white;
+    }
+
+    .btn-timing:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+    }
+
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .stat-card .stat-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-card .stat-content h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .stat-card .stat-content p {
+        margin: 0;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-card .stat-trend {
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-trend.up { color: #34d399; }
+    .stat-trend.down { color: #f87171; }
+    .stat-trend.neutral { color: #94a3b8; }
+
+    .stat-card.blue .stat-icon { color: #60a5fa; }
+    .stat-card.blue h2 { color: #60a5fa; }
+    .stat-card.purple .stat-icon { color: #a78bfa; }
+    .stat-card.purple h2 { color: #a78bfa; }
+    .stat-card.green .stat-icon { color: #34d399; }
+    .stat-card.green h2 { color: #34d399; }
+    .stat-card.orange .stat-icon { color: #f59e0b; }
+    .stat-card.orange h2 { color: #f59e0b; }
+
+    /* ===== INFO GRID ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .info-card {
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-badge {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 12px;
+        border-radius: 12px;
+    }
+
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .info-value {
+        color: #e8edf5;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-align: right;
+    }
+
+    .info-value .salary-amount {
+        font-size: 1.1rem;
+        color: #a78bfa;
+        font-weight: 700;
+    }
+
+    .info-value .phone-number {
+        color: #60a5fa;
+        font-weight: 600;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .badge.success {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .badge.danger {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .badge.payroll.enabled {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .badge.payroll.disabled {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .work-mode-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .work-mode-badge.work-office {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+    }
+
+    .work-mode-badge.work-hybrid {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+    }
+
+    .work-mode-badge.work-remote {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .manager-name {
+        font-weight: 600;
+        color: #a78bfa;
+    }
+
+    .manager-email {
+        display: block;
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .time-ago {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-left: 4px;
+    }
+
+    .notes-content {
+        padding: 4px 0;
+    }
+
+    .notes-content p {
+        margin: 0;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .notes-content .text-muted {
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* ===== FULL WIDTH CARDS ===== */
+    .info-card.full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .profile-card {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .profile-header {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-meta {
+            grid-template-columns: 1fr;
+            width: 100%;
+        }
+
+        .meta-item {
+            justify-content: center;
+        }
+
+        .profile-actions {
+            justify-content: center;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+
+        .info-value {
+            text-align: left;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .employee-profile-page {
+            padding: 12px;
+        }
+
+        .page-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-nav-left {
+            flex-wrap: wrap;
+        }
+
+        .page-nav .btn-back,
+        .page-nav .btn-back-dashboard,
+        .page-nav .btn-timing-nav {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .profile-left {
+            width: 100%;
+        }
+
+        .profile-image-wrapper,
+        .avatar {
+            width: 120px;
+            height: 120px;
+        }
+
+        .profile-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .profile-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .profile-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-image-wrapper,
+        .avatar {
+            width: 100px;
+            height: 100px;
+        }
+
+        .avatar {
+            font-size: 2.5rem;
+        }
+
+        .profile-header h1 {
+            font-size: 1.2rem;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
 <div class="employee-profile-page">
 
-    <!-- ================= BACK BUTTON ================= -->
+    <!-- ================= PAGE NAV ================= -->
     <div class="page-nav">
-        <a href="{% url 'employees' %}" class="btn-back">
-            ← Back to Employees
+        <div class="page-nav-left">
+            <a href="{% url 'employees' %}" class="btn-back">
+                ← Back to Employees
+            </a>
+            <a href="{% url 'people_dashboard' %}" class="btn-back-dashboard">
+                📊 Dashboard
+            </a>
+        </div>
+        <a href="{% url 'employee_timing_config' employee.id %}" class="btn-timing-nav">
+            ⏰ Configure Timings
         </a>
     </div>
 
@@ -76,21 +782,30 @@
                 <div class="meta-item">
                     <span class="meta-icon">📞</span>
                     <span class="meta-label">Phone:</span>
-                    <span class="meta-value">{{ employee.phone|default:"—" }}</span>
+                    <span class="meta-value">
+                        {% if employee.phone %}
+                        <span class="phone-number">{{ employee.phone }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </span>
                 </div>
             </div>
 
             <div class="profile-actions">
-                <a href="{% url 'employee_update' employee.id %}" class="btn-primary">
+                <a href="{% url 'employee_update' employee.id %}" class="btn btn-primary">
                     ✏️ Edit Profile
                 </a>
-                <a href="{% url 'attendance' %}" class="btn-secondary">
+                <a href="{% url 'employee_timing_config' employee.id %}" class="btn btn-timing">
+                    ⏰ Configure Timings
+                </a>
+                <a href="{% url 'attendance' %}" class="btn btn-secondary">
                     🕒 Attendance
                 </a>
-                <a href="{% url 'payroll' %}" class="btn-secondary">
+                <a href="{% url 'payroll' %}" class="btn btn-secondary">
                     💰 Payroll
                 </a>
-                <button class="btn-light" id="shareBtn">
+                <button class="btn btn-light" id="shareBtn">
                     📤 Share
                 </button>
             </div>
@@ -123,12 +838,6 @@
             </div>
             <span class="stat-trend neutral">→</span>
         </div>
-        <!-- In employee_detail.html - Add this button -->
-<div class="employee-actions">
-    <a href="{% url 'employee_timing_config' employee.id %}" class="btn btn-primary">
-        ⏰ Configure Timings
-    </a>
-</div>
         <div class="stat-card orange">
             <div class="stat-icon">💼</div>
             <div class="stat-content">
@@ -163,11 +872,23 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Phone</span>
-                    <span class="info-value">{{ employee.phone|default:"—" }}</span>
+                    <span class="info-value">
+                        {% if employee.phone %}
+                        <span class="phone-number">{{ employee.phone }}</span>
+                        {% else %}
+                        <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Emergency Contact</span>
-                    <span class="info-value">{{ employee.emergency_contact|default:"—" }}</span>
+                    <span class="info-value">
+                        {% if employee.emergency_contact %}
+                        {{ employee.emergency_contact }}
+                        {% else %}
+                        <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Department</span>
@@ -303,13 +1024,13 @@
 
     </div>
 
-    
-
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Share functionality
+        // ============================================
+        // SHARE FUNCTIONALITY
+        // ============================================
         const shareBtn = document.getElementById('shareBtn');
         if (shareBtn) {
             shareBtn.addEventListener('click', function() {
@@ -335,16 +1056,28 @@
             });
         }
 
-        // Time ago update for relative times
-        document.querySelectorAll('.time-ago').forEach(el => {
-            const timestamp = el.dataset.timestamp;
-            if (timestamp) {
-                // Update time ago periodically
-                setInterval(() => {
-                    // Simple update - you could use a library for this
-                }, 60000);
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+E to edit
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                window.location.href = "{% url 'employee_update' employee.id %}";
+            }
+            
+            // Ctrl+T for timing config
+            if ((e.ctrlKey || e.metaKey) && e.key === 't') {
+                e.preventDefault();
+                window.location.href = "{% url 'employee_timing_config' employee.id %}";
             }
         });
+
+        console.log('👤 Employee Profile loaded');
+        console.log('📋 Employee: {{ employee.user.get_full_name }}');
+        console.log('📱 Phone: {{ employee.phone|default:"Not set" }}');
+        console.log('📊 Attendance: {{ attendance_count|default:0 }}');
+        console.log('🌴 Leaves: {{ leave_count|default:0 }}');
     });
 </script>
 

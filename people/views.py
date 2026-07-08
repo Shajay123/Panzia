@@ -564,13 +564,10 @@ def employee_create(request):
         messages.error(request, 'You need to have a startup to add employees.')
         return redirect('startup_profile_setup')
     
-    # Get departments
     departments = Department.objects.filter(startup=startup) if startup else Department.objects.all()
     
-    # Check if departments exist
     if not departments.exists():
         messages.warning(request, 'Please create at least one department before adding employees.')
-        # Don't redirect, let them see the warning and create department
 
     if request.method == "POST":
         form = EmployeeForm(request.POST, request.FILES, startup=startup)
@@ -614,6 +611,21 @@ def employee_create(request):
                     employee.startup = startup
                     employee.user = user
                     employee.is_active = True
+                    
+                    # ============================================
+                    # SET PHONE WITH DEFAULT VALUE
+                    # ============================================
+                    phone = request.POST.get('phone', '').strip()
+                    if phone:
+                        employee.phone = phone
+                    else:
+                        employee.phone = ''  # ✅ Set to empty string instead of None
+                    
+                    emergency_contact = request.POST.get('emergency_contact', '').strip()
+                    if emergency_contact:
+                        employee.emergency_contact = emergency_contact
+                    else:
+                        employee.emergency_contact = ''  # ✅ Set to empty string instead of None
                     
                     # ============================================
                     # SAVE TIMING CONFIGURATION FROM FORM
@@ -661,7 +673,6 @@ def employee_create(request):
         "departments": departments,
     })
 
-
 @login_required
 def employee_detail(request, id):
     """Employee detail view."""
@@ -683,16 +694,27 @@ def employee_update(request, id):
     employee = get_object_or_404(Employee, id=id, startup=startup)
 
     if request.method == "POST":
-        form = EmployeeForm(request.POST, request.FILES, instance=employee)
+        # Pass startup to form for department filtering
+        form = EmployeeForm(request.POST, request.FILES, instance=employee, startup=startup)
+        
         if form.is_valid():
-            form.save()
-            messages.success(request, "Employee updated successfully.")
+            employee = form.save()
+            messages.success(request, f'Employee "{employee.user.get_full_name()}" updated successfully.')
             return redirect("employee_detail", id=employee.id)
+        else:
+            # Print form errors for debugging
+            print("Form errors:", form.errors)
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
-        form = EmployeeForm(instance=employee)
+        # Pass startup to form
+        form = EmployeeForm(instance=employee, startup=startup)
 
-    return render(request, "people/employee_update.html", {"form": form, "employee": employee})
-
+    return render(request, "people/employee_update.html", {
+        "form": form,
+        "employee": employee
+    })
 
 @login_required
 def employee_delete(request, id):
@@ -712,18 +734,31 @@ def employee_delete(request, id):
 # EMPLOYEE PORTAL
 # ============================================================
 
+# people/views.py
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from django.db.models import Q
+from datetime import timedelta
+
+# Import models
+from .models import (
+    Employee, Holiday, Attendance, LeaveRequest, 
+    Payroll, EmployeeDocument
+)
+
+
+
+
 @login_required
 def employee_portal_dashboard(request):
     """Employee dashboard - self service portal."""
     
-    # ============================================
-    # CHECK IF USER IS EMPLOYEE - FIXED
-    # ============================================
-    
-    # If user is not an employee, redirect to appropriate dashboard
+    # Check if user is employee
     if request.user.role != 'employee':
         messages.warning(request, 'This portal is for employees only.')
-        # Redirect based on role
         if request.user.role in ['startup_admin', 'startup_hr', 'startup_manager']:
             return redirect('people_dashboard')
         elif request.user.role == 'talent':
@@ -731,10 +766,7 @@ def employee_portal_dashboard(request):
         else:
             return redirect('dashboard_home')
     
-    # ============================================
-    # GET EMPLOYEE PROFILE
-    # ============================================
-    
+    # Get employee profile
     try:
         employee = Employee.objects.get(user=request.user)
     except Employee.DoesNotExist:
@@ -753,10 +785,8 @@ def employee_portal_dashboard(request):
     today = timezone.now().date()
     last_30_days = today - timedelta(days=30)
 
-    # Today's attendance
     attendance_today = Attendance.objects.filter(employee=employee, date=today).first()
     
-    # Last 30 days attendance
     attendance_last_30 = Attendance.objects.filter(
         employee=employee, 
         date__gte=last_30_days, 
@@ -787,6 +817,52 @@ def employee_portal_dashboard(request):
     ).order_by('from_date')[:5]
 
     recent_attendance = Attendance.objects.filter(employee=employee).order_by('-date')[:7]
+
+    # ============================================
+    # HOLIDAY CALCULATIONS - Using StartupProfile
+    # ============================================
+    
+    # Get holidays for the employee's startup
+    startup_holidays = Holiday.objects.filter(
+        startup=employee.startup,  # employee.startup is StartupProfile
+        date__gte=today
+    ).order_by('date')
+    
+    # Get system-wide holidays (no startup)
+    system_holidays = Holiday.objects.filter(
+        startup__isnull=True,
+        date__gte=today
+    ).order_by('date')
+    
+    # Combine and sort
+    upcoming_holidays = list(startup_holidays) + list(system_holidays)
+    upcoming_holidays = sorted(upcoming_holidays, key=lambda x: x.date)
+    
+    # Get next holiday for notification
+    next_holiday = upcoming_holidays[0] if upcoming_holidays else None
+    upcoming_holidays_count = len(upcoming_holidays)
+    
+    # Get current month holidays
+    current_month_start = today.replace(day=1)
+    if today.month == 12:
+        next_month_start = today.replace(year=today.year + 1, month=1, day=1)
+    else:
+        next_month_start = today.replace(month=today.month + 1, day=1)
+    
+    current_month_holidays = Holiday.objects.filter(
+        Q(startup=employee.startup) | Q(startup__isnull=True),
+        date__gte=current_month_start,
+        date__lt=next_month_start
+    ).order_by('date')
+    
+    # Get total holidays count for the year
+    year_start = today.replace(month=1, day=1)
+    year_end = today.replace(month=12, day=31)
+    total_holidays_this_year = Holiday.objects.filter(
+        Q(startup=employee.startup) | Q(startup__isnull=True),
+        date__gte=year_start,
+        date__lte=year_end
+    ).count()
 
     # ============================================
     # PAYROLL
@@ -822,13 +898,18 @@ def employee_portal_dashboard(request):
         'latest_payroll': latest_payroll,
         'payrolls': payrolls,
         'documents_count': documents_count,
+        # Holiday context
+        'upcoming_holidays': upcoming_holidays[:10],
+        'upcoming_holidays_count': upcoming_holidays_count,
+        'next_holiday': next_holiday,
+        'current_month_holidays': current_month_holidays,
+        'total_holidays_this_year': total_holidays_this_year,
         'page_title': 'Employee Dashboard',
         'page_icon': '👤',
-        'is_employee_portal': True,  # Add this flag for templates
+        'is_employee_portal': True,
     }
     
     return render(request, 'people/employee_portal/dashboard.html', context)
-
 
 @login_required
 def employee_portal_profile(request):
@@ -853,9 +934,25 @@ def employee_portal_profile(request):
     })
 
 
+# people/views.py - Complete fixed view
+
+from datetime import datetime, date, timedelta, time
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from django.http import JsonResponse
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
+import base64
+import os
+
+# ============================================
+# CHECK-IN VIEW
+# ============================================
 @login_required
-def employee_portal_attendance(request):
-    """Employee attendance view - View Only."""
+def employee_portal_attendance_checkin(request):
+    """Employee check-in with photo capture."""
     
     # Check if user is an employee
     if request.user.role != 'employee':
@@ -868,61 +965,339 @@ def employee_portal_attendance(request):
         messages.error(request, 'Employee profile not found. Please contact HR.')
         return redirect('people_dashboard')
 
-    attendances = Attendance.objects.filter(employee=employee).order_by('-date')
+    today = timezone.now().date()
+    existing_attendance = Attendance.objects.filter(employee=employee, date=today).first()
 
-    # Filters
-    from_date = request.GET.get('from_date')
-    to_date = request.GET.get('to_date')
-    status = request.GET.get('status')
+    # If already checked in, redirect to mark page
+    if existing_attendance and existing_attendance.check_in:
+        messages.info(request, f'You are already checked in at {existing_attendance.check_in.strftime("%H:%M")}')
+        return redirect('employee_portal_attendance_mark')
 
-    if from_date:
-        attendances = attendances.filter(date__gte=from_date)
-    if to_date:
-        attendances = attendances.filter(date__lte=to_date)
-    if status:
-        attendances = attendances.filter(status=status)
+    if request.method == 'POST':
+        status = request.POST.get('status', 'Present')
+        check_in = request.POST.get('check_in')
+        notes = request.POST.get('notes', '')
+        photo_data = request.POST.get('photo_data')
+        location_lat = request.POST.get('location_lat')
+        location_lng = request.POST.get('location_lng')
+        location_address = request.POST.get('location_address')
+        
+        # Convert empty strings to None
+        if check_in == '':
+            check_in = None
+        if location_lat == '':
+            location_lat = None
+        if location_lng == '':
+            location_lng = None
+        if location_address == '':
+            location_address = None
+        
+        # Convert location strings to Decimal if they exist
+        if location_lat:
+            try:
+                location_lat = float(location_lat)
+            except (ValueError, TypeError):
+                location_lat = None
+        
+        if location_lng:
+            try:
+                location_lng = float(location_lng)
+            except (ValueError, TypeError):
+                location_lng = None
+        
+        # Validate check-in is provided
+        if not check_in:
+            messages.error(request, 'Please set a check-in time.')
+            return redirect('employee_portal_attendance_checkin')
+        
+        # Auto-set status to Present if not set or Absent
+        if status in ['Absent', '']:
+            status = 'Present'
+        
+        # Auto-detect check-in status
+        check_in_status = None
+        if check_in:
+            try:
+                check_in_time = datetime.strptime(check_in, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_in_time = datetime.strptime(check_in, '%H:%M:%S').time()
+                except ValueError:
+                    check_in_time = None
+                    
+            if check_in_time:
+                # Get work start time
+                work_start = employee.work_start_time
+                
+                # Handle different types
+                if work_start is None:
+                    work_start = datetime.strptime('09:30', '%H:%M').time()
+                elif isinstance(work_start, str):
+                    try:
+                        work_start = datetime.strptime(work_start, '%H:%M').time()
+                    except ValueError:
+                        work_start = datetime.strptime('09:30', '%H:%M').time()
+                elif not isinstance(work_start, time):
+                    work_start = datetime.strptime('09:30', '%H:%M').time()
+                
+                # Compare times
+                if check_in_time < work_start:
+                    check_in_status = 'early'
+                elif check_in_time == work_start:
+                    check_in_status = 'on_time'
+                else:
+                    check_in_dt = datetime.combine(today, check_in_time)
+                    work_start_dt = datetime.combine(today, work_start)
+                    diff_minutes = (check_in_dt - work_start_dt).total_seconds() / 60
+                    
+                    if diff_minutes <= 15:
+                        check_in_status = 'slightly_late'
+                    elif diff_minutes <= 30:
+                        check_in_status = 'late'
+                    else:
+                        check_in_status = 'very_late'
 
-    total_days = attendances.count()
-    present_days = attendances.filter(status='Present').count()
-    absent_days = attendances.filter(status='Absent').count()
-    leave_days = attendances.filter(status='Leave').count()
-    wfh_days = attendances.filter(status='WFH').count()
-    attendance_percentage = round((present_days / total_days) * 100, 1) if total_days > 0 else 0
+        # Handle photo upload
+        photo_file = None
+        if photo_data and photo_data != 'existing' and photo_data != '':
+            try:
+                if ';base64,' in photo_data:
+                    format, imgstr = photo_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                else:
+                    imgstr = photo_data
+                    ext = 'jpg'
+                
+                # Build organized folder structure
+                startup_name = slugify(employee.startup.company_name) if employee.startup else 'unknown'
+                department_name = slugify(employee.department.name) if employee.department else 'no-department'
+                
+                year = today.strftime('%Y')
+                month = today.strftime('%m')
+                date_str = today.strftime('%d')
+                
+                folder_path = f"{startup_name}/attendance/{year}/{month}/{date_str}/{department_name}"
+                timestamp = timezone.now().strftime('%H%M%S')
+                filename = f"{folder_path}/checkin_{employee.employee_id}_{today.strftime('%Y%m%d')}_{timestamp}.{ext}"
+                
+                photo_file = ContentFile(base64.b64decode(imgstr), name=filename)
+                
+                print(f"📸 Check-in photo saved to: {filename}")
+                
+            except Exception as e:
+                print(f"Error processing photo: {e}")
+                messages.warning(request, 'There was an issue with the photo. Please try again.')
 
+        # Save attendance with check-in
+        if existing_attendance:
+            # Update existing attendance - only check-in fields
+            existing_attendance.check_in = check_in
+            existing_attendance.check_in_status = check_in_status
+            existing_attendance.status = status
+            if photo_file:
+                if existing_attendance.photo:
+                    try:
+                        existing_attendance.photo.delete(save=False)
+                    except:
+                        pass
+                existing_attendance.photo = photo_file
+            if location_lat is not None and location_lng is not None:
+                existing_attendance.location_lat = location_lat
+                existing_attendance.location_lng = location_lng
+                existing_attendance.location_address = location_address
+            existing_attendance.notes = notes
+            existing_attendance.device_info = request.META.get('HTTP_USER_AGENT', '')[:255]
+            existing_attendance.ip_address = request.META.get('REMOTE_ADDR', '')
+            existing_attendance.save()
+            messages.success(request, f'✅ Checked in at {check_in}!')
+        else:
+            # Create new attendance with check-in
+            attendance = Attendance.objects.create(
+                employee=employee,
+                date=today,
+                status=status,
+                check_in=check_in,
+                check_in_status=check_in_status,
+                notes=notes,
+                photo=photo_file,
+                location_lat=location_lat,
+                location_lng=location_lng,
+                location_address=location_address,
+                device_info=request.META.get('HTTP_USER_AGENT', '')[:255],
+                ip_address=request.META.get('REMOTE_ADDR', '')
+            )
+            messages.success(request, f'✅ Checked in at {check_in}!')
+
+        return redirect('employee_portal_attendance')
+
+    # Get default timings from employee settings
+    default_check_in = employee.default_check_in
+    
     context = {
         'employee': employee,
-        'attendances': attendances,
-        'total_days': total_days,
-        'present_days': present_days,
-        'absent_days': absent_days,
-        'leave_days': leave_days,
-        'wfh_days': wfh_days,
-        'attendance_percentage': attendance_percentage,
-        'page_title': 'My Attendance',
-        'page_icon': '🕒',
-        'is_employee_portal': True,
+        'existing_attendance': existing_attendance,
+        'today': today,
+        'page_title': 'Check In',
+        'page_icon': '✅',
+        'work_start': employee.work_start_time or '09:30',
+        'grace_period': employee.grace_period_minutes or 15,
+        'default_check_in': default_check_in,
+        'action_type': 'check_in',
     }
-    return render(request, 'people/employee_portal/attendance.html', context)
+    return render(request, 'people/employee_portal/attendance_checkin.html', context)
 
 
-# people/views.py - Updated employee_portal_attendance_mark
+# ============================================
+# CHECK-OUT VIEW
+# ============================================
+@login_required
+def employee_portal_attendance_checkout(request):
+    """Employee check-out with photo capture."""
+    
+    # Check if user is an employee
+    if request.user.role != 'employee':
+        messages.warning(request, 'This portal is for employees only.')
+        return redirect('people_dashboard')
+    
+    try:
+        employee = Employee.objects.get(user=request.user)
+    except Employee.DoesNotExist:
+        messages.error(request, 'Employee profile not found. Please contact HR.')
+        return redirect('people_dashboard')
 
-import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+    today = timezone.now().date()
+    existing_attendance = Attendance.objects.filter(employee=employee, date=today).first()
+
+    # If not checked in, redirect to check-in page
+    if not existing_attendance or not existing_attendance.check_in:
+        messages.error(request, 'Please check in first before checking out.')
+        return redirect('employee_portal_attendance_checkin')
+
+    # If already checked out, redirect to mark page
+    if existing_attendance and existing_attendance.check_out:
+        messages.info(request, f'You are already checked out at {existing_attendance.check_out.strftime("%H:%M")}')
+        return redirect('employee_portal_attendance_mark')
+
+    if request.method == 'POST':
+        check_out = request.POST.get('check_out')
+        notes = request.POST.get('notes', '')
+        photo_data = request.POST.get('photo_data')
+        location_lat = request.POST.get('location_lat')
+        location_lng = request.POST.get('location_lng')
+        location_address = request.POST.get('location_address')
+        
+        # Convert empty strings to None
+        if check_out == '':
+            check_out = None
+        if location_lat == '':
+            location_lat = None
+        if location_lng == '':
+            location_lng = None
+        if location_address == '':
+            location_address = None
+        
+        # Convert location strings to Decimal if they exist
+        if location_lat:
+            try:
+                location_lat = float(location_lat)
+            except (ValueError, TypeError):
+                location_lat = None
+        
+        if location_lng:
+            try:
+                location_lng = float(location_lng)
+            except (ValueError, TypeError):
+                location_lng = None
+        
+        # Validate check-out is provided
+        if not check_out:
+            messages.error(request, 'Please set a check-out time.')
+            return redirect('employee_portal_attendance_checkout')
+        
+        # Validate check-out is after check-in
+        if existing_attendance and existing_attendance.check_in:
+            if check_out <= existing_attendance.check_in.strftime('%H:%M'):
+                messages.error(request, 'Check Out time must be after Check In time.')
+                return redirect('employee_portal_attendance_checkout')
+
+        # Handle photo upload
+        photo_file = None
+        if photo_data and photo_data != 'existing' and photo_data != '':
+            try:
+                if ';base64,' in photo_data:
+                    format, imgstr = photo_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                else:
+                    imgstr = photo_data
+                    ext = 'jpg'
+                
+                # Build organized folder structure
+                startup_name = slugify(employee.startup.company_name) if employee.startup else 'unknown'
+                department_name = slugify(employee.department.name) if employee.department else 'no-department'
+                
+                year = today.strftime('%Y')
+                month = today.strftime('%m')
+                date_str = today.strftime('%d')
+                
+                folder_path = f"{startup_name}/attendance/{year}/{month}/{date_str}/{department_name}"
+                timestamp = timezone.now().strftime('%H%M%S')
+                filename = f"{folder_path}/checkout_{employee.employee_id}_{today.strftime('%Y%m%d')}_{timestamp}.{ext}"
+                
+                photo_file = ContentFile(base64.b64decode(imgstr), name=filename)
+                
+                print(f"📸 Check-out photo saved to: {filename}")
+                
+            except Exception as e:
+                print(f"Error processing photo: {e}")
+                messages.warning(request, 'There was an issue with the photo. Please try again.')
+
+        # Update attendance with check-out
+        if existing_attendance:
+            existing_attendance.check_out = check_out
+            if photo_file:
+                if existing_attendance.photo:
+                    try:
+                        existing_attendance.photo.delete(save=False)
+                    except:
+                        pass
+                existing_attendance.photo = photo_file
+            if location_lat is not None and location_lng is not None:
+                existing_attendance.location_lat = location_lat
+                existing_attendance.location_lng = location_lng
+                existing_attendance.location_address = location_address
+            existing_attendance.notes = notes
+            existing_attendance.device_info = request.META.get('HTTP_USER_AGENT', '')[:255]
+            existing_attendance.ip_address = request.META.get('REMOTE_ADDR', '')
+            existing_attendance.save()
+            messages.success(request, f'✅ Checked out at {check_out}!')
+        else:
+            messages.error(request, 'No attendance record found. Please check in first.')
+            return redirect('employee_portal_attendance_checkin')
+
+        return redirect('employee_portal_attendance')
+
+    # Get default timings from employee settings
+    default_check_out = employee.default_check_out
+    
+    context = {
+        'employee': employee,
+        'existing_attendance': existing_attendance,
+        'today': today,
+        'page_title': 'Check Out',
+        'page_icon': '🚀',
+        'default_check_out': default_check_out,
+        'action_type': 'check_out',
+        'check_in_time': existing_attendance.check_in.strftime('%H:%M') if existing_attendance and existing_attendance.check_in else None,
+    }
+    return render(request, 'people/employee_portal/attendance_checkout.html', context)
 
 
-
-import base64
-from django.core.files.base import ContentFile
-from django.utils import timezone
-from datetime import datetime
-
-# people/views.py - Fix the employee_portal_attendance_mark view
-
+# ============================================
+# ATTENDANCE MARK (Combined) VIEW
+# ============================================
 @login_required
 def employee_portal_attendance_mark(request):
-    """Employee mark their own attendance with photo capture."""
+    """Employee mark their own attendance with photo capture (Combined view)."""
     
     # Check if user is an employee
     if request.user.role != 'employee':
@@ -953,13 +1328,33 @@ def employee_portal_attendance_mark(request):
             check_in = None
         if check_out == '':
             check_out = None
+        if location_lat == '':
+            location_lat = None
+        if location_lng == '':
+            location_lng = None
+        if location_address == '':
+            location_address = None
         
-        # Convert time strings to time objects if they are strings
-        from datetime import datetime
+        # Convert location strings to Decimal if they exist
+        if location_lat:
+            try:
+                location_lat = float(location_lat)
+            except (ValueError, TypeError):
+                location_lat = None
         
-        check_in_time = None
-        check_out_time = None
+        if location_lng:
+            try:
+                location_lng = float(location_lng)
+            except (ValueError, TypeError):
+                location_lng = None
         
+        # Validate check-in/out relationship
+        if check_in and check_out and check_in >= check_out:
+            messages.error(request, 'Check Out time must be after Check In time.')
+            return redirect('employee_portal_attendance_mark')
+        
+        # Auto-detect check-in status
+        check_in_status = None
         if check_in:
             try:
                 check_in_time = datetime.strptime(check_in, '%H:%M').time()
@@ -968,56 +1363,42 @@ def employee_portal_attendance_mark(request):
                     check_in_time = datetime.strptime(check_in, '%H:%M:%S').time()
                 except ValueError:
                     check_in_time = None
-        
-        if check_out:
-            try:
-                check_out_time = datetime.strptime(check_out, '%H:%M').time()
-            except ValueError:
-                try:
-                    check_out_time = datetime.strptime(check_out, '%H:%M:%S').time()
-                except ValueError:
-                    check_out_time = None
-        
-        # Validate check-in/out
-        if check_in_time and check_out_time and check_in_time >= check_out_time:
-            messages.error(request, 'Check Out time must be after Check In time.')
-            return redirect('employee_portal_attendance_mark')
-        
-        # Auto-detect check-in status
-        check_in_status = None
-        if check_in_time:
-            # Get work start from employee settings or default
-            work_start = employee.work_start_time
-            if isinstance(work_start, str):
-                try:
-                    work_start = datetime.strptime(work_start, '%H:%M').time()
-                except ValueError:
-                    work_start = datetime.strptime('09:30', '%H:%M').time()
-            elif not work_start:
-                work_start = datetime.strptime('09:30', '%H:%M').time()
-            
-            if check_in_time < work_start:
-                check_in_status = 'early'
-            elif check_in_time == work_start:
-                check_in_status = 'on_time'
-            else:
-                check_in_dt = datetime.combine(today, check_in_time)
-                work_start_dt = datetime.combine(today, work_start)
-                diff_minutes = (check_in_dt - work_start_dt).total_seconds() / 60
+                    
+            if check_in_time:
+                # Get work start time
+                work_start = employee.work_start_time
                 
-                if diff_minutes <= 15:
-                    check_in_status = 'slightly_late'
-                elif diff_minutes <= 30:
-                    check_in_status = 'late'
+                # Handle different types
+                if work_start is None:
+                    work_start = datetime.strptime('09:30', '%H:%M').time()
+                elif isinstance(work_start, str):
+                    try:
+                        work_start = datetime.strptime(work_start, '%H:%M').time()
+                    except ValueError:
+                        work_start = datetime.strptime('09:30', '%H:%M').time()
+                elif not isinstance(work_start, time):
+                    work_start = datetime.strptime('09:30', '%H:%M').time()
+                
+                # Compare times
+                if check_in_time < work_start:
+                    check_in_status = 'early'
+                elif check_in_time == work_start:
+                    check_in_status = 'on_time'
                 else:
-                    check_in_status = 'very_late'
+                    check_in_dt = datetime.combine(today, check_in_time)
+                    work_start_dt = datetime.combine(today, work_start)
+                    diff_minutes = (check_in_dt - work_start_dt).total_seconds() / 60
+                    
+                    if diff_minutes <= 15:
+                        check_in_status = 'slightly_late'
+                    elif diff_minutes <= 30:
+                        check_in_status = 'late'
+                    else:
+                        check_in_status = 'very_late'
 
         # Handle photo upload
         photo_file = None
         if photo_data and photo_data != 'existing' and photo_data != '':
-            import base64
-            from django.core.files.base import ContentFile
-            
             try:
                 if ';base64,' in photo_data:
                     format, imgstr = photo_data.split(';base64,')
@@ -1026,9 +1407,21 @@ def employee_portal_attendance_mark(request):
                     imgstr = photo_data
                     ext = 'jpg'
                 
-                timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
-                filename = f"attendance_{employee.employee_id}_{today.strftime('%Y%m%d')}_{timestamp}.{ext}"
+                # Build organized folder structure
+                startup_name = slugify(employee.startup.company_name) if employee.startup else 'unknown'
+                department_name = slugify(employee.department.name) if employee.department else 'no-department'
+                
+                year = today.strftime('%Y')
+                month = today.strftime('%m')
+                date_str = today.strftime('%d')
+                
+                folder_path = f"{startup_name}/attendance/{year}/{month}/{date_str}/{department_name}"
+                timestamp = timezone.now().strftime('%H%M%S')
+                filename = f"{folder_path}/attendance_{employee.employee_id}_{today.strftime('%Y%m%d')}_{timestamp}.{ext}"
+                
                 photo_file = ContentFile(base64.b64decode(imgstr), name=filename)
+                
+                print(f"📸 Photo saved to: {filename}")
                 
             except Exception as e:
                 print(f"Error processing photo: {e}")
@@ -1036,12 +1429,13 @@ def employee_portal_attendance_mark(request):
 
         # Save attendance
         if existing_attendance:
+            # Update existing attendance
             existing_attendance.status = status
-            if check_in_time is not None:
-                existing_attendance.check_in = check_in_time
+            if check_in is not None:
+                existing_attendance.check_in = check_in
                 existing_attendance.check_in_status = check_in_status
-            if check_out_time is not None:
-                existing_attendance.check_out = check_out_time
+            if check_out is not None:
+                existing_attendance.check_out = check_out
             if photo_file:
                 if existing_attendance.photo:
                     try:
@@ -1049,7 +1443,7 @@ def employee_portal_attendance_mark(request):
                     except:
                         pass
                 existing_attendance.photo = photo_file
-            if location_lat and location_lng:
+            if location_lat is not None and location_lng is not None:
                 existing_attendance.location_lat = location_lat
                 existing_attendance.location_lng = location_lng
                 existing_attendance.location_address = location_address
@@ -1059,12 +1453,13 @@ def employee_portal_attendance_mark(request):
             existing_attendance.save()
             messages.success(request, 'Attendance updated successfully!')
         else:
+            # Create new attendance
             attendance = Attendance.objects.create(
                 employee=employee,
                 date=today,
                 status=status,
-                check_in=check_in_time,
-                check_out=check_out_time,
+                check_in=check_in,
+                check_out=check_out,
                 check_in_status=check_in_status,
                 notes=notes,
                 photo=photo_file,
@@ -1094,8 +1489,185 @@ def employee_portal_attendance_mark(request):
         'default_check_out': default_check_out,
     }
     return render(request, 'people/employee_portal/attendance_mark.html', context)
-# people/views.py - Add this at the top with other imports
 
+
+# ============================================
+# ATTENDANCE LIST VIEW
+# ============================================
+@login_required
+def employee_portal_attendance_list(request):
+    """Employee view their attendance history."""
+    
+    if request.user.role != 'employee':
+        messages.warning(request, 'This portal is for employees only.')
+        return redirect('people_dashboard')
+    
+    try:
+        employee = Employee.objects.get(user=request.user)
+    except Employee.DoesNotExist:
+        messages.error(request, 'Employee profile not found. Please contact HR.')
+        return redirect('people_dashboard')
+    
+    # Get attendance records for the employee
+    attendances = Attendance.objects.filter(employee=employee).order_by('-date')
+    
+    # Date range filter
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    if date_from:
+        try:
+            date_from = datetime.strptime(date_from, '%Y-%m-%d').date()
+            attendances = attendances.filter(date__gte=date_from)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            date_to = datetime.strptime(date_to, '%Y-%m-%d').date()
+            attendances = attendances.filter(date__lte=date_to)
+        except ValueError:
+            pass
+    
+    context = {
+        'employee': employee,
+        'attendances': attendances,
+        'today': timezone.now().date(),
+        'page_title': 'Attendance History',
+        'page_icon': '📊',
+        'date_from': date_from,
+        'date_to': date_to,
+    }
+    return render(request, 'people/employee_portal/attendance_list.html', context)
+
+
+# ============================================
+# API VIEWS FOR AJAX
+# ============================================
+@login_required
+def employee_attendance_checkin_api(request):
+    """API endpoint for check-in action."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    if request.user.role != 'employee':
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    try:
+        employee = Employee.objects.get(user=request.user)
+    except Employee.DoesNotExist:
+        return JsonResponse({'error': 'Employee not found'}, status=404)
+    
+    today = timezone.now().date()
+    now = timezone.now().time()
+    time_str = now.strftime('%H:%M')
+    
+    attendance, created = Attendance.objects.get_or_create(
+        employee=employee,
+        date=today,
+        defaults={
+            'status': 'Present',
+            'device_info': request.META.get('HTTP_USER_AGENT', '')[:255],
+            'ip_address': request.META.get('REMOTE_ADDR', '')
+        }
+    )
+    
+    if attendance.check_in:
+        return JsonResponse({
+            'success': False,
+            'error': 'Already checked in',
+            'check_in': attendance.check_in.strftime('%H:%M')
+        })
+    
+    # Process check-in
+    attendance.check_in = time_str
+    attendance.status = 'Present'
+    
+    # Auto-detect check-in status
+    work_start = employee.work_start_time or '09:30'
+    try:
+        check_in_time = datetime.strptime(time_str, '%H:%M').time()
+        work_start_time = datetime.strptime(work_start, '%H:%M').time()
+        
+        if check_in_time < work_start_time:
+            attendance.check_in_status = 'early'
+        elif check_in_time == work_start_time:
+            attendance.check_in_status = 'on_time'
+        else:
+            diff = (datetime.combine(today, check_in_time) - datetime.combine(today, work_start_time)).total_seconds() / 60
+            if diff <= 15:
+                attendance.check_in_status = 'slightly_late'
+            elif diff <= 30:
+                attendance.check_in_status = 'late'
+            else:
+                attendance.check_in_status = 'very_late'
+    except:
+        attendance.check_in_status = 'on_time'
+    
+    attendance.save()
+    
+    return JsonResponse({
+        'success': True,
+        'action': 'check_in',
+        'check_in': time_str,
+        'status': attendance.check_in_status,
+        'message': f'✅ Checked in at {time_str}'
+    })
+
+
+@login_required
+def employee_attendance_checkout_api(request):
+    """API endpoint for check-out action."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    if request.user.role != 'employee':
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    try:
+        employee = Employee.objects.get(user=request.user)
+    except Employee.DoesNotExist:
+        return JsonResponse({'error': 'Employee not found'}, status=404)
+    
+    today = timezone.now().date()
+    now = timezone.now().time()
+    time_str = now.strftime('%H:%M')
+    
+    try:
+        attendance = Attendance.objects.get(employee=employee, date=today)
+    except Attendance.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'No attendance record found. Please check in first.'
+        })
+    
+    if not attendance.check_in:
+        return JsonResponse({
+            'success': False,
+            'error': 'Please check in first'
+        })
+    
+    if attendance.check_out:
+        return JsonResponse({
+            'success': False,
+            'error': 'Already checked out',
+            'check_out': attendance.check_out.strftime('%H:%M')
+        })
+    
+    # Process check-out
+    attendance.check_out = time_str
+    attendance.save()
+    
+    return JsonResponse({
+        'success': True,
+        'action': 'check_out',
+        'check_out': time_str,
+        'message': f'✅ Checked out at {time_str}'
+    })
+
+    
+# people/views.py - Add this at the top with other imports
+from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, date, timedelta  # Add 'datetime' to the import
 @csrf_exempt
 @login_required
@@ -1243,7 +1815,56 @@ def employee_portal_payslips(request):
     }
     return render(request, 'people/employee_portal/payslips.html', context)
 
+@login_required
+def employee_portal_attendance_list(request):
+    """Employee attendance list view - View Only."""
+    
+    # Check if user is an employee
+    if request.user.role != 'employee':
+        messages.warning(request, 'This portal is for employees only.')
+        return redirect('people_dashboard')
+    
+    try:
+        employee = Employee.objects.get(user=request.user)
+    except Employee.DoesNotExist:
+        messages.error(request, 'Employee profile not found. Please contact HR.')
+        return redirect('people_dashboard')
 
+    attendances = Attendance.objects.filter(employee=employee).order_by('-date')
+
+    # Filters
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+    status = request.GET.get('status')
+
+    if from_date:
+        attendances = attendances.filter(date__gte=from_date)
+    if to_date:
+        attendances = attendances.filter(date__lte=to_date)
+    if status:
+        attendances = attendances.filter(status=status)
+
+    total_days = attendances.count()
+    present_days = attendances.filter(status='Present').count()
+    absent_days = attendances.filter(status='Absent').count()
+    leave_days = attendances.filter(status='Leave').count()
+    wfh_days = attendances.filter(status='WFH').count()
+    attendance_percentage = round((present_days / total_days) * 100, 1) if total_days > 0 else 0
+
+    context = {
+        'employee': employee,
+        'attendances': attendances,
+        'total_days': total_days,
+        'present_days': present_days,
+        'absent_days': absent_days,
+        'leave_days': leave_days,
+        'wfh_days': wfh_days,
+        'attendance_percentage': attendance_percentage,
+        'page_title': 'My Attendance',
+        'page_icon': '🕒',
+        'is_employee_portal': True,
+    }
+    return render(request, 'people/employee_portal/attendance.html', context)
 # ============================================================
 # DEPARTMENTS
 # ============================================================
@@ -1461,38 +2082,44 @@ def attendance_detail(request, id):
 
 # people/views.py - Updated attendance_update
 
+# people/views.py - attendance_update
+
+# people/views.py - attendance_update
+
 @login_required
 def attendance_update(request, id):
     """Update attendance."""
     startup = get_startup(request)
     attendance_record = get_object_or_404(Attendance, id=id, employee__startup=startup)
 
-    employees_list = Employee.objects.filter(startup=startup, is_active=True).select_related("user")
-
     if request.method == "POST":
-        form = AttendanceForm(request.POST, instance=attendance_record, startup=startup)
-        form.fields["employee"].queryset = employees_list
-        form.fields['employee'].required = False
+        # Don't include employee in the POST data for validation
+        post_data = request.POST.copy()
+        
+        # Remove employee from POST data to avoid validation errors
+        if 'employee' in post_data:
+            del post_data['employee']
+        
+        # Create form with modified POST data
+        form = AttendanceForm(post_data, instance=attendance_record, startup=startup)
+        
+        # Explicitly set the employee
+        form.instance.employee = attendance_record.employee
 
         if form.is_valid():
-            # Save the form without changing employee
             attendance = form.save(commit=False)
-            
-            # If employee is not set in POST, keep the original
-            if not attendance.employee:
-                attendance.employee = attendance_record.employee
-            
+            # Ensure the employee doesn't change
+            attendance.employee = attendance_record.employee
             attendance.save()
             messages.success(request, "Attendance updated successfully.")
             return redirect("attendance_detail", id=attendance_record.id)
         else:
             messages.error(request, "Please correct the errors below.")
+            print("Form errors:", form.errors)
     else:
         form = AttendanceForm(instance=attendance_record, startup=startup)
-        form.fields["employee"].queryset = employees_list
-        form.fields['employee'].required = False
-        form.fields['employee'].widget.attrs['disabled'] = True
-        form.fields['employee'].help_text = "Employee cannot be changed"
+        # Disable the employee field
+        form.fields['employee'].disabled = True
 
     context = {
         'form': form,
@@ -1501,6 +2128,7 @@ def attendance_update(request, id):
         'page_icon': '✏️',
     }
     return render(request, "people/attendance_update.html", context)
+
 
 @login_required
 def attendance_delete(request, id):

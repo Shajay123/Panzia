@@ -1,0 +1,774 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+{{ block.super }}
+<style>
+    /* ============================================
+       FINANCE BASE SIDEBAR STYLES
+       ============================================ */
+
+    /* ===== SIDE NAVIGATION ===== */
+    .finance-sidenav {
+        height: 100%;
+        width: 220px;
+        position: fixed;
+        z-index: 100;
+        top: 60px;
+        left: 0;
+        background: rgba(26, 16, 53, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-top: 20px;
+        padding-bottom: 30px;
+        border-right: 1px solid rgba(167, 139, 250, 0.06);
+        transition: all 0.3s ease;
+    }
+
+    .finance-sidenav::-webkit-scrollbar {
+        width: 3px;
+    }
+
+    .finance-sidenav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .finance-sidenav::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.2);
+        border-radius: 4px;
+    }
+
+    .finance-sidenav::-webkit-scrollbar-thumb:hover {
+        background: rgba(167, 139, 250, 0.3);
+    }
+
+    .finance-sidenav .nav-header {
+        padding: 0 16px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 8px;
+    }
+
+    .finance-sidenav .nav-header .nav-logo {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .finance-sidenav .nav-header .nav-logo span {
+        background: linear-gradient(135deg, #7c3aed, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .finance-sidenav .nav-close {
+        display: none;
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .finance-sidenav .nav-section {
+        padding: 0 12px;
+        margin-bottom: 4px;
+    }
+
+    .finance-sidenav .nav-section-title {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        color: #64748b;
+        padding: 8px 8px 4px;
+    }
+
+    .finance-sidenav .nav-item {
+        padding: 8px 14px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        margin-bottom: 2px;
+        position: relative;
+        cursor: pointer;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+    }
+
+    .finance-sidenav .nav-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: linear-gradient(180deg, #7c3aed, #ec4899);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .finance-sidenav .nav-item:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+    }
+
+    .finance-sidenav .nav-item:hover::before {
+        opacity: 1;
+    }
+
+    .finance-sidenav .nav-item.active {
+        background: rgba(124, 58, 237, 0.08);
+        color: #e8edf5;
+    }
+
+    .finance-sidenav .nav-item.active::before {
+        opacity: 1;
+    }
+
+    .finance-sidenav .nav-item .nav-icon {
+        font-size: 1.1rem;
+        width: 24px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .finance-sidenav .nav-item .nav-text {
+        flex: 1;
+        font-size: 0.82rem;
+    }
+
+    .finance-sidenav .nav-item .nav-badge {
+        font-size: 0.55rem;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 10px;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+        flex-shrink: 0;
+    }
+
+    .finance-sidenav .nav-item .nav-badge.new {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .finance-sidenav .nav-item .nav-badge.warning {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+    }
+
+    .finance-sidenav .nav-item .nav-badge.danger {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .finance-sidenav .nav-item .nav-arrow {
+        color: var(--text-secondary);
+        font-size: 0.7rem;
+        transition: transform 0.2s ease;
+        opacity: 0.5;
+    }
+
+    .finance-sidenav .nav-item:hover .nav-arrow {
+        transform: translateX(4px);
+        color: #a78bfa;
+        opacity: 1;
+    }
+
+    .finance-sidenav .nav-divider {
+        height: 1px;
+        background: rgba(167, 139, 250, 0.04);
+        margin: 6px 14px;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .finance-main {
+        margin-left: 220px;
+        padding: 20px 30px 40px;
+        min-height: 100vh;
+    }
+
+    /* ===== RESPONSIVE SIDENAV ===== */
+    .sidenav-toggle {
+        display: none;
+        position: fixed;
+        top: 72px;
+        left: 12px;
+        z-index: 101;
+        background: rgba(26, 16, 53, 0.9);
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        color: #e8edf5;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .sidenav-toggle:hover {
+        background: rgba(26, 16, 53, 1);
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    .sidenav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+
+    /* ===== FINANCE PAGE HEADER ===== */
+    .finance-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+        padding: 20px 24px;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+    }
+
+    .finance-page-header .header-left h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+        margin: 0;
+        background: linear-gradient(135deg, #e8edf5, #a78bfa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .finance-page-header .header-left p {
+        color: #94a3b8;
+        margin: 4px 0 0;
+        font-size: 0.9rem;
+    }
+
+    .finance-page-header .header-right {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    /* ============================================
+       ENHANCED BUTTON STYLES
+       ============================================ */
+
+    /* ----- Primary Button ----- */
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-primary::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(124, 58, 237, 0.4);
+    }
+
+    .btn-primary:hover:not(:disabled)::after {
+        width: 300px;
+        height: 300px;
+    }
+
+    .btn-primary:active:not(:disabled) {
+        transform: translateY(0px);
+        box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Primary - Green (Success) */
+    .btn-primary.green {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+    }
+
+    .btn-primary.green:hover:not(:disabled) {
+        box-shadow: 0 6px 24px rgba(34, 197, 94, 0.4);
+    }
+
+    /* Primary - Red (Danger) */
+    .btn-primary.danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-primary.danger:hover:not(:disabled) {
+        box-shadow: 0 6px 24px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Primary - Blue (Info) */
+    .btn-primary.blue {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-primary.blue:hover:not(:disabled) {
+        box-shadow: 0 6px 24px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Primary - Yellow (Warning) */
+    .btn-primary.yellow {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+        color: #0a0618;
+    }
+
+    .btn-primary.yellow:hover:not(:disabled) {
+        box-shadow: 0 6px 24px rgba(245, 158, 11, 0.4);
+    }
+
+    /* ----- Secondary Button ----- */
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.12);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-secondary::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(167, 139, 250, 0.1);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-secondary:hover:not(:disabled)::after {
+        width: 300px;
+        height: 300px;
+    }
+
+    .btn-secondary:active:not(:disabled) {
+        transform: translateY(0px);
+    }
+
+    .btn-secondary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Secondary - Outlined */
+    .btn-secondary.outlined {
+        background: transparent;
+        border: 1.5px solid rgba(167, 139, 250, 0.2);
+        color: #a78bfa;
+    }
+
+    .btn-secondary.outlined:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.05);
+        border-color: rgba(167, 139, 250, 0.4);
+        color: #c4b5fd;
+    }
+
+    /* Secondary - Ghost */
+    .btn-secondary.ghost {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        box-shadow: none;
+    }
+
+    .btn-secondary.ghost:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.05);
+        color: #e8edf5;
+        transform: none;
+    }
+
+    /* ----- Small Buttons ----- */
+    .btn-sm {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
+
+    /* ----- Large Buttons ----- */
+    .btn-lg {
+        padding: 14px 32px;
+        font-size: 1rem;
+        border-radius: 10px;
+    }
+
+    /* ----- Icon-only Buttons ----- */
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .btn-icon.btn-sm {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .btn-icon.btn-lg {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+    }
+
+    /* ----- Back Button ----- */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-back:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateX(-2px);
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+        .sidenav-toggle {
+            display: block;
+        }
+
+        .finance-sidenav {
+            width: 280px;
+            left: -300px;
+            transition: left 0.3s ease;
+            padding-top: 10px;
+        }
+
+        .finance-sidenav.open {
+            left: 0;
+        }
+
+        .finance-sidenav .nav-close {
+            display: block;
+        }
+
+        .sidenav-overlay.show {
+            display: block;
+        }
+
+        .finance-main {
+            margin-left: 0;
+            padding: 15px;
+            padding-top: 70px;
+        }
+
+        .finance-page-header {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px;
+        }
+
+        .finance-page-header .header-right {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .finance-page-header .header-right .btn-primary,
+        .finance-page-header .header-right .btn-secondary,
+        .finance-page-header .header-right .btn-back {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .finance-main {
+            padding: 10px;
+            padding-top: 65px;
+        }
+
+        .finance-page-header .header-left h1 {
+            font-size: 1.2rem;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-back {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ===== SIDENAV OVERLAY ===== -->
+<div class="sidenav-overlay" id="sidenavOverlay" onclick="closeSidenav()"></div>
+
+<!-- ===== SIDENAV TOGGLE BUTTON ===== -->
+<button class="sidenav-toggle" id="sidenavToggle" onclick="toggleSidenav()">
+    ☰ Menu
+</button>
+
+<!-- ===== SIDE NAVIGATION ===== -->
+<nav class="finance-sidenav" id="financeSidenav">
+    <button class="nav-close" onclick="closeSidenav()">✕</button>
+
+    <div class="nav-header">
+        <div class="nav-logo">
+            💰 <span>Finance</span>
+        </div>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">Overview</div>
+        <a href="{% url 'finance:finance_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'finance_dashboard' %}active{% endif %}">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Dashboard</span>
+        </a>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">Transactions</div>
+        <a href="{% url 'finance:income_list' %}" class="nav-item {% if request.resolver_match.url_name == 'income_list' or request.resolver_match.url_name == 'income_create' or request.resolver_match.url_name == 'income_edit' %}active{% endif %}">
+            <span class="nav-icon">💵</span>
+            <span class="nav-text">Income</span>
+        </a>
+        <a href="{% url 'finance:expense_list' %}" class="nav-item {% if request.resolver_match.url_name == 'expense_list' or request.resolver_match.url_name == 'expense_create' or request.resolver_match.url_name == 'expense_edit' %}active{% endif %}">
+            <span class="nav-icon">💸</span>
+            <span class="nav-text">Expenses</span>
+        </a>
+        <a href="{% url 'finance:invoice_list' %}" class="nav-item {% if request.resolver_match.url_name == 'invoice_list' or request.resolver_match.url_name == 'invoice_create' or request.resolver_match.url_name == 'invoice_detail' or request.resolver_match.url_name == 'invoice_edit' %}active{% endif %}">
+            <span class="nav-icon">🧾</span>
+            <span class="nav-text">Invoices</span>
+            <span class="nav-badge new">{{ total_invoices|default:0 }}</span>
+        </a>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">Accounts</div>
+        <a href="{% url 'finance:receivable_list' %}" class="nav-item {% if request.resolver_match.url_name == 'receivable_list' %}active{% endif %}">
+            <span class="nav-icon">📥</span>
+            <span class="nav-text">Receivable</span>
+            <span class="nav-badge warning">₹{{ total_receivable|floatformat:0|default:0 }}</span>
+        </a>
+        <a href="{% url 'finance:payable_list' %}" class="nav-item {% if request.resolver_match.url_name == 'payable_list' or request.resolver_match.url_name == 'payable_create' or request.resolver_match.url_name == 'payable_edit' %}active{% endif %}">
+            <span class="nav-icon">📤</span>
+            <span class="nav-text">Payable</span>
+            <span class="nav-badge warning">₹{{ total_payable|floatformat:0|default:0 }}</span>
+        </a>
+        <a href="{% url 'finance:vendor_list' %}" class="nav-item {% if request.resolver_match.url_name == 'vendor_list' or request.resolver_match.url_name == 'vendor_create' or request.resolver_match.url_name == 'vendor_edit' %}active{% endif %}">
+            <span class="nav-icon">🏢</span>
+            <span class="nav-text">Vendors</span>
+        </a>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">HR & Reports</div>
+        <a href="{% url 'finance:reimbursement_list' %}" class="nav-item {% if request.resolver_match.url_name == 'reimbursement_list' or request.resolver_match.url_name == 'reimbursement_create' or request.resolver_match.url_name == 'reimbursement_edit' or request.resolver_match.url_name == 'reimbursement_approve' %}active{% endif %}">
+            <span class="nav-icon">💳</span>
+            <span class="nav-text">Reimbursements</span>
+        </a>
+        <a href="{% url 'finance:profit_loss' %}" class="nav-item {% if request.resolver_match.url_name == 'profit_loss' %}active{% endif %}">
+            <span class="nav-icon">📈</span>
+            <span class="nav-text">P&amp;L Report</span>
+        </a>
+        <a href="{% url 'finance:cash_flow' %}" class="nav-item {% if request.resolver_match.url_name == 'cash_flow' %}active{% endif %}">
+            <span class="nav-icon">💳</span>
+            <span class="nav-text">Cash Flow</span>
+        </a>
+    </div>
+
+    
+    
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="finance-main">
+    <!-- Page Header -->
+    <div class="finance-page-header">
+        <div class="header-left">
+            <h1>{{ page_icon }} {{ page_title }}</h1>
+            <p>{{ page_subtitle|default:"Manage your financial operations" }}</p>
+        </div>
+        <div class="header-right">
+            {% block page_actions %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    {% block finance_content %}{% endblock %}
+</div>
+
+<script>
+    // ============================================
+    // SIDENAV TOGGLE
+    // ============================================
+    function toggleSidenav() {
+        const sidenav = document.getElementById('financeSidenav');
+        const overlay = document.getElementById('sidenavOverlay');
+        sidenav.classList.toggle('open');
+        overlay.classList.toggle('show');
+        document.body.style.overflow = sidenav.classList.contains('open') ? 'hidden' : '';
+    }
+
+    function closeSidenav() {
+        const sidenav = document.getElementById('financeSidenav');
+        const overlay = document.getElementById('sidenavOverlay');
+        sidenav.classList.remove('open');
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    // Close sidenav on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeSidenav();
+        }
+    });
+
+    // Close sidenav on window resize (if open and becomes desktop)
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeSidenav();
+        }
+    });
+
+    // ============================================
+    // RIPPLE EFFECT FOR BUTTONS
+    // ============================================
+    document.querySelectorAll('.btn-primary, .btn-secondary, .btn-back').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const ripple = document.createElement('span');
+            ripple.style.cssText = `
+                position: absolute;
+                top: ${y}px;
+                left: ${x}px;
+                width: 0;
+                height: 0;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                transform: translate(-50%, -50%);
+                transition: width 0.6s, height 0.6s;
+                pointer-events: none;
+            `;
+            
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+            
+            setTimeout(function() {
+                ripple.style.width = '300px';
+                ripple.style.height = '300px';
+            }, 10);
+            
+            setTimeout(function() {
+                ripple.remove();
+            }, 600);
+        });
+    });
+
+    console.log('💰 Finance Module Loaded');
+    console.log('📊 Current Page: {{ page_title }}');
+</script>
+{% endblock %}

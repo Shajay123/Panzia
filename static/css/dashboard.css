@@ -21,6 +21,28 @@ Modern SaaS UI
 
 }
 
+.website-link {
+    color: #a78bfa;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+}
+
+.website-link:hover {
+    color: #c4b5fd;
+    border-bottom-color: #a78bfa;
+}
+
+.website-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.website-icon {
+    font-size: 0.9rem;
+}
+
 /* =========================================
 PAGE
 ========================================= */

@@ -1,0 +1,184 @@
+{% extends 'finance/base_finance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'finance:payable_list' %}" class="btn-secondary">← Back to Payables</a>
+{% endblock %}
+
+{% block finance_content %}
+<style>
+    .delete-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .delete-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 32px 24px;
+        text-align: center;
+    }
+
+    .delete-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.7;
+    }
+
+    .delete-card h2 {
+        color: #f87171;
+        font-size: 1.4rem;
+        margin: 0 0 8px 0;
+    }
+
+    .delete-card .delete-message {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+
+    .delete-card .delete-details {
+        background: rgba(239, 68, 68, 0.05);
+        border: 1px solid rgba(239, 68, 68, 0.08);
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0 24px 0;
+        text-align: left;
+    }
+
+    .delete-card .delete-details .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.9rem;
+    }
+
+    .delete-card .delete-details .detail-row .label {
+        color: #94a3b8;
+    }
+
+    .delete-card .delete-details .detail-row .value {
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    .delete-card .delete-details .detail-row .value.amount {
+        color: #f87171;
+    }
+
+    .delete-card .delete-details .detail-row .value.vendor {
+        color: #a78bfa;
+    }
+
+    .delete-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 8px;
+    }
+
+    .btn-danger {
+        padding: 10px 28px;
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-cancel {
+        padding: 10px 28px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .warning-text {
+        color: #fbbf24;
+        font-size: 0.85rem;
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: rgba(251, 191, 36, 0.06);
+        border-radius: 6px;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+</style>
+
+<div class="delete-container">
+    <div class="delete-card">
+        <span class="delete-icon">🗑️</span>
+        <h2>Confirm Deletion</h2>
+        <p class="delete-message">
+            Are you sure you want to delete this payable entry?
+            <br>
+            This action <strong>cannot be undone</strong>.
+        </p>
+
+        <div class="delete-details">
+            <div class="detail-row">
+                <span class="label">Vendor</span>
+                <span class="value vendor">{{ payable.vendor.vendor_name|default:"-" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Amount</span>
+                <span class="value amount">₹{{ payable.amount|floatformat:0|default:"0" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Due Date</span>
+                <span class="value">{{ payable.due_date|date:"d M Y"|default:"-" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Status</span>
+                <span class="value">
+                    <span class="status-badge {% if payable.paid %}paid{% else %}pending{% endif %}" style="font-size:0.75rem;">
+                        {% if payable.paid %}✅ Paid{% else %}⏳ Pending{% endif %}
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        <div class="warning-text">
+            ⚠️ This will permanently remove this payable entry from your records.
+        </div>
+
+        <div class="delete-actions">
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-danger">🗑️ Confirm Delete</button>
+            </form>
+            <a href="{% url 'finance:payable_list' %}" class="btn-cancel">Cancel</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🗑️ Delete Confirmation Page Loaded');
+        console.log('📤 Deleting payable for: {{ payable.vendor.vendor_name|default:"-" }}');
+        console.log('💰 Amount: ₹{{ payable.amount|floatformat:0|default:"0" }}');
+    });
+</script>
+{% endblock %}

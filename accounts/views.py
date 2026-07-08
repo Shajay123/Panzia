@@ -97,3 +97,26 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+
+# views.py
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def onboarding(request):
+    """Onboarding page after registration"""
+    
+    # Get the role from URL or session
+    role = request.GET.get('role', 'startup_owner')
+    
+    # If user already completed onboarding, redirect to dashboard
+    if request.user.is_authenticated and hasattr(request.user, 'profile_completed'):
+        return redirect('dashboard')
+    
+    context = {
+        'role': role,
+        'page_title': 'Onboarding - PANZIA',
+    }
+    return render(request, 'accounts/onboarding.html', context)

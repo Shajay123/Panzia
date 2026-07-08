@@ -1,6 +1,7 @@
-
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
+from datetime import datetime, timedelta, time
 from startups.models import StartupProfile
 
 
@@ -40,6 +41,64 @@ class Department(models.Model):
     def __str__(self):
         return self.name
 
+
+# ==========================================
+# DEPARTMENT TIMING CONFIG
+# ==========================================
+
+class DepartmentTimingConfig(models.Model):
+    """Department-level attendance timing configuration"""
+    
+    department = models.OneToOneField(
+        Department,
+        on_delete=models.CASCADE,
+        related_name='timing_config'
+    )
+    
+    # Timing Settings
+    work_start_time = models.TimeField(default='09:30')
+    work_end_time = models.TimeField(default='18:30')
+    grace_period_minutes = models.IntegerField(default=15)
+    half_day_hours = models.DecimalField(max_digits=4, decimal_places=2, default=4.00)
+    full_day_hours = models.DecimalField(max_digits=4, decimal_places=2, default=8.00)
+    
+    # Shift Settings
+    shift = models.CharField(max_length=50, blank=True, null=True, choices=[
+        ('morning', 'Morning Shift (9:30 AM - 6:30 PM)'),
+        ('evening', 'Evening Shift (2:00 PM - 11:00 PM)'),
+        ('night', 'Night Shift (10:00 PM - 7:00 AM)'),
+        ('flexible', 'Flexible Hours'),
+        ('remote', 'Remote Work'),
+    ])
+    
+    # Holiday Settings
+    weekly_off_days = models.JSONField(default=list, blank=True, help_text="List of weekly off days (0=Monday, 6=Sunday)")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.department.name} Timing Config"
+
+def get_attendance_photo_path(instance, filename):
+    """Generate organized path for attendance photos."""
+    from django.utils.text import slugify
+    import os
+    from datetime import datetime
+    
+    # Get employee and startup info
+    employee = instance.employee
+    startup_name = slugify(employee.startup.company_name) if employee.startup else 'unknown'
+    department_name = slugify(employee.department.name) if employee.department else 'no-department'
+    
+    # Get date from instance or today
+    date_obj = instance.date or datetime.now().date()
+    year = date_obj.strftime('%Y')
+    month = date_obj.strftime('%m')
+    day = date_obj.strftime('%d')
+    
+    # Build path: startup_name/attendance/year/month/day/department/
+    return f"{startup_name}/attendance/{year}/{month}/{day}/{department_name}/{filename}"
 
 # ==========================================
 # EMPLOYEE
@@ -112,6 +171,20 @@ class Employee(models.Model):
         null=True,
         blank=True,
         related_name="team_members"
+    )
+
+    phone = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,  # ✅ Allow NULL
+        default=None  # ✅ Default to None
+    )
+
+    emergency_contact = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,  # ✅ Allow NULL
+        default=None  # ✅ Default to None
     )
 
     designation = models.CharField(
@@ -195,7 +268,6 @@ class Employee(models.Model):
         auto_now=True
     )
 
-
     # Attendance Timing Configuration
     default_check_in = models.TimeField(null=True, blank=True, help_text="Default check-in time")
     default_check_out = models.TimeField(null=True, blank=True, help_text="Default check-out time")
@@ -228,53 +300,9 @@ class Employee(models.Model):
         return f"{self.user.get_full_name()} ({self.employee_id})"
 
 
-
-# people/models.py - Add Department Timing Config
-
-class DepartmentTimingConfig(models.Model):
-    """Department-level attendance timing configuration"""
-    
-    department = models.OneToOneField(
-        Department,
-        on_delete=models.CASCADE,
-        related_name='timing_config'
-    )
-    
-    # Timing Settings
-    work_start_time = models.TimeField(default='09:30')
-    work_end_time = models.TimeField(default='18:30')
-    grace_period_minutes = models.IntegerField(default=15)
-    half_day_hours = models.DecimalField(max_digits=4, decimal_places=2, default=4.00)
-    full_day_hours = models.DecimalField(max_digits=4, decimal_places=2, default=8.00)
-    
-    # Shift Settings
-    shift = models.CharField(max_length=50, blank=True, null=True, choices=[
-        ('morning', 'Morning Shift (9:30 AM - 6:30 PM)'),
-        ('evening', 'Evening Shift (2:00 PM - 11:00 PM)'),
-        ('night', 'Night Shift (10:00 PM - 7:00 AM)'),
-        ('flexible', 'Flexible Hours'),
-        ('remote', 'Remote Work'),
-    ])
-    
-    # Holiday Settings
-    weekly_off_days = models.JSONField(default=list, blank=True, help_text="List of weekly off days (0=Monday, 6=Sunday)")
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.department.name} Timing Config"
-# =====================================
-
+# ==========================================
 # ATTENDANCE
-
-# =====================================
-
-from datetime import datetime
-
-from django.db import models
-from datetime import datetime, timedelta
-from django.utils import timezone
+# ==========================================
 
 class Attendance(models.Model):
 
@@ -322,12 +350,8 @@ class Attendance(models.Model):
         null=True
     )
 
-    # ============================================
-    # NEW FIELDS FOR ENHANCED ATTENDANCE
-    # ============================================
-    
     photo = models.ImageField(
-        upload_to='attendance_photos/',
+        upload_to=get_attendance_photo_path,  # Use the helper function
         blank=True,
         null=True,
         help_text="Attendance verification photo"
@@ -376,10 +400,7 @@ class Attendance(models.Model):
         help_text="IP address of the device"
     )
     
-    # ============================================
-    # TIMING CONFIGURATION (can be overridden)
-    # ============================================
-    
+    # Timing Configuration
     work_start_time = models.TimeField(
         null=True,
         blank=True,
@@ -408,10 +429,6 @@ class Attendance(models.Model):
         default=False,
         help_text="Whether this attendance has overtime"
     )
-    
-    # ============================================
-    # META
-    # ============================================
 
     class Meta:
         unique_together = ("employee", "date")
@@ -423,65 +440,92 @@ class Attendance(models.Model):
         return f"{self.employee} - {self.date} - {self.status}"
 
     # ============================================
-    # PROPERTIES
+    # PROPERTIES - FIXED
     # ============================================
 
     @property
     def working_hours(self):
         """Get working hours as formatted string."""
-        if self.check_in and self.check_out:
-            start = datetime.combine(self.date, self.check_in)
-            end = datetime.combine(self.date, self.check_out)
-            
-            # Handle overnight shifts (if check_out is earlier than check_in)
-            if end < start:
-                end += timedelta(days=1)
-            
-            diff = end - start
-            hours = diff.seconds // 3600
-            minutes = (diff.seconds % 3600) // 60
-            return f"{hours}h {minutes}m"
-        return "-"
-
-    # people/models.py - Update working_hours_decimal property
+        if not self.check_in or not self.check_out:
+            return "-"
+        
+        # Get time objects
+        check_in_time = self.check_in
+        check_out_time = self.check_out
+        
+        # Convert to time objects if they are strings
+        if isinstance(check_in_time, str):
+            try:
+                check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
+                except ValueError:
+                    return "-"
+        
+        if isinstance(check_out_time, str):
+            try:
+                check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
+                except ValueError:
+                    return "-"
+        
+        if not isinstance(check_in_time, time) or not isinstance(check_out_time, time):
+            return "-"
+        
+        start = datetime.combine(self.date, check_in_time)
+        end = datetime.combine(self.date, check_out_time)
+        
+        # Handle overnight shifts
+        if end < start:
+            end += timedelta(days=1)
+        
+        diff = end - start
+        hours = diff.seconds // 3600
+        minutes = (diff.seconds % 3600) // 60
+        return f"{hours}h {minutes}m"
 
     @property
     def working_hours_decimal(self):
         """Get working hours as decimal (e.g., 8.5 for 8h 30m)."""
-        from datetime import datetime
+        if not self.check_in or not self.check_out:
+            return 0
         
-        if self.check_in and self.check_out:
-            # Convert to time objects if they are strings
-            check_in_time = self.check_in
-            check_out_time = self.check_out
-            
-            if isinstance(check_in_time, str):
+        # Convert to time objects if they are strings
+        check_in_time = self.check_in
+        check_out_time = self.check_out
+        
+        if isinstance(check_in_time, str):
+            try:
+                check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+            except ValueError:
                 try:
-                    check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+                    check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
                 except ValueError:
-                    try:
-                        check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
-                    except ValueError:
-                        return 0
-            
-            if isinstance(check_out_time, str):
+                    return 0
+        
+        if isinstance(check_out_time, str):
+            try:
+                check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+            except ValueError:
                 try:
-                    check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+                    check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
                 except ValueError:
-                    try:
-                        check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
-                    except ValueError:
-                        return 0
-            
-            start = datetime.combine(self.date, check_in_time)
-            end = datetime.combine(self.date, check_out_time)
-            
-            if end < start:
-                end += timedelta(days=1)
-            
-            diff = end - start
-            return round(diff.total_seconds() / 3600, 2)
-        return 0
+                    return 0
+        
+        if not isinstance(check_in_time, time) or not isinstance(check_out_time, time):
+            return 0
+        
+        start = datetime.combine(self.date, check_in_time)
+        end = datetime.combine(self.date, check_out_time)
+        
+        if end < start:
+            end += timedelta(days=1)
+        
+        diff = end - start
+        return round(diff.total_seconds() / 3600, 2)
 
     @property
     def is_late(self):
@@ -489,11 +533,39 @@ class Attendance(models.Model):
         if not self.check_in:
             return False
         
-        work_start = self.work_start_time or datetime.strptime('09:30', '%H:%M').time()
-        check_in_time = datetime.combine(self.date, self.check_in)
+        # Get check_in as time object
+        check_in_time = self.check_in
+        if isinstance(check_in_time, str):
+            try:
+                check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
+                except ValueError:
+                    return False
+        
+        if not isinstance(check_in_time, time):
+            return False
+        
+        # Get work start time
+        work_start = self.work_start_time
+        if work_start is None:
+            work_start = datetime.strptime('09:30', '%H:%M').time()
+        elif isinstance(work_start, str):
+            try:
+                work_start = datetime.strptime(work_start, '%H:%M').time()
+            except ValueError:
+                try:
+                    work_start = datetime.strptime(work_start, '%H:%M:%S').time()
+                except ValueError:
+                    work_start = datetime.strptime('09:30', '%H:%M').time()
+        elif not isinstance(work_start, time):
+            work_start = datetime.strptime('09:30', '%H:%M').time()
+        
+        check_in_dt = datetime.combine(self.date, check_in_time)
         work_start_dt = datetime.combine(self.date, work_start)
         
-        diff_minutes = (check_in_time - work_start_dt).total_seconds() / 60
+        diff_minutes = (check_in_dt - work_start_dt).total_seconds() / 60
         grace = self.grace_period_minutes or 15
         
         return diff_minutes > grace
@@ -504,11 +576,37 @@ class Attendance(models.Model):
         if not self.check_out:
             return False
         
-        work_end = self.work_end_time or datetime.strptime('18:30', '%H:%M').time()
-        check_out_time = datetime.combine(self.date, self.check_out)
+        check_out_time = self.check_out
+        if isinstance(check_out_time, str):
+            try:
+                check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
+                except ValueError:
+                    return False
+        
+        if not isinstance(check_out_time, time):
+            return False
+        
+        work_end = self.work_end_time
+        if work_end is None:
+            work_end = datetime.strptime('18:30', '%H:%M').time()
+        elif isinstance(work_end, str):
+            try:
+                work_end = datetime.strptime(work_end, '%H:%M').time()
+            except ValueError:
+                try:
+                    work_end = datetime.strptime(work_end, '%H:%M:%S').time()
+                except ValueError:
+                    work_end = datetime.strptime('18:30', '%H:%M').time()
+        elif not isinstance(work_end, time):
+            work_end = datetime.strptime('18:30', '%H:%M').time()
+        
+        check_out_dt = datetime.combine(self.date, check_out_time)
         work_end_dt = datetime.combine(self.date, work_end)
         
-        diff_minutes = (work_end_dt - check_out_time).total_seconds() / 60
+        diff_minutes = (work_end_dt - check_out_dt).total_seconds() / 60
         return diff_minutes > 0
 
     @property
@@ -536,18 +634,43 @@ class Attendance(models.Model):
     @property
     def duration_minutes(self):
         """Get total duration in minutes."""
-        if self.check_in and self.check_out:
-            start = datetime.combine(self.date, self.check_in)
-            end = datetime.combine(self.date, self.check_out)
-            
-            if end < start:
-                end += timedelta(days=1)
-            
-            return int((end - start).total_seconds() / 60)
-        return 0
+        if not self.check_in or not self.check_out:
+            return 0
+        
+        check_in_time = self.check_in
+        check_out_time = self.check_out
+        
+        if isinstance(check_in_time, str):
+            try:
+                check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
+                except ValueError:
+                    return 0
+        
+        if isinstance(check_out_time, str):
+            try:
+                check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
+                except ValueError:
+                    return 0
+        
+        if not isinstance(check_in_time, time) or not isinstance(check_out_time, time):
+            return 0
+        
+        start = datetime.combine(self.date, check_in_time)
+        end = datetime.combine(self.date, check_out_time)
+        
+        if end < start:
+            end += timedelta(days=1)
+        
+        return int((end - start).total_seconds() / 60)
 
     # ============================================
-    # METHODS
+    # METHODS - FIXED
     # ============================================
 
     def get_check_in_status(self, work_start=None):
@@ -558,12 +681,39 @@ class Attendance(models.Model):
         if not self.check_in:
             return None
         
-        work_start_time = work_start or self.work_start_time or datetime.strptime('09:30', '%H:%M').time()
+        # Get check_in as time object
+        check_in_time = self.check_in
+        if isinstance(check_in_time, str):
+            try:
+                check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
+                except ValueError:
+                    return None
         
-        check_in_time = datetime.combine(self.date, self.check_in)
+        if not isinstance(check_in_time, time):
+            return None
+        
+        # Get work start time
+        work_start_time = work_start or self.work_start_time
+        if work_start_time is None:
+            work_start_time = datetime.strptime('09:30', '%H:%M').time()
+        elif isinstance(work_start_time, str):
+            try:
+                work_start_time = datetime.strptime(work_start_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    work_start_time = datetime.strptime(work_start_time, '%H:%M:%S').time()
+                except ValueError:
+                    work_start_time = datetime.strptime('09:30', '%H:%M').time()
+        elif not isinstance(work_start_time, time):
+            work_start_time = datetime.strptime('09:30', '%H:%M').time()
+        
+        check_in_dt = datetime.combine(self.date, check_in_time)
         work_start_dt = datetime.combine(self.date, work_start_time)
         
-        diff_minutes = (check_in_time - work_start_dt).total_seconds() / 60
+        diff_minutes = (check_in_dt - work_start_dt).total_seconds() / 60
         
         if diff_minutes < -15:  # More than 15 minutes early
             return 'early'
@@ -581,14 +731,66 @@ class Attendance(models.Model):
         if not self.check_in or not self.check_out:
             return 0
         
-        work_end_time = work_end or self.work_end_time or datetime.strptime('18:30', '%H:%M').time()
+        # Get check_in and check_out as time objects
+        check_in_time = self.check_in
+        check_out_time = self.check_out
         
-        check_out_time = datetime.combine(self.date, self.check_out)
-        work_end_dt = datetime.combine(self.date, work_end_time)
+        # Convert to time objects if they are strings
+        if isinstance(check_in_time, str):
+            try:
+                check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
+                except ValueError:
+                    return 0
         
-        # If check_out is after work_end, calculate overtime
-        if check_out_time > work_end_dt:
-            diff = check_out_time - work_end_dt
+        if isinstance(check_out_time, str):
+            try:
+                check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
+                except ValueError:
+                    return 0
+        
+        # If they are still not time objects, return 0
+        if not isinstance(check_in_time, time) or not isinstance(check_out_time, time):
+            return 0
+        
+        # Get work end time
+        if work_end:
+            if isinstance(work_end, str):
+                try:
+                    work_end = datetime.strptime(work_end, '%H:%M').time()
+                except ValueError:
+                    try:
+                        work_end = datetime.strptime(work_end, '%H:%M:%S').time()
+                    except ValueError:
+                        work_end = datetime.strptime('18:30', '%H:%M').time()
+            elif not isinstance(work_end, time):
+                work_end = datetime.strptime('18:30', '%H:%M').time()
+        else:
+            work_end = self.work_end_time
+            if work_end is None:
+                work_end = datetime.strptime('18:30', '%H:%M').time()
+            elif isinstance(work_end, str):
+                try:
+                    work_end = datetime.strptime(work_end, '%H:%M').time()
+                except ValueError:
+                    try:
+                        work_end = datetime.strptime(work_end, '%H:%M:%S').time()
+                    except ValueError:
+                        work_end = datetime.strptime('18:30', '%H:%M').time()
+            elif not isinstance(work_end, time):
+                work_end = datetime.strptime('18:30', '%H:%M').time()
+        
+        # Calculate overtime
+        check_out_dt = datetime.combine(self.date, check_out_time)
+        work_end_dt = datetime.combine(self.date, work_end)
+        
+        if check_out_dt > work_end_dt:
+            diff = check_out_dt - work_end_dt
             overtime = diff.total_seconds() / 3600
             return round(overtime, 2)
         
@@ -624,8 +826,32 @@ class Attendance(models.Model):
         if not self.check_in or not self.check_out:
             return '-'
         
-        start = datetime.combine(self.date, self.check_in)
-        end = datetime.combine(self.date, self.check_out)
+        check_in_time = self.check_in
+        check_out_time = self.check_out
+        
+        if isinstance(check_in_time, str):
+            try:
+                check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
+                except ValueError:
+                    return '-'
+        
+        if isinstance(check_out_time, str):
+            try:
+                check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
+            except ValueError:
+                try:
+                    check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
+                except ValueError:
+                    return '-'
+        
+        if not isinstance(check_in_time, time) or not isinstance(check_out_time, time):
+            return '-'
+        
+        start = datetime.combine(self.date, check_in_time)
+        end = datetime.combine(self.date, check_out_time)
         
         if end < start:
             end += timedelta(days=1)
@@ -687,95 +913,38 @@ class Attendance(models.Model):
 
     def is_working_day(self):
         """Check if this is a working day."""
-        # Monday=0, Sunday=6
         weekday = self.date.weekday()
-        # Saturday (5) and Sunday (6) are weekends
         return weekday < 5
 
     def get_weekday(self):
         """Get weekday name."""
         weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         return weekdays[self.date.weekday()]
-    
 
-# people/models.py - Fix the calculate_overtime method
 
-def calculate_overtime(self, work_end=None):
-    """Calculate overtime hours if any."""
-    if not self.check_in or not self.check_out:
-        return 0
-    
-    # Convert string to time if needed
-    from datetime import datetime, time
-    
-    check_in_time = self.check_in
-    check_out_time = self.check_out
-    
-    # If they are strings, convert to time objects
-    if isinstance(check_in_time, str):
-        try:
-            check_in_time = datetime.strptime(check_in_time, '%H:%M').time()
-        except ValueError:
-            try:
-                check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
-            except ValueError:
-                return 0
-    
-    if isinstance(check_out_time, str):
-        try:
-            check_out_time = datetime.strptime(check_out_time, '%H:%M').time()
-        except ValueError:
-            try:
-                check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
-            except ValueError:
-                return 0
-    
-    # Get work end time
-    if work_end:
-        if isinstance(work_end, str):
-            try:
-                work_end = datetime.strptime(work_end, '%H:%M').time()
-            except ValueError:
-                try:
-                    work_end = datetime.strptime(work_end, '%H:%M:%S').time()
-                except ValueError:
-                    work_end = datetime.strptime('18:30', '%H:%M').time()
-    else:
-        work_end = self.work_end_time or datetime.strptime('18:30', '%H:%M').time()
-        if isinstance(work_end, str):
-            try:
-                work_end = datetime.strptime(work_end, '%H:%M').time()
-            except ValueError:
-                try:
-                    work_end = datetime.strptime(work_end, '%H:%M:%S').time()
-                except ValueError:
-                    work_end = datetime.strptime('18:30', '%H:%M').time()
-    
-    # Calculate overtime
-    check_out_dt = datetime.combine(self.date, check_out_time)
-    work_end_dt = datetime.combine(self.date, work_end)
-    
-    if check_out_dt > work_end_dt:
-        diff = check_out_dt - work_end_dt
-        overtime = diff.total_seconds() / 3600
-        return round(overtime, 2)
-    
-    return 0
-# =====================================
-
+# ==========================================
 # LEAVE REQUEST
-
-# =====================================
+# ==========================================
 
 class LeaveRequest(models.Model):
 
 
-    STATUS = (
+    LEAVE_TYPES = [
+        ('casual', 'Casual Leave'),
+        ('sick', 'Sick Leave'),
+        ('annual', 'Annual Leave'),
+        ('earned', 'Earned Leave'),
+        ('maternity', 'Maternity Leave'),
+        ('paternity', 'Paternity Leave'),
+        ('bereavement', 'Bereavement Leave'),
+        ('study', 'Study Leave'),
+        ('other', 'Other'),
+    ]
 
+    STATUS = (
         ("Pending", "Pending"),
         ("Approved", "Approved"),
         ("Rejected", "Rejected"),
-
     )
 
     employee = models.ForeignKey(
@@ -784,7 +953,9 @@ class LeaveRequest(models.Model):
     )
 
     leave_type = models.CharField(
-        max_length=100
+        max_length=100,
+        choices=LEAVE_TYPES,
+        default='casual'
     )
 
     from_date = models.DateField()
@@ -814,17 +985,9 @@ class LeaveRequest(models.Model):
         return f"{self.employee} - {self.leave_type}"
 
 
-# =====================================
-
+# ==========================================
 # PAYROLL
-
-# =====================================
-
-# models.py - Final version
-
-from django.db import models
-from django.utils import timezone
-
+# ==========================================
 
 class Payroll(models.Model):
     
@@ -893,13 +1056,140 @@ class Payroll(models.Model):
         return f"{self.employee} - {self.month} {self.year}"
 
 
-# =====================================
+# ==========================================
+# PAYSLIP
+# ==========================================
 
+class Payslip(models.Model):
+    payroll = models.OneToOneField(
+        Payroll,
+        on_delete=models.CASCADE,
+        related_name='payslip'
+    )
+    pdf = models.FileField(
+        upload_to='payslips/',
+        blank=True,
+        null=True,
+        help_text='Generated PDF file'
+    )
+    html_content = models.TextField(
+        blank=True,
+        null=True,
+        help_text='HTML content for the payslip'
+    )
+    generated_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    is_generated = models.BooleanField(
+        default=False,
+        help_text='Whether the payslip has been generated'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='Timestamp when the payslip record was created'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text='Timestamp when the payslip was last updated'
+    )
+
+    class Meta:
+        ordering = ['-generated_at']
+        verbose_name = 'Payslip'
+        verbose_name_plural = 'Payslips'
+        indexes = [
+            models.Index(fields=['generated_at']),
+            models.Index(fields=['is_generated']),
+            models.Index(fields=['payroll']),
+        ]
+
+    def __str__(self):
+        return f"{self.payroll.employee} - {self.payroll.month} {self.payroll.year}"
+
+    def get_employee_name(self):
+        return self.payroll.employee.user.get_full_name()
+
+    def get_month_year(self):
+        return f"{self.payroll.month} {self.payroll.year}"
+
+    def get_net_salary(self):
+        return self.payroll.net_salary
+
+    def get_employee_id(self):
+        return self.payroll.employee.employee_id
+
+    def get_designation(self):
+        return self.payroll.employee.designation
+
+    def get_department(self):
+        return self.payroll.employee.department.name if self.payroll.employee.department else "-"
+
+    def get_basic_salary(self):
+        return self.payroll.basic_salary
+
+    def get_allowances(self):
+        return self.payroll.allowances
+
+    def get_deductions(self):
+        return self.payroll.deductions
+
+    def get_paid_date(self):
+        return self.payroll.paid_date
+
+    def is_paid(self):
+        return self.payroll.paid
+
+    def get_company_name(self):
+        return self.payroll.employee.startup.company_name if self.payroll.employee.startup else "Company"
+
+    def get_payslip_id(self):
+        return f"PS-{self.id:06d}"
+
+    def get_pdf_filename(self):
+        if self.pdf:
+            return self.pdf.name.split('/')[-1]
+        return None
+
+    def get_pdf_size(self):
+        if self.pdf and self.pdf.file:
+            size = self.pdf.file.size
+            for unit in ['B', 'KB', 'MB', 'GB']:
+                if size < 1024.0:
+                    return f"{size:.2f} {unit}"
+                size /= 1024.0
+        return None
+
+    def get_generated_time_ago(self):
+        from django.utils.timesince import timesince
+        return timesince(self.generated_at, timezone.now())
+
+    def get_payslip_data(self):
+        return {
+            'id': self.id,
+            'payslip_id': self.get_payslip_id(),
+            'employee_name': self.get_employee_name(),
+            'employee_id': self.get_employee_id(),
+            'designation': self.get_designation(),
+            'department': self.get_department(),
+            'month': self.payroll.month,
+            'year': self.payroll.year,
+            'basic_salary': float(self.get_basic_salary()),
+            'allowances': float(self.get_allowances()),
+            'deductions': float(self.get_deductions()),
+            'net_salary': float(self.get_net_salary()),
+            'paid_date': self.get_paid_date(),
+            'is_paid': self.is_paid(),
+            'is_generated': self.is_generated,
+            'generated_at': self.generated_at,
+            'company_name': self.get_company_name(),
+            'pdf_filename': self.get_pdf_filename(),
+            'pdf_size': self.get_pdf_size(),
+        }
+
+
+# ==========================================
 # PERFORMANCE REVIEW
-
-# =====================================
-
-# models.py - PerformanceReview Model
+# ==========================================
 
 class PerformanceReview(models.Model):
     RATING_CHOICES = [
@@ -980,14 +1270,12 @@ class PerformanceReview(models.Model):
         }
         return labels.get(self.rating, 'Unknown')
 
-# =====================================
 
+# ==========================================
 # EMPLOYEE DOCUMENTS
-
-# =====================================
+# ==========================================
 
 class EmployeeDocument(models.Model):
-
 
     employee = models.ForeignKey(
         Employee,
@@ -1010,9 +1298,20 @@ class EmployeeDocument(models.Model):
         return self.title
 
 
+# ==========================================
+# HOLIDAY
+# ==========================================
 
+from django.db import models
+from django.utils import timezone
+from django.conf import settings
 
-# models.py - Simple Holiday model without auto_now_add
+# Import StartupProfile from the startup app
+from startups.models import StartupProfile
+
+# You can create an alias for easier use
+Startup = StartupProfile  # This allows you to use 'Startup' instead of 'StartupProfile'
+
 
 class Holiday(models.Model):
     HOLIDAY_TYPES = [
@@ -1044,6 +1343,17 @@ class Holiday(models.Model):
         default=True,
         help_text='Whether this is a company-wide holiday'
     )
+    
+    # ForeignKey to StartupProfile (from startup app)
+    startup = models.ForeignKey(
+        StartupProfile,  # Use StartupProfile directly
+        on_delete=models.CASCADE,
+        related_name='holidays',
+        null=True,
+        blank=True,
+        help_text='Startup this holiday belongs to (leave blank for system-wide)'
+    )
+    
     created_at = models.DateTimeField(
         auto_now_add=True,
         null=True,
@@ -1059,16 +1369,17 @@ class Holiday(models.Model):
         ordering = ['date']
         verbose_name = 'Holiday'
         verbose_name_plural = 'Holidays'
+        # Prevent duplicate holidays for same startup on same date
+        unique_together = ['startup', 'date', 'name']
 
     def __str__(self):
-        return f"{self.name} ({self.date.strftime('%d %b %Y')})"
+        startup_name = f" ({self.startup.company_name})" if self.startup else " (System)"
+        return f"{self.name} ({self.date.strftime('%d %b %Y')}){startup_name}"
     
     def is_upcoming(self):
-        from django.utils import timezone
         return self.date >= timezone.now().date()
     
     def is_past(self):
-        from django.utils import timezone
         return self.date < timezone.now().date()
     
     def get_day_name(self):
@@ -1076,167 +1387,12 @@ class Holiday(models.Model):
     
     def get_date_formatted(self):
         return self.date.strftime('%d %B %Y')
-
-# models.py - Complete Payslip Model
-
-class Payslip(models.Model):
-    payroll = models.OneToOneField(
-        Payroll,
-        on_delete=models.CASCADE,
-        related_name='payslip'
-    )
-    pdf = models.FileField(
-        upload_to='payslips/',
-        blank=True,
-        null=True,
-        help_text='Generated PDF file'
-    )
-    html_content = models.TextField(
-        blank=True,
-        null=True,
-        help_text='HTML content for the payslip'
-    )
-    generated_at = models.DateTimeField(
-        auto_now_add=True
-    )
-    is_generated = models.BooleanField(
-        default=False,
-        help_text='Whether the payslip has been generated'
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        help_text='Timestamp when the payslip record was created'
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        help_text='Timestamp when the payslip was last updated'
-    )
-
-    class Meta:
-        ordering = ['-generated_at']
-        verbose_name = 'Payslip'
-        verbose_name_plural = 'Payslips'
-        indexes = [
-            models.Index(fields=['generated_at']),
-            models.Index(fields=['is_generated']),
-            models.Index(fields=['payroll']),
-        ]
-
-    def __str__(self):
-        return f"{self.payroll.employee} - {self.payroll.month} {self.payroll.year}"
-
-    def get_employee_name(self):
-        """Get the full name of the employee"""
-        return self.payroll.employee.user.get_full_name()
-
-    def get_month_year(self):
-        """Get the month and year of the payslip"""
-        return f"{self.payroll.month} {self.payroll.year}"
-
-    def get_net_salary(self):
-        """Get the net salary amount"""
-        return self.payroll.net_salary
-
-    def get_employee_id(self):
-        """Get the employee ID"""
-        return self.payroll.employee.employee_id
-
-    def get_designation(self):
-        """Get the employee's designation"""
-        return self.payroll.employee.designation
-
-    def get_department(self):
-        """Get the employee's department"""
-        return self.payroll.employee.department.name if self.payroll.employee.department else "-"
-
-    def get_basic_salary(self):
-        """Get the basic salary"""
-        return self.payroll.basic_salary
-
-    def get_allowances(self):
-        """Get the allowances"""
-        return self.payroll.allowances
-
-    def get_deductions(self):
-        """Get the deductions"""
-        return self.payroll.deductions
-
-    def get_paid_date(self):
-        """Get the paid date"""
-        return self.payroll.paid_date
-
-    def is_paid(self):
-        """Check if the payroll is paid"""
-        return self.payroll.paid
-
-    def get_company_name(self):
-        """Get the startup/company name"""
-        return self.payroll.employee.startup.company_name if self.payroll.employee.startup else "Company"
-
-    def get_payslip_id(self):
-        """Get formatted payslip ID"""
-        return f"PS-{self.id:06d}"
-
-    def get_pdf_filename(self):
-        """Get the PDF filename"""
-        if self.pdf:
-            return self.pdf.name.split('/')[-1]
-        return None
-
-    def get_pdf_size(self):
-        """Get the PDF file size in human readable format"""
-        if self.pdf and self.pdf.file:
-            size = self.pdf.file.size
-            for unit in ['B', 'KB', 'MB', 'GB']:
-                if size < 1024.0:
-                    return f"{size:.2f} {unit}"
-                size /= 1024.0
-        return None
-
-    def get_generated_time_ago(self):
-        """Get time ago for generated_at"""
-        from django.utils import timezone
-        from django.utils.timesince import timesince
-        return timesince(self.generated_at, timezone.now())
-
-    def get_payslip_data(self):
-        """Get all payslip data as a dictionary"""
-        return {
-            'id': self.id,
-            'payslip_id': self.get_payslip_id(),
-            'employee_name': self.get_employee_name(),
-            'employee_id': self.get_employee_id(),
-            'designation': self.get_designation(),
-            'department': self.get_department(),
-            'month': self.payroll.month,
-            'year': self.payroll.year,
-            'basic_salary': float(self.get_basic_salary()),
-            'allowances': float(self.get_allowances()),
-            'deductions': float(self.get_deductions()),
-            'net_salary': float(self.get_net_salary()),
-            'paid_date': self.get_paid_date(),
-            'is_paid': self.is_paid(),
-            'is_generated': self.is_generated,
-            'generated_at': self.generated_at,
-            'company_name': self.get_company_name(),
-            'pdf_filename': self.get_pdf_filename(),
-            'pdf_size': self.get_pdf_size(),
-        }
-
-    class Meta:
-        ordering = ['-generated_at']
-        verbose_name = 'Payslip'
-        verbose_name_plural = 'Payslips'
-        indexes = [
-            models.Index(fields=['generated_at']),
-            models.Index(fields=['is_generated']),
-            models.Index(fields=['payroll']),
-        ]
+    
 
 
-
-
-# models.py - Add these models
+# ==========================================
+# EXIT REQUEST
+# ==========================================
 
 class ExitRequest(models.Model):
     EXIT_STATUS = [
@@ -1333,7 +1489,6 @@ class ExitRequest(models.Model):
         return dict(self.EXIT_REASONS).get(self.reason, self.reason)
 
     def get_days_remaining(self):
-        from django.utils import timezone
         if self.last_working_day >= timezone.now().date():
             return (self.last_working_day - timezone.now().date()).days
         return 0

@@ -7,125 +7,602 @@
 <link rel="stylesheet" href="{% static 'css/people/employee_update.css' %}">
 <style>
     /* ===== ADDITIONAL STYLES ===== */
-    .timing-section {
-        background: rgba(167, 139, 250, 0.03);
-        border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 12px;
+    .no-departments-warning {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        border-radius: 10px;
         padding: 16px 20px;
-        margin-top: 16px;
-    }
-    
-    .timing-section .timing-header {
+        margin-bottom: 20px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
+        gap: 12px;
+        color: #fbbf24;
     }
     
-    .timing-section .timing-header h4 {
+    .no-departments-warning .warning-icon {
+        font-size: 1.5rem;
+    }
+    
+    .no-departments-warning .warning-text {
+        flex: 1;
+    }
+    
+    .no-departments-warning .warning-text h4 {
         margin: 0;
         font-size: 0.95rem;
-        color: #a78bfa;
     }
     
-    .timing-section .timing-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-    
-    .timing-section .timing-item {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-    
-    .timing-section .timing-item label {
-        font-size: 0.75rem;
+    .no-departments-warning .warning-text p {
+        margin: 2px 0 0;
+        font-size: 0.85rem;
         color: #94a3b8;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
     
-    .timing-section .timing-item .timing-value {
-        font-size: 0.95rem;
-        color: #e8edf5;
-        font-weight: 500;
-        padding: 6px 12px;
-        background: rgba(167, 139, 250, 0.03);
-        border-radius: 6px;
-        border: 1px solid rgba(167, 139, 250, 0.06);
-    }
-    
-    .timing-section .timing-item .timing-value .not-set {
-        color: #64748b;
-        font-weight: 400;
-    }
-    
-    .timing-section .timing-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 12px;
-        flex-wrap: wrap;
-    }
-    
-    .timing-section .timing-actions .btn-timing {
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s;
-        border: none;
-        cursor: pointer;
-    }
-    
-    .timing-section .timing-actions .btn-timing-primary {
+    .no-departments-warning .btn-create-dept {
+        padding: 6px 16px;
         background: linear-gradient(135deg, #7c3aed, #6d28d9);
         color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        white-space: nowrap;
     }
     
-    .timing-section .timing-actions .btn-timing-primary:hover {
+    .no-departments-warning .btn-create-dept:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
     }
     
-    .timing-section .timing-actions .btn-timing-secondary {
+    /* Timing Section */
+    .timing-grid-compact {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .timing-grid-compact .form-group {
+        margin-bottom: 0;
+    }
+    
+    .timing-grid-compact .form-group .help-text {
+        font-size: 0.7rem;
+    }
+    
+    .shift-presets {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+    
+    .shift-preset-btn {
+        padding: 4px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 16px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #94a3b8;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .shift-preset-btn:hover {
+        border-color: #7c3aed;
+        color: #a78bfa;
+        background: rgba(124, 58, 237, 0.05);
+    }
+    
+    .shift-preset-btn.active {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+    }
+
+    /* Phone Verification */
+    .phone-verification-container {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px;
+        margin-top: 8px;
+    }
+
+    .phone-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .phone-input-group .form-control {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .btn-send-otp {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-send-otp:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-send-otp:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .otp-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
+
+    .otp-input-group .form-control {
+        flex: 1;
+        min-width: 150px;
+        letter-spacing: 4px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .btn-verify-otp {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-verify-otp:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+    }
+
+    .otp-status {
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        display: none;
+    }
+
+    .otp-status.success {
+        display: block;
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .otp-status.error {
+        display: block;
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .otp-status.info {
+        display: block;
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .timer-text {
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+
+    .phone-update-note {
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: rgba(245, 158, 11, 0.06);
+        border: 1px solid rgba(245, 158, 11, 0.1);
+        border-radius: 6px;
+        color: #fbbf24;
+        font-size: 0.8rem;
+    }
+
+    /* Form Layout */
+    .form-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-badge {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 12px;
+        border-radius: 12px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    .form-label .required {
+        color: #f87171;
+    }
+
+    .form-control {
+        padding: 8px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.05);
+    }
+
+    .form-control:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .field-error {
+        font-size: 0.8rem;
+        color: #f87171;
+        margin-top: 2px;
+    }
+
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #7c3aed;
+        cursor: pointer;
+    }
+
+    .checkbox-label {
+        cursor: pointer;
+        color: #d6e0f0;
+    }
+
+    .checkbox-text {
+        display: block;
+        font-weight: 500;
+    }
+
+    .checkbox-help {
+        display: block;
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    /* Current Image */
+    .current-image {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .current-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+    }
+
+    .avatar-placeholder {
+        background: linear-gradient(135deg, #7c3aed, #ec4899);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .current-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .file-upload-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .file-upload-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px dashed rgba(167, 139, 250, 0.1);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .file-upload-label:hover {
+        background: rgba(167, 139, 250, 0.1);
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    .file-upload-wrapper input[type="file"] {
+        display: none;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-secondary {
+        padding: 10px 24px;
         background: rgba(167, 139, 250, 0.06);
         color: #94a3b8;
         border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
-    
-    .timing-section .timing-actions .btn-timing-secondary:hover {
+
+    .btn-secondary:hover {
         background: rgba(167, 139, 250, 0.12);
         color: #e8edf5;
     }
-    
-    .status-badge-timing {
-        display: inline-block;
-        padding: 2px 10px;
-        border-radius: 12px;
-        font-size: 0.7rem;
+
+    .btn-light {
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
         font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
-    
-    .status-badge-timing.configured {
-        background: rgba(34, 197, 94, 0.15);
-        color: #4ade80;
+
+    .btn-light:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
     }
-    
-    .status-badge-timing.not-configured {
-        background: rgba(239, 68, 68, 0.15);
+
+    .btn-save {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateX(-2px);
+    }
+
+    /* Error Alert */
+    .error-alert {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.12);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+
+    .error-alert-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .error-alert-header .error-icon {
+        font-size: 1.2rem;
+    }
+
+    .error-alert-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
         color: #f87171;
     }
-    
+
+    .error-list {
+        margin: 0;
+        padding-left: 20px;
+        color: #fca5a5;
+        font-size: 0.9rem;
+    }
+
+    .error-list li {
+        margin-bottom: 2px;
+    }
+
     /* Responsive */
+    @media (max-width: 992px) {
+        .form-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
     @media (max-width: 768px) {
-        .timing-section .timing-grid {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-card {
+            padding: 16px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .phone-input-group,
+        .otp-input-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-send-otp,
+        .btn-verify-otp {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .timing-grid-compact {
             grid-template-columns: 1fr;
         }
     }
@@ -158,7 +635,7 @@
     </div>
 
     <!-- ================= FORM ================= -->
-    <form method="POST" enctype="multipart/form-data" novalidate>
+    <form method="POST" enctype="multipart/form-data" novalidate id="employeeForm">
         {% csrf_token %}
 
         <!-- ====== ERROR MESSAGES ====== -->
@@ -241,6 +718,22 @@
                     </div>
                 </div>
 
+                <!-- Phone Number -->
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>📱 Phone Number</h2>
+                        <span class="card-badge">Required</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.phone.id_for_label }}" class="form-label required">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <div class="field-error">{{ form.phone.errors.0 }}</div>
+                        {% endif %}
+                        <span class="help-text">Primary contact number for the employee.</span>
+                    </div>
+                </div>
+
                 <!-- Employment Timeline -->
                 <div class="form-card">
                     <div class="card-header">
@@ -268,101 +761,6 @@
                             {% if form.confirmation_date.errors %}
                                 <div class="field-error">{{ form.confirmation_date.errors.0 }}</div>
                             {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ====== TIMING CONFIGURATION ====== -->
-                <div class="form-card">
-                    <div class="card-header">
-                        <h2>⏰ Attendance Timing</h2>
-                        <span class="card-badge">
-                            {% if employee.default_check_in %}
-                                <span class="status-badge-timing configured">● Configured</span>
-                            {% else %}
-                                <span class="status-badge-timing not-configured">● Not Configured</span>
-                            {% endif %}
-                        </span>
-                    </div>
-                    
-                    <div class="timing-section">
-                        <div class="timing-header">
-                            <h4>Current Timing Configuration</h4>
-                            <span class="status-badge-timing {% if employee.default_check_in %}configured{% else %}not-configured{% endif %}">
-                                {% if employee.default_check_in %}✅ Active{% else %}⏳ Pending{% endif %}
-                            </span>
-                        </div>
-                        
-                        <div class="timing-grid">
-                            <div class="timing-item">
-                                <label>Default Check In</label>
-                                <div class="timing-value">
-                                    {% if employee.default_check_in %}
-                                        {{ employee.default_check_in|time:"H:i" }}
-                                    {% else %}
-                                        <span class="not-set">Not set</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="timing-item">
-                                <label>Default Check Out</label>
-                                <div class="timing-value">
-                                    {% if employee.default_check_out %}
-                                        {{ employee.default_check_out|time:"H:i" }}
-                                    {% else %}
-                                        <span class="not-set">Not set</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="timing-item">
-                                <label>Work Start</label>
-                                <div class="timing-value">
-                                    {% if employee.work_start_time %}
-                                        {{ employee.work_start_time|time:"H:i" }}
-                                    {% else %}
-                                        <span class="not-set">Not set</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="timing-item">
-                                <label>Work End</label>
-                                <div class="timing-value">
-                                    {% if employee.work_end_time %}
-                                        {{ employee.work_end_time|time:"H:i" }}
-                                    {% else %}
-                                        <span class="not-set">Not set</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="timing-item">
-                                <label>Grace Period</label>
-                                <div class="timing-value">
-                                    {% if employee.grace_period_minutes %}
-                                        {{ employee.grace_period_minutes }} minutes
-                                    {% else %}
-                                        <span class="not-set">15 minutes (default)</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="timing-item">
-                                <label>Shift</label>
-                                <div class="timing-value">
-                                    {% if employee.shift %}
-                                        {{ employee.get_shift_display }}
-                                    {% else %}
-                                        <span class="not-set">Not set</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="timing-actions">
-                            <a href="{% url 'employee_timing_config' employee.id %}" class="btn-timing btn-timing-primary">
-                                ⏰ Configure Timings
-                            </a>
-                            <a href="{% url 'employee_timing_config' employee.id %}" class="btn-timing btn-timing-secondary">
-                                📋 View Full Settings
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -401,20 +799,18 @@
                     </div>
                 </div>
 
-                <!-- Contact -->
+                <!-- Emergency Contact -->
                 <div class="form-card">
                     <div class="card-header">
-                        <h2>📞 Contact</h2>
+                        <h2>📞 Emergency Contact</h2>
                         <span class="card-badge">Optional</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
-                        {{ form.phone }}
-                        <span class="help-text">Primary contact number.</span>
                     </div>
                     <div class="form-group">
                         <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">Emergency Contact</label>
                         {{ form.emergency_contact }}
+                        {% if form.emergency_contact.errors %}
+                            <div class="field-error">{{ form.emergency_contact.errors.0 }}</div>
+                        {% endif %}
                         <span class="help-text">Emergency contact number.</span>
                     </div>
                 </div>
@@ -456,24 +852,6 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="form-card">
-                    <div class="card-header">
-                        <h2>⚡ Quick Actions</h2>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <a href="{% url 'employee_timing_config' employee.id %}" class="btn-timing btn-timing-primary" style="justify-content: center; width: 100%;">
-                            ⏰ Configure Attendance Timings
-                        </a>
-                        <a href="{% url 'attendance_create' %}?employee={{ employee.id }}" class="btn-timing btn-timing-secondary" style="justify-content: center; width: 100%;">
-                            📝 Mark Attendance
-                        </a>
-                        <a href="{% url 'employee_portal_dashboard' %}" target="_blank" class="btn-timing btn-timing-secondary" style="justify-content: center; width: 100%;">
-                            🚀 Open Employee Portal
-                        </a>
-                    </div>
-                </div>
-
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn-primary btn-save">
@@ -492,7 +870,6 @@
         </div>
 
     </form>
-
 </div>
 
 <script>
@@ -510,6 +887,14 @@
                     label.textContent = 'Choose New Image';
                 }
             });
+        }
+
+        // ============================================
+        // AUTO-FOCUS ON FIRST FIELD
+        // ============================================
+        const firstInput = document.querySelector('input:not([type="file"]), select, textarea');
+        if (firstInput) {
+            firstInput.focus();
         }
 
         // ============================================
@@ -549,27 +934,8 @@
             }
         });
 
-        // ============================================
-        // AUTO-FOCUS ON FIRST FIELD
-        // ============================================
-        const firstInput = document.querySelector('input:not([type="file"]), select, textarea');
-        if (firstInput) {
-            firstInput.focus();
-        }
-
-        // ============================================
-        // TIMING SECTION - SHOW/HIDE DETAILS
-        // ============================================
-        const timingSection = document.querySelector('.timing-section');
-        if (timingSection) {
-            console.log('⏰ Timing configuration section loaded');
-            const hasTiming = '{{ employee.default_check_in|yesno:"true,false" }}' === 'true';
-            console.log(`Timing configured: ${hasTiming}`);
-        }
-
         console.log('✏️ Employee Update page loaded');
-        console.log(`👤 Employee: {{ employee.user.get_full_name }}`);
-        console.log(`📋 Employee ID: {{ employee.employee_id }}`);
+        console.log('📱 Phone: {{ employee.phone|default:"Not set" }}');
     });
 </script>
 

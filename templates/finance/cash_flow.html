@@ -1,0 +1,786 @@
+{% extends 'finance/base_finance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<div class="year-filter" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+    <form method="GET" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <label style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">📅 Year:</label>
+        <select name="year" id="yearSelect" style="padding: 8px 14px; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 6px; background: rgba(167, 139, 250, 0.03); color: #e8edf5; font-size: 0.9rem; cursor: pointer; min-width: 100px;">
+            {% for y in years %}
+            <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" style="padding: 8px 20px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;">View</button>
+    </form>
+    <a href="{% url 'finance:profit_loss' %}" class="btn-secondary">📈 P&amp;L Report</a>
+    <a href="{% url 'finance:finance_dashboard' %}" class="btn-secondary">← Dashboard</a>
+</div>
+{% endblock %}
+
+{% block finance_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    /* ===== OVERVIEW CARDS ===== */
+    .overview-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .overview-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .overview-card:nth-child(1) { animation-delay: 0.05s; }
+    .overview-card:nth-child(2) { animation-delay: 0.1s; }
+    .overview-card:nth-child(3) { animation-delay: 0.15s; }
+
+    .overview-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .overview-card:hover::before {
+        opacity: 1;
+    }
+
+    .overview-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .overview-card .oc-icon {
+        font-size: 1.5rem;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .overview-card .oc-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .overview-card .oc-value.positive {
+        color: #34d399;
+    }
+
+    .overview-card .oc-value.negative {
+        color: #f87171;
+    }
+
+    .overview-card .oc-label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .overview-card .oc-change {
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-top: 4px;
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+    }
+
+    .overview-card .oc-change.positive {
+        color: #34d399;
+        background: rgba(34, 197, 94, 0.08);
+    }
+
+    .overview-card .oc-change.negative {
+        color: #f87171;
+        background: rgba(239, 68, 68, 0.08);
+    }
+
+    .overview-card .oc-change.neutral {
+        color: #94a3b8;
+        background: rgba(0, 0, 0, 0.15);
+    }
+
+    .overview-card.inflow { border-left: 3px solid #34d399; }
+    .overview-card.inflow::before { background: linear-gradient(90deg, #34d399, #6ee7b7); }
+
+    .overview-card.outflow { border-left: 3px solid #f87171; }
+    .overview-card.outflow::before { background: linear-gradient(90deg, #f87171, #fca5a5); }
+
+    .overview-card.net { border-left: 3px solid #a78bfa; }
+    .overview-card.net::before { background: linear-gradient(90deg, #a78bfa, #c4b5fd); }
+
+    /* ===== FLOW CARDS ===== */
+    .flow-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .flow-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        transition: all 0.3s;
+    }
+
+    .flow-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .flow-card .flow-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .flow-card .flow-header .flow-icon {
+        font-size: 1.5rem;
+    }
+
+    .flow-card .flow-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .flow-card .flow-header .flow-badge {
+        margin-left: auto;
+        font-size: 0.6rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+    }
+
+    .flow-card .flow-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.02);
+    }
+
+    .flow-card .flow-item:last-child {
+        border-bottom: none;
+    }
+
+    .flow-card .flow-item .flow-label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .flow-card .flow-item .flow-label .label-icon {
+        font-size: 0.9rem;
+    }
+
+    .flow-card .flow-item .flow-amount {
+        font-weight: 600;
+        font-size: 0.9rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .flow-card .flow-item .flow-amount.inflow { color: #34d399; }
+    .flow-card .flow-item .flow-amount.outflow { color: #f87171; }
+
+    .flow-card .flow-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0 0;
+        margin-top: 8px;
+        border-top: 2px solid rgba(167, 139, 250, 0.1);
+        font-weight: 700;
+    }
+
+    .flow-card .flow-total .total-label { color: #e8edf5; }
+    .flow-card .flow-total .total-amount.inflow { color: #34d399; }
+    .flow-card .flow-total .total-amount.outflow { color: #f87171; }
+
+    .flow-card.inflow-card { border-left: 3px solid #34d399; }
+    .flow-card.outflow-card { border-left: 3px solid #f87171; }
+
+    /* ===== TABLE ===== */
+    .table-wrapper {
+        overflow-x: auto;
+        overflow-y: visible;
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        min-width: 700px;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+        table-layout: fixed;
+    }
+
+    thead {
+        background: rgba(167, 139, 250, 0.04);
+    }
+
+    th {
+        text-align: left;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        vertical-align: middle;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    th:nth-child(1), td:nth-child(1) { width: 20%; }
+    th:nth-child(2), td:nth-child(2) { width: 20%; text-align: right; }
+    th:nth-child(3), td:nth-child(3) { width: 20%; text-align: right; }
+    th:nth-child(4), td:nth-child(4) { width: 20%; text-align: right; }
+    th:nth-child(5), td:nth-child(5) { width: 20%; text-align: center; }
+
+    tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    tbody tr:hover td {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .amount {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .amount.inflow { color: #34d399; }
+    .amount.outflow { color: #f87171; }
+    .amount.net { color: #a78bfa; }
+
+    .total-row td {
+        font-weight: 700;
+        border-top: 2px solid rgba(167, 139, 250, 0.1);
+        padding-top: 12px;
+    }
+
+    .total-row .amount {
+        font-size: 1.05rem;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.1rem;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        margin: 0 0 16px;
+        font-size: 0.9rem;
+    }
+
+    /* ===== CASH FLOW HEALTH ===== */
+    .cash-flow-health {
+        margin-top: 20px;
+        padding: 16px 20px;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+        animation-delay: 0.25s;
+    }
+
+    .cash-flow-health .health-icon {
+        font-size: 2rem;
+    }
+
+    .cash-flow-health .health-info {
+        flex: 1;
+    }
+
+    .cash-flow-health .health-info h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .cash-flow-health .health-info p {
+        margin: 2px 0 0;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .cash-flow-health .health-amount {
+        font-size: 1.1rem;
+        font-weight: 700;
+        padding: 4px 16px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.15);
+    }
+
+    .cash-flow-health .health-amount.positive {
+        color: #34d399;
+    }
+
+    .cash-flow-health .health-amount.negative {
+        color: #f87171;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 14px;
+        }
+
+        .overview-cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .overview-card {
+            padding: 12px 16px;
+        }
+
+        .overview-card .oc-value {
+            font-size: 1.2rem;
+        }
+
+        .flow-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .flow-card {
+            padding: 14px 16px;
+        }
+
+        td {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+        }
+
+        th {
+            padding: 8px 10px;
+            font-size: 0.6rem;
+        }
+
+        .table-wrapper {
+            margin: 0 -8px;
+            padding: 0 8px;
+        }
+
+        .year-filter {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .year-filter form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .year-filter select {
+            width: 100%;
+        }
+
+        .year-filter button {
+            width: 100%;
+        }
+
+        .cash-flow-health {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .cash-flow-health .health-amount {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-content {
+            padding: 10px;
+        }
+
+        .overview-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .table-wrapper {
+            margin: 0 -6px;
+            padding: 0 6px;
+        }
+
+        td {
+            padding: 6px 8px;
+            font-size: 0.75rem;
+        }
+
+        th {
+            padding: 6px 8px;
+            font-size: 0.55rem;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 2.5rem;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-content {
+        animation: fadeInUp 0.4s ease;
+    }
+
+    .overview-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .flow-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .flow-card:nth-child(1) { animation-delay: 0.1s; }
+    .flow-card:nth-child(2) { animation-delay: 0.15s; }
+
+    table tbody tr {
+        opacity: 1 !important;
+        animation: none !important;
+    }
+</style>
+
+<div class="page-content">
+    <!-- ===== OVERVIEW CARDS ===== -->
+    <div class="overview-cards">
+        <div class="overview-card inflow">
+            <div class="oc-icon">💰</div>
+            <div class="oc-value positive">
+                {% if total_inflows %}
+                    ₹{{ total_inflows|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %}
+            </div>
+            <div class="oc-label">Total Cash In</div>
+            <div class="oc-change positive">
+                ▲ {{ year }} Inflows
+            </div>
+        </div>
+
+        <div class="overview-card outflow">
+            <div class="oc-icon">💳</div>
+            <div class="oc-value negative">
+                {% if total_outflows %}
+                    ₹{{ total_outflows|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %}
+            </div>
+            <div class="oc-label">Total Cash Out</div>
+            <div class="oc-change negative">
+                ▼ {{ year }} Outflows
+            </div>
+        </div>
+
+        <div class="overview-card net">
+            <div class="oc-icon">📊</div>
+            <div class="oc-value {% if total_net >= 0 %}positive{% else %}negative{% endif %}">
+                {% if total_net %}
+                    ₹{{ total_net|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %}
+            </div>
+            <div class="oc-label">Net Cash Flow</div>
+            <div class="oc-change {% if total_net >= 0 %}positive{% else %}negative{% endif %}">
+                {% if total_net >= 0 %}▲{% else %}▼{% endif %} {{ year }} Result
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FLOW CARDS ===== -->
+    <div class="flow-grid">
+        <div class="flow-card inflow-card">
+            <div class="flow-header">
+                <span class="flow-icon">📥</span>
+                <h3>Cash Inflows</h3>
+                <span class="flow-badge">Income</span>
+            </div>
+            <div class="flow-item">
+                <span class="flow-label">
+                    <span class="label-icon">💰</span>
+                    Income
+                </span>
+                <span class="flow-amount inflow">
+                    {% if total_income %}
+                        ₹{{ total_income|floatformat:0 }}
+                    {% else %}
+                        ₹0
+                    {% endif %}
+                </span>
+            </div>
+            <div class="flow-item">
+                <span class="flow-label">
+                    <span class="label-icon">📥</span>
+                    Receivables Collected
+                </span>
+                <span class="flow-amount inflow">
+                    {% if total_receivables_collected %}
+                        ₹{{ total_receivables_collected|floatformat:0 }}
+                    {% else %}
+                        ₹0
+                    {% endif %}
+                </span>
+            </div>
+            <div class="flow-total">
+                <span class="total-label">Total Inflows</span>
+                <span class="total-amount inflow">
+                    {% if total_inflows %}
+                        ₹{{ total_inflows|floatformat:0 }}
+                    {% else %}
+                        ₹0
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="flow-card outflow-card">
+            <div class="flow-header">
+                <span class="flow-icon">📤</span>
+                <h3>Cash Outflows</h3>
+                <span class="flow-badge">Expenses</span>
+            </div>
+            <div class="flow-item">
+                <span class="flow-label">
+                    <span class="label-icon">💸</span>
+                    Expenses
+                </span>
+                <span class="flow-amount outflow">
+                    {% if total_expenses %}
+                        ₹{{ total_expenses|floatformat:0 }}
+                    {% else %}
+                        ₹0
+                    {% endif %}
+                </span>
+            </div>
+            <div class="flow-item">
+                <span class="flow-label">
+                    <span class="label-icon">📤</span>
+                    Payables Paid
+                </span>
+                <span class="flow-amount outflow">
+                    {% if total_payables_paid %}
+                        ₹{{ total_payables_paid|floatformat:0 }}
+                    {% else %}
+                        ₹0
+                    {% endif %}
+                </span>
+            </div>
+            <div class="flow-total">
+                <span class="total-label">Total Outflows</span>
+                <span class="total-amount outflow">
+                    {% if total_outflows %}
+                        ₹{{ total_outflows|floatformat:0 }}
+                    {% else %}
+                        ₹0
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TABLE ===== -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th style="text-align: right;">Cash In</th>
+                    <th style="text-align: right;">Cash Out</th>
+                    <th style="text-align: right;">Net Cash</th>
+                    <th style="text-align: center;">Trend</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in monthly_data %}
+                <tr>
+                    <td><strong>{{ data.month }}</strong></td>
+                    <td class="amount inflow" style="text-align: right;">
+                        {% if data.inflows %}
+                            ₹{{ data.inflows|floatformat:0 }}
+                        {% else %}
+                            ₹0
+                        {% endif %}
+                    </td>
+                    <td class="amount outflow" style="text-align: right;">
+                        {% if data.outflows %}
+                            ₹{{ data.outflows|floatformat:0 }}
+                        {% else %}
+                            ₹0
+                        {% endif %}
+                    </td>
+                    <td class="amount {% if data.net >= 0 %}inflow{% else %}outflow{% endif %}" style="text-align: right;">
+                        {% if data.net %}
+                            ₹{{ data.net|floatformat:0 }}
+                        {% else %}
+                            ₹0
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center; font-size: 1.2rem;">
+                        {% if data.net >= 0 %}
+                        <span style="color: #34d399;">📈</span>
+                        {% else %}
+                        <span style="color: #f87171;">📉</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <span class="empty-icon">💳</span>
+                            <h3>No Data Available</h3>
+                            <p>No cash flow data found for {{ year }}.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td><strong>Total</strong></td>
+                    <td class="amount inflow" style="text-align: right;">
+                        <strong>₹{{ total_inflows|floatformat:0 }}</strong>
+                    </td>
+                    <td class="amount outflow" style="text-align: right;">
+                        <strong>₹{{ total_outflows|floatformat:0 }}</strong>
+                    </td>
+                    <td class="amount {% if total_net >= 0 %}inflow{% else %}outflow{% endif %}" style="text-align: right;">
+                        <strong>₹{{ total_net|floatformat:0 }}</strong>
+                    </td>
+                    <td style="text-align: center;">
+                        {% if total_net >= 0 %}
+                        <span style="color: #34d399; font-weight: 600;">✅ Positive</span>
+                        {% else %}
+                        <span style="color: #f87171; font-weight: 600;">❌ Negative</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- ===== CASH FLOW HEALTH ===== -->
+    <div class="cash-flow-health">
+        <span class="health-icon">
+            {% if total_net >= 0 %}✅{% else %}⚠️{% endif %}
+        </span>
+        <div class="health-info">
+            <h4>
+                {% if total_net >= 0 %}
+                Positive Cash Flow
+                {% else %}
+                Negative Cash Flow
+                {% endif %}
+            </h4>
+            <p>
+                {% if total_net >= 0 %}
+                Your business is generating more cash than it spends. This is a healthy sign.
+                {% else %}
+                Your business is spending more cash than it generates. Consider reviewing your expenses.
+                {% endif %}
+            </p>
+        </div>
+        <span class="health-amount {% if total_net >= 0 %}positive{% else %}negative{% endif %}">
+            ₹{{ total_net|floatformat:0 }}
+        </span>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Year filter auto-submit
+        const yearSelect = document.getElementById('yearSelect');
+        if (yearSelect) {
+            yearSelect.addEventListener('change', function() {
+                this.closest('form').submit();
+            });
+        }
+
+        console.log('💳 Cash Flow Page Loaded');
+        console.log('📊 Year: {{ year }}');
+        console.log('💰 Total Inflows: ₹{{ total_inflows|floatformat:0|default:0 }}');
+        console.log('💸 Total Outflows: ₹{{ total_outflows|floatformat:0|default:0 }}');
+        console.log('📈 Net Cash Flow: ₹{{ total_net|floatformat:0|default:0 }}');
+    });
+</script>
+{% endblock %}

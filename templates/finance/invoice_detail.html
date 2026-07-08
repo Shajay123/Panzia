@@ -1,0 +1,178 @@
+{% extends 'finance/base_finance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'finance:invoice_list' %}" class="btn-secondary">← Back to Invoices</a>
+<a href="{% url 'finance:invoice_edit' invoice.id %}" class="btn-primary">✏️ Edit Invoice</a>
+{% endblock %}
+
+{% block finance_content %}
+<style>
+    .detail-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .detail-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .detail-item {
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .detail-item .label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+    }
+
+    .detail-item .value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        margin-top: 2px;
+    }
+
+    .detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 16px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-badge.paid {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .status-badge.sent {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+    }
+
+    .status-badge.draft {
+        background: rgba(148, 163, 184, 0.12);
+        color: #94a3b8;
+    }
+
+    .status-badge.overdue {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .amount-large {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #e8edf5;
+        text-align: center;
+        padding: 16px;
+        background: rgba(167, 139, 250, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin: 16px 0;
+    }
+
+    .receivable-status {
+        text-align: center;
+        padding: 8px;
+        border-radius: 6px;
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    .receivable-status.paid {
+        background: rgba(34, 197, 94, 0.08);
+        color: #4ade80;
+    }
+
+    .receivable-status.pending {
+        background: rgba(245, 158, 11, 0.08);
+        color: #fbbf24;
+    }
+
+    @media (max-width: 768px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-item.full-width {
+            grid-column: 1;
+        }
+
+        .amount-large {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="detail-container">
+    <div class="detail-card">
+        <div class="amount-large">
+            ₹{{ invoice.amount|floatformat:2 }}
+        </div>
+
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="label">Invoice Number</div>
+                <div class="value">{{ invoice.invoice_number }}</div>
+            </div>
+
+            <div class="detail-item">
+                <div class="label">Status</div>
+                <div class="value">
+                    <span class="status-badge {{ invoice.status|lower }}">
+                        {{ invoice.status }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="label">Client</div>
+                <div class="value">{{ invoice.client_name }}</div>
+            </div>
+
+            <div class="detail-item">
+                <div class="label">Due Date</div>
+                <div class="value">{{ invoice.due_date|date:"d M Y" }}</div>
+            </div>
+
+            <div class="detail-item full-width">
+                <div class="label">Created</div>
+                <div class="value">{{ invoice.created_at|date:"d M Y, H:i" }}</div>
+            </div>
+
+            {% if receivable %}
+            <div class="detail-item full-width">
+                <div class="label">Receivable Status</div>
+                <div class="value">
+                    <div class="receivable-status {% if receivable.paid %}paid{% else %}pending{% endif %}">
+                        {% if receivable.paid %}
+                        ✅ Paid - ₹{{ receivable.amount_due|floatformat:2 }}
+                        {% else %}
+                        ⏳ Pending - ₹{{ receivable.amount_due|floatformat:2 }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,769 @@
+{% extends 'finance/base_finance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'finance:expense_create' %}" class="btn-primary green">➕ Add Expense</a>
+<a href="{% url 'finance:income_create' %}" class="btn-primary">💵 Add Income</a>
+<a href="{% url 'finance:finance_dashboard' %}" class="btn-secondary">← Dashboard</a>
+{% endblock %}
+
+{% block finance_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    /* ===== OVERVIEW CARDS ===== */
+    .overview-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .overview-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .overview-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .overview-card:hover::before {
+        opacity: 1;
+    }
+
+    .overview-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .overview-card .oc-icon {
+        font-size: 1.5rem;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .overview-card .oc-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .overview-card .oc-value.positive {
+        color: #34d399;
+    }
+
+    .overview-card .oc-value.negative {
+        color: #f87171;
+    }
+
+    .overview-card .oc-label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .overview-card .oc-change {
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-top: 4px;
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+    }
+
+    .overview-card .oc-change.positive {
+        color: #34d399;
+        background: rgba(34, 197, 94, 0.08);
+    }
+
+    .overview-card .oc-change.negative {
+        color: #f87171;
+        background: rgba(239, 68, 68, 0.08);
+    }
+
+    .overview-card .oc-change.neutral {
+        color: #94a3b8;
+        background: rgba(0, 0, 0, 0.15);
+    }
+
+    .overview-card.expense-card { border-left: 3px solid #f87171; }
+    .overview-card.expense-card::before { background: linear-gradient(90deg, #f87171, #fca5a5); }
+
+    .overview-card.income-card { border-left: 3px solid #34d399; }
+    .overview-card.income-card::before { background: linear-gradient(90deg, #34d399, #6ee7b7); }
+
+    .overview-card.profit-card { border-left: 3px solid #a78bfa; }
+    .overview-card.profit-card::before { background: linear-gradient(90deg, #a78bfa, #c4b5fd); }
+
+    .overview-card.count-card { border-left: 3px solid #60a5fa; }
+    .overview-card.count-card::before { background: linear-gradient(90deg, #60a5fa, #93bbfc); }
+
+    /* ===== FILTER BAR ===== */
+    .filter-bar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        align-items: center;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+        padding: 8px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.9rem;
+        min-width: 150px;
+        transition: all 0.3s;
+    }
+
+    .filter-bar input:focus,
+    .filter-bar select:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .filter-bar input::placeholder {
+        color: #64748b;
+    }
+
+    .filter-bar .btn-filter {
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.85rem;
+    }
+
+    .filter-bar .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .filter-bar .btn-clear {
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+
+    .filter-bar .btn-clear:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    /* ===== TOTAL SUMMARY ===== */
+    .total-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        background: rgba(167, 139, 250, 0.05);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .total-summary .total-label {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .total-summary .total-label .label-icon {
+        font-size: 1.1rem;
+    }
+
+    .total-summary .total-amount {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #f87171;
+    }
+
+    .total-summary .total-count {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    /* ===== TABLE - FIXED ===== */
+    .table-wrapper {
+        overflow-x: auto;
+        overflow-y: visible;
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        min-width: 700px;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+        table-layout: fixed;
+    }
+
+    thead {
+        background: rgba(167, 139, 250, 0.04);
+    }
+
+    th {
+        text-align: left;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        vertical-align: middle;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    th:nth-child(1), td:nth-child(1) { width: 50px; }
+    th:nth-child(2), td:nth-child(2) { width: 25%; }
+    th:nth-child(3), td:nth-child(3) { width: 18%; }
+    th:nth-child(4), td:nth-child(4) { width: 18%; text-align: right; }
+    th:nth-child(5), td:nth-child(5) { width: 18%; }
+    th:nth-child(6), td:nth-child(6) { width: 21%; text-align: center; }
+
+    tbody tr {
+        transition: background 0.2s ease;
+    }
+
+    tbody tr:hover td {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .amount {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .amount.positive {
+        color: #34d399;
+    }
+
+    .amount.negative {
+        color: #f87171;
+    }
+
+    /* ===== CATEGORY BADGE ===== */
+    .category-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 500;
+        background: rgba(167, 139, 250, 0.06);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        white-space: nowrap;
+    }
+
+    .category-badge.salary {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border-color: rgba(34, 197, 94, 0.06);
+    }
+
+    .category-badge.software {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border-color: rgba(59, 130, 246, 0.06);
+    }
+
+    .category-badge.marketing {
+        background: rgba(236, 72, 153, 0.12);
+        color: #f472b6;
+        border-color: rgba(236, 72, 153, 0.06);
+    }
+
+    .category-badge.office {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.06);
+    }
+
+    .category-badge.travel {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+        border-color: rgba(167, 139, 250, 0.06);
+    }
+
+    .category-badge.other {
+        background: rgba(148, 163, 184, 0.12);
+        color: #94a3b8;
+        border-color: rgba(148, 163, 184, 0.06);
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-btns {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .action-btns a {
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+    .action-btns .edit {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.08);
+    }
+
+    .action-btns .edit:hover {
+        background: rgba(59, 130, 246, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .action-btns .delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.08);
+    }
+
+    .action-btns .delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+        transform: translateY(-1px);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.1rem;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        margin: 0 0 16px;
+        font-size: 0.9rem;
+    }
+
+    .empty-state a {
+        color: #a78bfa;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 6px 16px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 6px;
+        transition: all 0.3s;
+        display: inline-block;
+    }
+
+    .empty-state a:hover {
+        background: rgba(167, 139, 250, 0.05);
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 14px;
+        }
+
+        .overview-cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .overview-card {
+            padding: 12px 16px;
+        }
+
+        .overview-card .oc-value {
+            font-size: 1.2rem;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-bar input,
+        .filter-bar select {
+            width: 100%;
+            min-width: auto;
+        }
+
+        .filter-bar .btn-filter,
+        .filter-bar .btn-clear {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .total-summary {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .total-summary .total-amount {
+            font-size: 1.2rem;
+        }
+
+        .action-btns {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .action-btns a {
+            width: 100%;
+            justify-content: center;
+        }
+
+        td {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+        }
+
+        th {
+            padding: 8px 10px;
+            font-size: 0.6rem;
+        }
+
+        .table-wrapper {
+            margin: 0 -8px;
+            padding: 0 8px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-content {
+            padding: 10px;
+        }
+
+        .overview-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .table-wrapper {
+            margin: 0 -6px;
+            padding: 0 6px;
+        }
+
+        td {
+            padding: 6px 8px;
+            font-size: 0.75rem;
+        }
+
+        th {
+            padding: 6px 8px;
+            font-size: 0.55rem;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 2.5rem;
+        }
+
+        .action-btns a {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+        }
+    }
+
+    /* ===== ANIMATIONS - FIXED ===== */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-content {
+        animation: fadeIn 0.4s ease;
+    }
+
+    /* FIXED: Only animate overview cards, NOT table rows */
+    .overview-card {
+        animation: fadeIn 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .overview-card:nth-child(1) { animation-delay: 0.05s; }
+    .overview-card:nth-child(2) { animation-delay: 0.1s; }
+    .overview-card:nth-child(3) { animation-delay: 0.15s; }
+    .overview-card:nth-child(4) { animation-delay: 0.2s; }
+
+    /* FIXED: Table rows should NOT have opacity animation */
+    table tbody tr {
+        opacity: 1 !important;
+        animation: none !important;
+    }
+</style>
+
+<div class="page-content">
+    <!-- ===== OVERVIEW CARDS ===== -->
+    <div class="overview-cards">
+        <div class="overview-card expense-card">
+            <div class="oc-icon">💳</div>
+            <div class="oc-value negative">
+                {% if total_amount %}
+                    ₹{{ total_amount|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %}
+            </div>
+            <div class="oc-label">Total Expenses</div>
+            <div class="oc-change negative">
+                ▼ 
+                {% if monthly_expenses %}
+                    ₹{{ monthly_expenses|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %} 
+                this month
+            </div>
+        </div>
+
+        <div class="overview-card income-card">
+            <div class="oc-icon">💰</div>
+            <div class="oc-value positive">
+                {% if total_income %}
+                    ₹{{ total_income|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %}
+            </div>
+            <div class="oc-label">Total Income</div>
+            <div class="oc-change positive">
+                ▲ 
+                {% if monthly_income %}
+                    ₹{{ monthly_income|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %} 
+                this month
+            </div>
+        </div>
+
+        <div class="overview-card profit-card">
+            <div class="oc-icon">📈</div>
+            <div class="oc-value {% if net_profit >= 0 %}positive{% else %}negative{% endif %}">
+                {% if net_profit %}
+                    ₹{{ net_profit|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %}
+            </div>
+            <div class="oc-label">Net Profit</div>
+            <div class="oc-change {% if monthly_profit >= 0 %}positive{% else %}negative{% endif %}">
+                {% if monthly_profit >= 0 %}▲{% else %}▼{% endif %} 
+                {% if monthly_profit %}
+                    ₹{{ monthly_profit|floatformat:0 }}
+                {% else %}
+                    ₹0
+                {% endif %} 
+                this month
+            </div>
+        </div>
+
+        <div class="overview-card count-card">
+            <div class="oc-icon">📊</div>
+            <div class="oc-value">{{ expenses|length|default:0 }}</div>
+            <div class="oc-label">Total Entries</div>
+            <div class="oc-change neutral">
+                📝 {{ total_expense_count|default:0 }} records
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FILTER BAR ===== -->
+    <div class="filter-bar">
+        <input type="text" name="search" placeholder="🔍 Search by title..." value="{{ request.GET.search|default:'' }}" id="searchInput">
+        <select name="category" id="categoryFilter">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat.0 }}" {% if request.GET.category == cat.0 %}selected{% endif %}>{{ cat.0 }}</option>
+            {% endfor %}
+        </select>
+        <input type="date" name="date_from" value="{{ request.GET.date_from|default:'' }}" id="dateFrom">
+        <input type="date" name="date_to" value="{{ request.GET.date_to|default:'' }}" id="dateTo">
+        <button class="btn-filter" onclick="applyFilters()">🔍 Filter</button>
+        <a href="{% url 'finance:expense_list' %}" class="btn-clear">✕ Clear</a>
+    </div>
+
+    <!-- ===== TOTAL SUMMARY ===== -->
+    <div class="total-summary">
+        <div>
+            <span class="total-label">
+                <span class="label-icon">💳</span>
+                Total Expenses
+            </span>
+            <span class="total-count">({{ expenses|length|default:0 }} entries)</span>
+        </div>
+        <span class="total-amount">
+            {% if total_amount %}
+                ₹{{ total_amount|floatformat:0 }}
+            {% else %}
+                ₹0
+            {% endif %}
+        </span>
+    </div>
+
+    <!-- ===== TABLE ===== -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th style="text-align: right;">Amount</th>
+                    <th>Expense Date</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ expense.title|default:"-" }}</strong></td>
+                    <td>
+                        <span class="category-badge {% if expense.category|lower == 'salary' %}salary{% elif expense.category|lower == 'software' %}software{% elif expense.category|lower == 'marketing' %}marketing{% elif expense.category|lower == 'office' %}office{% elif expense.category|lower == 'travel' %}travel{% else %}other{% endif %}">
+                            {{ expense.category|default:"-" }}
+                        </span>
+                    </td>
+                    <td style="text-align: right;">
+                        <span class="amount negative">
+                            {% if expense.amount %}
+                                ₹{{ expense.amount|floatformat:0 }}
+                            {% else %}
+                                ₹0
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>{{ expense.expense_date|date:"d M Y"|default:"-" }}</td>
+                    <td style="text-align: center;">
+                        <div class="action-btns">
+                            <a href="{% url 'finance:expense_edit' expense.id %}" class="edit">✏️ Edit</a>
+                            <a href="{% url 'finance:expense_delete' expense.id %}" class="delete">🗑️ Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <span class="empty-icon">💸</span>
+                            <h3>No Expense Records Found</h3>
+                            <p>Start tracking your expenses by adding your first entry.</p>
+                            <a href="{% url 'finance:expense_create' %}">➕ Add Your First Expense</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function applyFilters() {
+        const search = document.getElementById('searchInput').value;
+        const category = document.getElementById('categoryFilter').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        let url = '?';
+        if (search) url += 'search=' + encodeURIComponent(search) + '&';
+        if (category) url += 'category=' + category + '&';
+        if (dateFrom) url += 'date_from=' + dateFrom + '&';
+        if (dateTo) url += 'date_to=' + dateTo + '&';
+        window.location.href = url.slice(0, -1);
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const active = document.activeElement;
+            if (active && (active.id === 'searchInput' || active.id === 'categoryFilter' || active.id === 'dateFrom' || active.id === 'dateTo')) {
+                applyFilters();
+            }
+        }
+    });
+
+    document.getElementById('dateFrom').addEventListener('change', applyFilters);
+    document.getElementById('dateTo').addEventListener('change', applyFilters);
+
+    console.log('💸 Expense List Page Loaded');
+    console.log('📊 Total Expenses: ₹{{ total_amount|floatformat:0|default:0 }}');
+    console.log('📝 Total Entries: {{ expenses|length|default:0 }}');
+</script>
+{% endblock %}

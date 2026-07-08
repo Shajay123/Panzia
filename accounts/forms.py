@@ -24,11 +24,9 @@ class RegisterForm(UserCreationForm):
         
         # Customize role choices
         role_choices = [
-            ('', 'Select Role'),
-            ('super_admin', 'Super Admin'),
-            ('startup_admin', 'Startup Admin'),
+            
             ('startup_hr', 'Startup HR'),
-            ('startup_manager', 'Startup Manager'),
+            
             ('employee', 'Employee'),
             ('talent', 'Talent'),
         ]

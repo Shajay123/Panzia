@@ -1,10 +1,1099 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}People Dashboard{% endblock %}
+{% block title %}HR Dashboard{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/dashboard.css' %}">
+<style>
+    /* ============================================
+       ENHANCED HR DASHBOARD STYLES
+       ============================================ */
+
+    /* ===== ROOT VARIABLES ===== */
+    :root {
+        --glass-bg: rgba(26, 16, 53, 0.8);
+        --glass-border: rgba(167, 139, 250, 0.08);
+        --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        --text-primary: #e8edf5;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+        --gradient-primary: linear-gradient(135deg, #7c3aed, #6d28d9);
+        --gradient-accent: linear-gradient(135deg, #7c3aed, #ec4899);
+        --sidebar-width: 260px;
+    }
+
+    /* ===== BASE ===== */
+    .people-dashboard {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+    }
+
+    /* ===== HEADER ===== */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 24px 0 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 24px;
+    }
+
+    .header-left .header-badge {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(124, 58, 237, 0.15);
+        color: #a78bfa;
+        border: 1px solid rgba(124, 58, 237, 0.1);
+        margin-bottom: 8px;
+    }
+
+    .header-left h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        background: var(--gradient-accent);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .header-left p {
+        margin: 4px 0 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .header-date {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+
+    .header-date .date-icon {
+        font-size: 1.1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: var(--text-secondary);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: var(--text-primary);
+    }
+
+    /* ===== STARTUP BANNER ===== */
+    .current-startup-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .banner-icon {
+        font-size: 1.2rem;
+    }
+
+    .banner-text {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        flex: 1;
+    }
+
+    .banner-text strong {
+        color: var(--text-primary);
+    }
+
+    .banner-reset {
+        color: #a78bfa;
+        font-size: 0.8rem;
+        text-decoration: none;
+        padding: 4px 12px;
+        border-radius: 6px;
+        background: rgba(124, 58, 237, 0.1);
+        transition: all 0.2s;
+    }
+
+    .banner-reset:hover {
+        background: rgba(124, 58, 237, 0.2);
+    }
+
+    /* ===== TODAY SUMMARY ===== */
+    .today-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .today-summary-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: var(--glass-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .today-summary-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .today-summary-card .ts-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .today-summary-card .ts-info {
+        flex: 1;
+    }
+
+    .today-summary-card .ts-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .today-summary-card .ts-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .today-summary-card.present .ts-value { color: #34d399; }
+    .today-summary-card.absent .ts-value { color: #f87171; }
+    .today-summary-card.wfh .ts-value { color: #60a5fa; }
+    .today-summary-card.leave .ts-value { color: #fcd34d; }
+
+    .today-summary-card .ts-bar {
+        width: 60px;
+        height: 4px;
+        background: rgba(167, 139, 250, 0.08);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+
+    .today-summary-card .ts-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1s ease;
+    }
+
+    .today-summary-card.present .ts-fill { background: #22c55e; }
+    .today-summary-card.absent .ts-fill { background: #ef4444; }
+    .today-summary-card.wfh .ts-fill { background: #3b82f6; }
+    .today-summary-card.leave .ts-fill { background: #f59e0b; }
+
+    /* ===== STATS ROW ===== */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: var(--glass-shadow);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: default;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.05), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 8px 40px rgba(124, 58, 237, 0.12);
+    }
+
+    .stat-card .stat-icon {
+        font-size: 1.8rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .stat-card .stat-content {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+        min-width: 0;
+    }
+
+    .stat-card h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .stat-card p {
+        margin: 0;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .stat-card .stat-trend {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+        z-index: 1;
+    }
+
+    .stat-trend.up { color: #34d399; }
+    .stat-trend.down { color: #f87171; }
+    .stat-trend.neutral { color: var(--text-secondary); }
+
+    /* ===== COLOR VARIATIONS ===== */
+    .stat-card.blue .stat-icon { color: #60a5fa; }
+    .stat-card.blue { border-left: 3px solid #60a5fa; }
+
+    .stat-card.purple .stat-icon { color: #a78bfa; }
+    .stat-card.purple { border-left: 3px solid #a78bfa; }
+
+    .stat-card.pink .stat-icon { color: #f472b6; }
+    .stat-card.pink { border-left: 3px solid #f472b6; }
+
+    .stat-card.orange .stat-icon { color: #f59e0b; }
+    .stat-card.orange { border-left: 3px solid #f59e0b; }
+
+    .stat-card.rose .stat-icon { color: #fb7185; }
+    .stat-card.rose { border-left: 3px solid #fb7185; }
+
+    .stat-card.cyan .stat-icon { color: #22d3ee; }
+    .stat-card.cyan { border-left: 3px solid #22d3ee; }
+
+    /* ===== MAIN LAYOUT WITH SIDEBAR NAV ===== */
+    .dashboard-main {
+        display: flex;
+        gap: 24px;
+        margin-top: 4px;
+        align-items: flex-start;
+    }
+
+    /* ===== SIDE NAVBAR ===== */
+    .side-nav {
+        width: var(--sidebar-width);
+        flex-shrink: 0;
+        position: sticky;
+        top: 20px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: var(--glass-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .side-nav:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .side-nav::-webkit-scrollbar {
+        width: 3px;
+    }
+
+    .side-nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .side-nav::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.2);
+        border-radius: 4px;
+    }
+
+    .side-nav::-webkit-scrollbar-thumb:hover {
+        background: rgba(167, 139, 250, 0.3);
+    }
+
+    .side-nav-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        margin-bottom: 8px;
+    }
+
+    .side-nav-header .sn-icon {
+        font-size: 1.1rem;
+    }
+
+    .side-nav-header h3 {
+        margin: 0;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        flex: 1;
+    }
+
+    .side-nav-header .sn-badge {
+        font-size: 0.55rem;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 10px;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+    }
+
+    .side-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        position: relative;
+        margin-bottom: 2px;
+    }
+
+    .side-nav-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: var(--gradient-accent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .side-nav-item:hover::before {
+        opacity: 1;
+    }
+
+    .side-nav-item:hover {
+        background: rgba(167, 139, 250, 0.06);
+        border-color: rgba(167, 139, 250, 0.08);
+        transform: translateX(4px);
+        color: var(--text-primary);
+    }
+
+    .side-nav-item.active {
+        background: rgba(124, 58, 237, 0.06);
+        border-color: rgba(124, 58, 237, 0.1);
+        color: var(--text-primary);
+    }
+
+    .side-nav-item.active::before {
+        opacity: 1;
+    }
+
+    .side-nav-item .sni-icon {
+        font-size: 1rem;
+        flex-shrink: 0;
+        width: 24px;
+        text-align: center;
+    }
+
+    .side-nav-item .sni-label {
+        flex: 1;
+        font-size: 0.78rem;
+        font-weight: 500;
+    }
+
+    .side-nav-item .sni-badge {
+        font-size: 0.55rem;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 10px;
+        background: rgba(167, 139, 250, 0.08);
+        color: var(--text-secondary);
+        flex-shrink: 0;
+    }
+
+    .side-nav-item .sni-badge.new {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .side-nav-item .sni-badge.warning {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+    }
+
+    .side-nav-item .sni-badge.danger {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .side-nav-item .sni-arrow {
+        color: var(--text-secondary);
+        font-size: 0.7rem;
+        transition: transform 0.2s ease;
+        opacity: 0.5;
+    }
+
+    .side-nav-item:hover .sni-arrow {
+        transform: translateX(4px);
+        color: #a78bfa;
+        opacity: 1;
+    }
+
+    .side-nav-divider {
+        height: 1px;
+        background: rgba(167, 139, 250, 0.04);
+        margin: 6px 10px;
+    }
+
+    .side-nav-section-title {
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        color: var(--text-muted);
+        padding: 8px 10px 4px;
+    }
+
+    /* ===== CONTENT AREA ===== */
+    .dashboard-content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .content-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 18px 20px;
+        box-shadow: var(--glass-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .content-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .card-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-header-left .card-icon {
+        font-size: 1.2rem;
+    }
+
+    .card-header-left h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .card-badge {
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+    }
+
+    .card-header-right .view-all {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .card-header-right .view-all:hover {
+        color: #a78bfa;
+    }
+
+    /* ===== ATTENDANCE RING ===== */
+    .attendance-ring-container {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 12px 16px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .attendance-ring {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        flex-shrink: 0;
+    }
+
+    .attendance-ring svg {
+        transform: rotate(-90deg);
+        width: 80px;
+        height: 80px;
+    }
+
+    .attendance-ring .ring-bg {
+        fill: none;
+        stroke: rgba(167, 139, 250, 0.08);
+        stroke-width: 5;
+    }
+
+    .attendance-ring .ring-fill {
+        fill: none;
+        stroke: url(#ringGradient);
+        stroke-width: 5;
+        stroke-linecap: round;
+        transition: stroke-dasharray 1s ease;
+    }
+
+    .attendance-ring .ring-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .attendance-ring .ring-text small {
+        display: block;
+        font-size: 0.5rem;
+        font-weight: 400;
+        color: var(--text-secondary);
+    }
+
+    .attendance-ring-info .ring-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .attendance-ring-info .ring-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .attendance-ring-info .ring-sub {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .attendance-ring-info .ring-sub .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+
+    .status-dot.present { background: #22c55e; }
+    .status-dot.absent { background: #ef4444; }
+    .status-dot.wfh { background: #3b82f6; }
+    .status-dot.leave { background: #f59e0b; }
+
+    /* ===== TABLE STYLES ===== */
+    .table-responsive {
+        overflow-x: auto;
+        margin: 0 -4px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    thead th {
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    tbody td {
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: var(--text-primary);
+        vertical-align: middle;
+    }
+
+    tbody tr:hover {
+        background: rgba(167, 139, 250, 0.03);
+    }
+
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .employee-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-avatar:not(img) {
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.7rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-details strong {
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        display: block;
+    }
+
+    .employee-designation {
+        font-size: 0.65rem;
+        color: var(--text-secondary);
+    }
+
+    .department-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 6px;
+        font-size: 0.65rem;
+        font-weight: 500;
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        color: #a78bfa;
+    }
+
+    .department-badge.danger {
+        background: rgba(239, 68, 68, 0.08);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.1);
+    }
+
+    /* ===== STATUS BADGES ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 12px;
+        border-radius: 20px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        border: 1px solid transparent;
+    }
+
+    .status-badge .status-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.active {
+        background: rgba(34, 197, 94, 0.12);
+        color: #86efac;
+        border-color: rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.active .status-dot { background: #22c55e; }
+
+    .status-badge.onboarding {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border-color: rgba(59, 130, 246, 0.06);
+    }
+    .status-badge.onboarding .status-dot { background: #3b82f6; }
+
+    .status-badge.probation {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fcd34d;
+        border-color: rgba(245, 158, 11, 0.06);
+    }
+    .status-badge.probation .status-dot { background: #f59e0b; }
+
+    .status-badge.notice {
+        background: rgba(236, 72, 153, 0.12);
+        color: #f472b6;
+        border-color: rgba(236, 72, 153, 0.06);
+    }
+    .status-badge.notice .status-dot { background: #ec4899; }
+
+    .status-badge.exited {
+        background: rgba(100, 116, 139, 0.12);
+        color: var(--text-secondary);
+        border-color: rgba(100, 116, 139, 0.06);
+    }
+    .status-badge.exited .status-dot { background: #64748b; }
+
+    .status-badge.inactive {
+        background: rgba(148, 163, 184, 0.08);
+        color: var(--text-secondary);
+        border-color: rgba(148, 163, 184, 0.06);
+    }
+    .status-badge.inactive .status-dot { background: #94a3b8; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 30px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-state .empty-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+        .dashboard-main {
+            flex-direction: column;
+        }
+
+        .side-nav {
+            width: 100%;
+            position: static;
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        .side-nav-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 4px;
+        }
+
+        .side-nav-item {
+            margin-bottom: 0;
+        }
+
+        .side-nav-divider {
+            display: none;
+        }
+
+        .side-nav-section-title {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .people-dashboard {
+            padding: 0 12px 30px;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            padding: 16px 0;
+        }
+
+        .header-right {
+            flex-wrap: wrap;
+        }
+
+        .header-date {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions .btn-primary,
+        .header-actions .btn-secondary {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .today-summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat-card {
+            padding: 14px 16px;
+        }
+
+        .stat-card h2 {
+            font-size: 1.2rem;
+        }
+
+        .attendance-ring-container {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .attendance-ring {
+            width: 100px;
+            height: 100px;
+        }
+
+        .attendance-ring svg {
+            width: 100px;
+            height: 100px;
+        }
+
+        .attendance-ring-info .ring-sub {
+            justify-content: center;
+        }
+
+        .side-nav-items {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+
+        .content-card {
+            padding: 14px 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .today-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-row {
+            grid-template-columns: 1fr;
+        }
+
+        .side-nav-items {
+            grid-template-columns: 1fr;
+        }
+
+        .attendance-ring {
+            width: 80px;
+            height: 80px;
+        }
+
+        .attendance-ring svg {
+            width: 80px;
+            height: 80px;
+        }
+
+        .header-actions {
+            flex-direction: column;
+        }
+
+        .header-actions .btn-primary,
+        .header-actions .btn-secondary {
+            width: 100%;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .card-header-right {
+            width: 100%;
+        }
+
+        .card-header-right .view-all {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            padding: 4px 0;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card,
+    .today-summary-card,
+    .side-nav,
+    .content-card {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
+    .stat-card:nth-child(5) { animation-delay: 0.25s; }
+    .stat-card:nth-child(6) { animation-delay: 0.3s; }
+
+    /* ===== SCROLLBAR ===== */
+    .people-dashboard::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    .people-dashboard::-webkit-scrollbar-track {
+        background: #0a0618;
+    }
+
+    .people-dashboard::-webkit-scrollbar-thumb {
+        background: #2d1b4a;
+        border-radius: 4px;
+    }
+
+    .people-dashboard::-webkit-scrollbar-thumb:hover {
+        background: #3d2b5a;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -46,6 +1135,50 @@
         {% endif %}
     </div>
     {% endif %}
+
+    <!-- ================= TODAY SUMMARY ================= -->
+    <div class="today-summary-grid">
+        <div class="today-summary-card present">
+            <span class="ts-icon">🟢</span>
+            <div class="ts-info">
+                <div class="ts-label">Present</div>
+                <div class="ts-value">{{ present_today|default:0 }}</div>
+                <div class="ts-bar">
+                    <div class="ts-fill" style="width: 0%;" id="presentFill"></div>
+                </div>
+            </div>
+        </div>
+        <div class="today-summary-card absent">
+            <span class="ts-icon">🔴</span>
+            <div class="ts-info">
+                <div class="ts-label">Absent</div>
+                <div class="ts-value">{{ absent_today|default:0 }}</div>
+                <div class="ts-bar">
+                    <div class="ts-fill" style="width: 0%;" id="absentFill"></div>
+                </div>
+            </div>
+        </div>
+        <div class="today-summary-card wfh">
+            <span class="ts-icon">🏡</span>
+            <div class="ts-info">
+                <div class="ts-label">WFH</div>
+                <div class="ts-value">{{ wfh_today|default:0 }}</div>
+                <div class="ts-bar">
+                    <div class="ts-fill" style="width: 0%;" id="wfhFill"></div>
+                </div>
+            </div>
+        </div>
+        <div class="today-summary-card leave">
+            <span class="ts-icon">🌴</span>
+            <div class="ts-info">
+                <div class="ts-label">Leave</div>
+                <div class="ts-value">{{ leave_today|default:0 }}</div>
+                <div class="ts-bar">
+                    <div class="ts-fill" style="width: 0%;" id="leaveFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ================= STATS ROW ================= -->
     <div class="stats-row">
@@ -89,142 +1222,197 @@
             </div>
             <div class="stat-trend up">↑ 10%</div>
         </div>
+        <div class="stat-card cyan">
+            <div class="stat-icon">🎉</div>
+            <div class="stat-content">
+                <h2>{{ holiday_count|default:0 }}</h2>
+                <p>Upcoming Holidays</p>
+            </div>
+            <div class="stat-trend neutral">📅</div>
+        </div>
     </div>
 
-    <!-- ================= MAIN LAYOUT: SIDEBAR + CONTENT ================= -->
+    <!-- ================= MAIN LAYOUT: SIDE NAV + CONTENT ================= -->
     <div class="dashboard-main">
 
-        <!-- ===== LEFT SIDEBAR ===== -->
-        <div class="dashboard-sidebar">
-
-            <!-- Quick Actions -->
-            <div class="sidebar-section">
-                <div class="sidebar-header">
-                    <span class="sidebar-icon">⚡</span>
-                    <h3>Quick Actions</h3>
-                </div>
-                <div class="quick-actions">
-                    <a href="{% url 'employees' %}" class="quick-action">
-                        <span class="qa-icon">👨</span>
-                        <span class="qa-label">Employee List</span>
-                        <span class="qa-badge">{{ employee_count|default:0 }}</span>
-                    </a>
-                    <a href="{% url 'employee_create' %}" class="quick-action">
-                        <span class="qa-icon">➕</span>
-                        <span class="qa-label">Add Employee</span>
-                        <span class="qa-badge new">New</span>
-                    </a>
-                    <a href="{% url 'attendance' %}" class="quick-action">
-                        <span class="qa-icon">🕒</span>
-                        <span class="qa-label">Mark Attendance</span>
-                        <span class="qa-badge">Today</span>
-                    </a>
-                    <a href="{% url 'attendance_report' %}" class="quick-action">
-                        <span class="qa-icon">📊</span>
-                        <span class="qa-label">Attendance Report</span>
-                        <span class="qa-badge">View</span>
-                    </a>
-                    <a href="{% url 'leave_dashboard' %}" class="quick-action">
-                        <span class="qa-icon">🌴</span>
-                        <span class="qa-label">Leave Dashboard</span>
-                        <span class="qa-badge">{{ leave_count|default:0 }}</span>
-                    </a>
-                    <a href="{% url 'payroll' %}" class="quick-action">
-                        <span class="qa-icon">💰</span>
-                        <span class="qa-label">Payroll</span>
-                        <span class="qa-badge">{{ payroll_count|default:0 }}</span>
-                    </a>
-                    <a href="{% url 'performance' %}" class="quick-action">
-                        <span class="qa-icon">⭐</span>
-                        <span class="qa-label">Performance</span>
-                        <span class="qa-badge">Reviews</span>
-                    </a>
-                    <a href="{% url 'documents' %}" class="quick-action">
-                        <span class="qa-icon">📂</span>
-                        <span class="qa-label">Documents</span>
-                        <span class="qa-badge">Files</span>
-                    </a>
-                </div>
+        <!-- ===== SIDE NAVIGATION ===== -->
+        <nav class="side-nav" id="sideNav">
+            <div class="side-nav-header">
+                <span class="sn-icon">⚡</span>
+                <h3>Quick Actions</h3>
+                <span class="sn-badge">{{ side_nav_items|length|default:0 }}</span>
             </div>
 
-            <!-- Today's Summary -->
-            <div class="sidebar-section">
-                <div class="sidebar-header">
-                    <span class="sidebar-icon">📊</span>
-                    <h3>Today's Summary</h3>
-                    <span class="sidebar-badge">{% now "d M" %}</span>
-                </div>
-                <div class="today-summary">
-                    <div class="today-item present">
-                        <span class="today-icon">🟢</span>
-                        <span class="today-label">Present</span>
-                        <span class="today-value">{{ present_today|default:0 }}</span>
-                    </div>
-                    <div class="today-item absent">
-                        <span class="today-icon">🔴</span>
-                        <span class="today-label">Absent</span>
-                        <span class="today-value">{{ absent_today|default:0 }}</span>
-                    </div>
-                    <div class="today-item wfh">
-                        <span class="today-icon">🏡</span>
-                        <span class="today-label">WFH</span>
-                        <span class="today-value">{{ wfh_today|default:0 }}</span>
-                    </div>
-                    <div class="today-item leave">
-                        <span class="today-icon">🌴</span>
-                        <span class="today-label">Leave</span>
-                        <span class="today-value">{{ leave_today|default:0 }}</span>
-                    </div>
-                    <div class="today-item total">
-                        <span class="today-icon">📊</span>
-                        <span class="today-label">Total</span>
-                        <span class="today-value">{{
-                            present_today|add:absent_today|add:wfh_today|add:leave_today|default:0 }}</span>
-                    </div>
-                </div>
+            <div class="side-nav-items">
+                <!-- Employee List -->
+                <a href="{% url 'employees' %}" class="side-nav-item">
+                    <span class="sni-icon">👨</span>
+                    <span class="sni-label">Employee List</span>
+                    <span class="sni-badge">{{ employee_count|default:0 }}</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Add Employee -->
+                <a href="{% url 'employee_create' %}" class="side-nav-item">
+                    <span class="sni-icon">➕</span>
+                    <span class="sni-label">Add Employee</span>
+                    <span class="sni-badge new">New</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Mark Attendance -->
+                <a href="{% url 'attendance' %}" class="side-nav-item">
+                    <span class="sni-icon">🕒</span>
+                    <span class="sni-label">Mark Attendance</span>
+                    <span class="sni-badge">Today</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Attendance Report -->
+                <a href="{% url 'attendance_report' %}" class="side-nav-item">
+                    <span class="sni-icon">📊</span>
+                    <span class="sni-label">Attendance Report</span>
+                    <span class="sni-badge">View</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <div class="side-nav-divider"></div>
+
+                <!-- Leave Dashboard -->
+                <a href="{% url 'leave_dashboard' %}" class="side-nav-item">
+                    <span class="sni-icon">🌴</span>
+                    <span class="sni-label">Leave Dashboard</span>
+                    <span class="sni-badge warning">{{ leave_count|default:0 }}</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Leave Requests -->
+                <a href="{% url 'leave_requests' %}" class="side-nav-item">
+                    <span class="sni-icon">📋</span>
+                    <span class="sni-label">Leave Requests</span>
+                    <span class="sni-badge warning">{{ leave_count|default:0 }}</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <div class="side-nav-divider"></div>
+
+                <!-- Payroll -->
+                <a href="{% url 'payroll' %}" class="side-nav-item">
+                    <span class="sni-icon">💰</span>
+                    <span class="sni-label">Payroll</span>
+                    <span class="sni-badge">{{ payroll_count|default:0 }}</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Payslips -->
+                <a href="{% url 'payslips' %}" class="side-nav-item">
+                    <span class="sni-icon">🧾</span>
+                    <span class="sni-label">Payslips</span>
+                    <span class="sni-badge">View</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <div class="side-nav-divider"></div>
+
+                <!-- Departments -->
+                <a href="{% url 'departments' %}" class="side-nav-item">
+                    <span class="sni-icon">🏢</span>
+                    <span class="sni-label">Departments</span>
+                    <span class="sni-badge">{{ department_count|default:0 }}</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Holiday Calendar -->
+                <a href="{% url 'holidays' %}" class="side-nav-item">
+                    <span class="sni-icon">🎉</span>
+                    <span class="sni-label">Holiday Calendar</span>
+                    <span class="sni-badge new">{{ holiday_count|default:0 }}</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <div class="side-nav-divider"></div>
+
+                <!-- Performance -->
+                <a href="{% url 'performance' %}" class="side-nav-item">
+                    <span class="sni-icon">⭐</span>
+                    <span class="sni-label">Performance</span>
+                    <span class="sni-badge">Reviews</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Onboarding -->
+                <a href="{% url 'onboarding' %}" class="side-nav-item">
+                    <span class="sni-icon">🚀</span>
+                    <span class="sni-label">Onboarding</span>
+                    <span class="sni-badge">Track</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Exit Management -->
+                <a href="{% url 'exit_management' %}" class="side-nav-item">
+                    <span class="sni-icon">🚪</span>
+                    <span class="sni-label">Exit Management</span>
+                    <span class="sni-badge">Process</span>
+                    <span class="sni-arrow">→</span>
+                </a>
+
+                <!-- Documents -->
+                <a href="{% url 'documents' %}" class="side-nav-item">
+                    <span class="sni-icon">📂</span>
+                    <span class="sni-label">Documents</span>
+                    <span class="sni-badge">Files</span>
+                    <span class="sni-arrow">→</span>
+                </a>
             </div>
+        </nav>
 
-            {% load math_filters %}
-
-            <!-- Quick Stats
-            <div class="sidebar-section">
-                <div class="sidebar-header">
-                    <span class="sidebar-icon">📈</span>
-                    <h3>Quick Stats</h3>
-                </div>
-                <div class="quick-stats">
-                    <div class="quick-stat">
-                        <span class="qs-label">Attendance Rate</span>
-                        <span class="qs-value">{{ attendance_percentage|default:0 }}%</span>
-                        <div class="qs-bar">
-                            <div class="qs-fill"
-                                style="width: {{ present_today|default:0|percentage:employee_count }}%; background: linear-gradient(90deg, #7c3aed, #ec4899);">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="quick-stat">
-                        <span class="qs-label">Leave Utilization</span>
-                        <span class="qs-value">68%</span>
-                        <div class="qs-bar">
-                            <div class="qs-fill"
-                                style="width: 68%; background: linear-gradient(90deg, #f59e0b, #f472b6);"></div>
-                        </div>
-                    </div>
-                    <div class="quick-stat">
-                        <span class="qs-label">Payroll Processed</span>
-                        <span class="qs-value">85%</span>
-                        <div class="qs-bar">
-                            <div class="qs-fill"
-                                style="width: 85%; background: linear-gradient(90deg, #22c55e, #a78bfa);"></div>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
-        </div>
-
-        <!-- ===== MAIN CONTENT ===== -->
+        <!-- ===== CONTENT AREA ===== -->
         <div class="dashboard-content">
+
+            <!-- Attendance Ring -->
+            <div class="content-card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <span class="card-icon">📊</span>
+                        <h3>Today's Attendance</h3>
+                        <span class="card-badge">{{ attendance_percentage|default:0 }}%</span>
+                    </div>
+                    <div class="card-header-right">
+                        <a href="{% url 'attendance' %}" class="view-all">
+                            View All →
+                        </a>
+                    </div>
+                </div>
+                <div class="attendance-ring-container">
+                    <div class="attendance-ring">
+                        <svg viewBox="0 0 80 80">
+                            <defs>
+                                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="ring-bg" cx="40" cy="40" r="34" />
+                            <circle class="ring-fill" cx="40" cy="40" r="34"
+                                stroke-dasharray="{{ attendance_percentage|default:0 }}, 100" />
+                        </svg>
+                        <div class="ring-text">
+                            {{ attendance_percentage|default:0 }}%
+                            <small>Attendance</small>
+                        </div>
+                    </div>
+                    <div class="attendance-ring-info">
+                        <div class="ring-label">Today's Attendance</div>
+                        <div class="ring-value">{{ present_today|default:0 }} / {{ employee_count|default:0 }}</div>
+                        <div class="ring-sub">
+                            <span><span class="status-dot present"></span> Present: {{ present_today|default:0 }}</span>
+                            <span><span class="status-dot absent"></span> Absent: {{ absent_today|default:0 }}</span>
+                            <span><span class="status-dot wfh"></span> WFH: {{ wfh_today|default:0 }}</span>
+                            <span><span class="status-dot leave"></span> Leave: {{ leave_today|default:0 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Recent Employees -->
             <div class="content-card">
@@ -256,53 +1444,63 @@
                                     <div class="employee-info">
                                         {% if employee.profile_image %}
                                         <img src="{{ employee.profile_image.url }}"
-                                            alt="{{ employee.user.get_full_name }}" class="employee-avatar">
+                                            alt="{{ employee.user.get_full_name|default:employee.user.username }}"
+                                            class="employee-avatar">
                                         {% else %}
                                         <div class="employee-avatar">
-                                            {{ employee.user.first_name|first|default:employee.user.username|first|upper
-                                            }}
+                                            {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
                                         </div>
                                         {% endif %}
                                         <div class="employee-details">
-                                            <strong>{{ employee.user.get_full_name|default:employee.user.username
-                                                }}</strong>
-                                            <span class="employee-designation">{{ employee.designation|default:"-"
-                                                }}</span>
+                                            <strong>
+                                                {{ employee.user.get_full_name|default:employee.user.username }}
+                                            </strong>
+                                            <span class="employee-designation">
+                                                {{ employee.designation|default:"-" }}
+                                            </span>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="department-badge">{{ employee.department.name|default:"-" }}</span>
+                                    {% if employee.department %}
+                                    <span class="department-badge">
+                                        {{ employee.department.name }}
+                                    </span>
+                                    {% else %}
+                                    <span class="department-badge danger">
+                                        ⚠️ No Department
+                                    </span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     {% if employee.status == "Active" %}
                                     <span class="status-badge active">
-                                        <span class="status-dot"></span>
+                                        <span class="status-dot active"></span>
                                         Active
                                     </span>
                                     {% elif employee.status == "Onboarding" %}
                                     <span class="status-badge onboarding">
-                                        <span class="status-dot"></span>
+                                        <span class="status-dot onboarding"></span>
                                         Onboarding
                                     </span>
                                     {% elif employee.status == "Probation" %}
                                     <span class="status-badge probation">
-                                        <span class="status-dot"></span>
+                                        <span class="status-dot probation"></span>
                                         Probation
                                     </span>
                                     {% elif employee.status == "Notice Period" %}
                                     <span class="status-badge notice">
-                                        <span class="status-dot"></span>
+                                        <span class="status-dot notice"></span>
                                         Notice Period
                                     </span>
                                     {% elif employee.status == "Exited" %}
                                     <span class="status-badge exited">
-                                        <span class="status-dot"></span>
+                                        <span class="status-dot exited"></span>
                                         Exited
                                     </span>
                                     {% else %}
                                     <span class="status-badge inactive">
-                                        <span class="status-dot"></span>
+                                        <span class="status-dot inactive"></span>
                                         {{ employee.status|default:"Inactive" }}
                                     </span>
                                     {% endif %}
@@ -323,71 +1521,147 @@
                 </div>
             </div>
 
-            <!-- HR Modules -->
-            <div class="content-card">
-                <div class="card-header">
-                    <div class="card-header-left">
-                        <span class="card-icon">🏢</span>
-                        <h3>HR Modules</h3>
-                        <span class="card-badge">6 Modules</span>
-                    </div>
-                </div>
-                <div class="module-grid">
-                    <a href="{% url 'departments' %}" class="module-card">
-                        <span class="module-icon">🏢</span>
-                        <div class="module-info">
-                            <h4>Departments</h4>
-                            <p>Manage company departments</p>
-                        </div>
-                        <span class="module-arrow">→</span>
-                    </a>
-                    <a href="{% url 'leave_requests' %}" class="module-card">
-                        <span class="module-icon">📋</span>
-                        <div class="module-info">
-                            <h4>Leave Requests</h4>
-                            <p>Approve employee leaves</p>
-                        </div>
-                        <span class="module-arrow">→</span>
-                    </a>
-                    <a href="{% url 'payslips' %}" class="module-card">
-                        <span class="module-icon">🧾</span>
-                        <div class="module-info">
-                            <h4>Payslips</h4>
-                            <p>Download monthly payslips</p>
-                        </div>
-                        <span class="module-arrow">→</span>
-                    </a>
-                    <a href="{% url 'holidays' %}" class="module-card">
-                        <span class="module-icon">🎉</span>
-                        <div class="module-info">
-                            <h4>Holiday Calendar</h4>
-                            <p>Upcoming company holidays</p>
-                        </div>
-                        <span class="module-arrow">→</span>
-                    </a>
-                    <a href="{% url 'onboarding' %}" class="module-card">
-                        <span class="module-icon">🚀</span>
-                        <div class="module-info">
-                            <h4>Onboarding</h4>
-                            <p>Track new employee onboarding</p>
-                        </div>
-                        <span class="module-arrow">→</span>
-                    </a>
-                    <a href="{% url 'exit_management' %}" class="module-card">
-                        <span class="module-icon">🚪</span>
-                        <div class="module-info">
-                            <h4>Exit Management</h4>
-                            <p>Employee resignation workflow</p>
-                        </div>
-                        <span class="module-arrow">→</span>
-                    </a>
-                </div>
+            <!-- Quick Stats (Moved here for better layout) -->
+<div class="content-card">
+    <div class="card-header">
+        <div class="card-header-left">
+            <span class="card-icon">📈</span>
+            <h3>Quick Stats</h3>
+            <span class="card-badge">Live</span>
+        </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;" id="quickStatsGrid">
+        <div>
+            <span style="font-size: 0.7rem; color: var(--text-secondary);">Attendance Rate</span>
+            <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">{{ attendance_percentage|default:0 }}%</div>
+            <div class="qs-bar">
+                <div class="qs-fill" id="attendanceRateFill" style="width: 0%; background: linear-gradient(90deg, #7c3aed, #ec4899);"></div>
             </div>
+        </div>
+        <div>
+            <span style="font-size: 0.7rem; color: var(--text-secondary);">Present Today</span>
+            <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">{{ present_today|default:0 }}</div>
+            <div class="qs-bar">
+                <div class="qs-fill" id="presentTodayFill" style="width: 0%; background: linear-gradient(90deg, #22c55e, #4ade80);"></div>
+            </div>
+        </div>
+        <div>
+            <span style="font-size: 0.7rem; color: var(--text-secondary);">Leave Utilization</span>
+            <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">68%</div>
+            <div class="qs-bar">
+                <div class="qs-fill" id="leaveUtilizationFill" style="width: 0%; background: linear-gradient(90deg, #f59e0b, #f472b6);"></div>
+            </div>
+        </div>
+        <div>
+            <span style="font-size: 0.7rem; color: var(--text-secondary);">On-Time Attendance</span>
+            <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">92%</div>
+            <div class="qs-bar">
+                <div class="qs-fill" id="onTimeFill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #22d3ee);"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
         </div>
 
     </div>
 
 </div>
+
+<script>
+
+    // ============================================
+// QUICK STATS BARS (with proper calculation)
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Attendance Rate
+    const attendanceRate = parseInt('{{ attendance_percentage|default:0 }}') || 0;
+    const attendanceFill = document.getElementById('attendanceRateFill');
+    if (attendanceFill) {
+        setTimeout(() => {
+            attendanceFill.style.width = Math.min(attendanceRate, 100) + '%';
+        }, 300);
+    }
+
+    // Present Today (calculate percentage)
+    const presentToday = parseInt('{{ present_today|default:0 }}') || 0;
+    const employeeCount = parseInt('{{ employee_count|default:1 }}') || 1;
+    const presentPercent = Math.min(Math.round((presentToday / employeeCount) * 100), 100);
+    const presentFill = document.getElementById('presentTodayFill');
+    if (presentFill) {
+        setTimeout(() => {
+            presentFill.style.width = presentPercent + '%';
+        }, 400);
+    }
+
+    // Leave Utilization
+    const leaveFill = document.getElementById('leaveUtilizationFill');
+    if (leaveFill) {
+        setTimeout(() => {
+            leaveFill.style.width = '68%';
+        }, 500);
+    }
+
+    // On-Time Attendance
+    const onTimeFill = document.getElementById('onTimeFill');
+    if (onTimeFill) {
+        setTimeout(() => {
+            onTimeFill.style.width = '92%';
+        }, 600);
+    }
+});
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // TODAY SUMMARY BARS
+        // ============================================
+        const presentVal = parseInt('{{ present_today|default:0 }}') || 0;
+        const absentVal = parseInt('{{ absent_today|default:0 }}') || 0;
+        const wfhVal = parseInt('{{ wfh_today|default:0 }}') || 0;
+        const leaveVal = parseInt('{{ leave_today|default:0 }}') || 0;
+        const totalVal = presentVal + absentVal + wfhVal + leaveVal || 1;
+
+        const presentPercent = Math.round((presentVal / totalVal) * 100);
+        const absentPercent = Math.round((absentVal / totalVal) * 100);
+        const wfhPercent = Math.round((wfhVal / totalVal) * 100);
+        const leavePercent = Math.round((leaveVal / totalVal) * 100);
+
+        setTimeout(() => {
+            document.getElementById('presentFill').style.width = Math.min(presentPercent, 100) + '%';
+            document.getElementById('absentFill').style.width = Math.min(absentPercent, 100) + '%';
+            document.getElementById('wfhFill').style.width = Math.min(wfhPercent, 100) + '%';
+            document.getElementById('leaveFill').style.width = Math.min(leavePercent, 100) + '%';
+        }, 300);
+
+        // ============================================
+        // ATTENDANCE RING ANIMATION
+        // ============================================
+        const ringFill = document.querySelector('.ring-fill');
+        if (ringFill) {
+            const dashArray = ringFill.getAttribute('stroke-dasharray');
+            ringFill.setAttribute('stroke-dasharray', '0, 100');
+            setTimeout(() => {
+                ringFill.setAttribute('stroke-dasharray', dashArray);
+            }, 500);
+        }
+
+        // ============================================
+        // ACTIVE NAV ITEM HIGHLIGHT
+        // ============================================
+        const currentUrl = window.location.pathname;
+        document.querySelectorAll('.side-nav-item').forEach(item => {
+            const href = item.getAttribute('href');
+            if (href && currentUrl.includes(href)) {
+                item.classList.add('active');
+            }
+        });
+
+        console.log('📊 HR Dashboard loaded');
+        console.log('👥 Total Employees: {{ employee_count|default:0 }}');
+        console.log('📈 Attendance Rate: {{ attendance_percentage|default:0 }}%');
+        console.log('✅ Present Today: {{ present_today|default:0 }}');
+        console.log('🎉 Upcoming Holidays: {{ holiday_count|default:0 }}');
+    });
+</script>
 
 {% endblock %}

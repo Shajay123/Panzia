@@ -1,0 +1,160 @@
+{% extends 'finance/base_finance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'finance:reimbursement_list' %}" class="btn-secondary">← Back to Reimbursements</a>
+{% endblock %}
+
+{% block finance_content %}
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+
+    .form-group label.required::after {
+        content: '*';
+        color: #ef4444;
+        margin-left: 4px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-group .help-text {
+        display: block;
+        color: #64748b;
+        font-size: 0.78rem;
+        margin-top: 4px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-submit {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-cancel {
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-danger {
+        padding: 10px 24px;
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.1);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="amount" class="required">Amount (₹)</label>
+                <input type="number" id="amount" name="amount" value="{{ reimbursement.amount|default:'' }}" placeholder="e.g., 5000" step="0.01" required>
+                <span class="help-text">Enter the amount in Indian Rupees</span>
+            </div>
+
+            <div class="form-group">
+                <label for="reason" class="required">Reason</label>
+                <textarea id="reason" name="reason" rows="4" placeholder="Describe the reason for reimbursement...">{{ reimbursement.reason|default:'' }}</textarea>
+                <span class="help-text">Provide detailed reason for the reimbursement</span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">{% if is_edit %}💾 Update Request{% else %}✅ Submit Request{% endif %}</button>
+                <a href="{% url 'finance:reimbursement_list' %}" class="btn-cancel">Cancel</a>
+                {% if is_edit %}
+                <a href="{% url 'finance:reimbursement_delete' reimbursement.id %}" class="btn-danger">🗑️ Delete</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

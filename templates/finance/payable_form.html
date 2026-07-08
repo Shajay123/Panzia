@@ -1,0 +1,164 @@
+{% extends 'finance/base_finance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'finance:payable_list' %}" class="btn-secondary">← Back to Payables</a>
+{% endblock %}
+
+{% block finance_content %}
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+
+    .form-group label.required::after {
+        content: '*';
+        color: #ef4444;
+        margin-left: 4px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    .form-group select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+        background-color: #1a1035;
+    }
+
+    .form-group select option {
+        background-color: #1a1035;
+        color: #e8edf5;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-group .help-text {
+        display: block;
+        color: #64748b;
+        font-size: 0.78rem;
+        margin-top: 4px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-submit {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-cancel {
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="vendor" class="required">Vendor</label>
+                <select id="vendor" name="vendor" required>
+                    <option value="">Select Vendor</option>
+                    {% for vendor in vendors %}
+                    <option value="{{ vendor.id }}" {% if payable.vendor.id == vendor.id %}selected{% endif %}>
+                        {{ vendor.vendor_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <span class="help-text">Select the vendor</span>
+            </div>
+
+            <div class="form-group">
+                <label for="amount" class="required">Amount (₹)</label>
+                <input type="number" id="amount" name="amount" value="{{ payable.amount|default:'' }}" placeholder="e.g., 25000" step="0.01" required>
+                <span class="help-text">Enter the amount in Indian Rupees</span>
+            </div>
+
+            <div class="form-group">
+                <label for="due_date" class="required">Due Date</label>
+                <input type="date" id="due_date" name="due_date" value="{{ payable.due_date|date:'Y-m-d'|default:'' }}" required>
+                <span class="help-text">Date when the payment is due</span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">{% if is_edit %}💾 Update Payable{% else %}✅ Save Payable{% endif %}</button>
+                <a href="{% url 'finance:payable_list' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

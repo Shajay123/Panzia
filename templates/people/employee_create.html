@@ -100,7 +100,7 @@
         background: rgba(124, 58, 237, 0.1);
         color: #a78bfa;
     }
-    
+
     @media (max-width: 768px) {
         .timing-grid-compact {
             grid-template-columns: 1fr 1fr;
@@ -157,7 +157,7 @@
     {% endif %}
 
     <!-- ================= FORM ================= -->
-    <form method="POST" enctype="multipart/form-data" novalidate>
+    <form method="POST" enctype="multipart/form-data" novalidate id="employeeForm">
         {% csrf_token %}
 
         <!-- ====== ERROR MESSAGES ====== -->
@@ -328,6 +328,19 @@
             </div>
         </div>
 
+        <!-- ====== PHONE NUMBER ====== -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>📱 Phone Number</h2>
+                <span class="card-badge">Required</span>
+            </div>
+            <div class="form-group">
+                <label for="phone" class="form-label required">Phone Number</label>
+                <input type="tel" name="phone" id="phone" class="form-control" placeholder="Enter phone number (e.g., 9876543210)" required>
+                <span class="help-text">Primary contact number for the employee.</span>
+            </div>
+        </div>
+
         <!-- ====== ATTENDANCE TIMING CONFIGURATION ====== -->
         <div class="form-card">
             <div class="card-header">
@@ -448,15 +461,10 @@
         <!-- ====== CONTACT ====== -->
         <div class="form-card">
             <div class="card-header">
-                <h2>📞 Contact</h2>
+                <h2>📞 Emergency Contact</h2>
                 <span class="card-badge">Optional</span>
             </div>
             <div class="form-grid">
-                <div class="form-group">
-                    <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
-                    {{ form.phone }}
-                    <span class="help-text">Primary contact number.</span>
-                </div>
                 <div class="form-group">
                     <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">Emergency Contact</label>
                     {{ form.emergency_contact }}
@@ -540,7 +548,7 @@
 
         <!-- ====== FORM ACTIONS ====== -->
         <div class="form-actions">
-            <button type="submit" class="btn-primary btn-save">
+            <button type="submit" class="btn-primary btn-save" id="submitBtn">
                 🚀 Create Employee
             </button>
             <a href="{% url 'employees' %}" class="btn-secondary">
@@ -564,7 +572,6 @@
         const existingSection = document.getElementById("existing-section");
         const newSection = document.getElementById("new-section");
 
-        // Restore saved value from Django
         const savedHireMode = "{{ request.POST.hire_mode|default:'' }}";
         if (savedHireMode) {
             hireMode.value = savedHireMode;
@@ -627,18 +634,15 @@
             const preset = shiftPresets[shiftKey];
             if (!preset) return;
 
-            // Update fields
             document.getElementById('default_check_in').value = preset.check_in || '';
             document.getElementById('default_check_out').value = preset.check_out || '';
             document.getElementById('shift_type').value = preset.shift;
 
-            // Highlight active preset
             document.querySelectorAll('.shift-preset-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.querySelector(`.shift-preset-btn[onclick="applyShift('${shiftKey}')"]`).classList.add('active');
 
-            // Show notification
             showNotification(`✅ ${preset.label} applied!`);
         };
 
@@ -737,6 +741,29 @@
             }
         });
 
+        // ============================================
+        // VALIDATE PHONE NUMBER
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!phone) {
+                e.preventDefault();
+                alert('⚠️ Please enter a phone number.');
+                document.getElementById('phone').focus();
+                return false;
+            }
+            
+            if (!/^\d{10}$/.test(phone) && !/^\+?[0-9]{10,15}$/.test(phone)) {
+                e.preventDefault();
+                alert('⚠️ Please enter a valid phone number (10 digits).');
+                document.getElementById('phone').focus();
+                return false;
+            }
+            
+            return true;
+        });
+
         // Add animation styles
         const style = document.createElement('style');
         style.textContent = `
@@ -747,6 +774,8 @@
             .d-none { display: none; }
         `;
         document.head.appendChild(style);
+
+        console.log('📝 Add Employee page loaded');
     });
 </script>
 {% endblock %}

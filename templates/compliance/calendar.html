@@ -1,0 +1,252 @@
+{% extends 'compliance/base_compliance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'compliance:reminder_create' %}" class="btn btn-primary btn-sm">
+    <span class="nav-icon">🔔</span> Add Reminder
+</a>
+<a href="{% url 'compliance:compliance_dashboard' %}" class="btn btn-secondary btn-sm">
+    ← Dashboard
+</a>
+{% endblock %}
+
+{% block compliance_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+
+    .content-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .deadline-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .deadline-item:last-child {
+        border-bottom: none;
+    }
+
+    .deadline-item .title {
+        color: #d6e0f0;
+        font-size: 0.9rem;
+    }
+
+    .deadline-item .due-date {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .deadline-item .due-date.urgent {
+        color: #f87171;
+        background: rgba(239, 68, 68, 0.08);
+    }
+
+    .deadline-item .due-date.today {
+        color: #fbbf24;
+        background: rgba(251, 191, 36, 0.08);
+    }
+
+    .deadline-item .badge {
+        font-size: 0.6rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .badge-gst {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+    }
+
+    .badge-tds {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+    }
+
+    .badge-reminder {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .calendar-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    /* ===== PRIMARY BUTTON STYLES ===== */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+}
+/* ===== SECONDARY BUTTON STYLES ===== */
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: rgba(167, 139, 250, 0.06);
+    color: #94a3b8;
+    border: 1px solid rgba(167, 139, 250, 0.08);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+}
+</style>
+
+<div class="page-content">
+    <div class="calendar-grid">
+        <!-- Reminders -->
+        <div class="content-card">
+            <div class="card-header">
+                <h3>🔔 Upcoming Reminders</h3>
+                <a href="{% url 'compliance:reminder_create' %}" class="btn btn-sm btn-primary">+ Add</a>
+            </div>
+            {% if reminders %}
+                {% for reminder in reminders %}
+                <div class="deadline-item">
+                    <span class="title">{{ reminder.title }}</span>
+                    <span class="due-date {% if reminder.due_date == today %}today{% elif reminder.due_date|timeuntil < '7 days' %}urgent{% endif %}">
+                        {{ reminder.due_date|date:"d M Y" }}
+                        <span class="badge badge-reminder">Reminder</span>
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <span class="empty-icon">🔔</span>
+                    <p>No upcoming reminders</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- GST Deadlines -->
+        <div class="content-card">
+            <div class="card-header">
+                <h3>📊 GST Deadlines</h3>
+                <a href="{% url 'compliance:gst_dashboard' %}" class="btn btn-sm btn-secondary">View All</a>
+            </div>
+            {% if gst_deadlines %}
+                {% for deadline in gst_deadlines %}
+                <div class="deadline-item">
+                    <span class="title">
+                        {{ deadline.return_type }} - {{ deadline.month }} {{ deadline.year }}
+                    </span>
+                    <span class="due-date {% if deadline.due_date == today %}today{% elif deadline.due_date|timeuntil < '7 days' %}urgent{% endif %}">
+                        {{ deadline.due_date|date:"d M Y" }}
+                        <span class="badge badge-gst">GST</span>
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <span class="empty-icon">📊</span>
+                    <p>No upcoming GST deadlines</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- TDS Deadlines -->
+        <div class="content-card">
+            <div class="card-header">
+                <h3>📊 TDS Deadlines</h3>
+                <a href="{% url 'compliance:tds_dashboard' %}" class="btn btn-sm btn-secondary">View All</a>
+            </div>
+            {% if tds_deadlines %}
+                {% for deadline in tds_deadlines %}
+                <div class="deadline-item">
+                    <span class="title">
+                        TDS {{ deadline.quarter }} - {{ deadline.year }}
+                    </span>
+                    <span class="due-date {% if deadline.due_date == today %}today{% elif deadline.due_date|timeuntil < '7 days' %}urgent{% endif %}">
+                        {{ deadline.due_date|date:"d M Y" }}
+                        <span class="badge badge-tds">TDS</span>
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <span class="empty-icon">📊</span>
+                    <p>No upcoming TDS deadlines</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

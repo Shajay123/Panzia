@@ -1,0 +1,648 @@
+{% extends 'compliance/base_compliance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'compliance:tds_dashboard' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to TDS
+    </a>
+</div>
+{% endblock %}
+
+{% block compliance_content %}
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    .form-card {
+        background: linear-gradient(145deg, rgba(167, 139, 250, 0.04), rgba(167, 139, 250, 0.01));
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 28px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ===== FORM GROUP ===== */
+    .form-group {
+        margin-bottom: 22px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+        letter-spacing: 0.3px;
+    }
+
+    .form-group label.required::after {
+        content: '*';
+        color: #ef4444;
+        margin-left: 4px;
+    }
+
+    /* ===== DROPDOWN (SELECT) STYLES ===== */
+    .form-group select {
+        width: 100%;
+        padding: 12px 16px;
+        padding-right: 44px;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        border-radius: 12px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-sizing: border-box;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%2394a3b8' d='M7 10L1 4h12z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 14px;
+        position: relative;
+    }
+
+    /* Dropdown Hover State */
+    .form-group select:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+        background-color: rgba(167, 139, 250, 0.05);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23a78bfa' d='M7 10L1 4h12z'/%3E%3C/svg%3E");
+    }
+
+    /* Dropdown Focus State */
+    .form-group select:focus {
+        outline: none;
+        border-color: #7c3aed;
+        background-color: rgba(167, 139, 250, 0.05);
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23a78bfa' d='M7 10L1 4h12z'/%3E%3C/svg%3E");
+    }
+
+    /* Dropdown Options */
+    .form-group select option {
+        background: #1a1035;
+        color: #e8edf5;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        border: none;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.05);
+        transition: all 0.2s;
+    }
+
+    .form-group select option:hover {
+        background: rgba(124, 58, 237, 0.15);
+        color: #a78bfa;
+    }
+
+    .form-group select option:checked {
+        background: rgba(124, 58, 237, 0.2);
+        color: #a78bfa;
+        font-weight: 600;
+    }
+
+    .form-group select option:disabled {
+        color: #64748b;
+        font-style: italic;
+    }
+
+    /* Custom Dropdown Wrapper */
+    .custom-select-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .custom-select-wrapper::after {
+        content: '▼';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.7rem;
+        pointer-events: none;
+        transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .custom-select-wrapper:focus-within::after {
+        color: #a78bfa;
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    .custom-select-wrapper select {
+        padding-right: 44px;
+    }
+
+    /* ===== OTHER FORM INPUTS ===== */
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        border-radius: 12px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-sizing: border-box;
+    }
+
+    .form-group input:hover,
+    .form-group textarea:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+        background: rgba(167, 139, 250, 0.05);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        background: rgba(167, 139, 250, 0.05);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: #64748b;
+        font-weight: 400;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
+    /* ===== FIELD WITH ICON ===== */
+    .form-group .field-icon-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .form-group .field-icon-wrapper .field-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        font-size: 1.1rem;
+        transition: color 0.3s ease;
+        z-index: 1;
+    }
+
+    .form-group .field-icon-wrapper input {
+        padding-left: 40px;
+    }
+
+    .form-group .field-icon-wrapper:focus-within .field-icon {
+        color: #a78bfa;
+    }
+
+    /* ===== HELP TEXT ===== */
+    .form-group .help-text {
+        display: block;
+        color: #64748b;
+        font-size: 0.78rem;
+        margin-top: 6px;
+        font-weight: 400;
+    }
+
+    .form-group .help-text.error {
+        color: #f87171;
+    }
+
+    /* ===== VALIDATION STATES ===== */
+    .form-group input.error,
+    .form-group select.error,
+    .form-group textarea.error {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+    }
+
+    .form-group input.success,
+    .form-group select.success,
+    .form-group textarea.success {
+        border-color: #34d399 !important;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1) !important;
+    }
+
+    /* ===== BUTTON STYLES ===== */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .btn .btn-icon {
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .btn:hover .btn-icon {
+        transform: scale(1.15) rotate(-5deg);
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border-color: rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-sm {
+        padding: 6px 16px;
+        font-size: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .btn-sm .btn-icon {
+        font-size: 0.9rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 32px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-submit::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-submit:active::after {
+        width: 300px;
+        height: 300px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0px);
+    }
+
+    .btn-submit .btn-icon {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-submit:hover .btn-icon {
+        transform: scale(1.2);
+    }
+
+    .btn-submit .btn-shortcut {
+        font-size: 0.6rem;
+        color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 10px;
+        border-radius: 6px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-left: 4px;
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-cancel .btn-icon {
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-cancel:hover .btn-icon {
+        transform: scale(1.1);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 0 10px;
+        }
+
+        .form-card {
+            padding: 20px 16px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-submit,
+        .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-submit .btn-shortcut {
+            display: none;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card {
+            padding: 16px 12px;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            border-radius: 10px;
+        }
+
+        .form-group select {
+            padding-right: 36px;
+        }
+
+        .btn-submit,
+        .btn-cancel {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-group {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.05s; }
+    .form-group:nth-child(2) { animation-delay: 0.1s; }
+    .form-group:nth-child(3) { animation-delay: 0.15s; }
+    .form-group:nth-child(4) { animation-delay: 0.2s; }
+    .form-group:nth-child(5) { animation-delay: 0.25s; }
+
+    /* ===== LOADING SPINNER ===== */
+    .btn-submit .spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .btn-submit.loading .spinner {
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ===== CUSTOM SCROLLBAR FOR DROPDOWN ===== */
+    .form-group select::-webkit-scrollbar {
+        width: 6px;
+        border-radius: 10px;
+    }
+
+    .form-group select::-webkit-scrollbar-track {
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 10px;
+    }
+
+    .form-group select::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.25);
+        border-radius: 10px;
+    }
+
+    .form-group select::-webkit-scrollbar-thumb:hover {
+        background: rgba(167, 139, 250, 0.4);
+    }
+
+    /* ===== DROPDOWN PLACEHOLDER OPTION ===== */
+    .form-group select option[value=""] {
+        color: #64748b;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card">
+        <form method="POST" id="tdsForm">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
+                    {{ field.label }}
+                </label>
+                
+                {% if field.name == 'amount' %}
+                <div class="field-icon-wrapper">
+                    {{ field }}
+                    <span class="field-icon">₹</span>
+                </div>
+                {% elif field.field.widget.input_type == 'select' %}
+                <div class="custom-select-wrapper">
+                    {{ field }}
+                </div>
+                {% else %}
+                {{ field }}
+                {% endif %}
+                
+                {% if field.help_text %}
+                <span class="help-text">{{ field.help_text }}</span>
+                {% endif %}
+                {% if field.errors %}
+                <span class="help-text error">{{ field.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-icon">{% if is_edit %}💾{% else %}✅{% endif %}</span>
+                    <span class="btn-text">{% if is_edit %}Update TDS{% else %}Save TDS{% endif %}</span>
+                    <span class="btn-shortcut">Ctrl+S</span>
+                </button>
+                <a href="{% url 'compliance:tds_dashboard' %}" class="btn-cancel">
+                    <span class="btn-icon">✕</span>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('tdsForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Prevent double submission
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Processing...</span>
+            `;
+        });
+
+        // Auto-focus first input
+        const firstInput = form.querySelector('input:not([type="hidden"]), select, textarea');
+        if (firstInput) {
+            firstInput.focus();
+        }
+
+        // Real-time validation feedback
+        form.querySelectorAll('input, select, textarea').forEach(function(field) {
+            field.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.hasAttribute('required')) {
+                    this.classList.add('error');
+                    this.classList.remove('success');
+                } else if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                }
+            });
+
+            field.addEventListener('focus', function() {
+                this.classList.remove('error');
+            });
+
+            field.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                } else {
+                    this.classList.remove('success');
+                }
+            });
+        });
+
+        // Keyboard shortcut: Ctrl+S to submit
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        console.log('📝 TDS Form loaded');
+        console.log('🔧 Mode: {% if is_edit %}Edit{% else %}Create{% endif %}');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'finance/base_finance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<a href="{% url 'finance:invoice_list' %}" class="btn-secondary">← Back to Invoices</a>
+{% endblock %}
+
+{% block finance_content %}
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+
+    .form-group label.required::after {
+        content: '*';
+        color: #ef4444;
+        margin-left: 4px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    .form-group select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+        background-color: #1a1035;
+    }
+
+    .form-group select option {
+        background-color: #1a1035;
+        color: #e8edf5;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-group .help-text {
+        display: block;
+        color: #64748b;
+        font-size: 0.78rem;
+        margin-top: 4px;
+    }
+
+    .invoice-number-preview {
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.05);
+        border-radius: 6px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    .invoice-number-preview strong {
+        color: #e8edf5;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-submit {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-cancel {
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-card">
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="client_name" class="required">Client Name</label>
+                <input type="text" id="client_name" name="client_name" value="{{ invoice.client_name|default:'' }}" placeholder="e.g., Acme Corporation" required>
+                <span class="help-text">Name of the client or company</span>
+            </div>
+
+            <div class="form-group">
+                <label for="amount" class="required">Amount (₹)</label>
+                <input type="number" id="amount" name="amount" value="{{ invoice.amount|default:'' }}" placeholder="e.g., 50000" step="0.01" required>
+                <span class="help-text">Enter the invoice amount in Indian Rupees</span>
+            </div>
+
+            <div class="form-group">
+                <label for="due_date" class="required">Due Date</label>
+                <input type="date" id="due_date" name="due_date" value="{{ invoice.due_date|date:'Y-m-d'|default:'' }}" required>
+                <span class="help-text">Date when the payment is due</span>
+            </div>
+
+            <div class="form-group">
+                <label for="status" class="required">Status</label>
+                <select id="status" name="status" required>
+                    <option value="">Select Status</option>
+                    {% for status in statuses %}
+                    <option value="{{ status.0 }}" {% if invoice.status == status.0 %}selected{% endif %}>{{ status.0 }}</option>
+                    {% endfor %}
+                </select>
+                <span class="help-text">Current status of the invoice</span>
+            </div>
+
+            <div class="form-group">
+                <div class="invoice-number-preview">
+                    Invoice Number: <strong>Auto-generated</strong>
+                </div>
+                <span class="help-text">Invoice number will be automatically generated</span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">{% if is_edit %}💾 Update Invoice{% else %}✅ Create Invoice{% endif %}</button>
+                <a href="{% url 'finance:invoice_list' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

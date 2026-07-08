@@ -5,6 +5,236 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+<style>
+    /* ===== LEAVE PAGE SPECIFIC STYLES ===== */
+    .portal-stat-card.red {
+        border-left: 4px solid #ef4444;
+    }
+    .portal-stat-card.red .stat-icon {
+        color: #ef4444;
+    }
+    .portal-stat-card.red h2 {
+        color: #ef4444;
+    }
+
+    .portal-filter {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+
+    .portal-filter-form {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        padding: 8px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.9rem;
+        min-width: 150px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .filter-select option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    .btn-filter {
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-filter-reset {
+        padding: 8px 20px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-filter-reset:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .record-count {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+
+    .portal-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .portal-table th {
+        text-align: left;
+        padding: 12px 16px;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .portal-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    .portal-table tr:hover {
+        background: rgba(167, 139, 250, 0.03);
+    }
+
+    .portal-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .duration-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background: rgba(167, 139, 250, 0.06);
+        color: #a78bfa;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-badge.status-pending {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .status-badge.status-approved {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .status-badge.status-rejected {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .text-center {
+        text-align: center;
+        padding: 40px 20px !important;
+        color: #94a3b8;
+    }
+
+    .text-center .empty-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    /* Stats Card Red Color */
+    .portal-stat-card.red {
+        border-left: 4px solid #ef4444;
+    }
+    .portal-stat-card.red .stat-icon {
+        color: #ef4444;
+    }
+    .portal-stat-card.red h2 {
+        color: #ef4444;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .portal-filter-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-select {
+            width: 100%;
+            min-width: unset;
+        }
+
+        .btn-filter,
+        .btn-filter-reset {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .portal-table th,
+        .portal-table td {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+        }
+
+        .portal-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .portal-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .portal-table th:nth-child(3),
+        .portal-table td:nth-child(3),
+        .portal-table th:nth-child(4),
+        .portal-table td:nth-child(4) {
+            display: none;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -67,9 +297,9 @@
         <form method="GET" class="portal-filter-form">
             <select name="status" class="filter-select">
                 <option value="">All Status</option>
-                <option value="Pending" {% if request.GET.status == 'Pending' %}selected{% endif %}>Pending</option>
-                <option value="Approved" {% if request.GET.status == 'Approved' %}selected{% endif %}>Approved</option>
-                <option value="Rejected" {% if request.GET.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                <option value="Pending" {% if request.GET.status == 'Pending' %}selected{% endif %}>⏳ Pending</option>
+                <option value="Approved" {% if request.GET.status == 'Approved' %}selected{% endif %}>✅ Approved</option>
+                <option value="Rejected" {% if request.GET.status == 'Rejected' %}selected{% endif %}>❌ Rejected</option>
             </select>
             <button type="submit" class="btn-filter">🔍 Filter</button>
             <a href="{% url 'employee_portal_leave' %}" class="btn-filter-reset">↩️ Reset</a>
@@ -91,13 +321,12 @@
                         <th>To</th>
                         <th>Duration</th>
                         <th>Status</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for leave in leaves %}
                     <tr>
-                        <td><strong>{{ leave.leave_type }}</strong></td>
+                        <td><strong>{{ leave.leave_type|title }}</strong></td>
                         <td>{{ leave.from_date|date:"d M Y" }}</td>
                         <td>{{ leave.to_date|date:"d M Y" }}</td>
                         <td>
@@ -107,16 +336,24 @@
                         </td>
                         <td>
                             <span class="status-badge status-{{ leave.status|lower }}">
+                                {% if leave.status == 'Pending' %}⏳
+                                {% elif leave.status == 'Approved' %}✅
+                                {% elif leave.status == 'Rejected' %}❌
+                                {% endif %}
                                 {{ leave.status }}
                             </span>
-                        </td>
-                        <td>
-                            <a href="{% url 'employee_portal_leave_detail' leave.id %}" class="btn-sm-view">👁️ View</a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center">No leave requests found.</td>
+                        <td colspan="5" class="text-center">
+                            <span class="empty-icon">📭</span>
+                            <p style="margin: 0; font-size: 1rem; color: #94a3b8;">No leave requests found.</p>
+                            <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b;">Apply for a leave to get started.</p>
+                            <a href="{% url 'employee_portal_leave_create' %}" class="btn-portal-primary" style="margin-top: 12px; display: inline-block;">
+                                ➕ Apply Leave
+                            </a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

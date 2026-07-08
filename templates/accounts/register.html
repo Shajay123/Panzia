@@ -7,6 +7,465 @@ Register - PANZIA
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<style>
+    /* ============================================
+       ENHANCED REGISTER PAGE STYLES
+       ============================================ */
+    
+    .auth-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at top, #1a1035, #0a0618);
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 50%, rgba(124, 58, 237, 0.03), transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(236, 72, 153, 0.03), transparent 50%);
+        animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(2%, -2%) rotate(2deg); }
+    }
+
+    .auth-container {
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.85), rgba(45, 27, 74, 0.85));
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 24px;
+        padding: 40px 48px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 8px 64px rgba(0, 0, 0, 0.4);
+        animation: slideUp 0.6s ease forwards;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .auth-container .brand-icon {
+        text-align: center;
+        font-size: 3rem;
+        margin-bottom: 8px;
+    }
+
+    .auth-container h2 {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a78bfa, #f472b6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 4px;
+    }
+
+    .auth-container .subtitle {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0 0 28px;
+    }
+
+    .auth-container .subtitle span {
+        color: #a78bfa;
+    }
+
+    /* ============================================
+       ROLE SELECTOR
+       ============================================ */
+    .role-selector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+
+    .role-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 2px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 14px 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        user-select: none;
+    }
+
+    .role-card:hover {
+        background: rgba(167, 139, 250, 0.06);
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .role-card.selected {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.08);
+        box-shadow: 0 0 30px rgba(124, 58, 237, 0.05);
+    }
+
+    .role-card .role-icon {
+        font-size: 1.8rem;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .role-card .role-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #d6e0f0;
+        display: block;
+    }
+
+    .role-card .role-desc {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        display: block;
+    }
+
+    .role-card input[type="radio"] {
+        display: none;
+    }
+
+    /* Role-specific colors */
+    .role-card.startup-owner { border-color: rgba(124, 58, 237, 0.2); }
+    .role-card.startup-owner.selected { border-color: #7c3aed; background: rgba(124, 58, 237, 0.08); }
+    .role-card.hrms { border-color: rgba(236, 72, 153, 0.2); }
+    .role-card.hrms.selected { border-color: #ec4899; background: rgba(236, 72, 153, 0.08); }
+    .role-card.employee { border-color: rgba(34, 197, 94, 0.2); }
+    .role-card.employee.selected { border-color: #22c55e; background: rgba(34, 197, 94, 0.08); }
+    .role-card.talent { border-color: rgba(245, 158, 11, 0.2); }
+    .role-card.talent.selected { border-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+
+    /* ============================================
+       FORM STYLES
+       ============================================ */
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+        margin-bottom: 4px;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+        margin-left: 2px;
+    }
+
+    .form-group .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 10px;
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-group .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .form-group .form-control::placeholder {
+        color: #64748b;
+    }
+
+    .form-group .form-control.error {
+        border-color: #f87171;
+    }
+
+    .form-group .form-control.error:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+    }
+
+    .field-error {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.75rem;
+        color: #f87171;
+    }
+
+    .password-hint {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+
+    /* ============================================
+       PASSWORD STRENGTH
+       ============================================ */
+    .password-strength {
+        margin-top: 6px;
+        height: 3px;
+        border-radius: 2px;
+        background: rgba(167, 139, 250, 0.06);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .password-strength .strength-bar {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.3s ease, background 0.3s ease;
+        width: 0%;
+    }
+
+    .password-strength .strength-bar.weak { width: 25%; background: #f87171; }
+    .password-strength .strength-bar.fair { width: 50%; background: #fbbf24; }
+    .password-strength .strength-bar.good { width: 75%; background: #60a5fa; }
+    .password-strength .strength-bar.strong { width: 100%; background: #4ade80; }
+
+    .password-strength-text {
+        font-size: 0.65rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    /* ============================================
+       AUTH MESSAGES
+       ============================================ */
+    .auth-error {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.12);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #f87171;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .auth-error::before {
+        content: '⚠️';
+        font-size: 1.1rem;
+    }
+
+    .auth-success {
+        background: rgba(34, 197, 94, 0.06);
+        border: 1px solid rgba(34, 197, 94, 0.12);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #4ade80;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .auth-success::before {
+        content: '✅';
+        font-size: 1.1rem;
+    }
+
+    /* ============================================
+       SUBMIT BUTTON
+       ============================================ */
+    .auth-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 8px;
+    }
+
+    .auth-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 24px rgba(124, 58, 237, 0.3);
+    }
+
+    .auth-btn:active {
+        transform: scale(0.98);
+    }
+
+    .auth-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .auth-btn .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ============================================
+       AUTH FOOTER
+       ============================================ */
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .auth-footer p {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .auth-footer a {
+        color: #a78bfa;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .auth-footer a:hover {
+        color: #c4b5fd;
+        text-decoration: underline;
+    }
+
+    /* ============================================
+       TERMS
+       ============================================ */
+    .terms-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-align: center;
+        margin-top: 16px;
+    }
+
+    .terms-text a {
+        color: #a78bfa;
+        text-decoration: none;
+    }
+
+    .terms-text a:hover {
+        text-decoration: underline;
+    }
+
+    /* ============================================
+       ROLE HELP TEXT
+       ============================================ */
+    .role-help-text {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 10px 12px;
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        transition: all 0.3s ease;
+    }
+
+    .role-help-text .help-icon {
+        font-size: 1.2rem;
+        margin-right: 6px;
+    }
+
+    .role-help-text .help-message {
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+
+    .role-help-text .help-redirect {
+        display: block;
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 0.7rem;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 480px) {
+        .auth-container {
+            padding: 28px 20px;
+            border-radius: 16px;
+            max-width: 100%;
+        }
+
+        .auth-container h2 {
+            font-size: 1.4rem;
+        }
+
+        .role-selector {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .role-card {
+            padding: 10px 8px;
+        }
+
+        .role-card .role-icon {
+            font-size: 1.4rem;
+        }
+
+        .role-card .role-name {
+            font-size: 0.75rem;
+        }
+
+        .role-card .role-desc {
+            font-size: 0.55rem;
+        }
+
+        .auth-container .subtitle {
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .role-selector {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -15,28 +474,91 @@ Register - PANZIA
 
     <div class="auth-container">
 
+        <!-- Brand Icon -->
+        <div class="brand-icon">🚀</div>
+
         <h2>Create Your Account</h2>
+        <p class="subtitle">Join <span>PANZIA</span> and start your journey</p>
 
-        <p class="auth-subtitle">
-            Join the Talent Deployment Engine
-        </p>
-
+        <!-- ================= ERROR MESSAGES ================= -->
         {% if form.errors %}
         <div class="auth-error">
             Please correct the errors below.
         </div>
         {% endif %}
 
-        <form method="POST">
+        <!-- ================= SUCCESS MESSAGES ================= -->
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                <div class="auth-success">
+                    {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
 
+        <form method="POST" id="registerForm" novalidate>
             {% csrf_token %}
 
+            <!-- ============================================ -->
+            <!-- ROLE SELECTOR                                -->
+            <!-- ============================================ -->
+            <div class="role-selector" id="roleSelector">
+                
+                <!-- Startup Owner -->
+                <label class="role-card startup-owner selected" for="role_startup_owner" data-role="startup_owner">
+                    <input type="radio" name="role" id="role_startup_owner" value="startup_owner" checked>
+                    <span class="role-icon">🏢</span>
+                    <span class="role-name">Startup Owner</span>
+                    <span class="role-desc">Launch & manage your startup</span>
+                </label>
+
+                <!-- HRMS -->
+                <label class="role-card hrms" for="role_hrms" data-role="hrms">
+                    <input type="radio" name="role" id="role_hrms" value="hrms">
+                    <span class="role-icon">👔</span>
+                    <span class="role-name">HRMS</span>
+                    <span class="role-desc">Manage HR operations</span>
+                </label>
+
+                <!-- Employee -->
+                <label class="role-card employee" for="role_employee" data-role="employee">
+                    <input type="radio" name="role" id="role_employee" value="employee">
+                    <span class="role-icon">👤</span>
+                    <span class="role-name">Employee</span>
+                    <span class="role-desc">Work & collaborate</span>
+                </label>
+
+                <!-- Talent -->
+                <label class="role-card talent" for="role_talent" data-role="talent">
+                    <input type="radio" name="role" id="role_talent" value="talent">
+                    <span class="role-icon">🌟</span>
+                    <span class="role-name">Talent</span>
+                    <span class="role-desc">Showcase your skills</span>
+                </label>
+
+            </div>
+
+            <!-- ============================================ -->
+            <!-- ROLE HELP TEXT                              -->
+            <!-- ============================================ -->
+            <div class="role-help-text" id="roleHelpText">
+                <span class="help-icon">🏢</span>
+                <span class="help-message" id="roleHelpMessage">Register as a Startup Owner to create and manage your company</span>
+                <span class="help-redirect" id="roleRedirect">You will be redirected to setup your startup profile</span>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- FORM FIELDS                                  -->
+            <!-- ============================================ -->
             {% for field in form %}
-
                 <div class="form-group">
-
                     <label for="{{ field.id_for_label }}">
                         {{ field.label }}
+                        {% if field.field.required %}
+                            <span class="required">*</span>
+                        {% endif %}
                     </label>
 
                     {{ field }}
@@ -47,21 +569,50 @@ Register - PANZIA
                         </small>
                     {% endif %}
 
-                </div>
+                    {% if field.name == 'password1' %}
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar" id="strengthBar"></div>
+                        </div>
+                        <div class="password-strength-text" id="strengthText"></div>
+                        <small class="password-hint">
+                            Use at least 8 characters with letters, numbers, and symbols.
+                        </small>
+                    {% endif %}
 
+                    {% if field.name == 'password2' %}
+                        <small class="password-hint">
+                            Enter the same password as above for verification.
+                        </small>
+                    {% endif %}
+                </div>
             {% endfor %}
 
-            <button type="submit" class="primary-btn auth-btn">
-                Create Account
+            <!-- ============================================ -->
+            <!-- TERMS                                        -->
+            <!-- ============================================ -->
+            <div class="terms-text">
+                By creating an account, you agree to our 
+                <a href="#">Terms of Service</a> and 
+                <a href="#">Privacy Policy</a>.
+            </div>
+
+            <!-- ============================================ -->
+            <!-- SUBMIT BUTTON                                -->
+            <!-- ============================================ -->
+            <button type="submit" class="auth-btn" id="registerBtn">
+                🚀 Create Account
             </button>
 
         </form>
 
+        <!-- ============================================ -->
+        <!-- FOOTER                                       -->
+        <!-- ============================================ -->
         <div class="auth-footer">
             <p>
                 Already have an account?
                 <a href="{% url 'login' %}">
-                    Login
+                    Sign In
                 </a>
             </p>
         </div>
@@ -69,5 +620,158 @@ Register - PANZIA
     </div>
 
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // ROLE SELECTOR
+        // ============================================
+        const roleCards = document.querySelectorAll('.role-card');
+        const helpMessage = document.getElementById('roleHelpMessage');
+        const redirectMessage = document.getElementById('roleRedirect');
+        
+        const roleData = {
+            'startup_owner': {
+                icon: '🏢',
+                message: 'Register as a Startup Owner to create and manage your company',
+                redirect: 'You will be redirected to setup your startup profile'
+            },
+            'hrms': {
+                icon: '👔',
+                message: 'Register as HRMS to manage employees, attendance, and payroll',
+                redirect: 'You will be redirected to the HR dashboard'
+            },
+            'employee': {
+                icon: '👤',
+                message: 'Register as an Employee to work and collaborate with your team',
+                redirect: 'You will be redirected to your employee portal'
+            },
+            'talent': {
+                icon: '🌟',
+                message: 'Register as Talent to showcase your skills and find opportunities',
+                redirect: 'You will be redirected to your talent dashboard'
+            }
+        };
+
+        roleCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selected from all
+                roleCards.forEach(c => c.classList.remove('selected'));
+                // Add selected to clicked
+                this.classList.add('selected');
+                // Check the radio button
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    // Update help text
+                    const role = this.dataset.role;
+                    if (role && roleData[role]) {
+                        const data = roleData[role];
+                        helpMessage.textContent = data.message;
+                        redirectMessage.textContent = data.redirect;
+                        // Update icon
+                        document.querySelector('.role-help-text .help-icon').textContent = data.icon;
+                    }
+                }
+            });
+        });
+
+        // ============================================
+        // PASSWORD STRENGTH
+        // ============================================
+        const passwordInput = document.getElementById('id_password1');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                
+                if (password.length === 0) {
+                    strengthBar.className = 'strength-bar';
+                    strengthBar.style.width = '0%';
+                    strengthText.textContent = '';
+                    return;
+                }
+                
+                if (password.length >= 8) strength += 1;
+                if (password.length >= 12) strength += 1;
+                if (/[a-z]/.test(password)) strength += 1;
+                if (/[A-Z]/.test(password)) strength += 1;
+                if (/[0-9]/.test(password)) strength += 1;
+                if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
+                
+                let level, className;
+                if (strength <= 2) { level = 'Weak'; className = 'weak'; }
+                else if (strength <= 3) { level = 'Fair'; className = 'fair'; }
+                else if (strength <= 4) { level = 'Good'; className = 'good'; }
+                else { level = 'Strong'; className = 'strong'; }
+                
+                strengthBar.className = 'strength-bar ' + className;
+                strengthText.textContent = 'Password strength: ' + level;
+            });
+        }
+
+        // ============================================
+        // PASSWORD MATCH VALIDATION
+        // ============================================
+        const password2Input = document.getElementById('id_password2');
+        if (password2Input) {
+            password2Input.addEventListener('input', function() {
+                const password1 = document.getElementById('id_password1').value;
+                const password2 = this.value;
+                
+                if (password2.length > 0 && password1 !== password2) {
+                    this.classList.add('error');
+                    this.setCustomValidity('Passwords do not match');
+                } else {
+                    this.classList.remove('error');
+                    this.setCustomValidity('');
+                }
+            });
+        }
+
+        // ============================================
+        // FORM SUBMISSION
+        // ============================================
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('registerBtn');
+
+        form.addEventListener('submit', function(e) {
+            const password1 = document.getElementById('id_password1').value;
+            const password2 = document.getElementById('id_password2').value;
+            
+            if (password1 && password2 && password1 !== password2) {
+                e.preventDefault();
+                alert('Passwords do not match. Please try again.');
+                return false;
+            }
+            
+            const selectedRole = document.querySelector('input[name="role"]:checked');
+            const roleValue = selectedRole ? selectedRole.value : 'startup_owner';
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Creating Account...';
+            
+            console.log('📝 Registering with role:', roleValue);
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUT
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement && activeElement.tagName !== 'BUTTON') {
+                    e.preventDefault();
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        console.log('🚀 Register page loaded');
+    });
+</script>
 
 {% endblock %}

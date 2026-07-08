@@ -1,0 +1,582 @@
+{% extends 'finance/base_finance.html' %}
+{% load static %}
+
+{% block page_actions %}
+<div class="filter-actions" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; width: 100%;">
+    <!-- Month Filter -->
+    <div class="month-filter"
+        style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: rgba(167, 139, 250, 0.03); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.06);">
+        <span style="color: #94a3b8; font-size: 0.8rem; font-weight: 500;">📅</span>
+        <select name="month" id="monthSelect"
+            style="padding: 6px 12px; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 6px; background: rgba(167, 139, 250, 0.03); color: #e8edf5; font-size: 0.85rem; cursor: pointer; min-width: 120px;">
+            <option value="all" {% if selected_month == 'all' %}selected{% endif %}>All Months</option>
+            <option value="1" {% if selected_month == '1' %}selected{% endif %}>January</option>
+            <option value="2" {% if selected_month == '2' %}selected{% endif %}>February</option>
+            <option value="3" {% if selected_month == '3' %}selected{% endif %}>March</option>
+            <option value="4" {% if selected_month == '4' %}selected{% endif %}>April</option>
+            <option value="5" {% if selected_month == '5' %}selected{% endif %}>May</option>
+            <option value="6" {% if selected_month == '6' %}selected{% endif %}>June</option>
+            <option value="7" {% if selected_month == '7' %}selected{% endif %}>July</option>
+            <option value="8" {% if selected_month == '8' %}selected{% endif %}>August</option>
+            <option value="9" {% if selected_month == '9' %}selected{% endif %}>September</option>
+            <option value="10" {% if selected_month == '10' %}selected{% endif %}>October</option>
+            <option value="11" {% if selected_month == '11' %}selected{% endif %}>November</option>
+            <option value="12" {% if selected_month == '12' %}selected{% endif %}>December</option>
+        </select>
+        <button onclick="applyMonthFilter()"
+            style="padding: 6px 16px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.8rem;">Apply</button>
+        {% if selected_month != 'all' or selected_year %}
+        <a href="{% url 'finance:finance_dashboard' %}"
+            style="color: #94a3b8; text-decoration: none; padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; border: 1px solid rgba(167, 139, 250, 0.08); transition: all 0.3s;"
+            onmouseover="this.style.borderColor='#7c3aed'"
+            onmouseout="this.style.borderColor='rgba(167, 139, 250, 0.08)'">✕ Clear</a>
+        {% endif %}
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <a href="{% url 'finance:income_create' %}" class="btn-primary green" style="flex: 0 0 auto;">➕ Add Income</a>
+    <a href="{% url 'finance:expense_create' %}" class="btn-primary" style="flex: 0 0 auto;">💸 Add Expense</a>
+    <a href="{% url 'finance:payable_list' %}" class="btn-secondary" style="flex: 0 0 auto;">📤 View Payables</a>
+</div>
+
+<script>
+    function applyMonthFilter() {
+        const month = document.getElementById('monthSelect').value;
+        let url = '?';
+        if (month && month !== 'all') {
+            url += 'month=' + month + '&';
+        }
+        url = url.slice(0, -1);
+        window.location.href = url || window.location.pathname;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const monthSelect = document.getElementById('monthSelect');
+        if (monthSelect) {
+            monthSelect.addEventListener('change', function () {
+                applyMonthFilter();
+            });
+        }
+    });
+</script>
+{% endblock %}
+
+{% block finance_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card:nth-child(1) {
+        animation-delay: 0.05s;
+    }
+
+    .stat-card:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .stat-card:nth-child(3) {
+        animation-delay: 0.15s;
+    }
+
+    .stat-card:nth-child(4) {
+        animation-delay: 0.2s;
+    }
+
+    .stat-card:nth-child(5) {
+        animation-delay: 0.25s;
+    }
+
+    .stat-card:nth-child(6) {
+        animation-delay: 0.3s;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card .stat-icon {
+        font-size: 1.5rem;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .stat-card .stat-value.positive {
+        color: #34d399;
+    }
+
+    .stat-card .stat-value.negative {
+        color: #f87171;
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .stat-card .stat-change {
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-top: 4px;
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+    }
+
+    .stat-card .stat-change.positive {
+        color: #34d399;
+        background: rgba(34, 197, 94, 0.08);
+    }
+
+    .stat-card .stat-change.negative {
+        color: #f87171;
+        background: rgba(239, 68, 68, 0.08);
+    }
+
+    .stat-card .stat-change.neutral {
+        color: #94a3b8;
+        background: rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card .filter-badge {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        font-size: 0.55rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 10px;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* ===== COLOR VARIATIONS ===== */
+    .stat-card.income {
+        border-left: 3px solid #34d399;
+    }
+
+    .stat-card.income::before {
+        background: linear-gradient(90deg, #34d399, #6ee7b7);
+    }
+
+    .stat-card.expense {
+        border-left: 3px solid #f87171;
+    }
+
+    .stat-card.expense::before {
+        background: linear-gradient(90deg, #f87171, #fca5a5);
+    }
+
+    .stat-card.profit {
+        border-left: 3px solid #a78bfa;
+    }
+
+    .stat-card.profit::before {
+        background: linear-gradient(90deg, #a78bfa, #c4b5fd);
+    }
+
+    .stat-card.invoice {
+        border-left: 3px solid #60a5fa;
+    }
+
+    .stat-card.invoice::before {
+        background: linear-gradient(90deg, #60a5fa, #93bbfc);
+    }
+
+    .stat-card.receivable {
+        border-left: 3px solid #fbbf24;
+    }
+
+    .stat-card.receivable::before {
+        background: linear-gradient(90deg, #fbbf24, #fcd34d);
+    }
+
+    .stat-card.payable {
+        border-left: 3px solid #f472b6;
+    }
+
+    .stat-card.payable::before {
+        background: linear-gradient(90deg, #f472b6, #f9a8d4);
+    }
+
+    /* ===== SECTION HEADER ===== */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 24px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .section-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-header .view-all {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: color 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .section-header .view-all:hover {
+        color: #a78bfa;
+    }
+
+    .section-header .view-all::after {
+        content: '→';
+        transition: transform 0.2s;
+    }
+
+    .section-header .view-all:hover::after {
+        transform: translateX(4px);
+    }
+
+    /* ===== CATEGORY LIST ===== */
+    .category-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .category-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        transition: all 0.2s;
+    }
+
+    .category-item:hover {
+        padding-left: 4px;
+    }
+
+    .category-name {
+        font-size: 0.85rem;
+        color: #d6e0f0;
+        min-width: 100px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .category-name .cat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .category-amount {
+        font-weight: 600;
+        color: #e8edf5;
+        min-width: 80px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .category-bar {
+        flex: 1;
+        height: 4px;
+        background: rgba(167, 139, 250, 0.08);
+        border-radius: 4px;
+        margin: 0 12px;
+        overflow: hidden;
+    }
+
+    .category-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1s ease;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .empty-state a {
+        color: #a78bfa;
+        text-decoration: none;
+    }
+
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 14px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat-card {
+            padding: 12px 16px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.2rem;
+        }
+
+        .filter-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-actions .month-filter {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filter-actions .btn-primary,
+        .filter-actions .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .category-item {
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .category-name {
+            min-width: auto;
+            flex: 1;
+        }
+
+        .category-bar {
+            order: 3;
+            flex-basis: 100%;
+            margin: 2px 0;
+        }
+
+        .category-amount {
+            min-width: auto;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-content {
+            padding: 10px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+</style>
+
+<div class="page-content">
+    <!-- ===== STATS GRID ===== -->
+    <div class="stats-grid">
+        <div class="stat-card income">
+            <span class="stat-icon">💵</span>
+            <div class="stat-value">₹{{ total_income|floatformat:0|default:"0" }}</div>
+            <div class="stat-label">Total Income</div>
+            <div class="stat-change positive">▲ ₹{{ monthly_income|floatformat:0|default:"0" }} this month</div>
+            {% if selected_month != 'all' %}
+            <span class="filter-badge">{{ month_name }}</span>
+            {% endif %}
+        </div>
+
+        <div class="stat-card expense">
+            <span class="stat-icon">💸</span>
+            <div class="stat-value">₹{{ total_expenses|floatformat:0|default:"0" }}</div>
+            <div class="stat-label">Total Expenses</div>
+            <div class="stat-change negative">▼ ₹{{ monthly_expenses|floatformat:0|default:"0" }} this month</div>
+            {% if selected_month != 'all' %}
+            <span class="filter-badge">{{ month_name }}</span>
+            {% endif %}
+        </div>
+
+        <div class="stat-card profit">
+            <span class="stat-icon">📈</span>
+            <div class="stat-value {% if total_profit >= 0 %}positive{% else %}negative{% endif %}">
+                ₹{{ total_profit|floatformat:0|default:"0" }}
+            </div>
+            <div class="stat-label">Total Profit</div>
+            <div class="stat-change {% if monthly_profit >= 0 %}positive{% else %}negative{% endif %}">
+                {% if monthly_profit >= 0 %}▲{% else %}▼{% endif %} ₹{{ monthly_profit|floatformat:0|default:"0" }} this month
+            </div>
+            {% if selected_month != 'all' %}
+            <span class="filter-badge">{{ month_name }}</span>
+            {% endif %}
+        </div>
+
+        <div class="stat-card invoice">
+            <span class="stat-icon">🧾</span>
+            <div class="stat-value">{{ total_invoices|default:"0" }}</div>
+            <div class="stat-label">Total Invoices</div>
+            <div class="stat-change neutral">✅ {{ paid_invoices|default:"0" }} Paid | ⚠️ {{ overdue_invoices|default:"0" }} Overdue</div>
+            {% if selected_month != 'all' %}
+            <span class="filter-badge">{{ month_name }}</span>
+            {% endif %}
+        </div>
+
+        <div class="stat-card receivable">
+            <span class="stat-icon">📥</span>
+            <div class="stat-value">₹{{ total_receivable|floatformat:0|default:"0" }}</div>
+            <div class="stat-label">Accounts Receivable</div>
+            <div class="stat-change neutral">
+                📊 {{ receivable_total_count|default:"0" }} entries
+                {% if receivable_due_count %}
+                | ⏳ {{ receivable_due_count }} pending
+                {% endif %}
+                {% if receivable_paid_count %}
+                | ✅ {{ receivable_paid_count }} paid
+                {% endif %}
+            </div>
+            {% if selected_month != 'all' %}
+            <span class="filter-badge">{{ month_name }}</span>
+            {% endif %}
+        </div>
+
+        <div class="stat-card payable">
+            <span class="stat-icon">📤</span>
+            <div class="stat-value">₹{{ total_payable|floatformat:0|default:"0" }}</div>
+            <div class="stat-label">Accounts Payable</div>
+            <div class="stat-change neutral">
+                📊 {{ payable_total_count|default:"0" }} entries
+                {% if payable_due_count %}
+                | ⏳ {{ payable_due_count }} pending
+                {% endif %}
+                {% if payable_paid_count %}
+                | ✅ {{ payable_paid_count }} paid
+                {% endif %}
+            </div>
+            {% if selected_month != 'all' %}
+            <span class="filter-badge">{{ month_name }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+   
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Animate category bars
+        document.querySelectorAll('.category-fill').forEach(function (bar, index) {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(function () {
+                bar.style.width = width;
+            }, 300 + (index * 100));
+        });
+
+        console.log('💰 Finance Dashboard loaded');
+        console.log('📊 Total Income: ₹{{ total_income|floatformat:0|default:"0" }}');
+        console.log('💸 Total Expenses: ₹{{ total_expenses|floatformat:0|default:"0" }}');
+        console.log('📈 Total Profit: ₹{{ total_profit|floatformat:0|default:"0" }}');
+        console.log('📥 Total Receivable: ₹{{ total_receivable|floatformat:0|default:"0" }}');
+        console.log('📤 Total Payable: ₹{{ total_payable|floatformat:0|default:"0" }}');
+        console.log('📅 Selected Month: {{ month_name|default:"All" }}');
+    });
+</script>
+{% endblock %}

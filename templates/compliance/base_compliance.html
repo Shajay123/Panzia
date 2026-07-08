@@ -1,0 +1,593 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 0;">
+    <div class="row" style="margin: 0;">
+        <!-- Fixed Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar" 
+             style="min-height: 100vh; 
+                    position: fixed; 
+                    top: 0; 
+                    left: 0; 
+                    bottom: 0; 
+                    z-index: 1000; 
+                    padding: 0;
+                    overflow-y: auto;
+                    width: 250px;
+                    background: linear-gradient(180deg, #0f0a1a 0%, #1a1035 100%);
+                    border-right: 1px solid rgba(167, 139, 250, 0.06);">
+            
+            <!-- Sidebar Brand/Logo -->
+            <div class="sidebar-brand" style="padding: 20px 20px 16px; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                <h4 style="margin: 0; color: #e8edf5; font-weight: 700;">
+                    <span style="color: #a78bfa;">📑</span> Compliance
+                </h4>
+                <small style="color: #94a3b8; font-size: 0.7rem; display: block; margin-top: 2px;">Regulatory Management</small>
+            </div>
+
+            <div class="position-sticky pt-3" style="padding: 12px 0;">
+                <ul class="nav flex-column" style="padding: 0 12px;">
+                    <li class="nav-item" style="margin-bottom: 2px;">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'compliance_dashboard' %}active{% endif %}" 
+                           href="{% url 'compliance:compliance_dashboard' %}"
+                           style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
+                            <span class="nav-icon" style="font-size: 1.2rem;">📋</span> 
+                            <span>Dashboard</span>
+                            {% if request.resolver_match.url_name == 'compliance_dashboard' %}
+                            <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #a78bfa;"></span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="margin-bottom: 2px;">
+                        <a class="nav-link {% if 'gst' in request.path %}active{% endif %}" 
+                           href="{% url 'compliance:gst_dashboard' %}"
+                           style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
+                            <span class="nav-icon" style="font-size: 1.2rem;">📊</span> 
+                            <span>GST</span>
+                            {% if 'gst' in request.path %}
+                            <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #60a5fa;"></span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="margin-bottom: 2px;">
+                        <a class="nav-link {% if 'tds' in request.path %}active{% endif %}" 
+                           href="{% url 'compliance:tds_dashboard' %}"
+                           style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
+                            <span class="nav-icon" style="font-size: 1.2rem;">📊</span> 
+                            <span>TDS</span>
+                            {% if 'tds' in request.path %}
+                            <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #a78bfa;"></span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="margin-bottom: 2px;">
+                        <a class="nav-link {% if 'pf' in request.path %}active{% endif %}" 
+                           href="{% url 'compliance:pf_dashboard' %}"
+                           style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
+                            <span class="nav-icon" style="font-size: 1.2rem;">🏦</span> 
+                            <span>PF</span>
+                            {% if 'pf' in request.path %}
+                            <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #34d399;"></span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="margin-bottom: 2px;">
+                        <a class="nav-link {% if 'esic' in request.path %}active{% endif %}" 
+                           href="{% url 'compliance:esic_dashboard' %}"
+                           style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
+                            <span class="nav-icon" style="font-size: 1.2rem;">🏥</span> 
+                            <span>ESIC</span>
+                            {% if 'esic' in request.path %}
+                            <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #f472b6;"></span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="margin-bottom: 2px;">
+                        <a class="nav-link {% if 'mca' in request.path %}active{% endif %}" 
+                           href="{% url 'compliance:mca_dashboard' %}"
+                           style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
+                            <span class="nav-icon" style="font-size: 1.2rem;">📜</span> 
+                            <span>MCA</span>
+                            {% if 'mca' in request.path %}
+                            <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #fbbf24;"></span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    <li class="nav-item" style="margin-bottom: 2px;">
+                        <a class="nav-link {% if 'income-tax' in request.path %}active{% endif %}" 
+                           href="{% url 'compliance:income_tax_dashboard' %}"
+                           style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
+                            <span class="nav-icon" style="font-size: 1.2rem;">💰</span> 
+                            <span>Income Tax</span>
+                            {% if 'income-tax' in request.path %}
+                            <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #f87171;"></span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    <!-- Divider -->
+                    <li style="padding: 12px 14px 6px; list-style: none;">
+                        <hr style="border-color: rgba(167, 139, 250, 0.06); margin: 0;">
+                    </li>
+
+                    <li class="nav-item" style="margin-bottom: 2px;">
+                        <a class="nav-link {% if 'calendar' in request.path %}active{% endif %}" 
+                           href="{% url 'compliance:compliance_calendar' %}"
+                           style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
+                            <span class="nav-icon" style="font-size: 1.2rem;">📅</span> 
+                            <span>Calendar</span>
+                            {% if 'calendar' in request.path %}
+                            <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #a78bfa;"></span>
+                            {% endif %}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4" 
+             style="margin-left: 250px; 
+                    padding: 20px 30px; 
+                    min-height: 100vh;
+                    background: radial-gradient(ellipse at top left, rgba(167, 139, 250, 0.03), transparent 70%);">
+            
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" 
+                 style="border-bottom-color: rgba(167, 139, 250, 0.06) !important;">
+                <h1 class="h2" style="font-weight: 700; color: #e8edf5; display: flex; align-items: center; gap: 12px;">
+                    <span class="page-icon" style="font-size: 1.8rem;">{{ page_icon|default:"📑" }}</span>
+                    {{ page_title|default:"Compliance" }}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    {% block page_actions %}{% endblock %}
+                </div>
+            </div>
+
+            <!-- Page Subtitle -->
+            {% if page_subtitle %}
+            <p class="text-muted" style="color: #94a3b8 !important; font-size: 0.95rem; margin-bottom: 20px;">
+                {{ page_subtitle }}
+            </p>
+            {% endif %}
+
+            <!-- Flash Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" 
+                     role="alert" 
+                     style="border-radius: 12px; border: none; background: rgba(167, 139, 250, 0.05); color: #e8edf5; padding: 14px 20px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" 
+                            style="filter: invert(1); opacity: 0.6;"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Content -->
+            <div style="margin-top: 16px;">
+                {% block compliance_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ===== SIDEBAR NAV HOVER EFFECTS ===== */
+    .nav-link {
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-link:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5 !important;
+        transform: translateX(4px);
+    }
+
+    .nav-link.active {
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa !important;
+        box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.06);
+    }
+
+    .nav-link.active .nav-icon {
+        color: #a78bfa;
+    }
+
+    /* ===== BUTTON STYLES ===== */
+    .btn-toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-toolbar .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .btn-toolbar .btn .btn-icon {
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+
+    /* Primary Button */
+    .btn-toolbar .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        border-color: rgba(124, 58, 237, 0.3);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-toolbar .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        border-color: rgba(124, 58, 237, 0.4);
+        color: #fff;
+    }
+
+    .btn-toolbar .btn-primary:active {
+        transform: translateY(0px);
+    }
+
+    /* Secondary Button */
+    .btn-toolbar .btn-secondary {
+        background: rgba(167, 139, 250, 0.08);
+        color: #94a3b8;
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .btn-toolbar .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.15);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-toolbar .btn-secondary:active {
+        transform: translateY(0px);
+    }
+
+    /* Success Button */
+    .btn-toolbar .btn-success {
+        background: linear-gradient(135deg, #059669, #047857);
+        color: #fff;
+        border-color: rgba(5, 150, 105, 0.3);
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+    }
+
+    .btn-toolbar .btn-success:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.35);
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-color: rgba(5, 150, 105, 0.4);
+        color: #fff;
+    }
+
+    .btn-toolbar .btn-success:active {
+        transform: translateY(0px);
+    }
+
+    /* Danger Button */
+    .btn-toolbar .btn-danger {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: #fff;
+        border-color: rgba(220, 38, 38, 0.3);
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-toolbar .btn-danger:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-color: rgba(220, 38, 38, 0.4);
+        color: #fff;
+    }
+
+    .btn-toolbar .btn-danger:active {
+        transform: translateY(0px);
+    }
+
+    /* Info Button */
+    .btn-toolbar .btn-info {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff;
+        border-color: rgba(37, 99, 235, 0.3);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-toolbar .btn-info:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-color: rgba(37, 99, 235, 0.4);
+        color: #fff;
+    }
+
+    .btn-toolbar .btn-info:active {
+        transform: translateY(0px);
+    }
+
+    /* Warning Button */
+    .btn-toolbar .btn-warning {
+        background: linear-gradient(135deg, #d97706, #b45309);
+        color: #fff;
+        border-color: rgba(217, 119, 6, 0.3);
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+    }
+
+    .btn-toolbar .btn-warning:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(217, 119, 6, 0.35);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        border-color: rgba(217, 119, 6, 0.4);
+        color: #fff;
+    }
+
+    .btn-toolbar .btn-warning:active {
+        transform: translateY(0px);
+    }
+
+    /* Outline Buttons */
+    .btn-toolbar .btn-outline-primary {
+        background: transparent;
+        color: #7c3aed;
+        border-color: rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-toolbar .btn-outline-primary:hover {
+        background: rgba(124, 58, 237, 0.1);
+        color: #8b5cf6;
+        border-color: rgba(124, 58, 237, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+    }
+
+    .btn-toolbar .btn-outline-success {
+        background: transparent;
+        color: #10b981;
+        border-color: rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-toolbar .btn-outline-success:hover {
+        background: rgba(5, 150, 105, 0.1);
+        color: #34d399;
+        border-color: rgba(5, 150, 105, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.15);
+    }
+
+    .btn-toolbar .btn-outline-danger {
+        background: transparent;
+        color: #ef4444;
+        border-color: rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-toolbar .btn-outline-danger:hover {
+        background: rgba(220, 38, 38, 0.1);
+        color: #f87171;
+        border-color: rgba(220, 38, 38, 0.5);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+    }
+
+    /* Small Buttons */
+    .btn-toolbar .btn-sm {
+        padding: 6px 16px;
+        font-size: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .btn-toolbar .btn-sm .btn-icon {
+        font-size: 0.9rem;
+    }
+
+    /* Large Buttons */
+    .btn-toolbar .btn-lg {
+        padding: 10px 28px;
+        font-size: 1rem;
+        border-radius: 12px;
+    }
+
+    .btn-toolbar .btn-lg .btn-icon {
+        font-size: 1.2rem;
+    }
+
+    /* ===== SIDEBAR SCROLLBAR ===== */
+    .sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.2);
+        border-radius: 10px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(167, 139, 250, 0.3);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 200px !important;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .col-md-9 {
+            margin-left: 0 !important;
+            padding: 16px !important;
+        }
+
+        .h2 {
+            font-size: 1.4rem !important;
+        }
+
+        .mobile-toggle {
+            display: flex !important;
+        }
+
+        .btn-toolbar {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn-toolbar .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .sidebar {
+            width: 100% !important;
+        }
+
+        .col-md-9 {
+            padding: 12px !important;
+        }
+
+        .btn-toolbar .btn {
+            font-size: 0.8rem;
+            padding: 6px 14px;
+        }
+    }
+
+    /* ===== MOBILE TOGGLE BUTTON ===== */
+    .mobile-toggle {
+        display: none;
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 1100;
+        background: rgba(167, 139, 250, 0.1);
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 10px;
+        padding: 8px 12px;
+        color: #e8edf5;
+        font-size: 1.4rem;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-toggle:hover {
+        background: rgba(167, 139, 250, 0.2);
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    /* Overlay for mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        backdrop-filter: blur(4px);
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar-overlay.active {
+            display: block;
+        }
+    }
+
+    /* ===== FLASH MESSAGE STYLES ===== */
+    .alert-success {
+        background: rgba(52, 211, 153, 0.1) !important;
+        border-left: 4px solid #34d399 !important;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border-left: 4px solid #f87171 !important;
+    }
+
+    .alert-warning {
+        background: rgba(251, 191, 36, 0.1) !important;
+        border-left: 4px solid #fbbf24 !important;
+    }
+
+    .alert-info {
+        background: rgba(96, 165, 250, 0.1) !important;
+        border-left: 4px solid #60a5fa !important;
+    }
+</style>
+
+<!-- Mobile Toggle Button -->
+<button class="mobile-toggle" onclick="toggleSidebar()" id="mobileToggle">
+    ☰
+</button>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+
+    // Close sidebar on window resize
+    window.addEventListener('resize', function() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    });
+
+    // Close sidebar on link click (mobile)
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

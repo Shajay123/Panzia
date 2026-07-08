@@ -1,0 +1,803 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/people/employee_portal_attendance_mark.css' %}">
+<style>
+    .attendance-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .portal-header {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+    }
+
+    .portal-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .portal-header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .portal-header-icon {
+        font-size: 2.5rem;
+    }
+
+    .portal-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .portal-header-subtitle {
+        margin: 2px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .portal-header-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .btn-portal-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-portal-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-portal-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-portal-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-portal-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-checkout-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        padding: 12px 32px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-checkout-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-checkout-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-checkout-success {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        padding: 12px 32px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        opacity: 0.7;
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .portal-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+
+    .portal-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .portal-card-header h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 500;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-control:disabled,
+    .form-control[readonly] {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .form-control.checked-in {
+        background: rgba(34, 197, 94, 0.05) !important;
+        border-color: rgba(34, 197, 94, 0.2) !important;
+    }
+
+    .form-control.checked-out {
+        background: rgba(59, 130, 246, 0.05) !important;
+        border-color: rgba(59, 130, 246, 0.2) !important;
+    }
+
+    .form-text {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.78rem;
+        color: #64748b;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .form-actions .btn-portal-primary {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .form-actions .btn-portal-secondary {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .messages {
+        margin-bottom: 16px;
+    }
+
+    .message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .message.success {
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .message.error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .message.info {
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .message.warning {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .checkin-banner {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .checkin-banner.info {
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-indicator.checked-in {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .status-indicator.checked-out {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+    }
+
+    .status-dot-pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse 1.5s infinite;
+    }
+
+    .status-dot-pulse.green {
+        background: #22c55e;
+    }
+
+    .status-dot-pulse.blue {
+        background: #3b82f6;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+
+    .real-time-clock {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+        color: #94a3b8;
+        flex-wrap: wrap;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .status-badge.early {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+    }
+
+    .status-badge.on_time {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .status-badge.slightly_late {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .status-badge.late {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .status-badge.very_late {
+        background: rgba(239, 68, 68, 0.25);
+        color: #ef4444;
+    }
+
+    .info-card {
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        color: #60a5fa;
+    }
+
+    .info-card strong {
+        color: #93c5fd;
+    }
+
+    .btn-checkout-action {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        padding: 14px 40px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-checkout-action:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-checkout-action:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-checkout-action-success {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        padding: 14px 40px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        opacity: 0.7;
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+        .portal-header {
+            padding: 16px;
+        }
+
+        .portal-header-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .portal-header-right {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .portal-header-icon {
+            font-size: 2rem;
+        }
+
+        .portal-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .portal-card {
+            padding: 16px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn-portal-primary,
+        .form-actions .btn-portal-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-checkout-action,
+        .btn-checkout-action-success {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 20px;
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .portal-header-right {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="employee-portal">
+    <div class="attendance-container">
+
+        <!-- ================= HEADER ================= -->
+        <div class="portal-header">
+            <div class="portal-header-content">
+                <div class="portal-header-left">
+                    <div class="portal-header-icon">🚀</div>
+                    <div>
+                        <h1>Check Out</h1>
+                        <p class="portal-header-subtitle">
+                            Record your check-out time for today
+                        </p>
+                    </div>
+                </div>
+                <div class="portal-header-right">
+                    <a href="{% url 'employee_portal_attendance' %}" class="btn-portal-secondary">
+                        ← Back to Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= REAL-TIME CLOCK ================= -->
+        <div class="real-time-clock">
+            <span style="font-size: 1.1rem;">🕐</span>
+            <span id="realTimeClock" style="font-size: 1.1rem; font-weight: 600; color: #e8edf5; font-variant-numeric: tabular-nums;">--:--:--</span>
+            <span style="color: #64748b; font-size: 0.8rem; margin-left: auto;">{% now "l, d M Y" %}</span>
+            <span class="status-indicator" id="statusIndicator">
+                <span class="status-dot-pulse green" id="statusDot"></span>
+                <span id="statusText">Checked In at {{ check_in_time }}</span>
+            </span>
+        </div>
+
+        <!-- ================= CHECK-IN INFO ================= -->
+        <div class="info-card">
+            <span style="font-size: 1.2rem;">✅</span>
+            <div>
+                <strong>Checked In!</strong> 
+                You checked in at <strong>{{ check_in_time }}</strong>
+                {% if existing_attendance and existing_attendance.check_in_status %}
+                <span class="status-badge {{ existing_attendance.check_in_status }}" style="margin-left: 8px;">
+                    {% if existing_attendance.check_in_status == 'early' %}✅ Early
+                    {% elif existing_attendance.check_in_status == 'on_time' %}✓ On Time
+                    {% elif existing_attendance.check_in_status == 'slightly_late' %}⚠️ Slightly Late
+                    {% elif existing_attendance.check_in_status == 'late' %}⚠️ Late
+                    {% elif existing_attendance.check_in_status == 'very_late' %}❌ Very Late
+                    {% endif %}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ================= CHECK-OUT STATUS ================= -->
+        {% if existing_attendance and existing_attendance.check_out %}
+        <div class="checkin-banner info">
+            <span style="font-size: 1.2rem;">🚀</span>
+            <div>
+                <strong>Already Checked Out!</strong> 
+                You checked out at <strong>{{ existing_attendance.check_out|time:"H:i" }}</strong>
+                (Total: {{ existing_attendance.working_hours_decimal|floatformat:1 }} hrs)
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ================= ATTENDANCE FORM ================= -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3>📋 Check Out Details</h3>
+            </div>
+            
+            <form method="POST" class="portal-form" id="checkoutForm" novalidate>
+                {% csrf_token %}
+                
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label>Employee</label>
+                    <input type="text" value="{{ employee.user.get_full_name|default:employee.user.username }}" 
+                           class="form-control" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" value="{{ today|date:'d M Y' }}" 
+                           class="form-control" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label>Check In Time</label>
+                    <input type="text" value="{{ check_in_time }}" 
+                           class="form-control checked-in" disabled>
+                    <small class="form-text">You checked in at {{ check_in_time }}</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="check_out">Check Out Time *</label>
+                    <input type="time" name="check_out" id="check_out" 
+                           value="{% if existing_attendance and existing_attendance.check_out %}{{ existing_attendance.check_out|time:'H:i' }}{% elif default_check_out %}{{ default_check_out|time:'H:i' }}{% endif %}"
+                           class="form-control {% if existing_attendance and existing_attendance.check_out %}checked-out{% endif %}"
+                           {% if existing_attendance and existing_attendance.check_out %}readonly{% endif %}
+                           required>
+                    <small class="form-text">
+                        {% if existing_attendance and existing_attendance.check_out %}
+                            ✅ Checked out at {{ existing_attendance.check_out|time:"H:i" }}
+                        {% elif default_check_out %}
+                            Default: {{ default_check_out|time:"H:i" }}
+                        {% else %}
+                            Enter your check-out time
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <!-- ================= CHECK-OUT BUTTON ================= -->
+                <div style="margin: 25px 0;">
+                    {% if existing_attendance and existing_attendance.check_out %}
+                    <button type="button" class="btn-checkout-action-success" disabled>
+                        ✅ Checked Out ({{ existing_attendance.check_out|time:"H:i" }})
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn-checkout-action" id="checkOutBtn" onclick="handleCheckOut()">
+                        ⏰ Check Out Now
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <!-- Hidden field to track action type -->
+                <input type="hidden" name="action_type" id="actionType" value="check_out">
+                
+                <div class="form-actions">
+                    <a href="{% url 'employee_portal_attendance' %}" class="btn-portal-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-portal-primary" id="submitBtn">
+                        {% if existing_attendance and existing_attendance.check_out %}
+                            🔄 Update Check Out
+                        {% else %}
+                            🚀 Check Out
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // REAL-TIME CLOCK
+    // ============================================
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('realTimeClock').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ============================================
+    // CHECK-OUT HANDLING
+    // ============================================
+    function handleCheckOut() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timeString = hours + ':' + minutes;
+        
+        // Set the check-out time
+        const checkOutInput = document.getElementById('check_out');
+        checkOutInput.value = timeString;
+        checkOutInput.readOnly = true;
+        checkOutInput.className = 'form-control checked-out';
+        
+        // Update button
+        const checkOutBtn = document.getElementById('checkOutBtn');
+        if (checkOutBtn) {
+            checkOutBtn.innerHTML = '✅ Checked Out (' + timeString + ')';
+            checkOutBtn.disabled = true;
+            checkOutBtn.className = 'btn-checkout-action-success';
+        }
+        
+        // Update status indicator
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
+        if (statusIndicator && statusText) {
+            statusIndicator.className = 'status-indicator checked-out';
+            statusText.textContent = 'Checked Out at ' + timeString;
+            if (statusDot) {
+                statusDot.className = 'status-dot-pulse blue';
+            }
+        }
+        
+        showNotification('✅ Check-out time set to ' + timeString);
+        
+        // Auto-submit the form
+        autoSubmitForm();
+    }
+    
+    // ============================================
+    // AUTO SUBMIT FORM
+    // ============================================
+    function autoSubmitForm() {
+        const form = document.getElementById('checkoutForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Saving...';
+        form.submit();
+    }
+
+    // ============================================
+    // NOTIFICATIONS
+    // ============================================
+    function showNotification(message) {
+        const existing = document.querySelectorAll('.message.success');
+        existing.forEach(el => el.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = 'message success';
+        notification.textContent = message;
+        notification.style.animation = 'fadeIn 0.3s ease';
+        
+        const messagesContainer = document.querySelector('.messages');
+        if (messagesContainer) {
+            messagesContainer.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+    }
+
+    // ============================================
+    // FORM VALIDATION
+    // ============================================
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const checkOutInput = document.getElementById('check_out');
+        
+        if (!checkOutInput.value) {
+            e.preventDefault();
+            alert('Please set a check-out time.');
+            checkOutInput.focus();
+            return false;
+        }
+        
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Saving...';
+        
+        return true;
+    });
+
+    // ============================================
+    // DOM CONTENT LOADED
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkOutInput = document.getElementById('check_out');
+        const checkInTime = '{{ check_in_time }}';
+        
+        // Auto-set check-out time if not set
+        if (!checkOutInput.value) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            checkOutInput.value = hours + ':' + minutes;
+        }
+        
+        // Validate check-out is after check-in
+        checkOutInput.addEventListener('change', function() {
+            if (this.value && checkInTime && this.value <= checkInTime) {
+                alert('Check-out time must be after check-in time (' + checkInTime + ').');
+                this.value = '';
+            }
+        });
+    });
+
+    console.log('🚀 Check Out Page Loaded');
+    console.log('👤 Employee: {{ employee.user.get_full_name }}');
+    console.log('📅 Date: {{ today }}');
+    console.log('✅ Checked In at: {{ check_in_time }}');
+</script>
+
+{% endblock %}

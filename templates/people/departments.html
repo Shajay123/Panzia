@@ -7,6 +7,664 @@ Departments
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/people/departments.css' %}">
+<style>
+    /* ============================================
+       ENHANCED DEPARTMENTS STYLES
+       ============================================ */
+
+    .departments-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        color: #e8edf5;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 20px 24px;
+    }
+
+    .page-header-left {
+        flex: 1;
+    }
+
+    .page-header h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a78bfa, #f472b6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+    }
+
+    .page-header p {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin: 4px 0 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateX(-2px);
+    }
+
+    /* ===== SUMMARY GRID ===== */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .summary-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .summary-card h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+        margin: 0;
+    }
+
+    .summary-card p {
+        margin: 4px 0 0;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .summary-card .trend {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .trend.up { color: #34d399; }
+    .trend.down { color: #f87171; }
+    .trend.neutral { color: #94a3b8; }
+
+    .summary-card.blue { border-left: 3px solid #60a5fa; }
+    .summary-card.blue h2 { color: #60a5fa; }
+    .summary-card.green { border-left: 3px solid #34d399; }
+    .summary-card.green h2 { color: #34d399; }
+    .summary-card.orange { border-left: 3px solid #f59e0b; }
+    .summary-card.orange h2 { color: #f59e0b; }
+    .summary-card.purple { border-left: 3px solid #a78bfa; }
+    .summary-card.purple h2 { color: #a78bfa; }
+
+    /* ===== TOOLBAR ===== */
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-card {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        align-items: center;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        padding: 0 12px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-card:focus-within {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.05);
+    }
+
+    .filter-card input {
+        flex: 1;
+        padding: 10px 12px;
+        border: none;
+        background: transparent;
+        color: #e8edf5;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    .filter-card input::placeholder {
+        color: #64748b;
+    }
+
+    .btn-clear {
+        background: none;
+        border: none;
+        color: #64748b;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 8px;
+        display: none;
+        transition: color 0.2s;
+    }
+
+    .btn-clear:hover {
+        color: #f87171;
+    }
+
+    .btn-clear.show {
+        display: block;
+    }
+
+    /* ===== TABLE CARD ===== */
+    .table-card {
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        padding: 0 4px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    thead th {
+        text-align: left;
+        padding: 12px 16px;
+        color: #94a3b8;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        cursor: pointer;
+        transition: color 0.2s;
+        white-space: nowrap;
+    }
+
+    thead th:hover {
+        color: #e8edf5;
+    }
+
+    thead th .sort-icon {
+        margin-left: 4px;
+        font-size: 0.6rem;
+        opacity: 0.3;
+    }
+
+    thead th.active .sort-icon {
+        opacity: 1;
+        color: #a78bfa;
+    }
+
+    tbody td {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        color: #d6e0f0;
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    tbody tr:hover {
+        background: rgba(167, 139, 250, 0.03);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .dept-icon {
+        margin-right: 6px;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge.success {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+    }
+
+    .badge.danger {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .badge.warning {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+    }
+
+    code {
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        color: #a78bfa;
+    }
+
+    .dept-description {
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #94a3b8;
+    }
+
+    .employee-count {
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .employee-indicator {
+        margin-left: 4px;
+        font-size: 0.8rem;
+    }
+
+    .time-ago {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-left: 4px;
+    }
+
+    /* ===== TABLE ACTIONS ===== */
+    .table-actions {
+        display: flex;
+        gap: 4px;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn.view {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+    }
+
+    .action-btn.view:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+
+    .action-btn.edit {
+        background: rgba(245, 158, 11, 0.1);
+        color: #fbbf24;
+    }
+
+    .action-btn.edit:hover {
+        background: rgba(245, 158, 11, 0.2);
+    }
+
+    .action-btn.delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+
+    .action-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* ===== TABLE FOOTER ===== */
+    .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .table-info {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .table-info strong {
+        color: #e8edf5;
+    }
+
+    .table-pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        padding: 4px 12px;
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.85rem;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    #pageInfo {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        margin: 0 0 8px;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin: 0 0 20px;
+    }
+
+    .empty-state.full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* ===== DEPARTMENT CARDS (Mobile View) ===== */
+    .department-cards {
+        display: none;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .department-card {
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        transition: all 0.3s ease;
+    }
+
+    .department-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .department-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .department-card .card-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        color: #e8edf5;
+    }
+
+    .department-card p {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin: 0 0 12px;
+        line-height: 1.5;
+    }
+
+    .department-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 12px;
+    }
+
+    .department-card ul li {
+        padding: 4px 0;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .department-card ul li:last-child {
+        border-bottom: none;
+    }
+
+    .department-card ul li b {
+        color: #d6e0f0;
+    }
+
+    .department-card .card-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .department-card .card-actions .btn-light {
+        flex: 1;
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        text-decoration: none;
+        text-align: center;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .department-card .card-actions .btn-light:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .department-card .card-actions .btn-primary {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .departments-page {
+            padding: 12px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 16px 20px;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions .btn-primary,
+        .header-actions .btn-secondary,
+        .header-actions .btn-back {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .filter-card {
+            min-width: 100%;
+        }
+
+        .table-footer {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .table-pagination {
+            justify-content: center;
+        }
+
+        .department-cards {
+            display: grid !important;
+        }
+
+        #tableView {
+            display: none !important;
+        }
+
+        /* Show cards on mobile */
+        .department-cards {
+            display: grid !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .department-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -15,7 +673,7 @@ Departments
 
     <!-- ================= HEADER ================= -->
     <div class="page-header">
-        <div>
+        <div class="page-header-left">
             <h1>🏢 Departments</h1>
             <p>Manage departments inside your startup.</p>
         </div>
@@ -26,7 +684,9 @@ Departments
             <button class="btn-secondary" id="exportBtn">
                 📥 Export
             </button>
-            
+            <a href="{% url 'people_dashboard' %}" class="btn-back">
+                ← Back to Dashboard
+            </a>
         </div>
     </div>
 
@@ -40,17 +700,17 @@ Departments
             <span class="trend up">↑ 12%</span>
         </div>
         <div class="summary-card green">
-            <h2>{{ employee_count }}</h2>
+            <h2>{{ employee_count|default:0 }}</h2>
             <p>Total Employees</p>
             <span class="trend up">↑ 8%</span>
         </div>
         <div class="summary-card orange">
-            <h2>{{ active_departments }}</h2>
+            <h2>{{ departments|length }}</h2>
             <p>Active Departments</p>
             <span class="trend neutral">→ 0%</span>
         </div>
         <div class="summary-card purple">
-            <h2>{{ startup.company_name }}</h2>
+            <h2>{{ startup.company_name|default:"-" }}</h2>
             <p>Organization</p>
             <span class="trend">{{ startup.employee_count|default:"-" }}</span>
         </div>
@@ -62,7 +722,11 @@ Departments
             <input type="text" placeholder="🔍 Search by name, code, or description..." id="departmentSearch" autocomplete="off">
             <button class="btn-clear" id="clearSearch" title="Clear search">✕</button>
         </div>
-        
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" onclick="toggleView()" style="padding: 10px 16px; font-size: 0.85rem;">
+                <span id="viewToggleIcon">📊</span> <span id="viewToggleText">Cards</span>
+            </button>
+        </div>
     </div>
 
     <!-- ================= TABLE VIEW ================= -->
@@ -72,27 +736,23 @@ Departments
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th class="sortable" data-sort="name">Department ↕</th>
+                        <th class="sortable active" data-sort="name">Department <span class="sort-icon">↕</span></th>
                         <th>Code</th>
                         <th>Description</th>
-                        <th class="sortable" data-sort="employees">Employees ↕</th>
-                        <th class="sortable" data-sort="created">Created ↕</th>
+                        <th class="sortable" data-sort="employees">Employees <span class="sort-icon">↕</span></th>
+                        <th class="sortable" data-sort="created">Created <span class="sort-icon">↕</span></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for department in departments %}
-                    <tr data-department-id="{{ department.id }}" data-status="{% if department.active %}active{% else %}inactive{% endif %}">
+                    <tr data-department-id="{{ department.id }}" data-name="{{ department.name|lower }}" data-code="{{ department.code|lower }}" data-description="{{ department.description|lower }}">
                         <td>{{ forloop.counter }}</td>
                         <td>
                             <strong>
                                 <span class="dept-icon">🏢</span> {{ department.name }}
                             </strong>
-                            {% if department.active %}
                             <span class="badge success">Active</span>
-                            {% else %}
-                            <span class="badge danger">Inactive</span>
-                            {% endif %}
                         </td>
                         <td><code>{{ department.code|default:"--" }}</code></td>
                         <td class="dept-description">{{ department.description|default:"No description available."|truncatechars:50 }}</td>
@@ -104,7 +764,6 @@ Departments
                         </td>
                         <td>
                             {{ department.created_at|date:"d M Y" }}
-                            <span class="time-ago" data-timestamp="{{ department.created_at|date:'c' }}"></span>
                         </td>
                         <td>
                             <div class="table-actions">
@@ -114,7 +773,7 @@ Departments
                                 <a href="{% url 'department_update' department.id %}" class="action-btn edit" title="Edit Department">
                                     ✏
                                 </a>
-                                <a href="{% url 'department_delete' department.id %}" class="action-btn delete" title="Delete Department">
+                                <a href="{% url 'department_delete' department.id %}" class="action-btn delete" title="Delete Department" onclick="return confirm('Are you sure you want to delete this department?')">
                                     🗑
                                 </a>
                             </div>
@@ -141,7 +800,7 @@ Departments
         <!-- Table Footer -->
         <div class="table-footer">
             <div class="table-info">
-                Showing <span id="visibleCount">{{ departments|length }}</span> of <span id="totalCount">{{ departments|length }}</span> departments
+                Showing <strong id="visibleCount">{{ departments|length }}</strong> of <strong id="totalCount">{{ departments|length }}</strong> departments
             </div>
             <div class="table-pagination">
                 <button class="pagination-btn" id="prevPage" disabled>←</button>
@@ -151,17 +810,13 @@ Departments
         </div>
     </div>
 
-    <!-- ================= CARDS VIEW ================= -->
-    <div class="department-cards" id="cardsView" style="display: none;">
+    <!-- ================= CARDS VIEW (Mobile) ================= -->
+    <div class="department-cards" id="cardsView">
         {% for department in departments %}
-        <div class="department-card" data-department-id="{{ department.id }}" data-status="{% if department.active %}active{% else %}inactive{% endif %}">
+        <div class="department-card">
             <div class="card-header">
                 <h3>🏢 {{ department.name }}</h3>
-                {% if department.active %}
                 <span class="badge success">Active</span>
-                {% else %}
-                <span class="badge danger">Inactive</span>
-                {% endif %}
             </div>
             <p>{{ department.description|default:"No Description"|truncatechars:100 }}</p>
             <ul>
@@ -176,7 +831,6 @@ Departments
                 <li>
                     <b>Created :</b>
                     {{ department.created_at|date:"d M Y" }}
-                    <span class="time-ago" data-timestamp="{{ department.created_at|date:'c' }}"></span>
                 </li>
             </ul>
             <div class="card-actions">
@@ -185,6 +839,9 @@ Departments
                 </a>
                 <a href="{% url 'department_update' department.id %}" class="btn-primary">
                     ✏ Edit
+                </a>
+                <a href="{% url 'department_delete' department.id %}" class="btn-light" style="border-color: rgba(239, 68, 68, 0.15); color: #f87171;" onclick="return confirm('Are you sure you want to delete this department?')">
+                    🗑 Delete
                 </a>
             </div>
         </div>
@@ -200,10 +857,166 @@ Departments
         {% endfor %}
     </div>
 
-    
-
 </div>
 
-<script src="{% static 'js/departments.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // SEARCH FUNCTIONALITY
+        // ============================================
+        const searchInput = document.getElementById('departmentSearch');
+        const clearBtn = document.getElementById('clearSearch');
+        const rows = document.querySelectorAll('#tableView tbody tr:not(.empty-state)');
+        const cards = document.querySelectorAll('.department-card');
+        const visibleCount = document.getElementById('visibleCount');
+        const totalCount = document.getElementById('totalCount');
+
+        function filterDepartments() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visible = 0;
+
+            // Filter table rows
+            rows.forEach(row => {
+                const name = row.dataset.name || '';
+                const code = row.dataset.code || '';
+                const description = row.dataset.description || '';
+                const match = name.includes(query) || code.includes(query) || description.includes(query);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            // Filter cards
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                const match = text.includes(query);
+                card.style.display = match ? '' : 'none';
+            });
+
+            // Update count
+            if (visibleCount) visibleCount.textContent = visible;
+            if (totalCount) totalCount.textContent = rows.length;
+
+            // Show/hide clear button
+            clearBtn.classList.toggle('show', query.length > 0);
+        }
+
+        searchInput.addEventListener('input', filterDepartments);
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            filterDepartments();
+            searchInput.focus();
+        });
+
+        // ============================================
+        // VIEW TOGGLE (Table / Cards)
+        // ============================================
+        window.toggleView = function() {
+            const tableView = document.getElementById('tableView');
+            const cardsView = document.getElementById('cardsView');
+            const toggleIcon = document.getElementById('viewToggleIcon');
+            const toggleText = document.getElementById('viewToggleText');
+
+            if (tableView.style.display === 'none') {
+                tableView.style.display = 'block';
+                cardsView.style.display = 'none';
+                toggleIcon.textContent = '📊';
+                toggleText.textContent = 'Cards';
+            } else {
+                tableView.style.display = 'none';
+                cardsView.style.display = 'grid';
+                toggleIcon.textContent = '📋';
+                toggleText.textContent = 'Table';
+            }
+        };
+
+        // ============================================
+        // SORT FUNCTIONALITY
+        // ============================================
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.dataset.sort;
+                const tbody = this.closest('table').querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr:not(.empty-state)'));
+
+                // Toggle sort direction
+                const isAsc = !this.classList.contains('asc');
+                this.classList.toggle('asc', isAsc);
+                this.classList.toggle('desc', !isAsc);
+
+                // Update active state
+                document.querySelectorAll('.sortable').forEach(th => {
+                    if (th !== this) {
+                        th.classList.remove('asc', 'desc');
+                    }
+                });
+
+                rows.sort((a, b) => {
+                    let aVal, bVal;
+
+                    switch(sortKey) {
+                        case 'name':
+                            aVal = a.dataset.name || '';
+                            bVal = b.dataset.name || '';
+                            break;
+                        case 'employees':
+                            aVal = parseInt(a.querySelector('.employee-count')?.textContent || 0);
+                            bVal = parseInt(b.querySelector('.employee-count')?.textContent || 0);
+                            break;
+                        case 'created':
+                            aVal = a.querySelector('td:nth-child(6)')?.textContent?.trim() || '';
+                            bVal = b.querySelector('td:nth-child(6)')?.textContent?.trim() || '';
+                            break;
+                        default:
+                            aVal = '';
+                            bVal = '';
+                    }
+
+                    if (typeof aVal === 'string') {
+                        return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    } else {
+                        return isAsc ? aVal - bVal : bVal - aVal;
+                    }
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+
+        // ============================================
+        // EXPORT FUNCTIONALITY
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const rows = document.querySelectorAll('#tableView tbody tr:not(.empty-state)');
+            let csv = 'Department,Code,Employees,Description,Created\n';
+            
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    const name = row.querySelector('td:nth-child(2)')?.textContent?.trim() || '';
+                    const code = row.querySelector('td:nth-child(3)')?.textContent?.trim() || '';
+                    const employees = row.querySelector('td:nth-child(5) .employee-count')?.textContent?.trim() || '0';
+                    const description = row.querySelector('td:nth-child(4)')?.textContent?.trim() || '';
+                    const created = row.querySelector('td:nth-child(6)')?.textContent?.trim() || '';
+                    
+                    // Clean data for CSV
+                    const clean = (str) => str.replace(/,/g, ';');
+                    csv += `${clean(name)},${clean(code)},${clean(employees)},${clean(description)},${clean(created)}\n`;
+                }
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `departments_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+
+        console.log('🏢 Departments page loaded');
+        console.log('📊 Total departments: {{ departments|length }}');
+    });
+</script>
 
 {% endblock %}

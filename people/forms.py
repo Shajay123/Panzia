@@ -28,6 +28,8 @@ from .models import Employee, Department
 
 # forms.py - EmployeeForm
 
+# people/forms.py - Update EmployeeForm
+
 class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
@@ -40,14 +42,14 @@ class EmployeeForm(forms.ModelForm):
             "status",
             "hire_source",
             "work_mode",
-            "phone",
-            "emergency_contact",
+            "phone",  # ✅ Make sure this is here
+            "emergency_contact",  # ✅ Make sure this is here
             "joining_date",
             "probation_end",
             "confirmation_date",
             "salary",
             "is_payroll_enabled",
-            "is_active",  # <-- Make sure this is here
+            "is_active",
             "profile_image",
             "notes",
         ]
@@ -58,6 +60,14 @@ class EmployeeForm(forms.ModelForm):
             "notes": forms.Textarea(attrs={"rows": 4, "placeholder": "Additional notes..."}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "is_payroll_enabled": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "phone": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter phone number"
+            }),
+            "emergency_contact": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter emergency contact"
+            }),
         }
 
     def __init__(self, *args, startup=None, **kwargs):
@@ -87,6 +97,8 @@ class EmployeeForm(forms.ModelForm):
         self.fields["phone"].widget.attrs["placeholder"] = "+91 9876543210"
         self.fields["emergency_contact"].widget.attrs["placeholder"] = "+91 9876543210"
         self.fields["salary"].widget.attrs["placeholder"] = "50000"
+
+
 
 # =====================================================
 # DEPARTMENT
@@ -133,6 +145,12 @@ class DepartmentForm(forms.ModelForm):
 
 # people/forms.py - Updated AttendanceForm
 
+
+
+# people/forms.py - AttendanceForm
+
+# people/forms.py - AttendanceForm
+
 class AttendanceForm(forms.ModelForm):
     """Form for creating/updating attendance records."""
     
@@ -154,33 +172,58 @@ class AttendanceForm(forms.ModelForm):
             'employee': forms.Select(attrs={'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Add any notes...'}),
         }
+        labels = {
+            'employee': '👤 Employee',
+            'date': '📅 Date',
+            'status': '📊 Status',
+            'check_in': '⏰ Check In',
+            'check_out': '⏰ Check Out',
+            'notes': '📝 Notes',
+        }
+        help_texts = {
+            'check_in': 'Format: HH:MM (e.g., 09:30)',
+            'check_out': 'Format: HH:MM (e.g., 18:30)',
+        }
     
     def __init__(self, *args, **kwargs):
         self.startup = kwargs.pop('startup', None)
         super().__init__(*args, **kwargs)
         
-        # If it's an update (instance exists)
+        # For updates, include ALL employees (including inactive) to avoid validation errors
         if self.instance and self.instance.pk:
-            # If employee is missing, add it back
-            if not self.instance.employee:
-                # Try to find an employee for this startup
-                if self.startup:
-                    default_employee = Employee.objects.filter(startup=self.startup, is_active=True).first()
-                    if default_employee:
-                        self.instance.employee = default_employee
+            # Include the current employee even if inactive
+            current_employee = self.instance.employee
             
+            # Filter by startup but include all employees (active and inactive)
+            if self.startup:
+                queryset = Employee.objects.filter(startup=self.startup)
+            else:
+                queryset = Employee.objects.all()
+            
+            # If current employee exists and is not in queryset, add it
+            if current_employee and current_employee not in queryset:
+                queryset = queryset | Employee.objects.filter(id=current_employee.id)
+            
+            self.fields['employee'].queryset = queryset.order_by('user__first_name')
+            
+            # Make employee field read-only for updates
             self.fields['employee'].required = False
             self.fields['employee'].widget.attrs['disabled'] = True
             self.fields['employee'].help_text = "Employee cannot be changed"
-        
-        # Filter employee queryset by startup
-        if self.startup:
-            self.fields['employee'].queryset = Employee.objects.filter(
-                startup=self.startup, 
-                is_active=True
-            ).select_related("user")
+        else:
+            # For new records, only show active employees
+            if self.startup:
+                self.fields['employee'].queryset = Employee.objects.filter(
+                    startup=self.startup, 
+                    is_active=True
+                ).select_related("user")
+            else:
+                self.fields['employee'].queryset = Employee.objects.filter(
+                    is_active=True
+                ).select_related("user")
     
     def clean(self):
+        """Clean and validate form data."""
         cleaned_data = super().clean()
         
         # Ensure employee is set
@@ -190,6 +233,7 @@ class AttendanceForm(forms.ModelForm):
             else:
                 raise forms.ValidationError("Employee is required.")
         
+        # Validate check-in and check-out
         check_in = cleaned_data.get('check_in')
         check_out = cleaned_data.get('check_out')
         
@@ -197,7 +241,8 @@ class AttendanceForm(forms.ModelForm):
             raise forms.ValidationError("Check Out time must be after Check In time.")
         
         return cleaned_data
-# forms.py - Complete Leave Forms with Startup Filtering
+
+    # forms.py - Complete Leave Forms with Startup Filtering
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -680,8 +725,21 @@ class EmployeeDocumentForm(forms.ModelForm):
 
 
 # forms.py - Holiday forms
+from django import forms
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from .models import Holiday
+
+
+# people/forms.py - Remove startup references
+
+from django import forms
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from .models import Holiday
 
 class HolidayForm(forms.ModelForm):
+    """Form for creating and updating holidays"""
     
     class Meta:
         model = Holiday
@@ -750,23 +808,39 @@ class HolidayForm(forms.ModelForm):
         # Set holiday type choices
         holiday_type_choices = [
             ('', 'Select Holiday Type'),
-            ('National', 'National Holiday'),
-            ('Public', 'Public Holiday'),
-            ('Company', 'Company Holiday'),
-            ('Festival', 'Festival'),
-            ('Optional', 'Optional Holiday'),
+            ('National', '🇮🇳 National Holiday'),
+            ('Public', '🏛️ Public Holiday'),
+            ('Company', '🏢 Company Holiday'),
+            ('Festival', '🎉 Festival'),
+            ('Optional', '📅 Optional Holiday'),
         ]
         self.fields['holiday_type'].choices = holiday_type_choices
 
     def clean(self):
         cleaned_data = super().clean()
         date = cleaned_data.get('date')
+        name = cleaned_data.get('name')
         
         # Validate date (cannot be in the past for new holidays)
         if date and not self.instance.pk:
-            from django.utils import timezone
             if date < timezone.now().date():
                 raise ValidationError('Holiday date cannot be in the past.')
+        
+        # Check for duplicate holidays (system-wide)
+        if date and name:
+            if self.instance.pk:
+                existing = Holiday.objects.filter(
+                    date=date,
+                    name__iexact=name
+                ).exclude(pk=self.instance.pk)
+            else:
+                existing = Holiday.objects.filter(
+                    date=date,
+                    name__iexact=name
+                )
+            
+            if existing.exists():
+                raise ValidationError(f'A holiday named "{name}" already exists on {date.strftime("%B %d, %Y")}.')
         
         return cleaned_data
 
@@ -774,15 +848,23 @@ class HolidayForm(forms.ModelForm):
 class HolidayFilterForm(forms.Form):
     """Form for filtering holidays"""
     
+    HOLIDAY_TYPE_CHOICES = [
+        ('', 'All Types'),
+        ('National', '🇮🇳 National Holiday'),
+        ('Public', '🏛️ Public Holiday'),
+        ('Company', '🏢 Company Holiday'),
+        ('Festival', '🎉 Festival'),
+        ('Optional', '📅 Optional Holiday'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('', 'All Status'),
+        ('upcoming', 'Upcoming'),
+        ('past', 'Past'),
+    ]
+    
     holiday_type = forms.ChoiceField(
-        choices=[
-            ('', 'All Types'),
-            ('National', 'National Holiday'),
-            ('Public', 'Public Holiday'),
-            ('Company', 'Company Holiday'),
-            ('Festival', 'Festival'),
-            ('Optional', 'Optional Holiday'),
-        ],
+        choices=HOLIDAY_TYPE_CHOICES,
         required=False,
         widget=forms.Select(attrs={
             'class': 'form-control'
@@ -796,11 +878,7 @@ class HolidayFilterForm(forms.Form):
         })
     )
     status = forms.ChoiceField(
-        choices=[
-            ('', 'All Status'),
-            ('upcoming', 'Upcoming'),
-            ('past', 'Past'),
-        ],
+        choices=STATUS_CHOICES,
         required=False,
         widget=forms.Select(attrs={
             'class': 'form-control'
@@ -811,9 +889,10 @@ class HolidayFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         
         # Set year choices
-        from django.utils import timezone
         current_year = timezone.now().year
-        year_choices = [('', 'All Years')] + [(year, str(year)) for year in range(current_year - 2, current_year + 3)]
+        year_choices = [('', 'All Years')]
+        for year in range(current_year - 2, current_year + 3):
+            year_choices.append((str(year), str(year)))
         self.fields['year'].choices = year_choices
         
         # Add form-control class
@@ -823,7 +902,97 @@ class HolidayFilterForm(forms.Form):
                     'class': 'form-control'
                 })
 
-
+class HolidayBulkCreateForm(forms.Form):
+    """Form for bulk creating holidays"""
+    
+    name = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter holiday name'
+        })
+    )
+    start_date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control'
+        })
+    )
+    end_date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control'
+        })
+    )
+    holiday_type = forms.ChoiceField(
+        choices=HolidayForm.Meta.model.HOLIDAY_TYPES,
+        widget=forms.Select(attrs={
+            'class': 'form-control'
+        })
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'rows': 3,
+            'class': 'form-control',
+            'placeholder': 'Enter holiday description...'
+        })
+    )
+    is_company_holiday = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    apply_to_all_weekdays = forms.BooleanField(
+        required=False,
+        initial=True,
+        help_text='If checked, holiday applies to all weekdays in the date range.',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
+    
+    def __init__(self, *args, **kwargs):
+        self.startup = kwargs.pop('startup', None)
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # Add form-control class to all fields
+        for field in self.fields.values():
+            if hasattr(field, 'widget') and 'class' not in field.widget.attrs:
+                field.widget.attrs.update({
+                    'class': 'form-control'
+                })
+        
+        # Set holiday type choices
+        holiday_type_choices = [
+            ('', 'Select Holiday Type'),
+            ('National', 'National Holiday'),
+            ('Public', 'Public Holiday'),
+            ('Company', 'Company Holiday'),
+            ('Festival', 'Festival'),
+            ('Optional', 'Optional Holiday'),
+        ]
+        self.fields['holiday_type'].choices = holiday_type_choices
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        
+        if start_date and end_date:
+            if end_date < start_date:
+                raise ValidationError('End date must be after start date.')
+            
+            # Limit range to prevent abuse
+            days_diff = (end_date - start_date).days
+            if days_diff > 365:
+                raise ValidationError('Date range cannot exceed 365 days.')
+        
+        return cleaned_data
+    
+    
 # =====================================================
 # PAYSLIP
 # =====================================================

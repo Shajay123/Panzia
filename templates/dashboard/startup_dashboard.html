@@ -197,23 +197,23 @@ Startup Dashboard
 
                 <li class="has-submenu">
 
-                    <a href="#" class="menu-link">
+                    <a href="{% url 'finance:finance_dashboard' %}" class="menu-link">
                         💰 Finance
                         <span class="menu-arrow">▶</span>
                     </a>
 
-                    <ul class="submenu">
-
-                        <li><a href="#">🏠 Dashboard</a></li>
-                        <li><a href="#">💵 Income</a></li>
-                        <li><a href="#">💸 Expenses</a></li>
-                        <li><a href="#">🧾 Invoices</a></li>
-                        <li><a href="#">📈 Profit & Loss</a></li>
-                        <li><a href="#">💳 Cash Flow</a></li>
-                        <li><a href="#">📥 Accounts Receivable</a></li>
-                        <li><a href="#">📤 Accounts Payable</a></li>
-
-                    </ul>
+                    <!-- <ul class="submenu">
+                        <li><a href="{% url 'finance:finance_dashboard' %}">🏠 Dashboard</a></li>
+                        <li><a href="{% url 'finance:income_list' %}">💵 Income</a></li>
+                        <li><a href="{% url 'finance:expense_list' %}">💸 Expenses</a></li>
+                        <li><a href="{% url 'finance:invoice_list' %}">🧾 Invoices</a></li>
+                        <li><a href="{% url 'finance:profit_loss' %}">📈 Profit & Loss</a></li>
+                        <li><a href="{% url 'finance:cash_flow' %}">💳 Cash Flow</a></li>
+                        <li><a href="{% url 'finance:receivable_list' %}">📥 Accounts Receivable</a></li>
+                        <li><a href="{% url 'finance:payable_list' %}">📤 Accounts Payable</a></li>
+                        <li><a href="{% url 'finance:vendor_list' %}">🏢 Vendors</a></li>
+                        <li><a href="{% url 'finance:reimbursement_list' %}">💳 Reimbursements</a></li>
+                    </ul> -->
 
                 </li>
 
@@ -221,12 +221,12 @@ Startup Dashboard
 
                 <li class="has-submenu">
 
-                    <a href="#" class="menu-link">
+                    <a href="{% url 'compliance:compliance_dashboard' %}" class="menu-link">
                         📑 Compliance
                         <span class="menu-arrow">▶</span>
                     </a>
 
-                    <ul class="submenu">
+                    <!-- <ul class="submenu">
 
                         <li><a href="#">GST Dashboard</a></li>
                         <li><a href="#">GSTR-1</a></li>
@@ -236,7 +236,7 @@ Startup Dashboard
                         <li><a href="#">Income Tax</a></li>
                         <li><a href="#">MCA Filing</a></li>
 
-                    </ul>
+                    </ul> -->
 
                 </li>
 
@@ -244,12 +244,12 @@ Startup Dashboard
 
                 <li class="has-submenu">
 
-                    <a href="#" class="menu-link">
+                    <a href="{% url 'legal:legal_dashboard' %}" class="menu-link">
                         ⚖ Legal
                         <span class="menu-arrow">▶</span>
                     </a>
 
-                    <ul class="submenu">
+                    <!-- <ul class="submenu">
 
                         <li><a href="#">Founder Agreements</a></li>
                         <li><a href="#">Employment Contracts</a></li>
@@ -258,7 +258,7 @@ Startup Dashboard
                         <li><a href="#">NDA</a></li>
                         <li><a href="#">Trademark</a></li>
 
-                    </ul>
+                    </ul> -->
 
                 </li>
 
@@ -467,8 +467,16 @@ Startup Dashboard
                         <div class="company-meta">
                             <span>🏭 {{ user_startup.industry }}</span>
                             {% if user_startup.website %}
-                            <span>🌐 <a href="{{ user_startup.website }}" target="_blank" class="website-link">{{
-                                    user_startup.website }}</a></span>
+                            <span>🌐 <a href="{{ user_startup.website }}" target="_blank" rel="noopener noreferrer"
+                                    class="website-link">
+                                    {% with url=user_startup.website %}
+                                    {% if "://" in url %}
+                                    {{ url|cut:"https://"|cut:"http://" }}
+                                    {% else %}
+                                    {{ url }}
+                                    {% endif %}
+                                    {% endwith %}
+                                </a></span>
                             {% endif %}
                         </div>
                     </div>

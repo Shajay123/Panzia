@@ -129,6 +129,165 @@
         color: #60a5fa;
     }
 
+    /* ===== UPCOMING HOLIDAYS STYLES ===== */
+    .holiday-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .holiday-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 8px;
+        border-left: 3px solid;
+        transition: all 0.3s ease;
+    }
+
+    .holiday-item:hover {
+        background: rgba(167, 139, 250, 0.06);
+        transform: translateX(4px);
+    }
+
+    .holiday-item .holiday-date {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #94a3b8;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .holiday-item .holiday-date .day {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .holiday-item .holiday-date .month {
+        display: block;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .holiday-item .holiday-info {
+        flex: 1;
+    }
+
+    .holiday-item .holiday-info .holiday-name {
+        font-weight: 600;
+        color: #e8edf5;
+        font-size: 0.95rem;
+    }
+
+    .holiday-item .holiday-info .holiday-type {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 10px;
+        background: rgba(167, 139, 250, 0.06);
+        margin-top: 2px;
+    }
+
+    .holiday-item .holiday-day {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-align: right;
+        min-width: 70px;
+    }
+
+    .holiday-item .holiday-badge {
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 12px;
+        text-align: center;
+        min-width: 50px;
+    }
+
+    .holiday-badge.national {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .holiday-badge.public {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .holiday-badge.company {
+        background: rgba(167, 139, 250, 0.15);
+        color: #a78bfa;
+    }
+
+    .holiday-badge.festival {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .holiday-badge.optional {
+        background: rgba(236, 72, 153, 0.15);
+        color: #f472b6;
+    }
+
+    .holiday-item.national { border-left-color: #22c55e; }
+    .holiday-item.public { border-left-color: #3b82f6; }
+    .holiday-item.company { border-left-color: #8b5cf6; }
+    .holiday-item.festival { border-left-color: #f59e0b; }
+    .holiday-item.optional { border-left-color: #ec4899; }
+
+    .no-holidays {
+        text-align: center;
+        padding: 20px;
+        color: #94a3b8;
+    }
+
+    .no-holidays .no-holidays-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .no-holidays p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* Make holiday section scrollable if many */
+    .holiday-scroll {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .holiday-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .holiday-scroll::-webkit-scrollbar-track {
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 2px;
+    }
+
+    .holiday-scroll::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.2);
+        border-radius: 2px;
+    }
+
+    .holiday-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(167, 139, 250, 0.3);
+    }
+
+    /* Upcoming holiday count badge on quick action */
+    .badge-holiday {
+        background: linear-gradient(135deg, #f59e0b, #f472b6);
+        color: white;
+    }
+
     @media (max-width: 768px) {
         .portal-quick-stats {
             grid-template-columns: 1fr;
@@ -136,6 +295,26 @@
         
         .quick-stat-item .qs-bar {
             width: 60px;
+        }
+
+        .holiday-item {
+            flex-wrap: wrap;
+            padding: 12px;
+        }
+
+        .holiday-item .holiday-date {
+            min-width: 50px;
+        }
+
+        .holiday-item .holiday-day {
+            min-width: auto;
+            text-align: left;
+            margin-left: auto;
+        }
+
+        .holiday-item .holiday-badge {
+            min-width: auto;
+            font-size: 0.6rem;
         }
     }
 </style>
@@ -199,6 +378,15 @@
                                 <div>
                                     <p>Don't forget to mark your attendance today!</p>
                                     <span class="notif-time">Today</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if upcoming_holidays %}
+                            <div class="notification-item">
+                                <span class="notif-icon">🎉</span>
+                                <div>
+                                    <p>Upcoming holiday: <strong>{{ upcoming_holidays|first|default:"" }}</strong></p>
+                                    <span class="notif-time">Soon</span>
                                 </div>
                             </div>
                             {% endif %}
@@ -356,6 +544,41 @@
 
         <!-- LEFT COLUMN -->
         <div class="portal-left">
+
+            <!-- ================= UPCOMING HOLIDAYS ================= -->
+            <div class="portal-card">
+                <div class="portal-card-header">
+                    <h3>🎉 Upcoming Holidays</h3>
+                    <a href="{% url 'holidays' %}" class="portal-view-all">View All →</a>
+                </div>
+                {% if upcoming_holidays %}
+                <div class="holiday-scroll">
+                    <div class="holiday-list">
+                        {% for holiday in upcoming_holidays %}
+                        <div class="holiday-item {{ holiday.holiday_type|lower }}">
+                            <div class="holiday-date">
+                                <span class="day">{{ holiday.date|date:"d" }}</span>
+                                <span class="month">{{ holiday.date|date:"M" }}</span>
+                            </div>
+                            <div class="holiday-info">
+                                <div class="holiday-name">{{ holiday.name }}</div>
+                                <span class="holiday-type">{{ holiday.get_holiday_type_display }}</span>
+                            </div>
+                            <div class="holiday-day">{{ holiday.date|date:"l" }}</div>
+                            <span class="holiday-badge {{ holiday.holiday_type|lower }}">
+                                {{ holiday.get_holiday_type_display|truncatechars:10 }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="no-holidays">
+                    <span class="no-holidays-icon">📅</span>
+                    <p>No upcoming holidays found.</p>
+                </div>
+                {% endif %}
+            </div>
 
             <!-- Upcoming Leaves -->
             <div class="portal-card">
@@ -637,6 +860,7 @@
     console.log('👤 Employee Dashboard loaded');
     console.log('📊 Attendance: {{ attendance_percentage }}%');
     console.log('🌴 Pending Leaves: {{ pending_leaves }}');
+    console.log('🎉 Upcoming Holidays: {{ upcoming_holidays|length }}');
 </script>
 
 {% endblock %}
