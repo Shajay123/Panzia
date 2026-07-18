@@ -37,7 +37,7 @@
     
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;" id="plansGrid">
         {% for plan in plans %}
-        <div class="plan-card" data-plan="{{ plan.name|lower }}" data-price="{{ plan.price }}" style="background: rgba(167, 139, 250, 0.02); border: 2px solid {% if current_sub and current_sub.plan.id == plan.id %}rgba(167, 139, 250, 0.4){% else %}rgba(167, 139, 250, 0.08){% endif %}; border-radius: 20px; padding: 32px 24px; text-align: center; transition: all 0.3s; position: relative; {% if current_sub and current_sub.plan.id == plan.id %}box-shadow: 0 0 40px rgba(167, 139, 250, 0.08);{% endif %}">
+        <!-- <div class="plan-card" data-plan="{{ plan.name|lower }}" data-price="{{ plan.price }}" style="background: rgba(167, 139, 250, 0.02); border: 2px solid {% if current_sub and current_sub.plan.id == plan.id %}rgba(167, 139, 250, 0.4){% else %}rgba(167, 139, 250, 0.08){% endif %}; border-radius: 20px; padding: 32px 24px; text-align: center; transition: all 0.3s; position: relative; {% if current_sub and current_sub.plan.id == plan.id %}box-shadow: 0 0 40px rgba(167, 139, 250, 0.08);{% endif %}"> -->
             
             <!-- Popular Badge -->
             {% if plan.name == "PRO" or plan.name == "GROWTH" %}
@@ -112,7 +112,7 @@
                         ✅ Currently Active
                     </button>
                 {% else %}
-                    <a href="{% url 'payments:buy_plan' plan.id %}" class="subscribe-btn" style="display: block; width: 100%; padding: 12px; border-radius: 12px; background: {% if plan.name == 'FREE' %}linear-gradient(135deg, #34d399, #10b981){% else %}linear-gradient(135deg, #7c3aed, #6d28d9){% endif %}; color: #fff; font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; box-shadow: {% if plan.name != 'FREE' %}0 4px 16px rgba(124, 58, 237, 0.2);{% endif %}">
+                    <!-- <a href="{% url 'payments:buy_plan' plan.id %}" class="subscribe-btn" style="display: block; width: 100%; padding: 12px; border-radius: 12px; background: {% if plan.name == 'FREE' %}linear-gradient(135deg, #34d399, #10b981){% else %}linear-gradient(135deg, #7c3aed, #6d28d9){% endif %}; color: #fff; font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; box-shadow: {% if plan.name != 'FREE' %}0 4px 16px rgba(124, 58, 237, 0.2);{% endif %}"> -->
                         {% if plan.price == 0 %}
                             🆓 Get Started Free
                         {% else %}
