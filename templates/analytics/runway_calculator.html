@@ -1,0 +1,73 @@
+{% extends 'analytics/base_analytics.html' %}
+{% load static %}
+
+{% block page_title %}Runway Calculator{% endblock %}
+{% block page_icon %}✈️{% endblock %}
+{% block page_subtitle %}Calculate your startup's runway{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'analytics:runway_calculate' %}" class="btn btn-primary">
+    <span class="btn-icon">✈️</span> Calculate Runway
+</a>
+{% endblock %}
+
+{% block analytics_content %}
+<div class="runway-container">
+    
+    {% if calculations %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+        {% for calc in calculations %}
+        <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 20px; transition: all 0.3s;">
+            <h4 style="color: #e8edf5; font-weight: 600; margin: 0 0 12px 0; font-size: 0.95rem;">Runway Calculation</h4>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                <div style="background: rgba(52, 211, 153, 0.04); border-radius: 8px; padding: 12px; text-align: center;">
+                    <span style="color: #34d399; font-weight: 700; font-size: 1.5rem;">{{ calc.runway_months|floatformat:1 }}</span>
+                    <p style="color: #94a3b8; margin: 0; font-size: 0.7rem;">Months</p>
+                </div>
+                <div style="background: rgba(96, 165, 250, 0.04); border-radius: 8px; padding: 12px; text-align: center;">
+                    <span style="color: #60a5fa; font-weight: 700; font-size: 1.5rem;">{{ calc.runway_days }}</span>
+                    <p style="color: #94a3b8; margin: 0; font-size: 0.7rem;">Days</p>
+                </div>
+            </div>
+            
+            <hr style="border-color: rgba(167, 139, 250, 0.06); margin: 8px 0;">
+            
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                <span style="color: #94a3b8; font-size: 0.7rem;">Cash: <strong style="color: #e8edf5;">₹{{ calc.current_cash|floatformat:0 }}</strong></span>
+                <span style="color: #94a3b8; font-size: 0.7rem;">Burn: <strong style="color: #f87171;">₹{{ calc.monthly_burn_rate|floatformat:0 }}</strong></span>
+                <span style="color: #94a3b8; font-size: 0.7rem;">Revenue: <strong style="color: #34d399;">₹{{ calc.monthly_revenue|floatformat:0 }}</strong></span>
+            </div>
+            
+            <div style="margin-top: 8px; padding: 8px; background: rgba(167, 139, 250, 0.04); border-radius: 8px;">
+                <span style="color: #64748b; font-size: 0.6rem;">Calculated: {{ calc.created_at|date:"d M Y, H:i" }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px;">
+        <div style="font-size: 4rem; margin-bottom: 16px;">✈️</div>
+        <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Calculations Found</h3>
+        <p style="color: #94a3b8; margin-bottom: 20px;">Calculate your startup's runway to plan ahead.</p>
+        <a href="{% url 'analytics:runway_calculate' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;">
+            ✈️ Calculate Runway
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .runway-container > div[style*="display: grid;"] > div:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    
+    .runway-container .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+</style>
+{% endblock %}

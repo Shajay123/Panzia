@@ -1,42 +1,462 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/exit_detail.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    {% if exit_request.status == 'Pending' %}
+    <a href="{% url 'exit_update' exit_request.id %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">✏️</span> Edit
+    </a>
+    <a href="{% url 'exit_approve' exit_request.id %}" class="btn btn-success btn-sm" onclick="return confirm('Approve this exit request?')">
+        <span class="btn-icon">✅</span> Approve
+    </a>
+    <a href="{% url 'exit_reject' exit_request.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Reject this exit request?')">
+        <span class="btn-icon">❌</span> Reject
+    </a>
+    <a href="{% url 'exit_delete' exit_request.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this exit request?')">
+        <span class="btn-icon">🗑️</span> Delete
+    </a>
+    {% elif exit_request.status == 'Approved' %}
+    <a href="{% url 'exit_complete' exit_request.id %}" class="btn btn-success btn-sm" onclick="return confirm('Mark this exit as completed?')">
+        <span class="btn-icon">📋</span> Mark Complete
+    </a>
+    {% endif %}
+    <a href="{% url 'exit_management' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       EXIT DETAIL - HRMS STYLES
+       ============================================ */
+    .exit-detail-page {
+        max-width: 100%;
+    }
+
+    /* ===== STATUS BANNER ===== */
+    .status-banner {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        transition: all 0.3s;
+    }
+
+    .status-banner:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .status-banner-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .status-banner .status-icon {
+        font-size: 1.5rem;
+    }
+
+    .status-banner .status-text {
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .status-banner .status-text strong {
+        color: #e8edf5;
+    }
+
+    .status-banner.status-pending {
+        border-left: 4px solid #fbbf24;
+    }
+
+    .status-banner.status-approved {
+        border-left: 4px solid #34d399;
+    }
+
+    .status-banner.status-completed {
+        border-left: 4px solid #60a5fa;
+    }
+
+    .status-banner.status-rejected {
+        border-left: 4px solid #f87171;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .status-badge.eligible {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .days-remaining {
+        font-size: 0.7rem;
+        color: #fbbf24;
+        margin-left: 4px;
+    }
+
+    /* ===== DETAIL GRID ===== */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .detail-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+        margin-bottom: 20px;
+    }
+
+    .detail-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-badge {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 12px;
+        border-radius: 12px;
+    }
+
+    /* ===== DETAIL LIST ===== */
+    .detail-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        align-items: center;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-item .detail-label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .detail-item .detail-value {
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-align: right;
+        max-width: 60%;
+        word-break: break-word;
+    }
+
+    /* ===== EMPLOYEE INFO ===== */
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .employee-info .employee-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-info .employee-avatar:not(img) {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-info strong {
+        display: block;
+        color: #e8edf5;
+        font-size: 0.85rem;
+    }
+
+    .employee-info small {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    /* ===== REASON BADGE ===== */
+    .reason-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        font-size: 0.8rem;
+        color: #a78bfa;
+    }
+
+    .text-muted {
+        color: #94a3b8;
+    }
+
+    /* ===== FEEDBACK BOX ===== */
+    .feedback-box {
+        padding: 4px 0;
+    }
+
+    .feedback-box p {
+        margin: 0;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .feedback-box .text-muted {
+        font-style: italic;
+    }
+
+    /* ===== ACTION GRID ===== */
+    .action-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 0.85rem;
+        border: 1px solid transparent;
+    }
+
+    .action-btn .action-icon {
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .action-btn.profile {
+        background: rgba(96, 165, 250, 0.08);
+        color: #60a5fa;
+        border-color: rgba(96, 165, 250, 0.06);
+    }
+
+    .action-btn.profile:hover {
+        background: rgba(96, 165, 250, 0.15);
+        border-color: rgba(96, 165, 250, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.edit {
+        background: rgba(251, 191, 36, 0.08);
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.06);
+    }
+
+    .action-btn.edit:hover {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.approve {
+        background: rgba(34, 197, 94, 0.08);
+        color: #4ade80;
+        border-color: rgba(34, 197, 94, 0.06);
+    }
+
+    .action-btn.approve:hover {
+        background: rgba(34, 197, 94, 0.15);
+        border-color: rgba(34, 197, 94, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.reject {
+        background: rgba(239, 68, 68, 0.08);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.06);
+    }
+
+    .action-btn.reject:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.complete {
+        background: rgba(96, 165, 250, 0.08);
+        color: #60a5fa;
+        border-color: rgba(96, 165, 250, 0.06);
+    }
+
+    .action-btn.complete:hover {
+        background: rgba(96, 165, 250, 0.15);
+        border-color: rgba(96, 165, 250, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.back {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border-color: rgba(167, 139, 250, 0.06);
+    }
+
+    .action-btn.back:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .exit-detail-page {
+            padding: 0;
+        }
+
+        .status-banner {
+            padding: 14px 16px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .detail-card {
+            padding: 16px;
+        }
+
+        .detail-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .detail-item .detail-value {
+            text-align: left;
+            max-width: 100%;
+        }
+
+        .employee-info {
+            justify-content: flex-start;
+        }
+
+        .action-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-btn {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .status-banner .status-text {
+            font-size: 0.85rem;
+        }
+
+        .detail-item .detail-label {
+            font-size: 0.8rem;
+        }
+
+        .detail-item .detail-value {
+            font-size: 0.8rem;
+        }
+
+        .card-header h3 {
+            font-size: 0.9rem;
+        }
+
+        .action-btn {
+            font-size: 0.8rem;
+            padding: 8px 12px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .status-banner {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .detail-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .detail-card:nth-child(1) { animation-delay: 0.1s; }
+    .detail-card:nth-child(2) { animation-delay: 0.15s; }
+    .detail-card:nth-child(3) { animation-delay: 0.2s; }
+    .detail-card:nth-child(4) { animation-delay: 0.25s; }
+</style>
 
 <div class="exit-detail-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">{{ page_icon }}</div>
-                <div>
-                    <h1>Exit Request Details</h1>
-                    <p class="header-subtitle">
-                        <strong>{{ exit_request.employee.user.get_full_name|default:exit_request.employee.user.username }}</strong>
-                        · {{ exit_request.status }}
-                    </p>
-                </div>
-            </div>
-            <div class="header-actions">
-                {% if exit_request.status == 'Pending' %}
-                <a href="{% url 'exit_update' exit_request.id %}" class="btn-edit">✏️ Edit</a>
-                <a href="{% url 'exit_approve' exit_request.id %}" class="btn-approve" onclick="return confirm('Approve this exit request?')">✅ Approve</a>
-                <a href="{% url 'exit_reject' exit_request.id %}" class="btn-reject" onclick="return confirm('Reject this exit request?')">❌ Reject</a>
-                <a href="{% url 'exit_delete' exit_request.id %}" class="btn-delete" onclick="return confirm('Delete this exit request?')">🗑️ Delete</a>
-                {% elif exit_request.status == 'Approved' %}
-                <a href="{% url 'exit_complete' exit_request.id %}" class="btn-complete" onclick="return confirm('Mark this exit as completed?')">📋 Mark Complete</a>
-                {% endif %}
-                <a href="{% url 'exit_management' %}" class="btn-back">← Back</a>
-            </div>
-        </div>
-    </div>
 
     <!-- ================= STATUS BANNER ================= -->
     <div class="status-banner status-{{ exit_request.status|lower }}">
@@ -225,7 +645,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Delete confirmation
+        // ============================================
+        // DELETE CONFIRMATION
+        // ============================================
         document.querySelectorAll('.btn-delete, .action-btn.delete').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 const confirmed = confirm('Are you sure you want to delete this exit request?');
@@ -235,7 +657,31 @@
             });
         });
 
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Press 'B' for Back
+            if (e.key === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const backBtn = document.querySelector('.btn-back');
+                if (backBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = backBtn.href;
+                }
+            }
+            // Press 'E' for Edit
+            if (e.key === 'e' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const editBtn = document.querySelector('.btn-edit');
+                if (editBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = editBtn.href;
+                }
+            }
+        });
+
         console.log('🚪 Exit Details loaded');
+        console.log('👤 Employee: {{ exit_request.employee.user.get_full_name }}');
+        console.log('📊 Status: {{ exit_request.status }}');
     });
 </script>
 

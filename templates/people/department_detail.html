@@ -1,77 +1,566 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Department - {{ department.name }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/department_detail.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'department_update' department.id %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">✏️</span> Edit
+    </a>
+    <a href="{% url 'department_delete' department.id %}" class="btn btn-danger btn-sm">
+        <span class="btn-icon">🗑️</span> Delete
+    </a>
+    <a href="{% url 'departments' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       DEPARTMENT DETAIL - HRMS STYLES
+       ============================================ */
+    .department-detail-page {
+        max-width: 100%;
+    }
+
+    /* ===== DEPARTMENT HEADER ===== */
+    .department-header {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .department-header:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .department-header .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .department-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .department-header .header-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 24px;
+        margin-bottom: 12px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .meta-item .meta-label {
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .meta-item code {
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        color: #a78bfa;
+    }
+
+    .meta-item .time-ago {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-left: 4px;
+    }
+
+    .department-description {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 8px 0 0;
+        padding: 12px 16px;
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 8px;
+        border-left: 3px solid #7c3aed;
+    }
+
+    /* ===== BADGES ===== */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .badge.success {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .badge.danger {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+
+    .badge.warning {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    /* ===== TABLE CARD ===== */
+    .table-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+    .table-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .card-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-header-left h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .member-count {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+    }
+
+    .card-header-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .search-input {
+        padding: 6px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.85rem;
+        min-width: 180px;
+        transition: all 0.3s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .search-input::placeholder {
+        color: #64748b;
+    }
+
+    /* ===== TABLE ===== */
+    .table-responsive {
+        overflow-x: auto;
+        margin: 0 -4px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 700px;
+    }
+
+    thead th {
+        text-align: left;
+        font-weight: 600;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    tbody td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        vertical-align: middle;
+    }
+
+    tbody tr:hover {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    /* ===== EMPLOYEE INFO ===== */
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .profile-image {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+    }
+
+    .profile-image img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+    }
+
+    .profile-image .avatar-fallback {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        color: white;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+    }
+
+    .profile-image .status-dot {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid rgba(26, 16, 53, 0.9);
+    }
+
+    .status-dot.online {
+        background: #22c55e;
+    }
+
+    .status-dot.away {
+        background: #f59e0b;
+    }
+
+    .status-dot.offline {
+        background: #94a3b8;
+    }
+
+    .employee-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .employee-details .employee-name {
+        font-weight: 600;
+        color: #e8edf5;
+        font-size: 0.9rem;
+    }
+
+    .employee-details .employee-email {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    /* ===== DESIGNATION BADGE ===== */
+    .designation-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        font-size: 0.8rem;
+        color: #d6e0f0;
+    }
+
+    .designation-badge .designation-icon {
+        font-size: 0.75rem;
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .status-badge .status-dot-small {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.active {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.active .status-dot-small { background: #22c55e; }
+
+    .status-badge.on-leave {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+    .status-badge.on-leave .status-dot-small { background: #f59e0b; }
+
+    .status-badge.inactive {
+        background: rgba(148, 163, 184, 0.08);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.06);
+    }
+    .status-badge.inactive .status-dot-small { background: #94a3b8; }
+
+    /* ===== JOINED DATE ===== */
+    .joined-date {
+        font-size: 0.85rem;
+        color: #d6e0f0;
+    }
+
+    .joined-ago {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-left: 4px;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 30px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 8px;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .department-detail-page {
+            padding: 0;
+        }
+
+        .department-header {
+            padding: 16px;
+        }
+
+        .department-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .department-header .header-top {
+            flex-direction: column;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-input {
+            width: 100%;
+            min-width: unset;
+        }
+
+        table {
+            font-size: 0.8rem;
+            min-width: 600px;
+        }
+
+        .meta-item {
+            font-size: 0.75rem;
+        }
+
+        .department-description {
+            font-size: 0.85rem;
+            padding: 10px 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .department-header {
+            padding: 14px;
+        }
+
+        .department-header h1 {
+            font-size: 1rem;
+        }
+
+        .department-header .header-meta {
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .profile-image {
+            width: 32px;
+            height: 32px;
+        }
+
+        .profile-image .status-dot {
+            width: 10px;
+            height: 10px;
+        }
+
+        .employee-details .employee-name {
+            font-size: 0.8rem;
+        }
+
+        .employee-details .employee-email {
+            font-size: 0.65rem;
+        }
+
+        .designation-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+        }
+
+        .status-badge {
+            font-size: 0.55rem;
+            padding: 2px 8px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .department-header {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .table-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.1s;
+        opacity: 0;
+    }
+</style>
 
 <div class="department-detail-page">
 
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div>
-                <div class="header-top">
-                    <h1>🏢 {{ department.name }}</h1>
-                    <div class="header-actions">
-                        <a href="{% url 'department_update' department.id %}" class="btn-primary">
-                            ✏️ Edit
-                        </a>
-                        <a href="{% url 'department_delete' department.id %}" class="btn-danger">
-                            🗑️ Delete
-                        </a>
-                        <a href="{% url 'departments' %}" class="btn-secondary">
-                            ← Back
-                        </a>
-                    </div>
-                </div>
-                <div class="header-meta">
-                    <span class="meta-item">
-                        <span class="meta-label">Code:</span>
-                        <code>{{ department.code|default:"N/A" }}</code>
-                    </span>
-                    <span class="meta-item">
-                        <span class="meta-label">Status:</span>
-                        {% if department.active %}
-                        <span class="badge success">● Active</span>
-                        {% else %}
-                        <span class="badge danger">● Inactive</span>
-                        {% endif %}
-                    </span>
-                    <span class="meta-item">
-                        <span class="meta-label">Members:</span>
-                        <strong>{{ employees|length }}</strong>
-                    </span>
-                    <span class="meta-item">
-                        <span class="meta-label">Created:</span>
-                        <span title="{{ department.created_at|date:'d M Y, H:i:s' }}">
-                            {{ department.created_at|date:"d M Y" }}
-                            <span class="time-ago">({{ department.created_at|timesince }} ago)</span>
-                        </span>
-                    </span>
-                    {% if department.updated_at %}
-                    <span class="meta-item">
-                        <span class="meta-label">Updated:</span>
-                        <span title="{{ department.updated_at|date:'d M Y, H:i:s' }}">
-                            {{ department.updated_at|date:"d M Y" }}
-                            <span class="time-ago">({{ department.updated_at|timesince }} ago)</span>
-                        </span>
-                    </span>
-                    {% endif %}
-                </div>
-                {% if department.description %}
-                <p class="department-description">{{ department.description }}</p>
-                {% endif %}
-            </div>
+    <!-- ================= DEPARTMENT HEADER ================= -->
+    <div class="department-header">
+        <div class="header-top">
+            <h1>🏢 {{ department.name }}</h1>
         </div>
+
+        <div class="header-meta">
+            <span class="meta-item">
+                <span class="meta-label">Code:</span>
+                <code>{{ department.code|default:"N/A" }}</code>
+            </span>
+            <span class="meta-item">
+                <span class="meta-label">Status:</span>
+                {% if department.active %}
+                <span class="badge success">● Active</span>
+                {% else %}
+                <span class="badge danger">● Inactive</span>
+                {% endif %}
+            </span>
+            <span class="meta-item">
+                <span class="meta-label">Members:</span>
+                <strong>{{ employees|length }}</strong>
+            </span>
+            <span class="meta-item">
+                <span class="meta-label">Created:</span>
+                <span title="{{ department.created_at|date:'d M Y, H:i:s' }}">
+                    {{ department.created_at|date:"d M Y" }}
+                    <span class="time-ago">({{ department.created_at|timesince }} ago)</span>
+                </span>
+            </span>
+            {% if department.updated_at %}
+            <span class="meta-item">
+                <span class="meta-label">Updated:</span>
+                <span title="{{ department.updated_at|date:'d M Y, H:i:s' }}">
+                    {{ department.updated_at|date:"d M Y" }}
+                    <span class="time-ago">({{ department.updated_at|timesince }} ago)</span>
+                </span>
+            </span>
+            {% endif %}
+        </div>
+
+        {% if department.description %}
+        <p class="department-description">{{ department.description }}</p>
+        {% endif %}
     </div>
 
     <!-- ================= EMPLOYEES TABLE ================= -->
-    <div class="card table-card">
+    <div class="table-card">
         <div class="card-header">
             <div class="card-header-left">
                 <h3>👥 Team Members</h3>
@@ -169,19 +658,63 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Search functionality
+        // ============================================
+        // SEARCH FUNCTIONALITY
+        // ============================================
         const searchInput = document.getElementById('employeeSearch');
         const rows = document.querySelectorAll('.employee-row');
 
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 const query = this.value.toLowerCase().trim();
+                let visibleCount = 0;
                 rows.forEach(row => {
                     const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(query) ? '' : 'none';
+                    const match = text.includes(query);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visibleCount++;
                 });
+                // Update member count display
+                const memberCount = document.querySelector('.member-count');
+                if (memberCount) {
+                    memberCount.textContent = visibleCount + ' members';
+                }
             });
         }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Press '/' to focus search
+            if (e.key === '/' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }
+            // Press 'E' to edit
+            if (e.key === 'e' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const editBtn = document.querySelector('.btn-edit');
+                if (editBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = editBtn.href;
+                }
+            }
+            // Press 'B' to go back
+            if (e.key === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const backBtn = document.querySelector('.btn-back');
+                if (backBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = backBtn.href;
+                }
+            }
+        });
+
+        console.log('🏢 Department Detail loaded');
+        console.log('📋 Department: {{ department.name }}');
+        console.log('👥 Employees: {{ employees|length }}');
     });
 </script>
 

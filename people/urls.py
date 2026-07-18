@@ -67,7 +67,7 @@ urlpatterns = [
     path("payroll/<int:id>/delete/", views.payroll_delete, name="payroll_delete"),
 
     # ============================================================
-    # PAYSLIPS (HR/Admin)
+    # PAYSLIPS (HR/Admin Only - Employees don't get payslips directly)
     # ============================================================
     
     path("payslips/", views.payslips, name="payslips"),
@@ -141,17 +141,17 @@ urlpatterns = [
     # EMPLOYEE PORTAL (Self-Service)
     # ============================================================
 
-    # Employee Dashboard
+    # ---- Dashboard ----
     path("employee/", views.employee_portal_dashboard, name="employee_portal_dashboard"),
 
-    # Employee Profile (View Only)
+    # ---- Profile ----
     path("employee/profile/", views.employee_portal_profile, name="employee_portal_profile"),
 
-    # Employee Attendance
-    path("employee/attendance/", views.employee_portal_attendance_list, name="employee_portal_attendance"),
-    path("employee/attendance/mark/", views.employee_portal_attendance_mark, name="employee_portal_attendance_mark"),
+    # ---- Attendance ----
+    # Calendar View
+    path("employee/attendance/", views.employee_portal_attendance, name="employee_portal_attendance"),
     
-    # Separate Check-in and Check-out URLs
+    # Check-in / Check-out (Quick Actions)
     path("employee/attendance/checkin/", views.employee_portal_attendance_checkin, name="employee_portal_attendance_checkin"),
     path("employee/attendance/checkout/", views.employee_portal_attendance_checkout, name="employee_portal_attendance_checkout"),
     
@@ -159,17 +159,22 @@ urlpatterns = [
     path("api/attendance/checkin/", views.employee_attendance_checkin_api, name="employee_attendance_checkin_api"),
     path("api/attendance/checkout/", views.employee_attendance_checkout_api, name="employee_attendance_checkout_api"),
     
-    # Employee Attendance - AJAX Photo Upload
+    # Photo Upload
     path("employee/attendance/upload-photo/", views.attendance_upload_photo, name="attendance_upload_photo"),
 
-    # Employee Leave
+    # ---- Leave ----
     path("employee/leave/", views.employee_portal_leave, name="employee_portal_leave"),
     path("employee/leave/create/", views.employee_portal_leave_create, name="employee_portal_leave_create"),
     path("employee/leave/<int:id>/", views.employee_portal_leave_detail, name="employee_portal_leave_detail"),
 
-    # Employee Payroll
+    # ---- Payroll ----
     path("employee/payroll/", views.employee_portal_payroll, name="employee_portal_payroll"),
-    path("employee/payslips/", views.employee_portal_payslips, name="employee_portal_payslips"),
+
+    # ============================================================
+    # EMPLOYEE PAYSLIPS - REMOVED
+    # Employees don't get payslips directly - only HR/Admin
+    # ============================================================
+    # path("employee/payslips/", views.employee_portal_payslips, name="employee_portal_payslips"),
 
     # ============================================================
     # TIMING CONFIGURATION (HR/Admin)

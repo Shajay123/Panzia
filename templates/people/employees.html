@@ -1,213 +1,43 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Employees{% endblock %}
+{% block page_actions %}
+<div class="action-buttons">
+    <button class="btn btn-secondary btn-sm" id="exportBtn">
+        <span class="btn-icon">📥</span> Export
+    </button>
+    <a href="{% url 'employee_create' %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Add Employee
+    </a>
+</div>
+{% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee.css' %}">
+{% block hrms_content %}
 <style>
-    /* ===== ADDITIONAL STYLES ===== */
-    .btn-timing {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        background: rgba(167, 139, 250, 0.08);
-        color: #a78bfa;
-        border: 1px solid rgba(167, 139, 250, 0.1);
-        transition: all 0.2s;
-        text-decoration: none;
-        font-size: 0.9rem;
-        cursor: pointer;
-    }
-    
-    .btn-timing:hover {
-        background: rgba(167, 139, 250, 0.15);
-        border-color: rgba(167, 139, 250, 0.2);
-        transform: scale(1.1);
-    }
-    
-    .btn-timing.active {
-        background: rgba(34, 197, 94, 0.15);
-        border-color: rgba(34, 197, 94, 0.2);
-        color: #4ade80;
-    }
-    
-    .action-buttons-group {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex-wrap: wrap;
-    }
-    
-    .action-buttons-group .action-btn {
-        width: 30px;
-        height: 30px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 0.8rem;
-        transition: all 0.2s;
-    }
-    
-    .action-buttons-group .action-btn.view {
-        background: rgba(59, 130, 246, 0.1);
-        color: #60a5fa;
-    }
-    
-    .action-buttons-group .action-btn.view:hover {
-        background: rgba(59, 130, 246, 0.2);
-    }
-    
-    .action-buttons-group .action-btn.edit {
-        background: rgba(245, 158, 11, 0.1);
-        color: #fbbf24;
-    }
-    
-    .action-buttons-group .action-btn.edit:hover {
-        background: rgba(245, 158, 11, 0.2);
-    }
-    
-    .action-buttons-group .action-btn.timing {
-        background: rgba(167, 139, 250, 0.1);
-        color: #a78bfa;
-    }
-    
-    .action-buttons-group .action-btn.timing:hover {
-        background: rgba(167, 139, 250, 0.2);
-    }
-    
-    .action-buttons-group .action-btn.delete {
-        background: rgba(239, 68, 68, 0.1);
-        color: #f87171;
-    }
-    
-    .action-buttons-group .action-btn.delete:hover {
-        background: rgba(239, 68, 68, 0.2);
-    }
-    
-    /* Timing badge in mobile card */
-    .card-timing-action {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
-        background: rgba(167, 139, 250, 0.06);
-        border-radius: 6px;
-        text-decoration: none;
-        color: #a78bfa;
-        font-size: 0.85rem;
-        transition: all 0.2s;
-    }
-    
-    .card-timing-action:hover {
-        background: rgba(167, 139, 250, 0.12);
-    }
-    
-    /* Quick action dropdown */
-    .quick-actions-dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .quick-actions-dropdown .dropdown-menu {
-        display: none;
-        position: absolute;
-        right: 0;
-        top: 100%;
-        background: #1a1035;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        min-width: 180px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        z-index: 100;
-        padding: 4px 0;
-    }
-    
-    .quick-actions-dropdown .dropdown-menu.show {
-        display: block;
-        animation: slideDown 0.2s ease;
-    }
-    
-    .quick-actions-dropdown .dropdown-menu a {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        color: #d6e0f0;
-        text-decoration: none;
-        transition: background 0.2s;
-        font-size: 0.85rem;
-    }
-    
-    .quick-actions-dropdown .dropdown-menu a:hover {
-        background: rgba(167, 139, 250, 0.06);
-    }
-    
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .btn-more {
-        background: transparent;
-        border: none;
-        color: #94a3b8;
-        cursor: pointer;
-        font-size: 1rem;
-        padding: 4px 8px;
-        border-radius: 4px;
-        transition: background 0.2s;
-    }
-    
-    .btn-more:hover {
-        background: rgba(167, 139, 250, 0.06);
+    /* ============================================
+       EMPLOYEE DIRECTORY - HRMS STYLES
+       ============================================ */
+    .employee-page {
+        max-width: 100%;
     }
 
-    /* Back to Dashboard Button */
-    .btn-back-dashboard {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 20px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .btn-back-dashboard:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-        transform: translateX(-2px);
-    }
-
-    /* Enhanced Stats */
+    /* ===== STATS GRID ===== */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
+        gap: 16px;
+        margin-bottom: 24px;
     }
 
     .stat-card {
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
+        background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 12px;
-        padding: 16px 20px;
+        border-radius: 10px;
+        padding: 14px 18px;
         display: flex;
         align-items: center;
         gap: 12px;
-        transition: all 0.3s ease;
+        transition: all 0.3s;
         position: relative;
         overflow: hidden;
     }
@@ -215,6 +45,7 @@
     .stat-card:hover {
         border-color: rgba(167, 139, 250, 0.12);
         transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
 
     .stat-card .icon {
@@ -223,10 +54,10 @@
     }
 
     .stat-card h2 {
+        margin: 0;
         font-size: 1.5rem;
         font-weight: 700;
         color: #e8edf5;
-        margin: 0;
         line-height: 1.2;
     }
 
@@ -236,41 +67,38 @@
         color: #94a3b8;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        font-weight: 600;
     }
 
     .stat-card .trend {
         position: absolute;
         top: 10px;
         right: 14px;
-        font-size: 0.6rem;
-        font-weight: 600;
+        font-size: 0.55rem;
+        font-weight: 700;
         padding: 2px 8px;
         border-radius: 10px;
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
     }
 
-    .stat-card .trend.up { color: #34d399; }
-    .stat-card .trend.down { color: #f87171; }
-    .stat-card .trend.neutral { color: #94a3b8; }
+    .trend.up { color: #34d399; }
+    .trend.down { color: #f87171; }
+    .trend.neutral { color: #94a3b8; }
 
     .stat-card.blue { border-left: 3px solid #60a5fa; }
-    .stat-card.blue h2 { color: #60a5fa; }
     .stat-card.green { border-left: 3px solid #34d399; }
-    .stat-card.green h2 { color: #34d399; }
     .stat-card.orange { border-left: 3px solid #f59e0b; }
-    .stat-card.orange h2 { color: #f59e0b; }
     .stat-card.purple { border-left: 3px solid #a78bfa; }
-    .stat-card.purple h2 { color: #a78bfa; }
 
-    /* Enhanced Filter */
+    /* ===== FILTER CARD ===== */
     .filter-card {
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
+        background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
         padding: 16px 20px;
         margin-bottom: 20px;
-        transition: all 0.3s ease;
+        transition: all 0.3s;
     }
 
     .filter-card:hover {
@@ -442,35 +270,680 @@
         color: #e8edf5;
     }
 
-    .filter-chips {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
+    /* ===== TABLE CARD ===== */
+    .table-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s;
+        margin-bottom: 24px;
     }
 
-    .filter-chip {
-        display: inline-flex;
+    .table-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 4px;
+        padding: 14px 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .table-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table-header-left h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .employee-count-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
         padding: 2px 10px;
-        background: rgba(167, 139, 250, 0.06);
-        border: 1px solid rgba(167, 139, 250, 0.08);
         border-radius: 12px;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+    }
+
+    .table-header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        cursor: pointer;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        accent-color: #7c3aed;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        padding: 0 4px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 1100px;
+    }
+
+    .col-select { width: 40px; }
+    .col-employee { min-width: 200px; }
+    .col-id { width: 100px; }
+    .col-department { min-width: 120px; }
+    .col-designation { min-width: 120px; }
+    .col-status { width: 100px; }
+    .col-workmode { width: 90px; }
+    .col-salary { width: 100px; }
+    .col-payroll { width: 90px; }
+    .col-timing { width: 50px; }
+    .col-portal { width: 50px; }
+    .col-actions { width: 140px; }
+
+    thead th {
+        text-align: left;
+        padding: 10px 12px;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        cursor: pointer;
+        transition: color 0.2s;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+        background: #0f0a1a;
+        z-index: 2;
+    }
+
+    thead th:hover {
+        color: #e8edf5;
+    }
+
+    tbody td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    tbody tr:hover {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ===== EMPLOYEE INFO ===== */
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .employee-info .profile-img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-info .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .employee-details .employee-name {
+        font-weight: 600;
+        color: #e8edf5;
+        font-size: 0.85rem;
+    }
+
+    .employee-details .employee-email {
         font-size: 0.7rem;
         color: #94a3b8;
     }
 
-    .filter-chip .chip-remove {
-        cursor: pointer;
-        color: #64748b;
-        transition: color 0.2s;
+    .employee-id {
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: #a78bfa;
     }
 
-    .filter-chip .chip-remove:hover {
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .status-badge .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.status-active {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.status-active .status-dot { background: #22c55e; }
+
+    .status-badge.status-onboarding {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+    .status-badge.status-onboarding .status-dot { background: #3b82f6; }
+
+    .status-badge.status-probation {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+    .status-badge.status-probation .status-dot { background: #f59e0b; }
+
+    .status-badge.status-notice_period {
+        background: rgba(236, 72, 153, 0.12);
+        color: #f472b6;
+        border: 1px solid rgba(236, 72, 153, 0.06);
+    }
+    .status-badge.status-notice_period .status-dot { background: #ec4899; }
+
+    .status-badge.status-exited {
+        background: rgba(100, 116, 139, 0.12);
+        color: #94a3b8;
+        border: 1px solid rgba(100, 116, 139, 0.06);
+    }
+    .status-badge.status-exited .status-dot { background: #64748b; }
+
+    /* ===== WORK MODE BADGE ===== */
+    .work-mode-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .work-mode-badge.work-office {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .work-mode-badge.work-hybrid {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    .work-mode-badge.work-remote {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    /* ===== PAYROLL BADGE ===== */
+    .badge.payroll {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+    }
+
+    .badge.payroll.enabled {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .badge.payroll.disabled {
+        background: rgba(148, 163, 184, 0.08);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.06);
+    }
+
+    /* ===== TIMING BUTTON ===== */
+    .btn-timing {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    .btn-timing:hover {
+        background: rgba(167, 139, 250, 0.15);
+        border-color: rgba(167, 139, 250, 0.2);
+        transform: scale(1.1);
+    }
+
+    .btn-timing.active {
+        background: rgba(34, 197, 94, 0.15);
+        border-color: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+    }
+
+    /* ===== PORTAL LINK ===== */
+    .portal-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: rgba(236, 72, 153, 0.08);
+        color: #f472b6;
+        border: 1px solid rgba(236, 72, 153, 0.06);
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .portal-link:hover {
+        background: rgba(236, 72, 153, 0.15);
+        border-color: rgba(236, 72, 153, 0.15);
+        transform: scale(1.1);
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn.view {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+    }
+
+    .action-btn.view:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+
+    .action-btn.edit {
+        background: rgba(245, 158, 11, 0.1);
+        color: #fbbf24;
+    }
+
+    .action-btn.edit:hover {
+        background: rgba(245, 158, 11, 0.2);
+    }
+
+    .action-btn.timing {
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+    }
+
+    .action-btn.timing:hover {
+        background: rgba(167, 139, 250, 0.2);
+    }
+
+    .action-btn.delete {
+        background: rgba(239, 68, 68, 0.1);
         color: #f87171;
     }
 
-    /* Responsive */
+    .action-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* ===== TABLE FOOTER ===== */
+    .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .table-info {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .table-info strong {
+        color: #e8edf5;
+    }
+
+    .table-pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        padding: 4px 12px;
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.85rem;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    #pageInfo {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    /* ===== MOBILE CARDS ===== */
+    .mobile-employees {
+        display: none;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .mobile-employees.visible {
+        display: grid;
+    }
+
+    .employee-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        transition: all 0.3s ease;
+    }
+
+    .employee-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .employee-card .employee-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .employee-card .employee-top .profile-img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-card .employee-top .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-card .employee-top h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .employee-card .employee-top p {
+        margin: 2px 0 0;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .employee-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 12px;
+    }
+
+    .employee-card ul li {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .employee-card ul li:last-child {
+        border-bottom: none;
+    }
+
+    .employee-card ul li strong {
+        color: #d6e0f0;
+    }
+
+    .employee-card .card-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .employee-card .card-actions .btn-light {
+        flex: 1;
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        text-decoration: none;
+        text-align: center;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .employee-card .card-actions .btn-light:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .employee-card .card-actions .btn-primary {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .employee-card .card-actions .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    .employee-card .card-actions .card-timing-action {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: rgba(167, 139, 250, 0.06);
+        border-radius: 6px;
+        text-decoration: none;
+        color: #a78bfa;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        flex: 1;
+        justify-content: center;
+    }
+
+    .employee-card .card-actions .card-timing-action:hover {
+        background: rgba(167, 139, 250, 0.12);
+    }
+
+    .employee-card .card-actions .btn-portal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 14px;
+        background: rgba(236, 72, 153, 0.08);
+        color: #f472b6;
+        border: 1px solid rgba(236, 72, 153, 0.06);
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        flex: 1;
+    }
+
+    .employee-card .card-actions .btn-portal:hover {
+        background: rgba(236, 72, 153, 0.15);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.1rem;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin: 0 0 16px;
+    }
+
+    .empty-state .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .empty-state .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .empty-state.full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 992px) {
         .filter-grid {
             grid-template-columns: 1fr 1fr;
@@ -478,29 +951,29 @@
     }
 
     @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
         .filter-grid {
             grid-template-columns: 1fr;
         }
 
-        .stats-grid {
-            grid-template-columns: 1fr 1fr;
+        .table-card {
+            display: none;
         }
 
-        .page-header {
+        .mobile-employees {
+            display: grid !important;
+        }
+
+        .table-footer {
             flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
+            text-align: center;
         }
 
-        .header-buttons {
-            width: 100%;
-            flex-wrap: wrap;
-        }
-
-        .header-buttons .btn-secondary,
-        .header-buttons .btn-primary,
-        .header-buttons .btn-back-dashboard {
-            flex: 1;
+        .table-pagination {
             justify-content: center;
         }
     }
@@ -510,59 +983,55 @@
             grid-template-columns: 1fr;
         }
 
-        .header-buttons {
-            flex-direction: column;
+        .mobile-employees {
+            grid-template-columns: 1fr;
         }
 
-        .header-buttons .btn-secondary,
-        .header-buttons .btn-primary,
-        .header-buttons .btn-back-dashboard {
-            width: 100%;
-            justify-content: center;
+        .stat-card h2 {
+            font-size: 1.2rem;
+        }
+
+        .employee-card .employee-top h3 {
+            font-size: 0.85rem;
         }
     }
-</style>
-{% endblock %}
 
-{% block content %}
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+    .filter-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .table-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+</style>
 
 <div class="employee-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div>
-            <div class="header-badge">👥 People Management</div>
-            <h1>Employee Directory</h1>
-            <p>Manage your employees, attendance, payroll and HR records.</p>
-        </div>
-        <div class="header-buttons">
-            <a href="{% url 'people_dashboard' %}" class="btn-back-dashboard">
-                ← Back to Dashboard
-            </a>
-            <button class="btn-secondary" id="exportBtn">
-                <span class="btn-icon">📥</span> Export
-            </button>
-            <a href="{% url 'employee_create' %}" class="btn-primary">
-                <span class="btn-icon">➕</span> Add Employee
-            </a>
-        </div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- STARTUP BANNER - RIGHT AFTER HEADER -->
-    <!-- ============================================================ -->
-    {% include 'people/includes/startup_banner.html' %}
-    {% if is_super_admin %}
-    <div class="current-startup-banner">
-        <span class="banner-icon">🏢</span>
-        {% if current_startup %}
-            <span class="banner-text">Viewing: <strong>{{ current_startup.company_name }}</strong></span>
-            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="banner-reset">↺ View All</a>
-        {% else %}
-            <span class="banner-text">Viewing: <strong>All Startups</strong></span>
-        {% endif %}
-    </div>
-    {% endif %}
 
     <!-- ================= STATS ================= -->
     <div class="stats-grid">
@@ -646,8 +1115,8 @@
         </div>
     </div>
 
-    <!-- ================= DESKTOP TABLE ================= -->
-    <div class="table-card">
+    <!-- ================= TABLE VIEW ================= -->
+    <div class="table-card" id="tableView">
         <div class="table-header">
             <div class="table-header-left">
                 <h3>👥 Employee List</h3>
@@ -749,7 +1218,7 @@
                             </a>
                         </td>
                         <td>
-                            <a href="{% url 'employee_portal_dashboard' %}" class="portal-link user" target="_blank"
+                            <a href="{% url 'employee_portal_dashboard' %}" class="portal-link" target="_blank"
                                 title="Open Employee Portal">
                                 🚀
                             </a>
@@ -775,7 +1244,7 @@
                     <tr>
                         <td colspan="12">
                             <div class="empty-state">
-                                <div class="empty-icon">👥</div>
+                                <span class="empty-icon">👥</span>
                                 <h3>No Employees Found</h3>
                                 <p>Start by creating your first employee.</p>
                                 <a href="{% url 'employee_create' %}" class="btn-primary">
@@ -792,8 +1261,7 @@
         <!-- Table Footer -->
         <div class="table-footer">
             <div class="table-info">
-                Showing <span id="visibleCount">{{ employees|length }}</span> of <span id="totalCount2">{{
-                    employees|length }}</span> employees
+                Showing <span id="visibleCount">{{ employees|length }}</span> of <span id="totalCount2">{{ employees|length }}</span> employees
             </div>
             <div class="table-pagination">
                 <button class="pagination-btn" id="prevPage" disabled>← Previous</button>
@@ -870,7 +1338,7 @@
         </div>
         {% empty %}
         <div class="empty-state full-width">
-            <div class="empty-icon">👥</div>
+            <span class="empty-icon">👥</span>
             <h3>No Employees Found</h3>
             <p>Start by creating your first employee.</p>
             <a href="{% url 'employee_create' %}" class="btn-primary">➕ Create Employee</a>
@@ -880,7 +1348,6 @@
 
 </div>
 
-<script src="{% static 'js/employee.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // ============================================
@@ -901,7 +1368,6 @@
                 return;
             }
             
-            // Build export data
             const exportData = [];
             selected.forEach(checkbox => {
                 const row = checkbox.closest('tr');
@@ -920,13 +1386,11 @@
                 });
             });
             
-            // Create CSV
             let csv = 'Name,Email,Employee ID,Department,Status\n';
             exportData.forEach(emp => {
                 csv += `${emp.name},${emp.email},${emp.id},${emp.department},${emp.status}\n`;
             });
             
-            // Download CSV
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -944,16 +1408,12 @@
         document.getElementById('selectAllCheckbox').addEventListener('change', function() {
             const checkboxes = document.querySelectorAll('.row-checkbox');
             checkboxes.forEach(cb => cb.checked = this.checked);
-            
-            // Update the other select all checkbox
             document.getElementById('selectAll').checked = this.checked;
         });
         
         document.getElementById('selectAll').addEventListener('change', function() {
             const checkboxes = document.querySelectorAll('.row-checkbox');
             checkboxes.forEach(cb => cb.checked = this.checked);
-            
-            // Update the other select all checkbox
             document.getElementById('selectAllCheckbox').checked = this.checked;
         });
         
@@ -996,11 +1456,9 @@
                 if (show) visibleCount++;
             });
             
-            // Update counts
             document.getElementById('visibleCount').textContent = visibleCount;
             document.getElementById('resultCount').innerHTML = `Showing <strong>${visibleCount}</strong> employees`;
             
-            // Update mobile cards
             const cards = document.querySelectorAll('.employee-card');
             cards.forEach((card, index) => {
                 const row = rows[index];
@@ -1053,7 +1511,6 @@
                 const tbody = document.getElementById('employeeTableBody');
                 const rows = Array.from(tbody.querySelectorAll('.employee-row'));
                 
-                // Determine sort direction
                 const isAsc = !this.dataset.asc;
                 this.dataset.asc = isAsc;
                 
@@ -1101,7 +1558,6 @@
                     }
                 });
                 
-                // Reorder rows
                 rows.forEach(row => tbody.appendChild(row));
             });
         });
@@ -1110,13 +1566,11 @@
         // KEYBOARD SHORTCUTS
         // ============================================
         document.addEventListener('keydown', function(e) {
-            // Ctrl+F to focus search
             if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
                 e.preventDefault();
                 document.getElementById('searchInput').focus();
             }
             
-            // Escape to clear search
             if (e.key === 'Escape') {
                 const searchInput = document.getElementById('searchInput');
                 if (document.activeElement === searchInput) {
@@ -1127,9 +1581,6 @@
             }
         });
         
-        // ============================================
-        // INITIALIZE
-        // ============================================
         console.log('👥 Employee Directory loaded');
         console.log(`📊 Total employees: ${document.querySelectorAll('.employee-row').length}`);
     });

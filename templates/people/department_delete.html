@@ -1,56 +1,424 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Delete Department{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/department_delete.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'departments' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Departments
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       DEPARTMENT DELETE - HRMS STYLES
+       ============================================ */
+    .delete-page {
+        max-width: 550px;
+        margin: 0 auto;
+    }
+
+    .delete-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 40px 32px;
+        text-align: center;
+        transition: all 0.3s;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .delete-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+    }
+
+    .delete-card .delete-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .delete-card h1 {
+        margin: 0 0 8px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f87171;
+    }
+
+    .delete-card .delete-message {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .delete-card .delete-message strong {
+        color: #e8edf5;
+    }
+
+    /* ===== DEPARTMENT PREVIEW ===== */
+    .department-preview {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px;
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 10px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 24px;
+        text-align: left;
+    }
+
+    .department-preview .dept-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .department-preview .dept-info h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .department-preview .dept-info p {
+        margin: 2px 0 0;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .department-preview .dept-info .dept-code {
+        display: inline-block;
+        padding: 1px 10px;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        margin-top: 2px;
+    }
+
+    /* ===== WARNING BOX ===== */
+    .warning-box {
+        background: rgba(251, 191, 36, 0.06);
+        border: 1px solid rgba(251, 191, 36, 0.1);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: #fbbf24;
+        font-size: 0.85rem;
+        text-align: left;
+    }
+
+    .warning-box .warning-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .warning-box strong {
+        color: #fcd34d;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .action-buttons .btn {
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .btn-danger:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .delete-page {
+            padding: 0;
+        }
+
+        .delete-card {
+            padding: 28px 20px;
+        }
+
+        .delete-card h1 {
+            font-size: 1.3rem;
+        }
+
+        .department-preview {
+            flex-wrap: wrap;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .delete-card {
+            padding: 20px 14px;
+        }
+
+        .delete-card .delete-icon {
+            font-size: 3rem;
+        }
+
+        .delete-card h1 {
+            font-size: 1.1rem;
+        }
+
+        .department-preview .dept-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+        }
+
+        .department-preview .dept-info h3 {
+            font-size: 0.9rem;
+        }
+
+        .btn-danger,
+        .btn-secondary {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .delete-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .department-preview {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.1s;
+        opacity: 0;
+    }
+
+    .warning-box {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .action-buttons {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+</style>
 
 <div class="delete-page">
 
-<div class="delete-card">
+    <div class="delete-card">
 
-<h1>
+        <span class="delete-icon">⚠️</span>
 
-⚠ Delete Department
+        <h1>Delete Department</h1>
 
-</h1>
+        <p class="delete-message">
+            Are you sure you want to delete <strong>{{ department.name }}</strong>?
+            <br>
+            This action <strong>cannot be undone</strong>.
+        </p>
 
-<p>
+        <!-- Department Preview -->
+        <div class="department-preview">
+            <div class="dept-icon">🏢</div>
+            <div class="dept-info">
+                <h3>{{ department.name }}</h3>
+                {% if department.code %}
+                <span class="dept-code">{{ department.code }}</span>
+                {% endif %}
+                {% if department.description %}
+                <p>{{ department.description|truncatechars:60 }}</p>
+                {% endif %}
+            </div>
+        </div>
 
-Are you sure you want to delete
+        <!-- Warning Box -->
+        <div class="warning-box">
+            <span class="warning-icon">⚠️</span>
+            <div>
+                <strong>Warning:</strong> 
+                {% if employee_count > 0 %}
+                This department has <strong>{{ employee_count }} employee(s)</strong> assigned. 
+                They will need to be reassigned before deletion.
+                {% else %}
+                This department has no employees assigned. It is safe to delete.
+                {% endif %}
+            </div>
+        </div>
 
-<strong>
+        <!-- Action Buttons -->
+        <form method="POST" id="deleteForm">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger" id="deleteBtn" {% if employee_count > 0 %}disabled{% endif %}>
+                    <span class="btn-icon">🗑</span>
+                    <span class="btn-text">Yes, Delete</span>
+                </button>
+                <a href="{% url 'departments' %}" class="btn btn-secondary">
+                    <span class="btn-icon">✕</span>
+                    Cancel
+                </a>
+            </div>
+        </form>
 
-{{ department.name }}
+        {% if employee_count > 0 %}
+        <div style="margin-top: 12px; font-size: 0.8rem; color: #f87171; text-align: center;">
+            ⚠️ Cannot delete department with assigned employees. 
+            <a href="{% url 'employees' %}?department={{ department.id }}" style="color: #a78bfa; text-decoration: none;">
+                View employees →
+            </a>
+        </div>
+        {% endif %}
 
-</strong> ?
-
-</p>
-
-<form method="POST">
-
-{% csrf_token %}
-
-<button class="btn-danger">
-
-🗑 Yes Delete
-
-</button>
-
-<a href="{% url 'departments' %}" class="btn-secondary">
-
-Cancel
-
-</a>
-
-</form>
+    </div>
 
 </div>
 
-</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('deleteForm');
+        const deleteBtn = document.getElementById('deleteBtn');
+
+        // ============================================
+        // CONFIRMATION BEFORE SUBMIT
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            const confirmDelete = confirm('Are you sure you want to delete "{{ department.name }}"? This action cannot be undone.');
+            if (!confirmDelete) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Show loading state
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Deleting...</span>
+            `;
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUT
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Enter key to submit
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                if (!deleteBtn.disabled) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+            // Escape key to cancel
+            if (e.key === 'Escape') {
+                const cancelBtn = document.querySelector('.btn-secondary');
+                if (cancelBtn) {
+                    window.location.href = cancelBtn.href;
+                }
+            }
+        });
+
+        console.log('🗑 Department Delete page loaded');
+        console.log('📋 Department: {{ department.name }}');
+        console.log('👥 Employee count: {{ employee_count }}');
+    });
+</script>
 
 {% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'analytics/base_analytics.html' %}
+{% load static %}
+
+{% block page_title %}{{ report.report_title }}{% endblock %}
+{% block page_icon %}📄{% endblock %}
+{% block page_subtitle %}{{ report.report_date|date:"d M Y" }}{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'analytics:investor_reports' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Reports
+</a>
+{% endblock %}
+
+{% block analytics_content %}
+<div class="investor-report-detail">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        
+        <!-- Left Column - Metrics -->
+        <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 24px;">
+            <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.95rem; margin: 0 0 16px 0;">📊 Key Metrics</h4>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="background: rgba(167, 139, 250, 0.04); border-radius: 8px; padding: 12px;">
+                    <p style="color: #64748b; margin: 0; font-size: 0.7rem; text-transform: uppercase;">Employees</p>
+                    <p style="color: #e8edf5; font-weight: 700; font-size: 1.3rem; margin: 4px 0 0;">{{ report.total_employees }}</p>
+                </div>
+                <div style="background: rgba(52, 211, 153, 0.04); border-radius: 8px; padding: 12px;">
+                    <p style="color: #64748b; margin: 0; font-size: 0.7rem; text-transform: uppercase;">Revenue</p>
+                    <p style="color: #34d399; font-weight: 700; font-size: 1.3rem; margin: 4px 0 0;">₹{{ report.total_revenue|floatformat:0 }}</p>
+                </div>
+                <div style="background: rgba(239, 68, 68, 0.04); border-radius: 8px; padding: 12px;">
+                    <p style="color: #64748b; margin: 0; font-size: 0.7rem; text-transform: uppercase;">Expenses</p>
+                    <p style="color: #f87171; font-weight: 700; font-size: 1.3rem; margin: 4px 0 0;">₹{{ report.total_expenses|floatformat:0 }}</p>
+                </div>
+                <div style="background: rgba(96, 165, 250, 0.04); border-radius: 8px; padding: 12px;">
+                    <p style="color: #64748b; margin: 0; font-size: 0.7rem; text-transform: uppercase;">Runway</p>
+                    <p style="color: #60a5fa; font-weight: 700; font-size: 1.3rem; margin: 4px 0 0;">{{ report.runway_months|floatformat:1 }} mo</p>
+                </div>
+                <div style="background: rgba(251, 191, 36, 0.04); border-radius: 8px; padding: 12px;">
+                    <p style="color: #64748b; margin: 0; font-size: 0.7rem; text-transform: uppercase;">Cash Balance</p>
+                    <p style="color: #fbbf24; font-weight: 700; font-size: 1.3rem; margin: 4px 0 0;">₹{{ report.cash_balance|floatformat:0 }}</p>
+                </div>
+                <div style="background: rgba(167, 139, 250, 0.04); border-radius: 8px; padding: 12px;">
+                    <p style="color: #64748b; margin: 0; font-size: 0.7rem; text-transform: uppercase;">Valuation</p>
+                    <p style="color: #a78bfa; font-weight: 700; font-size: 1.3rem; margin: 4px 0 0;">₹{{ report.valuation|floatformat:0 }}</p>
+                </div>
+            </div>
+            
+            <hr style="border-color: rgba(167, 139, 250, 0.06); margin: 16px 0;">
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b; font-size: 0.8rem;">Funds Raised</span>
+                    <span style="color: #e8edf5; font-weight: 600;">₹{{ report.funds_raised|floatformat:0 }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b; font-size: 0.8rem;">Net Profit</span>
+                    <!-- <span style="color: {% if report.net_profit >= 0 %}#34d399{% else %}#f87171{% endif %}; font-weight: 600;">
+                        ₹{{ report.net_profit|floatformat:0 }}
+                    </span> -->
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b; font-size: 0.8rem;">Status</span>
+                    <!-- <span style="color: {% if report.is_published %}#34d399{% else %}#fbbf24{% endif %}; font-weight: 600;">
+                        {% if report.is_published %}Published{% else %}Draft{% endif %}
+                    </span> -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Narrative -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 24px;">
+                <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.95rem; margin: 0 0 12px 0;">🏆 Key Achievements</h4>
+                {% if report.key_achievements %}
+                <p style="color: #94a3b8; line-height: 1.8; margin: 0;">{{ report.key_achievements|linebreaks }}</p>
+                {% else %}
+                <p style="color: #64748b; font-style: italic; margin: 0;">No achievements listed</p>
+                {% endif %}
+            </div>
+            
+            <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 24px;">
+                <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.95rem; margin: 0 0 12px 0;">⚠️ Key Challenges</h4>
+                {% if report.key_challenges %}
+                <p style="color: #94a3b8; line-height: 1.8; margin: 0;">{{ report.key_challenges|linebreaks }}</p>
+                {% else %}
+                <p style="color: #64748b; font-style: italic; margin: 0;">No challenges listed</p>
+                {% endif %}
+            </div>
+            
+            <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 24px;">
+                <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.95rem; margin: 0 0 12px 0;">🎯 Next Quarter Goals</h4>
+                {% if report.next_quarter_goals %}
+                <p style="color: #94a3b8; line-height: 1.8; margin: 0;">{{ report.next_quarter_goals|linebreaks }}</p>
+                {% else %}
+                <p style="color: #64748b; font-style: italic; margin: 0;">No goals set</p>
+                {% endif %}
+            </div>
+            
+            <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 16px; text-align: center;">
+                <p style="color: #64748b; font-size: 0.8rem; margin: 0;">
+                    Created: {{ report.created_at|date:"d M Y, H:i" }}
+                    {% if report.updated_at != report.created_at %}
+                    • Updated: {{ report.updated_at|date:"d M Y, H:i" }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

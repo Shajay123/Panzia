@@ -1,36 +1,601 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Leave Dashboard{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/leave_dashboard.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'leave_requests' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📋</span> View All Requests
+    </a>
+    <a href="{% url 'leave_create' %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> New Leave Request
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       LEAVE DASHBOARD - HRMS STYLES
+       ============================================ */
+    .leave-dashboard-page {
+        max-width: 100%;
+    }
+
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card .stat-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .stat-card .stat-content h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+        line-height: 1.2;
+    }
+
+    .stat-card .stat-content p {
+        margin: 0;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .stat-card .stat-trend {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+    }
+
+    .stat-trend.up { color: #34d399; }
+    .stat-trend.down { color: #f87171; }
+    .stat-trend.neutral { color: #94a3b8; }
+
+    .stat-card.pending {
+        border-left: 4px solid #fbbf24;
+    }
+    .stat-card.pending .stat-icon { color: #fbbf24; }
+
+    .stat-card.approved {
+        border-left: 4px solid #34d399;
+    }
+    .stat-card.approved .stat-icon { color: #34d399; }
+
+    .stat-card.rejected {
+        border-left: 4px solid #f87171;
+    }
+    .stat-card.rejected .stat-icon { color: #f87171; }
+
+    .stat-card.total {
+        border-left: 4px solid #a78bfa;
+    }
+    .stat-card.total .stat-icon { color: #a78bfa; }
+
+    /* ===== QUICK STATS ===== */
+    .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .quick-stat-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s;
+    }
+
+    .quick-stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .quick-stat-card .quick-stat-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .quick-stat-card .quick-stat-content {
+        flex: 1;
+    }
+
+    .quick-stat-card .quick-stat-content .quick-stat-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .quick-stat-card .quick-stat-content .quick-stat-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    /* ===== RECENT CARD ===== */
+    .recent-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .recent-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-header .view-all {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .card-header .view-all:hover {
+        color: #a78bfa;
+    }
+
+    .card-header .view-all::after {
+        content: '→';
+        transition: transform 0.2s;
+    }
+
+    .card-header .view-all:hover::after {
+        transform: translateX(4px);
+    }
+
+    /* ===== TABLE ===== */
+    .table-responsive {
+        overflow-x: auto;
+        margin: 0 -4px;
+    }
+
+    .recent-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 700px;
+    }
+
+    .recent-table thead th {
+        text-align: left;
+        padding: 10px 12px;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        white-space: nowrap;
+    }
+
+    .recent-table tbody td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        vertical-align: middle;
+    }
+
+    .recent-table tbody tr:hover {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    .recent-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ===== EMPLOYEE INFO ===== */
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .employee-info .employee-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-info .employee-avatar:not(img) {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-info strong {
+        display: block;
+        color: #e8edf5;
+        font-size: 0.85rem;
+    }
+
+    .employee-info small {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    /* ===== LEAVE TYPE BADGE ===== */
+    .leave-type-badge {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .status-badge .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.status-pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+    .status-badge.status-pending .status-dot { background: #f59e0b; }
+
+    .status-badge.status-approved {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.status-approved .status-dot { background: #22c55e; }
+
+    .status-badge.status-rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+    .status-badge.status-rejected .status-dot { background: #ef4444; }
+
+    .status-badge.status-cancelled {
+        background: rgba(148, 163, 184, 0.08);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.06);
+    }
+    .status-badge.status-cancelled .status-dot { background: #64748b; }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn.view {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+    }
+
+    .action-btn.view:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+
+    .action-btn.edit {
+        background: rgba(251, 191, 36, 0.1);
+        color: #fbbf24;
+    }
+
+    .action-btn.edit:hover {
+        background: rgba(251, 191, 36, 0.2);
+    }
+
+    .action-btn.approve {
+        background: rgba(34, 197, 94, 0.1);
+        color: #4ade80;
+    }
+
+    .action-btn.approve:hover {
+        background: rgba(34, 197, 94, 0.2);
+    }
+
+    .action-btn.reject {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+
+    .action-btn.reject:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* ===== DISTRIBUTION CARD ===== */
+    .distribution-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+    .distribution-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .distribution-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .distribution-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .distribution-bar {
+        height: 8px;
+        border-radius: 4px;
+        transition: width 0.8s ease;
+        width: 0%;
+    }
+
+    .distribution-info {
+        display: flex;
+        justify-content: space-between;
+        flex: 1;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .distribution-info .distribution-label {
+        color: #d6e0f0;
+        font-weight: 500;
+    }
+
+    .distribution-info .distribution-value {
+        color: #e8edf5;
+        font-weight: 600;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 30px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 8px;
+        opacity: 0.5;
+    }
+
+    .empty-state h4 {
+        color: #e8edf5;
+        margin: 0 0 4px;
+        font-size: 1rem;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .leave-dashboard-page {
+            padding: 0;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-card .stat-content h2 {
+            font-size: 1.4rem;
+        }
+
+        .quick-stats {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .recent-table {
+            font-size: 0.8rem;
+            min-width: 600px;
+        }
+
+        .action-btn {
+            width: 26px;
+            height: 26px;
+            font-size: 0.7rem;
+        }
+
+        .employee-info .employee-avatar {
+            width: 30px;
+            height: 30px;
+            font-size: 0.7rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card .stat-content h2 {
+            font-size: 1.2rem;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .distribution-item {
+            flex-wrap: wrap;
+        }
+
+        .distribution-bar {
+            width: 100% !important;
+            height: 6px;
+        }
+
+        .distribution-info {
+            width: 100%;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+    .quick-stat-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .quick-stat-card:nth-child(1) { animation-delay: 0.25s; }
+    .quick-stat-card:nth-child(2) { animation-delay: 0.3s; }
+    .quick-stat-card:nth-child(3) { animation-delay: 0.35s; }
+
+    .recent-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+
+    .distribution-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.25s;
+        opacity: 0;
+    }
+
+    .distribution-bar {
+        animation: none !important;
+    }
+</style>
 
 <div class="leave-dashboard-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">🌴</div>
-                <div>
-                    <h1>Leave Dashboard</h1>
-                    <p class="header-subtitle">Manage and track employee leave requests across your organization.</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'leave_requests' %}" class="btn-secondary">
-                    📋 View All Requests
-                </a>
-                <a href="{% url 'leave_create' %}" class="btn-primary">
-                    ➕ New Leave Request
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- ================= STATS CARDS ================= -->
     <div class="stats-grid">
@@ -103,7 +668,7 @@
     <div class="recent-card">
         <div class="card-header">
             <h3>📋 Recent Leave Requests</h3>
-            <a href="{% url 'leave_requests' %}" class="view-all">View All →</a>
+            <a href="{% url 'leave_requests' %}" class="view-all">View All</a>
         </div>
         <div class="table-responsive">
             <table class="recent-table">
@@ -151,8 +716,8 @@
                                 <a href="{% url 'leave_detail' request.id %}" class="action-btn view" title="View">👁️</a>
                                 <a href="{% url 'leave_update' request.id %}" class="action-btn edit" title="Edit">✏️</a>
                                 {% if request.status == "Pending" %}
-                                <a href="{% url 'leave_approve' request.id %}" class="action-btn approve" title="Approve">✅</a>
-                                <a href="{% url 'leave_reject' request.id %}" class="action-btn reject" title="Reject">❌</a>
+                                <a href="{% url 'leave_approve' request.id %}" class="action-btn approve" title="Approve" onclick="return confirm('Approve this leave request?')">✅</a>
+                                <a href="{% url 'leave_reject' request.id %}" class="action-btn reject" title="Reject" onclick="return confirm('Reject this leave request?')">❌</a>
                                 {% endif %}
                             </div>
                         </td>
@@ -161,7 +726,7 @@
                     <tr>
                         <td colspan="6">
                             <div class="empty-state">
-                                <div class="empty-icon">📋</div>
+                                <span class="empty-icon">📋</span>
                                 <h4>No Leave Requests</h4>
                                 <p>No recent leave requests to display.</p>
                             </div>
@@ -180,28 +745,28 @@
         </div>
         <div class="distribution-grid">
             <div class="distribution-item">
-                <div class="distribution-bar" style="width: 40%; background: #3b6aff;"></div>
+                <div class="distribution-bar" style="width: 40%; background: #60a5fa;"></div>
                 <div class="distribution-info">
                     <span class="distribution-label">Annual Leave</span>
                     <span class="distribution-value">12</span>
                 </div>
             </div>
             <div class="distribution-item">
-                <div class="distribution-bar" style="width: 25%; background: #8b5cf6;"></div>
+                <div class="distribution-bar" style="width: 25%; background: #a78bfa;"></div>
                 <div class="distribution-info">
                     <span class="distribution-label">Sick Leave</span>
                     <span class="distribution-value">8</span>
                 </div>
             </div>
             <div class="distribution-item">
-                <div class="distribution-bar" style="width: 20%; background: #f59e0b;"></div>
+                <div class="distribution-bar" style="width: 20%; background: #fbbf24;"></div>
                 <div class="distribution-info">
                     <span class="distribution-label">Casual Leave</span>
                     <span class="distribution-value">6</span>
                 </div>
             </div>
             <div class="distribution-item">
-                <div class="distribution-bar" style="width: 15%; background: #22c55e;"></div>
+                <div class="distribution-bar" style="width: 15%; background: #34d399;"></div>
                 <div class="distribution-info">
                     <span class="distribution-label">Other</span>
                     <span class="distribution-value">4</span>
@@ -214,6 +779,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // ANIMATE DISTRIBUTION BARS
+        // ============================================
+        document.querySelectorAll('.distribution-bar').forEach((bar, index) => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 400 + (index * 150));
+        });
+
         // ============================================
         // ACTION BUTTON CONFIRMATIONS
         // ============================================
@@ -228,12 +804,29 @@
         });
 
         // ============================================
-        // AUTO-REFRESH (Optional)
+        // KEYBOARD SHORTCUTS
         // ============================================
-        // Refresh pending count every 30 seconds
-        // setInterval(() => { location.reload(); }, 30000);
+        document.addEventListener('keydown', function(e) {
+            // Press 'A' to go to All Requests
+            if (e.key === 'a' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const allLink = document.querySelector('.view-all');
+                if (allLink && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = allLink.href;
+                }
+            }
+            // Press 'N' to go to New Request
+            if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const newLink = document.querySelector('.btn-primary');
+                if (newLink && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = newLink.href;
+                }
+            }
+        });
 
         console.log('🌴 Leave Dashboard initialized');
+        console.log('📊 Pending: {{ pending|default:0 }}, Approved: {{ approved|default:0 }}, Rejected: {{ rejected|default:0 }}');
     });
 </script>
 

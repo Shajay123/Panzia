@@ -1,35 +1,790 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Holiday Calendar{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/holidays.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <button class="btn btn-secondary btn-sm" id="exportBtn">
+        <span class="btn-icon">📥</span> Export
+    </button>
+    <a href="{% url 'holiday_create' %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Add Holiday
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       HOLIDAY CALENDAR - HRMS STYLES
+       ============================================ */
+    .holiday-page {
+        max-width: 100%;
+    }
+
+    /* ===== SUMMARY GRID ===== */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .summary-card .icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .summary-card h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+        line-height: 1.2;
+    }
+
+    .summary-card p {
+        margin: 0;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .summary-card .trend {
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+    }
+
+    .trend.up { color: #34d399; }
+    .trend.down { color: #f87171; }
+    .trend.neutral { color: #94a3b8; }
+
+    .summary-card.blue { border-left: 3px solid #60a5fa; }
+    .summary-card.green { border-left: 3px solid #34d399; }
+    .summary-card.orange { border-left: 3px solid #f59e0b; }
+    .summary-card.purple { border-left: 3px solid #a78bfa; }
+
+    /* ===== FILTER CARD ===== */
+    .filter-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .filter-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .filter-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .btn-toggle-filters {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .btn-toggle-filters:hover {
+        color: #e8edf5;
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 12px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        max-height: 300px;
+    }
+
+    .filter-grid.collapsed {
+        max-height: 0;
+        opacity: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .filter-group label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        font-weight: 600;
+    }
+
+    .filter-group .form-control {
+        padding: 8px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .filter-group .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.05);
+    }
+
+    .filter-group .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    .filter-group select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px;
+        cursor: pointer;
+    }
+
+    .filter-actions {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-filter {
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-reset {
+        padding: 8px 20px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-reset:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .filter-stats {
+        margin-top: 12px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-stats strong {
+        color: #e8edf5;
+    }
+
+    /* ===== TABLE CARD ===== */
+    .table-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .table-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .table-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table-header-left h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .record-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+    }
+
+    .table-header-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-input {
+        padding: 6px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.85rem;
+        min-width: 180px;
+        transition: all 0.3s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.05);
+    }
+
+    .search-input::placeholder {
+        color: #64748b;
+    }
+
+    .btn-sm {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
+
+    .btn-light {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-light:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    /* ===== TABLE ===== */
+    .table-responsive {
+        overflow-x: auto;
+        padding: 0 4px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 700px;
+    }
+
+    thead th {
+        text-align: left;
+        padding: 10px 12px;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        cursor: pointer;
+        transition: color 0.2s;
+        white-space: nowrap;
+    }
+
+    thead th:hover {
+        color: #e8edf5;
+    }
+
+    tbody td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    tbody tr:hover {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ===== HOLIDAY NAME ===== */
+    .holiday-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .holiday-icon {
+        font-size: 1.1rem;
+    }
+
+    .holiday-name strong {
+        color: #e8edf5;
+    }
+
+    /* ===== DATE CELL ===== */
+    .date-cell {
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    /* ===== DAY BADGE ===== */
+    .day-badge {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.06);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    /* ===== TYPE BADGE ===== */
+    .type-badge {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        border: 1px solid transparent;
+    }
+
+    .type-badge.type-public {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border-color: rgba(96, 165, 250, 0.06);
+    }
+
+    .type-badge.type-optional {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.06);
+    }
+
+    .type-badge.type-company {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border-color: rgba(34, 197, 94, 0.06);
+    }
+
+    .type-badge.type-festival {
+        background: rgba(244, 114, 182, 0.12);
+        color: #f472b6;
+        border-color: rgba(244, 114, 182, 0.06);
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .status-badge .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.upcoming {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+    .status-badge.upcoming .status-dot { background: #f59e0b; }
+
+    .status-badge.past {
+        background: rgba(148, 163, 184, 0.08);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.06);
+    }
+    .status-badge.past .status-dot { background: #64748b; }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn .action-icon {
+        font-size: 0.9rem;
+    }
+
+    .action-btn.view {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+    }
+
+    .action-btn.view:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+
+    .action-btn.edit {
+        background: rgba(251, 191, 36, 0.1);
+        color: #fbbf24;
+    }
+
+    .action-btn.edit:hover {
+        background: rgba(251, 191, 36, 0.2);
+    }
+
+    .action-btn.delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+
+    .action-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* ===== TABLE FOOTER ===== */
+    .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .footer-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        flex-wrap: wrap;
+    }
+
+    .footer-left strong {
+        color: #e8edf5;
+    }
+
+    .footer-divider {
+        color: #64748b;
+    }
+
+    .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        padding: 4px 12px;
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.85rem;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    #pageInfo {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.1rem;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin: 0 0 16px;
+    }
+
+    .empty-state .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .empty-state .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .holiday-page {
+            padding: 0;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            grid-column: 1;
+        }
+
+        .filter-buttons {
+            flex-direction: column;
+        }
+
+        .filter-buttons .btn-filter,
+        .filter-buttons .btn-reset {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .table-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-input {
+            width: 100%;
+            min-width: unset;
+        }
+
+        .table-footer {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .footer-left {
+            justify-content: center;
+        }
+
+        .footer-right {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-card h2 {
+            font-size: 1.2rem;
+        }
+
+        .action-btn {
+            width: 26px;
+            height: 26px;
+            font-size: 0.7rem;
+        }
+
+        .action-btn .action-icon {
+            font-size: 0.8rem;
+        }
+
+        .day-badge,
+        .type-badge {
+            font-size: 0.6rem;
+            padding: 1px 8px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .summary-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .summary-card:nth-child(1) { animation-delay: 0.05s; }
+    .summary-card:nth-child(2) { animation-delay: 0.1s; }
+    .summary-card:nth-child(3) { animation-delay: 0.15s; }
+    .summary-card:nth-child(4) { animation-delay: 0.2s; }
+
+    .filter-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .table-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+</style>
 
 <div class="holiday-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">🎉</div>
-                <div>
-                    <h1>Holiday Calendar</h1>
-                    <p class="header-subtitle">Manage company holidays and public holidays.</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'holiday_create' %}" class="btn-primary">
-                    <span class="btn-icon">➕</span> Add Holiday
-                </a>
-            </div>
-        </div>
-    </div>
-
-    {% include 'people/includes/startup_banner.html' %}
 
     <!-- ================= SUMMARY ================= -->
     <div class="summary-grid">
@@ -90,8 +845,8 @@
                 <div class="filter-group filter-actions">
                     <label>&nbsp;</label>
                     <div class="filter-buttons">
-                        <button type="submit" class="btn-primary btn-filter">🔍 Apply</button>
-                        <a href="{% url 'holidays' %}" class="btn-light btn-reset">↩️ Reset</a>
+                        <button type="submit" class="btn-filter">🔍 Apply</button>
+                        <a href="{% url 'holidays' %}" class="btn-reset">↩️ Reset</a>
                     </div>
                 </div>
             </div>
@@ -101,7 +856,7 @@
         </div>
     </div>
 
-    <!-- ================= HOLIDAYS TABLE ================= -->
+    <!-- ================= TABLE ================= -->
     <div class="table-card">
         <div class="table-header">
             <div class="table-header-left">
@@ -184,7 +939,7 @@
                     <tr>
                         <td colspan="6">
                             <div class="empty-state">
-                                <div class="empty-icon">🎉</div>
+                                <span class="empty-icon">🎉</span>
                                 <h3>No Holidays Found</h3>
                                 <p>Add holidays to the calendar.</p>
                                 <a href="{% url 'holiday_create' %}" class="btn-primary">➕ Add Holiday</a>
@@ -330,6 +1085,38 @@
                     tableSearch.select();
                 }
             }
+        });
+
+        // ============================================
+        // EXPORT
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const rows = document.querySelectorAll('#tableBody .holiday-row');
+            if (rows.length === 0) {
+                alert('No records to export.');
+                return;
+            }
+
+            let csv = 'Holiday Name,Date,Day,Type,Status\n';
+            rows.forEach(row => {
+                const name = row.querySelector('.holiday-name strong')?.textContent?.trim() || '';
+                const date = row.querySelector('td:nth-child(2)')?.textContent?.trim() || '';
+                const day = row.querySelector('td:nth-child(3)')?.textContent?.trim() || '';
+                const type = row.querySelector('.type-badge')?.textContent?.trim() || '';
+                const status = row.querySelector('.status-badge')?.textContent?.trim() || '';
+                
+                csv += `"${name}","${date}","${day}","${type}","${status}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `holidays_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         });
 
         // ============================================

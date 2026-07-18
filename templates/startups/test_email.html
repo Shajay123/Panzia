@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Test Email{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 40px auto; padding: 30px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.06); border-radius: 16px;">
+    <h2 style="color: #e8edf5; margin-bottom: 20px;">📧 Test Email Configuration</h2>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div style="margin-bottom: 16px;">
+            <label style="color: #d6e0f0; font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 4px;">
+                Send test email to:
+            </label>
+            <input type="email" name="email" value="{{ request.user.email }}" 
+                   style="width: 100%; padding: 10px 14px; background: #2a1f3d; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; color: #e8edf5; font-size: 0.95rem; box-sizing: border-box;">
+        </div>
+        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; width: 100%;">
+            📤 Send Test Email
+        </button>
+    </form>
+    
+    <div style="margin-top: 20px; padding: 16px; background: rgba(167, 139, 250, 0.03); border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.04);">
+        <h4 style="color: #a78bfa; margin: 0 0 8px;">📌 Email Configuration</h4>
+        <ul style="color: #94a3b8; font-size: 0.85rem; margin: 0; padding-left: 20px;">
+            <li><strong>Host:</strong> smtp.gmail.com</li>
+            <li><strong>Port:</strong> 587</li>
+            <li><strong>User:</strong> shajaygopi2001@gmail.com</li>
+            <li><strong>From:</strong> PANZIA <shajaygopi2001@gmail.com></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

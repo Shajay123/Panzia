@@ -1,120 +1,392 @@
-{% extends 'base.html' %}
+{% extends 'sprints/base_sprint.html' %}
 {% load static %}
 
-{% block title %}
-Sprint Members
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'startup_sprints' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> My Sprints
+    </a>
+    {% if sprint.status != 'completed' %}
+    <a href="{% url 'create_task' sprint.id %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Create Task
+    </a>
+    {% endif %}
+    <a href="{% url 'sprint_applications' sprint.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📥</span> Applications
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/sprint_members.css' %}">
-{% endblock %}
+{% block execution_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        animation: fadeInUp 0.4s ease;
+    }
 
-{% block content %}
+    /* ===== HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
 
-<section class="members-section">
+    .page-header .header-left {
+        flex: 1;
+    }
 
-    <div class="members-container">
+    .page-header .page-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 8px;
+    }
 
-        <!-- Header -->
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+        letter-spacing: -0.5px;
+    }
 
-        <div class="page-header">
+    .page-header h1 .sprint-name {
+        color: #a78bfa;
+    }
 
-            <div>
+    .page-header p {
+        margin: 4px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
 
-                <span class="dashboard-badge">
-                    👥 Sprint Team
-                </span>
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
 
-                <h1>
-                    {{ sprint.title }}
-                </h1>
+    .stat-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        text-align: center;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
 
-                <p>
-                    Builders currently working on this sprint.
-                </p>
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
 
-            </div>
+    .stat-card .stat-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 4px;
+    }
 
-            <a href="{% url 'create_task' sprint.id %}"
-               class="primary-btn">
-                ➕ Create Task
-            </a>
+    .stat-card h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
 
+    .stat-card p {
+        margin: 0;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .stat-card .stat-change {
+        font-size: 0.65rem;
+        font-weight: 600;
+        margin-top: 4px;
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+    }
+
+    .stat-card .stat-change.positive {
+        color: #34d399;
+        background: rgba(34, 197, 94, 0.08);
+    }
+
+    .stat-card .stat-change.neutral {
+        color: #94a3b8;
+        background: rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== MEMBERS GRID ===== */
+    .members-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    .member-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .member-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .member-card .avatar-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0 auto 12px;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+        transition: all 0.3s;
+    }
+
+    .member-card:hover .avatar-circle {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+    }
+
+    .member-card h3 {
+        margin: 0 0 4px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .member-card p {
+        margin: 0 0 12px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .member-card .member-badge {
+        display: inline-block;
+        padding: 3px 14px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .member-card .member-badge.lead {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        margin: 0 0 8px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 14px;
+        }
+
+        .page-header {
+            flex-direction: column;
+        }
+
+        .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .members-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 14px;
+        }
+
+        .member-card .avatar-circle {
+            width: 52px;
+            height: 52px;
+            font-size: 1.2rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-content {
+            padding: 10px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .stat-card h2 {
+            font-size: 1.4rem;
+        }
+
+        .members-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .member-card {
+            padding: 16px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+
+    .member-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .member-card:nth-child(1) { animation-delay: 0.2s; }
+    .member-card:nth-child(2) { animation-delay: 0.25s; }
+    .member-card:nth-child(3) { animation-delay: 0.3s; }
+    .member-card:nth-child(4) { animation-delay: 0.35s; }
+    .member-card:nth-child(5) { animation-delay: 0.4s; }
+    .member-card:nth-child(6) { animation-delay: 0.45s; }
+</style>
+
+<div class="page-content">
+    <!-- ===== HEADER ===== -->
+    <div class="page-header">
+        <div class="header-left">
+            <span class="page-badge">👥 Sprint Team</span>
+            <h1>
+                <span class="sprint-name">{{ sprint.title }}</span>
+            </h1>
+            <p>Builders currently working on this sprint.</p>
         </div>
-
-        <!-- Stats -->
-
-        <div class="stats-grid">
-
-            <div class="stat-card">
-                <h2>{{ members.count }}</h2>
-                <p>Total Members</p>
-            </div>
-
-            <div class="stat-card">
-                <h2>{{ sprint.tasks.count }}</h2>
-                <p>Total Tasks</p>
-            </div>
-
-            <div class="stat-card">
-                <h2>{{ sprint.progress_percentage }}%</h2>
-                <p>Sprint Progress</p>
-            </div>
-
-        </div>
-
-        {% if members %}
-
-        <div class="members-grid">
-
-            {% for member in members %}
-
-            <div class="member-card">
-
-                <div class="avatar-circle">
-                    {{ member.user.username|first|upper }}
-                </div>
-
-                <h3>
-                    {{ member.user.username }}
-                </h3>
-
-                <p>
-                    Joined {{ member.joined_at|timesince }} ago
-                </p>
-
-                <span class="member-badge">
-                    Active Contributor
-                </span>
-
-            </div>
-
-            {% endfor %}
-
-        </div>
-
-        {% else %}
-
-        <div class="empty-state">
-
-            <div class="empty-icon">
-                👥
-            </div>
-
-            <h3>
-                No Members Yet
-            </h3>
-
-            <p>
-                Accepted applicants will appear here.
-            </p>
-
-        </div>
-
-        {% endif %}
-
     </div>
 
-</section>
+    <!-- ===== STATS ===== -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">👥</span>
+            <h2>{{ members.count|default:"0" }}</h2>
+            <p>Total Members</p>
+            <span class="stat-change positive">✅ Active team</span>
+        </div>
 
+        <div class="stat-card">
+            <span class="stat-icon">✅</span>
+            <h2>{{ sprint.tasks.count|default:"0" }}</h2>
+            <p>Total Tasks</p>
+            <span class="stat-change neutral">📋 All tasks</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">📈</span>
+            <h2>{{ sprint.progress_percentage|default:"0" }}%</h2>
+            <p>Sprint Progress</p>
+            <span class="stat-change positive">🚀 On track</span>
+        </div>
+    </div>
+
+    <!-- ===== MEMBERS ===== -->
+    {% if members %}
+    <div class="members-grid">
+        {% for member in members %}
+        <div class="member-card">
+            <div class="avatar-circle">{{ member.user.username|first|upper }}</div>
+            <h3>{{ member.user.username }}</h3>
+            <p>Joined {{ member.joined_at|timesince }} ago</p>
+            {% if forloop.first %}
+            <span class="member-badge lead">⭐ Team Lead</span>
+            {% else %}
+            <span class="member-badge">✅ Active Contributor</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="empty-icon">👥</span>
+        <h3>No Members Yet</h3>
+        <p>Accepted applicants will appear here.</p>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

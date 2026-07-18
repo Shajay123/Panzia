@@ -1,507 +1,207 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}Attendance Timing Configuration{% endblock %}
+{% block page_icon %}⏰{% endblock %}
+{% block page_subtitle %}Configure default timings and attendance rules for {{ employee.user.get_full_name }}{% endblock %}
 
-{% block css %}
-<style>
-    .timing-config-page {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    .config-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .config-header h1 {
-        margin: 0;
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #e8edf5;
-    }
-
-    .config-header p {
-        margin: 5px 0 0;
-        color: #94a3b8;
-        font-size: 0.95rem;
-    }
-
-    .config-card {
-        background: rgba(167, 139, 250, 0.03);
-        border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 20px;
-    }
-
-    .config-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
-    }
-
-    .config-card-header h2 {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #e8edf5;
-    }
-
-    .config-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .form-group.full-width {
-        grid-column: 1 / -1;
-    }
-
-    .form-label {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #d6e0f0;
-    }
-
-    .form-label .help-icon {
-        color: #64748b;
-        cursor: help;
-        margin-left: 4px;
-    }
-
-    .form-control {
-        padding: 10px 14px;
-        border: 1px solid rgba(167, 139, 250, 0.1);
-        border-radius: 8px;
-        background: rgba(167, 139, 250, 0.03);
-        color: #e8edf5;
-        font-size: 0.95rem;
-        transition: all 0.3s;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #7c3aed;
-        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-    }
-
-    .form-control:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    select.form-control {
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        padding-right: 36px;
-        cursor: pointer;
-    }
-
-    select[multiple].form-control {
-        background-image: none;
-        padding-right: 12px;
-        min-height: 100px;
-    }
-
-    select[multiple].form-control option {
-        padding: 6px 10px;
-        background: #1a1035;
-        color: #e8edf5;
-        border-radius: 4px;
-    }
-
-    select[multiple].form-control option:checked {
-        background: rgba(124, 58, 237, 0.3);
-    }
-
-    .help-text {
-        font-size: 0.78rem;
-        color: #64748b;
-        margin-top: 2px;
-    }
-
-    .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 0;
-    }
-
-    .checkbox-group input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        accent-color: #7c3aed;
-        cursor: pointer;
-    }
-
-    .checkbox-group label {
-        color: #d6e0f0;
-        cursor: pointer;
-    }
-
-    .action-bar {
-        display: flex;
-        gap: 12px;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(167, 139, 250, 0.06);
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        padding: 10px 24px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        flex: 1;
-        justify-content: center;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-secondary {
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-    }
-
-    .btn-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-    }
-
-    .btn-danger {
-        background: rgba(239, 68, 68, 0.1);
-        color: #f87171;
-        border: 1px solid rgba(239, 68, 68, 0.15);
-    }
-
-    .btn-danger:hover {
-        background: rgba(239, 68, 68, 0.15);
-        color: #fca5a5;
-    }
-
-    .preview-box {
-        background: rgba(167, 139, 250, 0.04);
-        border-radius: 8px;
-        padding: 16px 20px;
-        margin-top: 16px;
-        border-left: 3px solid #7c3aed;
-    }
-
-    .preview-box h4 {
-        margin: 0 0 8px 0;
-        font-size: 0.9rem;
-        color: #a78bfa;
-    }
-
-    .preview-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 12px;
-    }
-
-    .preview-item {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .preview-item .label {
-        font-size: 0.7rem;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .preview-item .value {
-        font-size: 0.95rem;
-        color: #e8edf5;
-        font-weight: 500;
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 2px 10px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-
-    .status-badge.active {
-        background: rgba(34, 197, 94, 0.15);
-        color: #4ade80;
-    }
-
-    .status-badge.inactive {
-        background: rgba(239, 68, 68, 0.15);
-        color: #f87171;
-    }
-
-    .shift-presets {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 8px;
-        margin-bottom: 16px;
-    }
-
-    .shift-preset-btn {
-        padding: 6px 14px;
-        border: 1px solid rgba(167, 139, 250, 0.1);
-        border-radius: 20px;
-        background: rgba(167, 139, 250, 0.03);
-        color: #94a3b8;
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .shift-preset-btn:hover {
-        border-color: #7c3aed;
-        color: #a78bfa;
-        background: rgba(124, 58, 237, 0.05);
-    }
-
-    .shift-preset-btn.active {
-        border-color: #7c3aed;
-        background: rgba(124, 58, 237, 0.1);
-        color: #a78bfa;
-    }
-
-    @media (max-width: 768px) {
-        .config-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .config-card {
-            padding: 16px;
-        }
-
-        .action-bar {
-            flex-direction: column;
-        }
-
-        .action-bar .btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .preview-grid {
-            grid-template-columns: 1fr 1fr;
-        }
-    }
-
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .notification-toast {
-        animation: slideUp 0.3s ease;
-    }
-</style>
+{% block page_actions %}
+<a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Employee
+</a>
 {% endblock %}
 
-{% block content %}
-
-<div class="timing-config-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="config-header">
-        <div>
-            <h1>⏰ Attendance Timing Configuration</h1>
-            <p>Configure default timings and attendance rules for {{ employee.user.get_full_name }}</p>
-        </div>
-        <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary">
-            ← Back to Employee
-        </a>
-    </div>
+{% block hrms_content %}
+<div class="timing-config-container" style="max-width: 900px; margin: 0 auto;">
 
     <!-- ================= FORM ================= -->
     <form method="POST" novalidate>
         {% csrf_token %}
 
         <!-- ================= TIMING SETTINGS ================= -->
-        <div class="config-card">
-            <div class="config-card-header">
-                <h2>⏰ Timing Settings</h2>
-                <span class="status-badge {% if employee.default_check_in %}active{% else %}inactive{% endif %}">
-                    {% if employee.default_check_in %}Configured{% else %}Not Set{% endif %}
+        <div class="config-card" style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+            <div class="config-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                <h2 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #e8edf5;">⏰ Timing Settings</h2>
+                <!-- <span class="status-badge" style="display: inline-block; padding: 2px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; {% if employee.default_check_in %}background: rgba(52, 211, 153, 0.15); color: #4ade80;{% else %}background: rgba(239, 68, 68, 0.15); color: #f87171;{% endif %}"> -->
+                    {% if employee.default_check_in %}✅ Configured{% else %}❌ Not Set{% endif %}
                 </span>
             </div>
 
             <!-- Shift Presets -->
-            <div class="form-group">
-                <label class="form-label">Quick Shift Presets</label>
-                <div class="shift-presets">
-                    <button type="button" class="shift-preset-btn" onclick="applyShift('morning')">
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">Quick Shift Presets</label>
+                <div class="shift-presets" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('morning')" style="padding: 6px 16px; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 20px; background: rgba(167, 139, 250, 0.03); color: #94a3b8; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
                         🌅 Morning (9:30 - 18:30)
                     </button>
-                    <button type="button" class="shift-preset-btn" onclick="applyShift('evening')">
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('evening')" style="padding: 6px 16px; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 20px; background: rgba(167, 139, 250, 0.03); color: #94a3b8; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
                         🌇 Evening (14:00 - 23:00)
                     </button>
-                    <button type="button" class="shift-preset-btn" onclick="applyShift('night')">
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('night')" style="padding: 6px 16px; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 20px; background: rgba(167, 139, 250, 0.03); color: #94a3b8; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
                         🌙 Night (22:00 - 07:00)
                     </button>
-                    <button type="button" class="shift-preset-btn" onclick="applyShift('flexible')">
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('flexible')" style="padding: 6px 16px; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 20px; background: rgba(167, 139, 250, 0.03); color: #94a3b8; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
                         🕐 Flexible
                     </button>
-                    <button type="button" class="shift-preset-btn" onclick="applyShift('remote')">
+                    <button type="button" class="shift-preset-btn" onclick="applyShift('remote')" style="padding: 6px 16px; border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 20px; background: rgba(167, 139, 250, 0.03); color: #94a3b8; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">
                         🏠 Remote
                     </button>
                 </div>
-                <span class="help-text">Click a preset to auto-fill the timing fields below.</span>
+                <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Click a preset to auto-fill the timing fields below.</span>
             </div>
 
-            <div class="config-grid">
-                <div class="form-group">
-                    <label for="{{ form.default_check_in.id_for_label }}" class="form-label">
+            <div class="config-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.default_check_in.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">
                         Default Check In
-                        <span class="help-icon" title="Default time employee should check in">ℹ️</span>
+                        <span class="help-icon" title="Default time employee should check in" style="color: #64748b; cursor: help; margin-left: 4px;">ℹ️</span>
                     </label>
                     {{ form.default_check_in }}
-                    <span class="help-text">Set default check-in time for this employee</span>
+                    <style>
+                        #id_default_check_in, #id_default_check_out, #id_work_start_time, #id_work_end_time,
+                        #id_grace_period_minutes, #id_half_day_hours, #id_full_day_hours, #id_overtime_rate,
+                        #id_shift {
+                            padding: 10px 14px;
+                            border: 1px solid rgba(167, 139, 250, 0.1);
+                            border-radius: 8px;
+                            background: rgba(167, 139, 250, 0.03);
+                            color: #e8edf5;
+                            font-size: 0.95rem;
+                            transition: all 0.3s;
+                            width: 100%;
+                            box-sizing: border-box;
+                        }
+                        #id_default_check_in:focus, #id_default_check_out:focus, #id_work_start_time:focus,
+                        #id_work_end_time:focus, #id_grace_period_minutes:focus, #id_half_day_hours:focus,
+                        #id_full_day_hours:focus, #id_overtime_rate:focus, #id_shift:focus {
+                            outline: none;
+                            border-color: #7c3aed;
+                            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+                        }
+                        #id_default_check_in:disabled, #id_default_check_out:disabled {
+                            opacity: 0.6;
+                            cursor: not-allowed;
+                        }
+                        select#id_shift {
+                            appearance: none;
+                            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+                            background-repeat: no-repeat;
+                            background-position: right 12px center;
+                            padding-right: 36px;
+                            cursor: pointer;
+                        }
+                        #id_shift option {
+                            background: #1a1035;
+                            color: #e8edf5;
+                            padding: 6px 10px;
+                        }
+                    </style>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Set default check-in time for this employee</span>
                 </div>
-                <div class="form-group">
-                    <label for="{{ form.default_check_out.id_for_label }}" class="form-label">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.default_check_out.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">
                         Default Check Out
-                        <span class="help-icon" title="Default time employee should check out">ℹ️</span>
+                        <span class="help-icon" title="Default time employee should check out" style="color: #64748b; cursor: help; margin-left: 4px;">ℹ️</span>
                     </label>
                     {{ form.default_check_out }}
-                    <span class="help-text">Set default check-out time for this employee</span>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Set default check-out time for this employee</span>
                 </div>
-                <div class="form-group">
-                    <label for="{{ form.work_start_time.id_for_label }}" class="form-label">Work Start Time</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.work_start_time.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">Work Start Time</label>
                     {{ form.work_start_time }}
-                    <span class="help-text">Official work start time</span>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Official work start time</span>
                 </div>
-                <div class="form-group">
-                    <label for="{{ form.work_end_time.id_for_label }}" class="form-label">Work End Time</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.work_end_time.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">Work End Time</label>
                     {{ form.work_end_time }}
-                    <span class="help-text">Official work end time</span>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Official work end time</span>
                 </div>
             </div>
         </div>
 
         <!-- ================= ATTENDANCE RULES ================= -->
-        <div class="config-card">
-            <div class="config-card-header">
-                <h2>📋 Attendance Rules</h2>
+        <div class="config-card" style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+            <div class="config-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                <h2 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #e8edf5;">📋 Attendance Rules</h2>
             </div>
-            <div class="config-grid">
-                <div class="form-group">
-                    <label for="{{ form.grace_period_minutes.id_for_label }}" class="form-label">
+            <div class="config-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.grace_period_minutes.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">
                         Grace Period (minutes)
-                        <span class="help-icon" title="Allowed time after start time without marking late">ℹ️</span>
+                        <span class="help-icon" title="Allowed time after start time without marking late" style="color: #64748b; cursor: help; margin-left: 4px;">ℹ️</span>
                     </label>
                     {{ form.grace_period_minutes }}
-                    <span class="help-text">Minutes allowed after start time without being marked late</span>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Minutes allowed after start time without being marked late</span>
                 </div>
-                <div class="form-group">
-                    <label for="{{ form.shift.id_for_label }}" class="form-label">Shift</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.shift.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">Shift</label>
                     {{ form.shift }}
-                    <span class="help-text">Select the shift type</span>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Select the shift type</span>
                 </div>
-                <div class="form-group">
-                    <label for="{{ form.half_day_hours.id_for_label }}" class="form-label">Half Day Hours</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.half_day_hours.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">Half Day Hours</label>
                     {{ form.half_day_hours }}
-                    <span class="help-text">Hours required for a half day</span>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Hours required for a half day</span>
                 </div>
-                <div class="form-group">
-                    <label for="{{ form.full_day_hours.id_for_label }}" class="form-label">Full Day Hours</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.full_day_hours.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">Full Day Hours</label>
                     {{ form.full_day_hours }}
-                    <span class="help-text">Hours required for a full day</span>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Hours required for a full day</span>
                 </div>
             </div>
         </div>
 
         <!-- ================= OVERTIME SETTINGS ================= -->
-        <div class="config-card">
-            <div class="config-card-header">
-                <h2>💪 Overtime Settings</h2>
+        <div class="config-card" style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+            <div class="config-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                <h2 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #e8edf5;">💪 Overtime Settings</h2>
             </div>
-            <div class="config-grid">
-                <div class="form-group full-width">
-                    <div class="checkbox-group">
+            <div class="config-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 6px; grid-column: 1 / -1;">
+                    <div class="checkbox-group" style="display: flex; align-items: center; gap: 10px; padding: 8px 0;">
                         {{ form.overtime_enabled }}
-                        <label for="{{ form.overtime_enabled.id_for_label }}">Enable Overtime Tracking</label>
+                        <label for="{{ form.overtime_enabled.id_for_label }}" style="color: #d6e0f0; cursor: pointer;">Enable Overtime Tracking</label>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="{{ form.overtime_rate.id_for_label }}" class="form-label">Overtime Rate</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.overtime_rate.id_for_label }}" class="form-label" style="font-size: 0.85rem; font-weight: 500; color: #d6e0f0;">Overtime Rate</label>
                     {{ form.overtime_rate }}
-                    <span class="help-text">Rate multiplier for overtime (e.g., 1.5 = 1.5x)</span>
+                    <span class="help-text" style="font-size: 0.78rem; color: #64748b;">Rate multiplier for overtime (e.g., 1.5 = 1.5x)</span>
                 </div>
             </div>
         </div>
 
         <!-- ================= PREVIEW ================= -->
-        <div class="preview-box">
-            <h4>📊 Configuration Preview</h4>
-            <div class="preview-grid">
-                <div class="preview-item">
-                    <span class="label">Check In</span>
-                    <span class="value" id="previewCheckIn">{{ form.default_check_in.value|default:"Not Set" }}</span>
+        <div class="preview-box" style="background: rgba(167, 139, 250, 0.04); border-radius: 8px; padding: 16px 20px; margin-top: 16px; border-left: 3px solid #7c3aed;">
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; color: #a78bfa;">📊 Configuration Preview</h4>
+            <div class="preview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                <div class="preview-item" style="display: flex; flex-direction: column; gap: 2px;">
+                    <span class="label" style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Check In</span>
+                    <span class="value" id="previewCheckIn" style="font-size: 0.95rem; color: #e8edf5; font-weight: 500;">{{ form.default_check_in.value|default:"Not Set" }}</span>
                 </div>
-                <div class="preview-item">
-                    <span class="label">Check Out</span>
-                    <span class="value" id="previewCheckOut">{{ form.default_check_out.value|default:"Not Set" }}</span>
+                <div class="preview-item" style="display: flex; flex-direction: column; gap: 2px;">
+                    <span class="label" style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Check Out</span>
+                    <span class="value" id="previewCheckOut" style="font-size: 0.95rem; color: #e8edf5; font-weight: 500;">{{ form.default_check_out.value|default:"Not Set" }}</span>
                 </div>
-                <div class="preview-item">
-                    <span class="label">Grace Period</span>
-                    <span class="value" id="previewGracePeriod">{{ form.grace_period_minutes.value|default:"15" }} min</span>
+                <div class="preview-item" style="display: flex; flex-direction: column; gap: 2px;">
+                    <span class="label" style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Grace Period</span>
+                    <span class="value" id="previewGracePeriod" style="font-size: 0.95rem; color: #e8edf5; font-weight: 500;">{{ form.grace_period_minutes.value|default:"15" }} min</span>
                 </div>
-                <div class="preview-item">
-                    <span class="label">Half Day</span>
-                    <span class="value" id="previewHalfDay">{{ form.half_day_hours.value|default:"4.00" }} hrs</span>
+                <div class="preview-item" style="display: flex; flex-direction: column; gap: 2px;">
+                    <span class="label" style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Half Day</span>
+                    <span class="value" id="previewHalfDay" style="font-size: 0.95rem; color: #e8edf5; font-weight: 500;">{{ form.half_day_hours.value|default:"4.00" }} hrs</span>
                 </div>
-                <div class="preview-item">
-                    <span class="label">Full Day</span>
-                    <span class="value" id="previewFullDay">{{ form.full_day_hours.value|default:"8.00" }} hrs</span>
+                <div class="preview-item" style="display: flex; flex-direction: column; gap: 2px;">
+                    <span class="label" style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Full Day</span>
+                    <span class="value" id="previewFullDay" style="font-size: 0.95rem; color: #e8edf5; font-weight: 500;">{{ form.full_day_hours.value|default:"8.00" }} hrs</span>
                 </div>
-                <div class="preview-item">
-                    <span class="label">Shift</span>
-                    <span class="value" id="previewShift">{{ form.shift.value|default:"Not Set" }}</span>
+                <div class="preview-item" style="display: flex; flex-direction: column; gap: 2px;">
+                    <span class="label" style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Shift</span>
+                    <span class="value" id="previewShift" style="font-size: 0.95rem; color: #e8edf5; font-weight: 500;">{{ form.shift.value|default:"Not Set" }}</span>
                 </div>
-                <div class="preview-item">
-                    <span class="label">Overtime</span>
-                    <span class="value" id="previewOvertime">
+                <div class="preview-item" style="display: flex; flex-direction: column; gap: 2px;">
+                    <span class="label" style="font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Overtime</span>
+                    <span class="value" id="previewOvertime" style="font-size: 0.95rem; color: #e8edf5; font-weight: 500;">
                         {% if form.overtime_enabled.value %}
                         ✅ Enabled ({{ form.overtime_rate.value|default:"1.5" }}x)
                         {% else %}
@@ -513,14 +213,14 @@
         </div>
 
         <!-- ================= ACTION BUTTONS ================= -->
-        <div class="action-bar">
-            <button type="submit" class="btn btn-primary">
+        <div class="action-bar" style="display: flex; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(167, 139, 250, 0.06); flex-wrap: wrap;">
+            <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; flex: 1; justify-content: center;">
                 💾 Save Configuration
             </button>
-            <button type="reset" class="btn btn-secondary">
+            <button type="reset" class="btn btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
                 🔄 Reset
             </button>
-            <button type="button" class="btn btn-danger" onclick="resetToDefault()">
+            <button type="button" class="btn btn-danger" onclick="resetToDefault()" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.15); padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
                 ⚠️ Reset to Default
             </button>
         </div>
@@ -528,6 +228,82 @@
     </form>
 
 </div>
+
+<style>
+    .timing-config-container .shift-preset-btn:hover {
+        border-color: #7c3aed;
+        color: #a78bfa;
+        background: rgba(124, 58, 237, 0.05);
+    }
+    
+    .timing-config-container .shift-preset-btn.active {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+    }
+    
+    .timing-config-container .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+    
+    .timing-config-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+    
+    .timing-config-container .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+    }
+    
+    .timing-config-container .config-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .timing-config-container .config-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .timing-config-container .config-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .timing-config-container .config-card {
+            padding: 16px !important;
+        }
+        
+        .timing-config-container .action-bar {
+            flex-direction: column;
+        }
+        
+        .timing-config-container .action-bar .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .timing-config-container .preview-grid {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        .timing-config-container .shift-presets {
+            flex-direction: column;
+        }
+        
+        .timing-config-container .shift-presets button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .timing-config-container .preview-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -629,6 +405,18 @@
             }
         });
 
+        // Overtime checkbox change
+        const overtimeCheck = document.getElementById('id_overtime_enabled');
+        if (overtimeCheck) {
+            overtimeCheck.addEventListener('change', function() {
+                const rateField = document.getElementById('id_overtime_rate');
+                const rateValue = rateField ? rateField.value : '1.5';
+                previewElements.overtime.textContent = this.checked ? 
+                    `✅ Enabled (${rateValue || '1.5'}x)` : 
+                    '❌ Disabled';
+            });
+        }
+
         // ============================================
         // RESET TO DEFAULT
         // ============================================
@@ -662,6 +450,11 @@
                     overtimeCheck.checked = false;
                     overtimeCheck.dispatchEvent(new Event('change'));
                 }
+
+                // Reset preset buttons
+                document.querySelectorAll('.shift-preset-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
 
                 showNotification('🔄 Reset to default values');
             }
@@ -699,19 +492,8 @@
             }, 3000);
         }
 
-        // Add animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideUp {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        `;
-        document.head.appendChild(style);
-
         console.log('⏰ Timing Configuration loaded');
         console.log('👤 Employee: {{ employee.user.get_full_name }}');
     });
 </script>
-
 {% endblock %}

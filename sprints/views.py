@@ -12,109 +12,167 @@ from payments.models import UserSubscription
 from django.contrib import messages
 
 @login_required
-def create_sprint(request):
-
-    startup_profile = StartupProfile.objects.get(
-        user=request.user
-    )
-
-    sprint_count = Sprint.objects.filter(
-        startup=startup_profile
-    ).count()
-
-    subscription = UserSubscription.objects.filter(
-        user=request.user,
-        active=True
-    ).first()
-
-    # FREE users -> max 1 sprint
-
-    if not subscription:
-
-        if sprint_count >= 1:
-
-            messages.warning(
-                request,
-                "Your Free Plan allows only 1 Sprint. Upgrade to Growth Plan."
-            )
-
-            return redirect(
-                "subscription_plans"
-            )
-
-    # PRO / Growth users -> unlimited
-
-    if request.method == "POST":
-
-        form = SprintForm(request.POST)
-
-        if form.is_valid():
-
-            sprint = form.save(
-                commit=False
-            )
-
-            sprint.startup = startup_profile
-
-            sprint.save()
-
-            create_activity(
-                request.user,
-                f"Created Sprint {sprint.title}"
-            )
-
-            form.save_m2m()
-
-            return redirect(
-                "startup_sprints"
-            )
-
-    else:
-
-        form = SprintForm()
-
-    return render(
-        request,
-        "sprints/create_sprint.html",
-        {
-            "form": form
+def execution_dashboard(request):
+    """Execution Dashboard - Overview of all sprints."""
+    
+    try:
+        startup_profile = StartupProfile.objects.get(user=request.user)
+    except StartupProfile.DoesNotExist:
+        messages.warning(request, 'No startup associated with your profile.')
+        context = {
+            'total_sprints': 0,
+            'active_sprints': 0,
+            'completed_sprints': 0,
+            'open_sprints': 0,
+            'recent_sprints': [],
+            'page_title': 'Execution Dashboard',
+            'page_icon': '🚀',
+            'page_subtitle': 'Manage your sprints and execution',
+            'no_startup': True,
         }
-    )
+        return render(request, 'sprints/execution_dashboard.html', context)
+    
+    sprints = Sprint.objects.filter(startup=startup_profile)
+    
+    total_sprints = sprints.count()
+    active_sprints = sprints.filter(status='active').count()
+    completed_sprints = sprints.filter(status='completed').count()
+    open_sprints = sprints.filter(status='open').count()
+    
+    recent_sprints = sprints.order_by('-created_at')[:5]
+    
+    context = {
+        'total_sprints': total_sprints,
+        'active_sprints': active_sprints,
+        'completed_sprints': completed_sprints,
+        'open_sprints': open_sprints,
+        'recent_sprints': recent_sprints,
+        'page_title': 'Execution Dashboard',
+        'page_icon': '🚀',
+        'page_subtitle': 'Manage your sprints and execution',
+        'no_startup': False,
+    }
+    return render(request, 'sprints/execution_dashboard.html', context)
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+
+from .models import Sprint
+from .forms import SprintForm
+from startups.models import StartupProfile
+from payments.subscription_checker import get_plan, can_create_sprint
+
+
+@login_required
+def create_sprint(request):
+    # Get startup profile
+    try:
+        startup = StartupProfile.objects.get(user=request.user)
+    except StartupProfile.DoesNotExist:
+        messages.error(request, 'Startup profile not found. Please set up your profile first.')
+        return redirect('startup_profile_setup')
+    
+    # Check subscription plan
+    plan = get_plan(request.user)
+    
+    # Check if user can create sprint based on their plan
+    if not can_create_sprint(request.user):
+        messages.warning(request, f'Your {plan} plan does not allow creating more sprints. Please upgrade your plan.')
+        # FIXED: Added 'payments:' namespace
+        return redirect('payments:subscription_plans')
+    
+    if request.method == 'POST':
+        form = SprintForm(request.POST)
+        if form.is_valid():
+            sprint = form.save(commit=False)
+            sprint.startup = startup
+            sprint.created_by = request.user
+            sprint.save()
+            messages.success(request, f'Sprint "{sprint.title}" created successfully!')
+            return redirect('startup_sprints')
+    else:
+        form = SprintForm()
+    
+    context = {
+        'form': form,
+        'startup': startup,
+        'current_plan': plan,
+        'page_title': 'Create Sprint',
+        'page_icon': '🚀',
+    }
+    
+    return render(request, 'sprints/create_sprint.html', context)
+
+@login_required
+def edit_sprint(request, sprint_id):
+    """Edit an existing sprint"""
+    try:
+        startup = StartupProfile.objects.get(user=request.user)
+    except StartupProfile.DoesNotExist:
+        messages.error(request, 'Startup profile not found.')
+        return redirect('startup_profile_setup')
+    
+    # Get the sprint - ensure it belongs to the user's startup
+    sprint = get_object_or_404(Sprint, id=sprint_id, startup=startup)
+    
+    if request.method == 'POST':
+        form = SprintForm(request.POST, instance=sprint)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Sprint "{sprint.title}" updated successfully!')
+            return redirect('startup_sprints')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = SprintForm(instance=sprint)
+    
+    context = {
+        'form': form,
+        'sprint': sprint,
+        'startup': startup,
+        'page_title': f'Edit Sprint: {sprint.title}',
+        'page_icon': '✏️',
+        'is_edit': True,  # This flag tells the template it's edit mode
+    }
+    
+    # Use the same template as create_sprint
+    return render(request, 'sprints/create_sprint.html', context)
+
+
+@login_required
+def delete_sprint(request, sprint_id):
+    sprint = get_object_or_404(Sprint, id=sprint_id, startup__user=request.user)
+    
+    if request.method == 'POST':
+        sprint_title = sprint.title
+        sprint.delete()
+        messages.success(request, f'Sprint "{sprint_title}" deleted successfully!')
+        return redirect('startup_sprints')
+    
+    return redirect('startup_sprints')
 
 
 @login_required
 def startup_sprints(request):
-
-    startup_profile = StartupProfile.objects.get(
-        user=request.user
-    )
-
-    sprints = Sprint.objects.filter(
-        startup=startup_profile
-    )
-
+    try:
+        startup = StartupProfile.objects.get(user=request.user)
+    except StartupProfile.DoesNotExist:
+        messages.error(request, 'Startup profile not found.')
+        return redirect('startup_profile_setup')
+    
+    sprints = Sprint.objects.filter(startup=startup).order_by('-created_at')
+    
     context = {
-
-        "sprints": sprints,
-
-        "active_count": sprints.filter(
-            status='active'
-        ).count(),
-
-        "completed_count": sprints.filter(
-            status='completed'
-        ).count(),
-
-        "open_count": sprints.filter(
-            status='open'
-        ).count(),
+        'sprints': sprints,
+        'startup': startup,
+        'page_title': 'My Sprints',
+        'page_icon': '📋',
     }
-
-    return render(
-        request,
-        'sprints/startup_sprints.html',
-        context
-    )
+    
+    return render(request, 'sprints/startup_sprints.html', context)
 
 @login_required
 def browse_sprints(request):

@@ -1,0 +1,178 @@
+{% extends 'payments/base_payments.html' %}
+{% load static %}
+
+{% block page_title %}Payments Dashboard{% endblock %}
+{% block page_icon %}📊{% endblock %}
+{% block page_subtitle %}Overview of your subscriptions and payments{% endblock %}
+
+{% block payments_content %}
+<div class="payments-dashboard">
+    
+    <!-- Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: rgba(96, 165, 250, 0.04); border: 1px solid rgba(96, 165, 250, 0.08); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s;">
+            <h3 style="color: #60a5fa; font-weight: 700; margin: 0; font-size: 2rem;">{{ active_subscriptions|default:0 }}</h3>
+            <p style="color: #94a3b8; margin: 4px 0 0; font-size: 0.8rem;">Active Subscriptions</p>
+        </div>
+        <div style="background: rgba(52, 211, 153, 0.04); border: 1px solid rgba(52, 211, 153, 0.08); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s;">
+            <h3 style="color: #34d399; font-weight: 700; margin: 0; font-size: 2rem;">{{ total_payments|default:0 }}</h3>
+            <p style="color: #94a3b8; margin: 4px 0 0; font-size: 0.8rem;">Total Payments</p>
+        </div>
+        <div style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s;">
+            <h3 style="color: #a78bfa; font-weight: 700; margin: 0; font-size: 2rem;">₹{{ total_spent|floatformat:0|default:0 }}</h3>
+            <p style="color: #94a3b8; margin: 4px 0 0; font-size: 0.8rem;">Total Spent</p>
+        </div>
+        <div style="background: rgba(251, 191, 36, 0.04); border: 1px solid rgba(251, 191, 36, 0.08); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.3s;">
+            <h3 style="color: #fbbf24; font-weight: 700; margin: 0; font-size: 2rem;">
+                {% if current_subscription %}
+                    {{ current_subscription.plan.name }}
+                {% else %}
+                    None
+                {% endif %}
+            </h3>
+            <p style="color: #94a3b8; margin: 4px 0 0; font-size: 0.8rem;">Current Plan</p>
+        </div>
+    </div>
+    
+    <!-- Current Subscription -->
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h3 style="color: #e8edf5; font-weight: 600; margin: 0; font-size: 1rem;">✅ Current Subscription</h3>
+                {% if current_subscription %}
+                    <p style="color: #94a3b8; margin: 4px 0 0; font-size: 0.85rem;">
+                        {{ current_subscription.plan.name }} plan • 
+                        Active until {{ current_subscription.end_date|date:"d M Y" }}
+                        {% if is_expiring_soon %}
+                            <span style="color: #fbbf24; font-weight: 600;">(Expiring soon!)</span>
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <p style="color: #94a3b8; margin: 4px 0 0; font-size: 0.85rem;">No active subscription</p>
+                {% endif %}
+            </div>
+            <div style="display: flex; gap: 8px;">
+                {% if current_subscription %}
+                    <a href="{% url 'payments:current_subscription' %}" class="btn btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: all 0.3s;">
+                        View Details
+                    </a>
+                {% else %}
+                    <a href="{% url 'payments:subscription_plans' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: all 0.3s;">
+                        Subscribe Now
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Links -->
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+        <h3 style="color: #e8edf5; font-weight: 600; font-size: 1rem; margin: 0 0 16px 0;">⚡ Quick Links</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+            <a href="{% url 'payments:subscription_plans' %}" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.06); border-radius: 8px; padding: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; text-align: center; font-size: 0.85rem;">
+                📋 View Plans
+            </a>
+            <a href="{% url 'payments:payment_history' %}" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.06); border-radius: 8px; padding: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; text-align: center; font-size: 0.85rem;">
+                📜 Payment History
+            </a>
+            <a href="{% url 'payments:billing_history' %}" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.06); border-radius: 8px; padding: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; text-align: center; font-size: 0.85rem;">
+                🧾 Billing History
+            </a>
+            <a href="{% url 'payments:invoices' %}" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.06); border-radius: 8px; padding: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; text-align: center; font-size: 0.85rem;">
+                📄 Invoices
+            </a>
+        </div>
+    </div>
+    
+    <!-- Recent History -->
+    {% if history %}
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 24px;">
+        <h3 style="color: #e8edf5; font-weight: 600; font-size: 1rem; margin: 0 0 16px 0;">📋 Recent Activity</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                        <th style="padding: 8px 12px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Plan</th>
+                        <th style="padding: 8px 12px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Amount</th>
+                        <th style="padding: 8px 12px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Status</th>
+                        <th style="padding: 8px 12px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history %}
+                    <tr style="border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                        <td style="padding: 8px 12px; color: #e8edf5;">{{ item.plan.name }}</td>
+                        <td style="padding: 8px 12px; color: #a78bfa;">₹{{ item.amount|floatformat:2 }}</td>
+                        <td style="padding: 8px 12px;">
+                            <!-- <span style="background: {% if item.status == 'success' %}rgba(52,211,153,0.12); color: #34d399;{% else %}rgba(239,68,68,0.12); color: #f87171;{% endif %}; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">
+                                {{ item.status|title }}
+                            </span> -->
+                        </td>
+                        <td style="padding: 8px 12px; color: #94a3b8; font-size: 0.8rem;">{{ item.created_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .payments-dashboard .summary-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+    
+    .payments-dashboard .quick-links a:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+    
+    .payments-dashboard > div[style*="display: grid;"] > div {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .payments-dashboard > div[style*="display: grid;"] > div:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+    
+    .payments-dashboard .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .payments-dashboard .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .payments-dashboard > div[style*="display: grid; grid-template-columns:"] {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        .payments-dashboard .quick-links {
+            grid-template-columns: 1fr 1fr !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .payments-dashboard > div[style*="display: grid; grid-template-columns:"] {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .payments-dashboard .quick-links {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+{% endblock %}

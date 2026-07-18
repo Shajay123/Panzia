@@ -1,0 +1,642 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Startup Applications - Admin{% endblock %}
+
+{% block css %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .admin-header h1 {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.8rem;
+    }
+
+    .admin-header .header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .admin-header .badge {
+        padding: 6px 16px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .badge.pending { background: rgba(251, 191, 36, 0.12); color: #fbbf24; border-color: rgba(251, 191, 36, 0.08); }
+    .badge.approved { background: rgba(52, 211, 153, 0.12); color: #34d399; border-color: rgba(52, 211, 153, 0.08); }
+    .badge.rejected { background: rgba(239, 68, 68, 0.12); color: #f87171; border-color: rgba(239, 68, 68, 0.08); }
+
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        padding: 4px;
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .filter-tab {
+        padding: 8px 20px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .filter-tab:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+    }
+
+    .filter-tab.active {
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+    }
+
+    .filter-tab .count {
+        margin-left: 4px;
+        font-size: 0.7rem;
+        opacity: 0.7;
+    }
+
+    .applications-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .application-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        transition: all 0.3s;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    .application-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .application-card .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .application-card .company-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .application-card .company-logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        background: rgba(167, 139, 250, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .application-card .company-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .application-card .company-name {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin: 0;
+    }
+
+    .application-card .company-industry {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        margin: 2px 0 0;
+    }
+
+    .application-card .status-badge {
+        padding: 4px 14px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-badge.pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.08);
+    }
+
+    .status-badge.approved {
+        background: rgba(52, 211, 153, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.08);
+    }
+
+    .status-badge.rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.08);
+    }
+
+    .application-card .card-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 16px;
+        margin: 12px 0;
+        padding: 12px 0;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .application-card .card-body .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .application-card .card-body .detail-item .label {
+        color: #64748b;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        font-weight: 500;
+    }
+
+    .application-card .card-body .detail-item .value {
+        color: #d6e0f0;
+        font-size: 0.85rem;
+    }
+
+    .application-card .card-body .detail-item .value a {
+        color: #60a5fa;
+        text-decoration: none;
+    }
+
+    .application-card .card-body .detail-item .value a:hover {
+        color: #93c5fd;
+        text-decoration: underline;
+    }
+
+    .application-card .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 4px;
+    }
+
+    .application-card .card-footer .meta {
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    .application-card .card-footer .meta strong {
+        color: #94a3b8;
+    }
+
+    .application-card .card-footer .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-view {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-view:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-2px);
+    }
+
+    .btn-approve {
+        background: rgba(52, 211, 153, 0.1);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.1);
+    }
+
+    .btn-approve:hover {
+        background: rgba(52, 211, 153, 0.15);
+        color: #6ee7b7;
+        transform: translateY(-2px);
+    }
+
+    .btn-reject {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.1);
+    }
+
+    .btn-reject:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        transform: translateY(-2px);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+    }
+
+    .empty-state .icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-weight: 600;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+        .admin-container {
+            padding: 16px;
+        }
+
+        .admin-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .admin-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .application-card .card-body {
+            grid-template-columns: 1fr;
+        }
+
+        .application-card .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .application-card .card-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .application-card .card-footer .actions {
+            justify-content: stretch;
+        }
+
+        .application-card .card-footer .actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .filter-tabs {
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            flex: 1;
+            text-align: center;
+            min-width: 80px;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .application-card {
+            padding: 16px;
+        }
+
+        .application-card .company-info {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <div>
+            <h1>📋 Startup Applications</h1>
+            <p style="color: #94a3b8; margin: 4px 0 0;">Review and manage startup registration applications</p>
+        </div>
+        <div class="header-actions">
+            <span class="badge pending">⏳ Pending: {{ pending_count|default:0 }}</span>
+            <span class="badge approved">✅ Approved: {{ approved_count|default:0 }}</span>
+            <span class="badge rejected">❌ Rejected: {{ rejected_count|default:0 }}</span>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs" id="filterTabs">
+        <button class="filter-tab active" data-filter="all" onclick="filterApplications('all')">
+            📊 All <span class="count">({{ total_count|default:0 }})</span>
+        </button>
+        <button class="filter-tab" data-filter="pending" onclick="filterApplications('pending')">
+            ⏳ Pending <span class="count">({{ pending_count|default:0 }})</span>
+        </button>
+        <button class="filter-tab" data-filter="approved" onclick="filterApplications('approved')">
+            ✅ Approved <span class="count">({{ approved_count|default:0 }})</span>
+        </button>
+        <button class="filter-tab" data-filter="rejected" onclick="filterApplications('rejected')">
+            ❌ Rejected <span class="count">({{ rejected_count|default:0 }})</span>
+        </button>
+    </div>
+
+    <!-- Applications Grid -->
+    <div class="applications-grid" id="applicationsGrid">
+        {% for application in applications %}
+        <div class="application-card" data-status="{{ application.status }}">
+            <div class="card-header">
+                <div class="company-info">
+                    <div class="company-logo">
+                        {% if application.logo %}
+                            <img src="{{ application.logo.url }}" alt="{{ application.company_name }}">
+                        {% else %}
+                            🏢
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h3 class="company-name">{{ application.company_name }}</h3>
+                        <p class="company-industry">{{ application.industry }}</p>
+                    </div>
+                </div>
+                <span class="status-badge {{ application.status }}">
+                    {% if application.status == 'pending' %}⏳ Pending Review
+                    {% elif application.status == 'approved' %}✅ Approved
+                    {% elif application.status == 'rejected' %}❌ Rejected
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="card-body">
+                <div class="detail-item">
+                    <span class="label">📝 Description</span>
+                    <span class="value">{{ application.description|truncatechars:100 }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">📧 Contact</span>
+                    <span class="value">
+                        <div>{{ application.applicant_name }}</div>
+                        <div style="font-size: 0.75rem; color: #94a3b8;">{{ application.applicant_email }}</div>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">🌐 Website</span>
+                    <span class="value">
+                        {% if application.website %}
+                            <a href="{{ application.website }}" target="_blank">{{ application.website|cut:"https://"|cut:"http://" }}</a>
+                        {% else %}
+                            <span style="color: #64748b;">Not provided</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">📱 Phone</span>
+                    <span class="value">{{ application.applicant_phone|default:"Not provided" }}</span>
+                </div>
+                <div class="detail-item" style="grid-column: 1 / -1;">
+                    <span class="label">📍 Location</span>
+                    <span class="value">
+                        {% if application.address %}
+                            {{ application.address }}
+                            {% if application.city %}, {{ application.city }}{% endif %}
+                            {% if application.state %}, {{ application.state }}{% endif %}
+                            {% if application.country %}, {{ application.country }}{% endif %}
+                        {% else %}
+                            <span style="color: #64748b;">Not provided</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="meta">
+                    <span>📅 Applied: <strong>{{ application.created_at|date:"d M Y, h:i A" }}</strong></span>
+                    {% if application.status == 'approved' or application.status == 'rejected' %}
+                        <span style="margin-left: 12px;">👤 Reviewed by: <strong>{{ application.reviewed_by.get_full_name|default:application.reviewed_by.username }}</strong></span>
+                    {% endif %}
+                    {% if application.rejection_reason %}
+                        <span style="margin-left: 12px; color: #f87171;">📝 Reason: {{ application.rejection_reason }}</span>
+                    {% endif %}
+                </div>
+                <div class="actions">
+                    <a href="{% url 'startups:admin_application_detail' application.id %}" class="btn btn-view">
+                        👁️ View Details
+                    </a>
+                    {% if application.status == 'pending' %}
+                        <a href="{% url 'startups:admin_approve_application' application.id %}" class="btn btn-approve" onclick="return confirm('Are you sure you want to approve this application? This will create a startup profile and user account.');">
+                            ✅ Approve
+                        </a>
+                        <button class="btn btn-reject" onclick="showRejectModal('{{ application.id }}', '{{ application.company_name|escapejs }}')">
+                            ❌ Reject
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <span class="icon">📋</span>
+            <h3>No Applications Found</h3>
+            <p>There are no startup applications to review at this time.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ===== REJECTION MODAL ===== -->
+<div id="rejectModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: #1a1035; border: 1px solid rgba(167, 139, 250, 0.15); border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; animation: scaleIn 0.3s ease; box-shadow: 0 24px 64px rgba(0,0,0,0.4);">
+        <div style="text-align: center;">
+            <span style="font-size: 3rem; display: block; margin-bottom: 8px;">❌</span>
+            <h3 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.3rem;">Reject Application</h3>
+            <p style="color: #94a3b8; margin: 8px 0 16px; font-size: 0.95rem;">
+                Are you sure you want to reject <strong id="rejectCompanyName" style="color: #a78bfa;">this application</strong>?
+            </p>
+        </div>
+        <form id="rejectForm" method="POST">
+            {% csrf_token %}
+            <div style="margin-bottom: 16px;">
+                <label style="color: #d6e0f0; font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 4px;">Reason for Rejection</label>
+                <textarea name="rejection_reason" id="rejectionReason" style="width: 100%; padding: 10px 14px; background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 10px; color: #e8edf5; font-size: 0.9rem; min-height: 80px; resize: vertical; box-sizing: border-box;" placeholder="Please provide a reason for rejection..."></textarea>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button type="button" onclick="closeRejectModal()" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s;">
+                    Cancel
+                </button>
+                <button type="submit" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s;">
+                    ❌ Confirm Reject
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // FILTER APPLICATIONS
+    // ============================================
+    function filterApplications(status) {
+        const cards = document.querySelectorAll('.application-card');
+        const tabs = document.querySelectorAll('.filter-tab');
+        
+        // Update active tab
+        tabs.forEach(tab => tab.classList.remove('active'));
+        document.querySelector(`.filter-tab[data-filter="${status}"]`).classList.add('active');
+        
+        // Filter cards
+        cards.forEach(card => {
+            if (status === 'all' || card.dataset.status === status) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // ============================================
+    // REJECT MODAL
+    // ============================================
+    let currentAppId = null;
+
+    function showRejectModal(appId, companyName) {
+        currentAppId = appId;
+        const modal = document.getElementById('rejectModal');
+        const companyNameSpan = document.getElementById('rejectCompanyName');
+        const form = document.getElementById('rejectForm');
+        
+        companyNameSpan.textContent = `"${companyName}"`;
+        form.action = `/startups/admin/application/${appId}/reject/`;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeRejectModal() {
+        const modal = document.getElementById('rejectModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        document.getElementById('rejectionReason').value = '';
+    }
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeRejectModal();
+        }
+    });
+
+    // Close modal on outside click
+    document.getElementById('rejectModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRejectModal();
+        }
+    });
+
+    // ============================================
+    // AUTO-REFRESH / KEYBOARD SHORTCUTS
+    // ============================================
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+R to refresh
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            e.preventDefault();
+            location.reload();
+        }
+    });
+
+    console.log('📋 Admin Applications loaded');
+    console.log(`📊 Total: ${document.querySelectorAll('.application-card').length} applications`);
+</script>
+
+<style>
+    @keyframes scaleIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}

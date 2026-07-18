@@ -1,187 +1,754 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}
-Edit Document - {{ document.title }}
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'document_detail' document.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Document
+    </a>
+    <a href="{% url 'documents' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📂</span> All Documents
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/document_update.css' %}">
-{% endblock %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       EDIT DOCUMENT - HRMS STYLES
+       ============================================ */
+    .document-update-page {
+        max-width: 700px;
+        margin: 0 auto;
+    }
 
-{% block content %}
+    /* ===== FORM CARD ===== */
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        transition: all 0.3s;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .form-card h2 {
+        margin: 0 0 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    /* ===== FORM GRID ===== */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+    }
+
+    .form-control {
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    .form-control.error {
+        border-color: #f87171;
+    }
+
+    .form-control.error:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .form-control.success {
+        border-color: #34d399;
+    }
+
+    .form-control.success:focus {
+        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.1);
+    }
+
+    .field-error {
+        font-size: 0.8rem;
+        color: #f87171;
+        margin-top: 2px;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .field-note {
+        font-size: 0.75rem;
+        color: #60a5fa;
+        margin-top: 2px;
+    }
+
+    /* ===== CURRENT FILE ===== */
+    .current-file {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+    }
+
+    .current-file .file-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .current-file .file-info {
+        flex: 1;
+    }
+
+    .current-file .file-info .file-name {
+        font-size: 0.9rem;
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    .current-file .file-info .file-meta {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    .current-file .file-link {
+        color: #a78bfa;
+        text-decoration: none;
+        padding: 4px 12px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.06);
+        transition: all 0.2s;
+        font-size: 0.8rem;
+    }
+
+    .current-file .file-link:hover {
+        background: rgba(167, 139, 250, 0.12);
+        text-decoration: underline;
+    }
+
+    /* ===== UPLOAD BOX ===== */
+    .upload-box {
+        border: 2px dashed rgba(167, 139, 250, 0.15);
+        border-radius: 12px;
+        padding: 24px 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: rgba(167, 139, 250, 0.02);
+        position: relative;
+    }
+
+    .upload-box:hover {
+        border-color: rgba(167, 139, 250, 0.3);
+        background: rgba(167, 139, 250, 0.04);
+    }
+
+    .upload-box.dragover {
+        border-color: #7c3aed;
+        background: rgba(124, 58, 237, 0.05);
+        transform: scale(1.02);
+    }
+
+    .upload-box .upload-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .upload-box p {
+        margin: 0 0 4px;
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .upload-box small {
+        display: block;
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    .upload-box input[type="file"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .upload-box .file-name {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 12px;
+        background: rgba(34, 197, 94, 0.1);
+        color: #4ade80;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* ===== FORM ERRORS ===== */
+    .form-errors {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        color: #f87171;
+        font-size: 0.9rem;
+    }
+
+    /* ===== SUBMIT AREA ===== */
+    .submit-area {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .submit-area .btn {
+        padding: 10px 28px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-cancel {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .document-update-page {
+            padding: 0;
+        }
+
+        .form-card {
+            padding: 16px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1;
+        }
+
+        .submit-area {
+            flex-direction: column;
+        }
+
+        .submit-area .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .current-file {
+            flex-wrap: wrap;
+        }
+
+        .current-file .file-link {
+            width: 100%;
+            text-align: center;
+        }
+
+        .upload-box {
+            padding: 20px 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card {
+            padding: 14px;
+        }
+
+        .form-control {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+
+        .btn-save,
+        .btn-cancel {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+
+        .current-file .file-info .file-name {
+            font-size: 0.8rem;
+        }
+
+        .upload-box .upload-icon {
+            font-size: 2rem;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .submit-area {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.1s;
+        opacity: 0;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div class="document-update-page">
 
-    <!-- Header -->
-
-    <div class="page-header">
-
-        <div>
-
-            <div class="breadcrumb">
-
-                <a href="{% url 'documents' %}">
-                    📂 Documents
-                </a>
-
-                <span>›</span>
-
-                <a href="{% url 'document_detail' document.id %}">
-                    {{ document.title }}
-                </a>
-
-                <span>›</span>
-
-                <span>Edit</span>
-
-            </div>
-
-            <h1>✏ Edit Employee Document</h1>
-
-            <p>
-
-                Update employee document information or replace the uploaded file.
-
-            </p>
-
-        </div>
-
-        <a href="{% url 'document_detail' document.id %}" class="btn-back">
-
-            ← Back
-
-        </a>
-
-    </div>
-
-
-    <form method="POST" enctype="multipart/form-data">
-
+    <!-- ================= FORM ================= -->
+    <form method="POST" enctype="multipart/form-data" id="documentForm">
         {% csrf_token %}
 
+        <!-- ================= FORM ERRORS ================= -->
         {% if form.non_field_errors %}
-
         <div class="form-errors">
-
             {{ form.non_field_errors }}
-
         </div>
-
         {% endif %}
 
-
+        <!-- ================= FORM CARD ================= -->
         <div class="form-card">
-
             <h2>📄 Document Information</h2>
 
             <div class="form-grid">
-
                 <!-- Employee -->
-
-                <div class="form-group">
-
-                    <label>
-
-                        Employee
-
+                <div class="form-group full-width">
+                    <label for="{{ form.employee.id_for_label }}">
+                        Employee <span class="required">*</span>
                     </label>
-
                     {{ form.employee }}
-
+                    {% if form.employee.errors %}
+                    <div class="field-error">{{ form.employee.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Select the employee this document belongs to.</span>
                 </div>
 
                 <!-- Title -->
-
-                <div class="form-group">
-
-                    <label>
-
-                        Document Title
-
+                <div class="form-group full-width">
+                    <label for="{{ form.title.id_for_label }}">
+                        Document Title <span class="required">*</span>
                     </label>
-
                     {{ form.title }}
-
+                    {% if form.title.errors %}
+                    <div class="field-error">{{ form.title.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Enter a clear and descriptive document title.</span>
                 </div>
 
                 <!-- Current File -->
-
                 <div class="form-group full-width">
-
-                    <label>
-
-                        Current File
-
-                    </label>
-
+                    <label>Current File</label>
                     <div class="current-file">
-
-                        📎
-
-                        <a href="{{ document.file.url }}" target="_blank">
-
-                            {{ document.file.name }}
-
+                        <span class="file-icon">
+                            {% with extension=document.file.name|cut:"employee_documents/"|cut:" "|slice:"-4:" %}
+                            {% if extension|upper == ".PDF" %}📄
+                            {% elif extension|upper in ".DOC,.DOCX" %}📝
+                            {% elif extension|upper in ".XLS,.XLSX" %}📊
+                            {% elif extension|upper in ".JPG,.JPEG,.PNG,.GIF" %}🖼️
+                            {% else %}📎{% endif %}
+                            {% endwith %}
+                        </span>
+                        <div class="file-info">
+                            <span class="file-name">{{ document.file.name|cut:"employee_documents/" }}</span>
+                            <span class="file-meta">
+                                {% if document.file.size %}
+                                • {{ document.file.size|filesizeformat }}
+                                {% endif %}
+                                • Uploaded {{ document.uploaded_at|date:"d M Y" }}
+                            </span>
+                        </div>
+                        <a href="{{ document.file.url }}" target="_blank" class="file-link">
+                            👁 View
                         </a>
-
                     </div>
-
+                    <span class="field-note">💡 Current file will be replaced only if you upload a new one.</span>
                 </div>
 
-                <!-- Upload -->
-
+                <!-- Upload New File -->
                 <div class="form-group full-width">
-
-                    <label>
-
-                        Replace Document
-
-                    </label>
-
-                    <div class="upload-box">
-
+                    <label>Replace Document</label>
+                    <div class="upload-box" id="uploadBox">
+                        <span class="upload-icon">☁️</span>
+                        <p>⬆ Choose a new file to replace the current document</p>
+                        <small>Supported formats: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG</small>
                         {{ form.file }}
-
-                        <p>
-
-                            ⬆ Choose a new file to replace the current document
-
-                        </p>
-
-                        <small>
-
-                            PDF, DOC, DOCX, JPG, PNG
-
-                        </small>
-
+                        <div id="filePreview"></div>
                     </div>
-
+                    {% if form.file.errors %}
+                    <div class="field-error">{{ form.file.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">Leave empty to keep the current file. Max size: 10MB</span>
                 </div>
-
             </div>
-
         </div>
 
-
+        <!-- ================= SUBMIT AREA ================= -->
         <div class="submit-area">
-
-            <button type="submit" class="btn-save">
-
+            <button type="submit" class="btn btn-save" id="submitBtn">
                 💾 Save Changes
-
             </button>
-
-            <a href="{% url 'document_detail' document.id %}" class="btn-cancel">
-
+            <a href="{% url 'document_detail' document.id %}" class="btn btn-cancel">
                 Cancel
-
             </a>
-
         </div>
 
     </form>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('documentForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const fileInput = document.querySelector('input[type="file"]');
+        const uploadBox = document.getElementById('uploadBox');
+        const filePreview = document.getElementById('filePreview');
+
+        // ============================================
+        // AUTO-FOCUS FIRST INPUT
+        // ============================================
+        const firstInput = form.querySelector('input:not([type="file"]), select, textarea');
+        if (firstInput) {
+            firstInput.focus();
+        }
+
+        // ============================================
+        // FILE UPLOAD PREVIEW
+        // ============================================
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const size = (file.size / 1024 / 1024).toFixed(2);
+                    const icon = getFileIcon(file.name);
+                    filePreview.innerHTML = `
+                        <div class="file-preview">
+                            <span class="file-icon">${icon}</span>
+                            <div class="file-info">
+                                <span class="file-name">${file.name}</span>
+                                <span class="file-size">(${size} MB)</span>
+                            </div>
+                            <button type="button" class="file-remove" onclick="removeFile()">✕</button>
+                        </div>
+                    `;
+                    uploadBox.classList.add('has-file');
+                } else {
+                    filePreview.innerHTML = '';
+                    uploadBox.classList.remove('has-file');
+                }
+            });
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': '📄',
+                'doc': '📝',
+                'docx': '📝',
+                'xls': '📊',
+                'xlsx': '📊',
+                'jpg': '🖼️',
+                'jpeg': '🖼️',
+                'png': '🖼️',
+                'gif': '🖼️',
+                'txt': '📃'
+            };
+            return icons[ext] || '📎';
+        }
+
+        window.removeFile = function() {
+            if (fileInput) {
+                fileInput.value = '';
+                filePreview.innerHTML = '';
+                uploadBox.classList.remove('has-file');
+            }
+        };
+
+        // ============================================
+        // DRAG AND DROP
+        // ============================================
+        if (uploadBox) {
+            uploadBox.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+
+            uploadBox.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+
+            uploadBox.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                if (fileInput) {
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        fileInput.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // REAL-TIME VALIDATION FEEDBACK
+        // ============================================
+        form.querySelectorAll('input:not([type="file"]), select, textarea').forEach(function(field) {
+            field.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.hasAttribute('required')) {
+                    this.classList.add('error');
+                    this.classList.remove('success');
+                } else if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                }
+            });
+
+            field.addEventListener('focus', function() {
+                this.classList.remove('error');
+            });
+
+            field.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                } else {
+                    this.classList.remove('success');
+                }
+            });
+        });
+
+        // ============================================
+        // PREVENT DOUBLE SUBMISSION
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Updating...</span>
+            `;
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUT: Ctrl+S TO SUBMIT
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        // ============================================
+        // CONFIRMATION ON CANCEL IF DIRTY
+        // ============================================
+        let formChanged = false;
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+
+        const cancelBtn = document.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // REMOVE ERROR STATE ON INPUT
+        // ============================================
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+            input.addEventListener('change', function() {
+                this.classList.remove('error');
+            });
+        });
+
+        console.log('✏️ Edit Document Form loaded');
+        console.log('📄 Document: {{ document.title }}');
+        console.log('👤 Employee: {{ document.employee.user.get_full_name }}');
+    });
+</script>
+
+<style>
+    /* ===== FILE PREVIEW ===== */
+    .file-preview {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 8px;
+        margin-top: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .file-preview .file-icon {
+        font-size: 1.2rem;
+    }
+
+    .file-preview .file-info {
+        flex: 1;
+    }
+
+    .file-preview .file-info .file-name {
+        font-size: 0.85rem;
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    .file-preview .file-info .file-size {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-left: 8px;
+    }
+
+    .file-preview .file-remove {
+        background: none;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .file-preview .file-remove:hover {
+        color: #f87171;
+        background: rgba(239, 68, 68, 0.08);
+    }
+
+    .upload-box.has-file {
+        border-color: rgba(34, 197, 94, 0.2);
+        background: rgba(34, 197, 94, 0.02);
+    }
+</style>
 
 {% endblock %}

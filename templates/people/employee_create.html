@@ -1,43 +1,235 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Add Employee{% endblock %}
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'employees' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Employees
+    </a>
+</div>
+{% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_create.css' %}">
+{% block hrms_content %}
 <style>
-    /* ===== ADDITIONAL STYLES ===== */
+    /* ============================================
+       ADD EMPLOYEE - HRMS STYLES
+       ============================================ */
+    .employee-create-page {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* ===== FORM CARD ===== */
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-badge {
+        font-size: 0.65rem;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+    }
+
+    .card-badge.required {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+
+    /* ===== FORM GRID ===== */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: #f87171;
+    }
+
+    .form-control {
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #64748b;
+    }
+
+    .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    select.form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
+    input[type="file"].form-control {
+        padding: 8px;
+        cursor: pointer;
+    }
+
+    .field-error {
+        font-size: 0.8rem;
+        color: #f87171;
+        margin-top: 2px;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .d-none {
+        display: none !important;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .checkbox-wrapper {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 8px 0;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        accent-color: #7c3aed;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .checkbox-label {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .checkbox-label .checkbox-text {
+        font-weight: 500;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+    }
+
+    .checkbox-label .checkbox-help {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+
+    /* ===== NO DEPARTMENTS WARNING ===== */
     .no-departments-warning {
-        background: rgba(245, 158, 11, 0.08);
-        border: 1px solid rgba(245, 158, 11, 0.15);
+        background: rgba(245, 158, 11, 0.06);
+        border: 1px solid rgba(245, 158, 11, 0.1);
         border-radius: 10px;
         padding: 16px 20px;
         margin-bottom: 20px;
         display: flex;
         align-items: center;
         gap: 12px;
-        color: #fbbf24;
+        flex-wrap: wrap;
     }
-    
+
     .no-departments-warning .warning-icon {
         font-size: 1.5rem;
+        flex-shrink: 0;
     }
-    
+
     .no-departments-warning .warning-text {
         flex: 1;
     }
-    
+
     .no-departments-warning .warning-text h4 {
         margin: 0;
         font-size: 0.95rem;
+        color: #fbbf24;
     }
-    
+
     .no-departments-warning .warning-text p {
         margin: 2px 0 0;
         font-size: 0.85rem;
         color: #94a3b8;
     }
-    
+
     .no-departments-warning .btn-create-dept {
         padding: 6px 16px;
         background: linear-gradient(135deg, #7c3aed, #6d28d9);
@@ -50,36 +242,36 @@
         transition: all 0.2s;
         white-space: nowrap;
     }
-    
+
     .no-departments-warning .btn-create-dept:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
     }
-    
-    /* Timing Section */
+
+    /* ===== TIMING GRID ===== */
     .timing-grid-compact {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 16px;
     }
-    
+
     .timing-grid-compact .form-group {
         margin-bottom: 0;
     }
-    
+
     .timing-grid-compact .form-group .help-text {
         font-size: 0.7rem;
     }
-    
+
     .shift-presets {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
-        margin-top: 8px;
+        margin-top: 4px;
     }
-    
+
     .shift-preset-btn {
-        padding: 4px 12px;
+        padding: 4px 14px;
         border: 1px solid rgba(167, 139, 250, 0.1);
         border-radius: 16px;
         background: rgba(167, 139, 250, 0.03);
@@ -88,59 +280,300 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-    
+
     .shift-preset-btn:hover {
         border-color: #7c3aed;
         color: #a78bfa;
         background: rgba(124, 58, 237, 0.05);
     }
-    
+
     .shift-preset-btn.active {
         border-color: #7c3aed;
         background: rgba(124, 58, 237, 0.1);
         color: #a78bfa;
     }
 
+    /* ===== FILE UPLOAD ===== */
+    .file-upload-wrapper {
+        position: relative;
+    }
+
+    .file-upload-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 0.1px;
+        height: 0.1px;
+    }
+
+    .file-upload-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border: 2px dashed rgba(167, 139, 250, 0.15);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    .file-upload-label:hover {
+        border-color: rgba(167, 139, 250, 0.3);
+        background: rgba(167, 139, 250, 0.04);
+    }
+
+    .file-upload-label .upload-icon {
+        font-size: 1.5rem;
+    }
+
+    .file-upload-label .upload-text {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    /* ===== ERROR ALERT ===== */
+    .error-alert {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+
+    .error-alert-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .error-alert-header .error-icon {
+        font-size: 1.2rem;
+    }
+
+    .error-alert-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #f87171;
+    }
+
+    .error-list {
+        margin: 0;
+        padding-left: 20px;
+        color: #fca5a5;
+        font-size: 0.9rem;
+    }
+
+    .error-list li {
+        margin-bottom: 2px;
+    }
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        margin-top: 8px;
+    }
+
+    .form-actions .btn {
+        padding: 10px 28px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-light {
+        background: rgba(167, 139, 250, 0.04);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .btn-light:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+    }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
+        .employee-create-page {
+            padding: 0;
+        }
+
+        .form-card {
+            padding: 16px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
         .timing-grid-compact {
             grid-template-columns: 1fr 1fr;
         }
-        
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
         .no-departments-warning {
             flex-wrap: wrap;
         }
-        
+
         .no-departments-warning .btn-create-dept {
             width: 100%;
             text-align: center;
         }
     }
-    
+
     @media (max-width: 480px) {
+        .form-card {
+            padding: 14px;
+        }
+
+        .form-control {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+
         .timing-grid-compact {
             grid-template-columns: 1fr;
         }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .btn-save,
+        .btn-secondary,
+        .btn-light {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .form-card:nth-child(1) { animation-delay: 0.05s; }
+    .form-card:nth-child(2) { animation-delay: 0.1s; }
+    .form-card:nth-child(3) { animation-delay: 0.15s; }
+    .form-card:nth-child(4) { animation-delay: 0.2s; }
+    .form-card:nth-child(5) { animation-delay: 0.25s; }
+    .form-card:nth-child(6) { animation-delay: 0.3s; }
+    .form-card:nth-child(7) { animation-delay: 0.35s; }
+    .form-card:nth-child(8) { animation-delay: 0.4s; }
+    .form-card:nth-child(9) { animation-delay: 0.45s; }
+
+    .form-actions {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.5s;
+        opacity: 0;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ===== TOAST NOTIFICATION ===== */
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: rgba(26, 16, 53, 0.95);
+        border: 1px solid rgba(167, 139, 250, 0.15);
+        border-radius: 8px;
+        color: #e8edf5;
+        font-size: 0.9rem;
+        z-index: 9999;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
-{% endblock %}
-
-{% block content %}
 
 <div class="employee-create-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">👤</div>
-                <div>
-                    <h1>Add Employee</h1>
-                    <p class="header-subtitle">Create a new employee profile for your startup.</p>
-                </div>
-            </div>
-            <a href="{% url 'employees' %}" class="btn-back">← Back to Employees</a>
-        </div>
-    </div>
 
     <!-- ====== NO DEPARTMENTS WARNING ====== -->
     {% if not departments %}
@@ -191,7 +624,7 @@
         <div class="form-card">
             <div class="card-header">
                 <h2>🚀 Hiring Mode</h2>
-                <span class="card-badge">Required</span>
+                <span class="card-badge required">Required</span>
             </div>
             <div class="form-group">
                 <label for="hire_mode" class="form-label required">Select Employee Source</label>
@@ -244,7 +677,7 @@
         <div class="form-card d-none" id="new-section">
             <div class="card-header">
                 <h2>➕ Create User Account</h2>
-                <span class="card-badge">Required</span>
+                <span class="card-badge required">Required</span>
             </div>
             <div class="form-grid">
                 <div class="form-group">
@@ -272,7 +705,7 @@
         <div class="form-card">
             <div class="card-header">
                 <h2>👤 Employee Information</h2>
-                <span class="card-badge">Required</span>
+                <span class="card-badge required">Required</span>
             </div>
             <div class="form-grid">
                 <div class="form-group">
@@ -332,9 +765,9 @@
         <div class="form-card">
             <div class="card-header">
                 <h2>📱 Phone Number</h2>
-                <span class="card-badge">Required</span>
+                <span class="card-badge required">Required</span>
             </div>
-            <div class="form-group">
+            <div class="form-group full-width">
                 <label for="phone" class="form-label required">Phone Number</label>
                 <input type="tel" name="phone" id="phone" class="form-control" placeholder="Enter phone number (e.g., 9876543210)" required>
                 <span class="help-text">Primary contact number for the employee.</span>
@@ -519,7 +952,7 @@
                 <h2>📝 Notes</h2>
                 <span class="card-badge">Optional</span>
             </div>
-            <div class="form-group">
+            <div class="form-group full-width">
                 {{ form.notes }}
                 <span class="help-text">Any additional notes about the employee.</span>
             </div>
@@ -529,7 +962,7 @@
         <div class="form-card">
             <div class="card-header">
                 <h2>📊 Status & Active</h2>
-                <span class="card-badge">Required</span>
+                <span class="card-badge required">Required</span>
             </div>
             <div class="form-grid">
                 <div class="form-group">
@@ -548,13 +981,13 @@
 
         <!-- ====== FORM ACTIONS ====== -->
         <div class="form-actions">
-            <button type="submit" class="btn-primary btn-save" id="submitBtn">
+            <button type="submit" class="btn btn-save" id="submitBtn">
                 🚀 Create Employee
             </button>
-            <a href="{% url 'employees' %}" class="btn-secondary">
+            <a href="{% url 'employees' %}" class="btn btn-secondary">
                 Cancel
             </a>
-            <a href="#" class="btn-light" onclick="window.location.reload();">
+            <a href="#" class="btn btn-light" onclick="window.location.reload();">
                 🔄 Reset Form
             </a>
         </div>
@@ -641,7 +1074,8 @@
             document.querySelectorAll('.shift-preset-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.querySelector(`.shift-preset-btn[onclick="applyShift('${shiftKey}')"]`).classList.add('active');
+            const activeBtn = document.querySelector(`.shift-preset-btn[onclick="applyShift('${shiftKey}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
 
             showNotification(`✅ ${preset.label} applied!`);
         };
@@ -656,21 +1090,6 @@
             const toast = document.createElement('div');
             toast.className = 'toast-notification';
             toast.textContent = message;
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                padding: 12px 20px;
-                background: rgba(26, 16, 53, 0.95);
-                border: 1px solid rgba(167, 139, 250, 0.15);
-                border-radius: 8px;
-                color: #e8edf5;
-                font-size: 0.9rem;
-                z-index: 9999;
-                animation: slideUp 0.3s ease;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                backdrop-filter: blur(10px);
-            `;
             document.body.appendChild(toast);
 
             setTimeout(() => {
@@ -764,18 +1183,20 @@
             return true;
         });
 
-        // Add animation styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideUp {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .d-none { display: none; }
-        `;
-        document.head.appendChild(style);
+        // ============================================
+        // PREVENT DOUBLE SUBMISSION
+        // ============================================
+        const submitBtn = document.getElementById('submitBtn');
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Creating...</span>
+            `;
+        });
 
         console.log('📝 Add Employee page loaded');
     });
 </script>
+
 {% endblock %}

@@ -1,10 +1,18 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}HR Dashboard{% endblock %}
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'employee_create' %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Add Employee
+    </a>
+    <a href="{% url 'attendance' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">🕒</span> Mark Attendance
+    </a>
+</div>
+{% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/dashboard.css' %}">
+{% block hrms_content %}
 <style>
     /* ============================================
        ENHANCED HR DASHBOARD STYLES
@@ -20,14 +28,14 @@
         --text-muted: #64748b;
         --gradient-primary: linear-gradient(135deg, #7c3aed, #6d28d9);
         --gradient-accent: linear-gradient(135deg, #7c3aed, #ec4899);
-        --sidebar-width: 260px;
     }
 
-    /* ===== BASE ===== */
-    .people-dashboard {
-        max-width: 1440px;
-        margin: 0 auto;
-        padding: 0 20px 40px;
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        animation: fadeInUp 0.4s ease;
     }
 
     /* ===== HEADER ===== */
@@ -37,7 +45,7 @@
         align-items: flex-start;
         flex-wrap: wrap;
         gap: 20px;
-        padding: 24px 0 20px;
+        padding-bottom: 20px;
         border-bottom: 1px solid rgba(167, 139, 250, 0.06);
         margin-bottom: 24px;
     }
@@ -61,10 +69,6 @@
         font-size: 1.8rem;
         font-weight: 700;
         color: var(--text-primary);
-        background: var(--gradient-accent);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
     }
 
     .header-left p {
@@ -94,54 +98,6 @@
 
     .header-date .date-icon {
         font-size: 1.1rem;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .btn-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        background: var(--gradient-primary);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-secondary {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        background: rgba(167, 139, 250, 0.06);
-        color: var(--text-secondary);
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.85rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .btn-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: var(--text-primary);
     }
 
     /* ===== STARTUP BANNER ===== */
@@ -373,205 +329,7 @@
     .stat-card.cyan .stat-icon { color: #22d3ee; }
     .stat-card.cyan { border-left: 3px solid #22d3ee; }
 
-    /* ===== MAIN LAYOUT WITH SIDEBAR NAV ===== */
-    .dashboard-main {
-        display: flex;
-        gap: 24px;
-        margin-top: 4px;
-        align-items: flex-start;
-    }
-
-    /* ===== SIDE NAVBAR ===== */
-    .side-nav {
-        width: var(--sidebar-width);
-        flex-shrink: 0;
-        position: sticky;
-        top: 20px;
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
-        background: var(--glass-bg);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border);
-        border-radius: 12px;
-        padding: 12px;
-        box-shadow: var(--glass-shadow);
-        transition: all 0.3s ease;
-    }
-
-    .side-nav:hover {
-        border-color: rgba(167, 139, 250, 0.1);
-    }
-
-    .side-nav::-webkit-scrollbar {
-        width: 3px;
-    }
-
-    .side-nav::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .side-nav::-webkit-scrollbar-thumb {
-        background: rgba(167, 139, 250, 0.2);
-        border-radius: 4px;
-    }
-
-    .side-nav::-webkit-scrollbar-thumb:hover {
-        background: rgba(167, 139, 250, 0.3);
-    }
-
-    .side-nav-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 10px 12px;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
-        margin-bottom: 8px;
-    }
-
-    .side-nav-header .sn-icon {
-        font-size: 1.1rem;
-    }
-
-    .side-nav-header h3 {
-        margin: 0;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        flex: 1;
-    }
-
-    .side-nav-header .sn-badge {
-        font-size: 0.55rem;
-        font-weight: 600;
-        padding: 1px 8px;
-        border-radius: 10px;
-        background: rgba(124, 58, 237, 0.12);
-        color: #a78bfa;
-    }
-
-    .side-nav-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 10px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: var(--text-secondary);
-        transition: all 0.2s ease;
-        border: 1px solid transparent;
-        position: relative;
-        margin-bottom: 2px;
-    }
-
-    .side-nav-item::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 3px;
-        background: var(--gradient-accent);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .side-nav-item:hover::before {
-        opacity: 1;
-    }
-
-    .side-nav-item:hover {
-        background: rgba(167, 139, 250, 0.06);
-        border-color: rgba(167, 139, 250, 0.08);
-        transform: translateX(4px);
-        color: var(--text-primary);
-    }
-
-    .side-nav-item.active {
-        background: rgba(124, 58, 237, 0.06);
-        border-color: rgba(124, 58, 237, 0.1);
-        color: var(--text-primary);
-    }
-
-    .side-nav-item.active::before {
-        opacity: 1;
-    }
-
-    .side-nav-item .sni-icon {
-        font-size: 1rem;
-        flex-shrink: 0;
-        width: 24px;
-        text-align: center;
-    }
-
-    .side-nav-item .sni-label {
-        flex: 1;
-        font-size: 0.78rem;
-        font-weight: 500;
-    }
-
-    .side-nav-item .sni-badge {
-        font-size: 0.55rem;
-        font-weight: 600;
-        padding: 1px 8px;
-        border-radius: 10px;
-        background: rgba(167, 139, 250, 0.08);
-        color: var(--text-secondary);
-        flex-shrink: 0;
-    }
-
-    .side-nav-item .sni-badge.new {
-        background: rgba(34, 197, 94, 0.12);
-        color: #4ade80;
-    }
-
-    .side-nav-item .sni-badge.warning {
-        background: rgba(245, 158, 11, 0.12);
-        color: #fbbf24;
-    }
-
-    .side-nav-item .sni-badge.danger {
-        background: rgba(239, 68, 68, 0.12);
-        color: #f87171;
-    }
-
-    .side-nav-item .sni-arrow {
-        color: var(--text-secondary);
-        font-size: 0.7rem;
-        transition: transform 0.2s ease;
-        opacity: 0.5;
-    }
-
-    .side-nav-item:hover .sni-arrow {
-        transform: translateX(4px);
-        color: #a78bfa;
-        opacity: 1;
-    }
-
-    .side-nav-divider {
-        height: 1px;
-        background: rgba(167, 139, 250, 0.04);
-        margin: 6px 10px;
-    }
-
-    .side-nav-section-title {
-        font-size: 0.55rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-weight: 700;
-        color: var(--text-muted);
-        padding: 8px 10px 4px;
-    }
-
-    /* ===== CONTENT AREA ===== */
-    .dashboard-content {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
+    /* ===== CONTENT CARDS ===== */
     .content-card {
         background: var(--glass-bg);
         backdrop-filter: blur(12px);
@@ -581,6 +339,7 @@
         padding: 18px 20px;
         box-shadow: var(--glass-shadow);
         transition: all 0.3s ease;
+        margin-bottom: 20px;
     }
 
     .content-card:hover {
@@ -629,10 +388,22 @@
         font-size: 0.8rem;
         text-decoration: none;
         transition: color 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .card-header-right .view-all:hover {
         color: #a78bfa;
+    }
+
+    .card-header-right .view-all::after {
+        content: '→';
+        transition: transform 0.2s;
+    }
+
+    .card-header-right .view-all:hover::after {
+        transform: translateX(4px);
     }
 
     /* ===== ATTENDANCE RING ===== */
@@ -898,48 +669,39 @@
         font-size: 0.9rem;
     }
 
+    /* ===== QUICK STATS BARS ===== */
+    .qs-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(167, 139, 250, 0.08);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+
+    .qs-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1s ease;
+        width: 0%;
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 1024px) {
-        .dashboard-main {
-            flex-direction: column;
-        }
-
-        .side-nav {
-            width: 100%;
-            position: static;
-            max-height: none;
-            overflow-y: visible;
-        }
-
-        .side-nav-items {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 4px;
-        }
-
-        .side-nav-item {
-            margin-bottom: 0;
-        }
-
-        .side-nav-divider {
-            display: none;
-        }
-
-        .side-nav-section-title {
-            display: none;
+        .today-summary-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 
     @media (max-width: 768px) {
-        .people-dashboard {
-            padding: 0 12px 30px;
+        .page-content {
+            padding: 14px;
         }
 
         .dashboard-header {
             flex-direction: column;
             align-items: stretch;
             gap: 12px;
-            padding: 16px 0;
         }
 
         .header-right {
@@ -951,18 +713,17 @@
             justify-content: center;
         }
 
-        .header-actions {
-            width: 100%;
-        }
-
-        .header-actions .btn-primary,
-        .header-actions .btn-secondary {
-            flex: 1;
-            justify-content: center;
-        }
-
         .today-summary-grid {
             grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .today-summary-card {
+            padding: 12px 14px;
+        }
+
+        .today-summary-card .ts-value {
+            font-size: 1.1rem;
         }
 
         .stats-row {
@@ -983,59 +744,12 @@
             text-align: center;
         }
 
-        .attendance-ring {
-            width: 100px;
-            height: 100px;
-        }
-
-        .attendance-ring svg {
-            width: 100px;
-            height: 100px;
-        }
-
         .attendance-ring-info .ring-sub {
             justify-content: center;
         }
 
-        .side-nav-items {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        }
-
         .content-card {
             padding: 14px 16px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .today-summary-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .stats-row {
-            grid-template-columns: 1fr;
-        }
-
-        .side-nav-items {
-            grid-template-columns: 1fr;
-        }
-
-        .attendance-ring {
-            width: 80px;
-            height: 80px;
-        }
-
-        .attendance-ring svg {
-            width: 80px;
-            height: 80px;
-        }
-
-        .header-actions {
-            flex-direction: column;
-        }
-
-        .header-actions .btn-primary,
-        .header-actions .btn-secondary {
-            width: 100%;
         }
 
         .card-header {
@@ -1055,15 +769,48 @@
         }
     }
 
+    @media (max-width: 480px) {
+        .page-content {
+            padding: 10px;
+        }
+
+        .today-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-row {
+            grid-template-columns: 1fr;
+        }
+
+        .attendance-ring {
+            width: 100px;
+            height: 100px;
+        }
+
+        .attendance-ring svg {
+            width: 100px;
+            height: 100px;
+        }
+
+        .header-left h1 {
+            font-size: 1.4rem;
+        }
+    }
+
     /* ===== ANIMATIONS ===== */
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .stat-card,
     .today-summary-card,
-    .side-nav,
     .content-card {
         animation: fadeInUp 0.5s ease forwards;
     }
@@ -1076,30 +823,26 @@
     .stat-card:nth-child(6) { animation-delay: 0.3s; }
 
     /* ===== SCROLLBAR ===== */
-    .people-dashboard::-webkit-scrollbar {
+    .page-content::-webkit-scrollbar {
         width: 5px;
         height: 5px;
     }
 
-    .people-dashboard::-webkit-scrollbar-track {
+    .page-content::-webkit-scrollbar-track {
         background: #0a0618;
     }
 
-    .people-dashboard::-webkit-scrollbar-thumb {
+    .page-content::-webkit-scrollbar-thumb {
         background: #2d1b4a;
         border-radius: 4px;
     }
 
-    .people-dashboard::-webkit-scrollbar-thumb:hover {
+    .page-content::-webkit-scrollbar-thumb:hover {
         background: #3d2b5a;
     }
 </style>
-{% endblock %}
 
-{% block content %}
-
-<div class="people-dashboard">
-
+<div class="page-content">
     <!-- ================= TOP HEADER ================= -->
     <div class="dashboard-header">
         <div class="header-left">
@@ -1111,14 +854,6 @@
             <div class="header-date">
                 <span class="date-icon">📅</span>
                 <span class="date-text">{% now "l, d M Y" %}</span>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'employee_create' %}" class="btn-primary">
-                    <span class="btn-icon">➕</span> Add Employee
-                </a>
-                <a href="{% url 'attendance' %}" class="btn-secondary">
-                    <span class="btn-icon">🕒</span> Mark Attendance
-                </a>
             </div>
         </div>
     </div>
@@ -1232,336 +967,200 @@
         </div>
     </div>
 
-    <!-- ================= MAIN LAYOUT: SIDE NAV + CONTENT ================= -->
-    <div class="dashboard-main">
+    <!-- ================= CONTENT AREA ================= -->
+    <div class="dashboard-content">
 
-        <!-- ===== SIDE NAVIGATION ===== -->
-        <nav class="side-nav" id="sideNav">
-            <div class="side-nav-header">
-                <span class="sn-icon">⚡</span>
-                <h3>Quick Actions</h3>
-                <span class="sn-badge">{{ side_nav_items|length|default:0 }}</span>
+        <!-- Attendance Ring -->
+        <div class="content-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <span class="card-icon">📊</span>
+                    <h3>Today's Attendance</h3>
+                    <span class="card-badge">{{ attendance_percentage|default:0 }}%</span>
+                </div>
+                <div class="card-header-right">
+                    <a href="{% url 'attendance' %}" class="view-all">
+                        View All
+                    </a>
+                </div>
             </div>
-
-            <div class="side-nav-items">
-                <!-- Employee List -->
-                <a href="{% url 'employees' %}" class="side-nav-item">
-                    <span class="sni-icon">👨</span>
-                    <span class="sni-label">Employee List</span>
-                    <span class="sni-badge">{{ employee_count|default:0 }}</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Add Employee -->
-                <a href="{% url 'employee_create' %}" class="side-nav-item">
-                    <span class="sni-icon">➕</span>
-                    <span class="sni-label">Add Employee</span>
-                    <span class="sni-badge new">New</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Mark Attendance -->
-                <a href="{% url 'attendance' %}" class="side-nav-item">
-                    <span class="sni-icon">🕒</span>
-                    <span class="sni-label">Mark Attendance</span>
-                    <span class="sni-badge">Today</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Attendance Report -->
-                <a href="{% url 'attendance_report' %}" class="side-nav-item">
-                    <span class="sni-icon">📊</span>
-                    <span class="sni-label">Attendance Report</span>
-                    <span class="sni-badge">View</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <div class="side-nav-divider"></div>
-
-                <!-- Leave Dashboard -->
-                <a href="{% url 'leave_dashboard' %}" class="side-nav-item">
-                    <span class="sni-icon">🌴</span>
-                    <span class="sni-label">Leave Dashboard</span>
-                    <span class="sni-badge warning">{{ leave_count|default:0 }}</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Leave Requests -->
-                <a href="{% url 'leave_requests' %}" class="side-nav-item">
-                    <span class="sni-icon">📋</span>
-                    <span class="sni-label">Leave Requests</span>
-                    <span class="sni-badge warning">{{ leave_count|default:0 }}</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <div class="side-nav-divider"></div>
-
-                <!-- Payroll -->
-                <a href="{% url 'payroll' %}" class="side-nav-item">
-                    <span class="sni-icon">💰</span>
-                    <span class="sni-label">Payroll</span>
-                    <span class="sni-badge">{{ payroll_count|default:0 }}</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Payslips -->
-                <a href="{% url 'payslips' %}" class="side-nav-item">
-                    <span class="sni-icon">🧾</span>
-                    <span class="sni-label">Payslips</span>
-                    <span class="sni-badge">View</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <div class="side-nav-divider"></div>
-
-                <!-- Departments -->
-                <a href="{% url 'departments' %}" class="side-nav-item">
-                    <span class="sni-icon">🏢</span>
-                    <span class="sni-label">Departments</span>
-                    <span class="sni-badge">{{ department_count|default:0 }}</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Holiday Calendar -->
-                <a href="{% url 'holidays' %}" class="side-nav-item">
-                    <span class="sni-icon">🎉</span>
-                    <span class="sni-label">Holiday Calendar</span>
-                    <span class="sni-badge new">{{ holiday_count|default:0 }}</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <div class="side-nav-divider"></div>
-
-                <!-- Performance -->
-                <a href="{% url 'performance' %}" class="side-nav-item">
-                    <span class="sni-icon">⭐</span>
-                    <span class="sni-label">Performance</span>
-                    <span class="sni-badge">Reviews</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Onboarding -->
-                <a href="{% url 'onboarding' %}" class="side-nav-item">
-                    <span class="sni-icon">🚀</span>
-                    <span class="sni-label">Onboarding</span>
-                    <span class="sni-badge">Track</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Exit Management -->
-                <a href="{% url 'exit_management' %}" class="side-nav-item">
-                    <span class="sni-icon">🚪</span>
-                    <span class="sni-label">Exit Management</span>
-                    <span class="sni-badge">Process</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-
-                <!-- Documents -->
-                <a href="{% url 'documents' %}" class="side-nav-item">
-                    <span class="sni-icon">📂</span>
-                    <span class="sni-label">Documents</span>
-                    <span class="sni-badge">Files</span>
-                    <span class="sni-arrow">→</span>
-                </a>
-            </div>
-        </nav>
-
-        <!-- ===== CONTENT AREA ===== -->
-        <div class="dashboard-content">
-
-            <!-- Attendance Ring -->
-            <div class="content-card">
-                <div class="card-header">
-                    <div class="card-header-left">
-                        <span class="card-icon">📊</span>
-                        <h3>Today's Attendance</h3>
-                        <span class="card-badge">{{ attendance_percentage|default:0 }}%</span>
-                    </div>
-                    <div class="card-header-right">
-                        <a href="{% url 'attendance' %}" class="view-all">
-                            View All →
-                        </a>
+            <div class="attendance-ring-container">
+                <div class="attendance-ring">
+                    <svg viewBox="0 0 80 80">
+                        <defs>
+                            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="ring-bg" cx="40" cy="40" r="34" />
+                        <circle class="ring-fill" cx="40" cy="40" r="34"
+                            stroke-dasharray="{{ attendance_percentage|default:0 }}, 100" />
+                    </svg>
+                    <div class="ring-text">
+                        {{ attendance_percentage|default:0 }}%
+                        <small>Attendance</small>
                     </div>
                 </div>
-                <div class="attendance-ring-container">
-                    <div class="attendance-ring">
-                        <svg viewBox="0 0 80 80">
-                            <defs>
-                                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                            <circle class="ring-bg" cx="40" cy="40" r="34" />
-                            <circle class="ring-fill" cx="40" cy="40" r="34"
-                                stroke-dasharray="{{ attendance_percentage|default:0 }}, 100" />
-                        </svg>
-                        <div class="ring-text">
-                            {{ attendance_percentage|default:0 }}%
-                            <small>Attendance</small>
-                        </div>
-                    </div>
-                    <div class="attendance-ring-info">
-                        <div class="ring-label">Today's Attendance</div>
-                        <div class="ring-value">{{ present_today|default:0 }} / {{ employee_count|default:0 }}</div>
-                        <div class="ring-sub">
-                            <span><span class="status-dot present"></span> Present: {{ present_today|default:0 }}</span>
-                            <span><span class="status-dot absent"></span> Absent: {{ absent_today|default:0 }}</span>
-                            <span><span class="status-dot wfh"></span> WFH: {{ wfh_today|default:0 }}</span>
-                            <span><span class="status-dot leave"></span> Leave: {{ leave_today|default:0 }}</span>
-                        </div>
+                <div class="attendance-ring-info">
+                    <div class="ring-label">Today's Attendance</div>
+                    <div class="ring-value">{{ present_today|default:0 }} / {{ employee_count|default:0 }}</div>
+                    <div class="ring-sub">
+                        <span><span class="status-dot present"></span> Present: {{ present_today|default:0 }}</span>
+                        <span><span class="status-dot absent"></span> Absent: {{ absent_today|default:0 }}</span>
+                        <span><span class="status-dot wfh"></span> WFH: {{ wfh_today|default:0 }}</span>
+                        <span><span class="status-dot leave"></span> Leave: {{ leave_today|default:0 }}</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Recent Employees -->
-            <div class="content-card">
-                <div class="card-header">
-                    <div class="card-header-left">
-                        <span class="card-icon">👥</span>
-                        <h3>Recent Employees</h3>
-                        <span class="card-badge">{{ recent_employees|length|default:0 }}</span>
-                    </div>
-                    <div class="card-header-right">
-                        <a href="{% url 'employees' %}" class="view-all">
-                            View All →
-                        </a>
-                    </div>
+        <!-- Recent Employees -->
+        <div class="content-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <span class="card-icon">👥</span>
+                    <h3>Recent Employees</h3>
+                    <span class="card-badge">{{ recent_employees|length|default:0 }}</span>
                 </div>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Employee</th>
-                                <th>Department</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for employee in recent_employees %}
-                            <tr>
-                                <td>
-                                    <div class="employee-info">
-                                        {% if employee.profile_image %}
-                                        <img src="{{ employee.profile_image.url }}"
-                                            alt="{{ employee.user.get_full_name|default:employee.user.username }}"
-                                            class="employee-avatar">
-                                        {% else %}
-                                        <div class="employee-avatar">
-                                            {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
-                                        </div>
-                                        {% endif %}
-                                        <div class="employee-details">
-                                            <strong>
-                                                {{ employee.user.get_full_name|default:employee.user.username }}
-                                            </strong>
-                                            <span class="employee-designation">
-                                                {{ employee.designation|default:"-" }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if employee.department %}
-                                    <span class="department-badge">
-                                        {{ employee.department.name }}
-                                    </span>
+                <div class="card-header-right">
+                    <a href="{% url 'employees' %}" class="view-all">
+                        View All
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in recent_employees %}
+                        <tr>
+                            <td>
+                                <div class="employee-info">
+                                    {% if employee.profile_image %}
+                                    <img src="{{ employee.profile_image.url }}"
+                                        alt="{{ employee.user.get_full_name|default:employee.user.username }}"
+                                        class="employee-avatar">
                                     {% else %}
-                                    <span class="department-badge danger">
-                                        ⚠️ No Department
-                                    </span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if employee.status == "Active" %}
-                                    <span class="status-badge active">
-                                        <span class="status-dot active"></span>
-                                        Active
-                                    </span>
-                                    {% elif employee.status == "Onboarding" %}
-                                    <span class="status-badge onboarding">
-                                        <span class="status-dot onboarding"></span>
-                                        Onboarding
-                                    </span>
-                                    {% elif employee.status == "Probation" %}
-                                    <span class="status-badge probation">
-                                        <span class="status-dot probation"></span>
-                                        Probation
-                                    </span>
-                                    {% elif employee.status == "Notice Period" %}
-                                    <span class="status-badge notice">
-                                        <span class="status-dot notice"></span>
-                                        Notice Period
-                                    </span>
-                                    {% elif employee.status == "Exited" %}
-                                    <span class="status-badge exited">
-                                        <span class="status-dot exited"></span>
-                                        Exited
-                                    </span>
-                                    {% else %}
-                                    <span class="status-badge inactive">
-                                        <span class="status-dot inactive"></span>
-                                        {{ employee.status|default:"Inactive" }}
-                                    </span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="3">
-                                    <div class="empty-state">
-                                        <span class="empty-icon">👥</span>
-                                        <p>No employees found.</p>
+                                    <div class="employee-avatar">
+                                        {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
                                     </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    {% endif %}
+                                    <div class="employee-details">
+                                        <strong>
+                                            {{ employee.user.get_full_name|default:employee.user.username }}
+                                        </strong>
+                                        <span class="employee-designation">
+                                            {{ employee.designation|default:"-" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if employee.department %}
+                                <span class="department-badge">
+                                    {{ employee.department.name }}
+                                </span>
+                                {% else %}
+                                <span class="department-badge danger">
+                                    ⚠️ No Department
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if employee.status == "Active" %}
+                                <span class="status-badge active">
+                                    <span class="status-dot active"></span>
+                                    Active
+                                </span>
+                                {% elif employee.status == "Onboarding" %}
+                                <span class="status-badge onboarding">
+                                    <span class="status-dot onboarding"></span>
+                                    Onboarding
+                                </span>
+                                {% elif employee.status == "Probation" %}
+                                <span class="status-badge probation">
+                                    <span class="status-dot probation"></span>
+                                    Probation
+                                </span>
+                                {% elif employee.status == "Notice Period" %}
+                                <span class="status-badge notice">
+                                    <span class="status-dot notice"></span>
+                                    Notice Period
+                                </span>
+                                {% elif employee.status == "Exited" %}
+                                <span class="status-badge exited">
+                                    <span class="status-dot exited"></span>
+                                    Exited
+                                </span>
+                                {% else %}
+                                <span class="status-badge inactive">
+                                    <span class="status-dot inactive"></span>
+                                    {{ employee.status|default:"Inactive" }}
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3">
+                                <div class="empty-state">
+                                    <span class="empty-icon">👥</span>
+                                    <p>No employees found.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="content-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <span class="card-icon">📈</span>
+                    <h3>Quick Stats</h3>
+                    <span class="card-badge">Live</span>
                 </div>
             </div>
-
-            <!-- Quick Stats (Moved here for better layout) -->
-<div class="content-card">
-    <div class="card-header">
-        <div class="card-header-left">
-            <span class="card-icon">📈</span>
-            <h3>Quick Stats</h3>
-            <span class="card-badge">Live</span>
-        </div>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;" id="quickStatsGrid">
-        <div>
-            <span style="font-size: 0.7rem; color: var(--text-secondary);">Attendance Rate</span>
-            <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">{{ attendance_percentage|default:0 }}%</div>
-            <div class="qs-bar">
-                <div class="qs-fill" id="attendanceRateFill" style="width: 0%; background: linear-gradient(90deg, #7c3aed, #ec4899);"></div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;" id="quickStatsGrid">
+                <div>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary);">Attendance Rate</span>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">{{ attendance_percentage|default:0 }}%</div>
+                    <div class="qs-bar">
+                        <div class="qs-fill" id="attendanceRateFill" style="width: 0%; background: linear-gradient(90deg, #7c3aed, #ec4899);"></div>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary);">Present Today</span>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">{{ present_today|default:0 }}</div>
+                    <div class="qs-bar">
+                        <div class="qs-fill" id="presentTodayFill" style="width: 0%; background: linear-gradient(90deg, #22c55e, #4ade80);"></div>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary);">Leave Utilization</span>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">68%</div>
+                    <div class="qs-bar">
+                        <div class="qs-fill" id="leaveUtilizationFill" style="width: 0%; background: linear-gradient(90deg, #f59e0b, #f472b6);"></div>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary);">On-Time Attendance</span>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">92%</div>
+                    <div class="qs-bar">
+                        <div class="qs-fill" id="onTimeFill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #22d3ee);"></div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div>
-            <span style="font-size: 0.7rem; color: var(--text-secondary);">Present Today</span>
-            <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">{{ present_today|default:0 }}</div>
-            <div class="qs-bar">
-                <div class="qs-fill" id="presentTodayFill" style="width: 0%; background: linear-gradient(90deg, #22c55e, #4ade80);"></div>
-            </div>
-        </div>
-        <div>
-            <span style="font-size: 0.7rem; color: var(--text-secondary);">Leave Utilization</span>
-            <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">68%</div>
-            <div class="qs-bar">
-                <div class="qs-fill" id="leaveUtilizationFill" style="width: 0%; background: linear-gradient(90deg, #f59e0b, #f472b6);"></div>
-            </div>
-        </div>
-        <div>
-            <span style="font-size: 0.7rem; color: var(--text-secondary);">On-Time Attendance</span>
-            <div style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">92%</div>
-            <div class="qs-bar">
-                <div class="qs-fill" id="onTimeFill" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #22d3ee);"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
         </div>
 
     </div>
@@ -1569,48 +1168,6 @@
 </div>
 
 <script>
-
-    // ============================================
-// QUICK STATS BARS (with proper calculation)
-// ============================================
-document.addEventListener('DOMContentLoaded', function() {
-    // Attendance Rate
-    const attendanceRate = parseInt('{{ attendance_percentage|default:0 }}') || 0;
-    const attendanceFill = document.getElementById('attendanceRateFill');
-    if (attendanceFill) {
-        setTimeout(() => {
-            attendanceFill.style.width = Math.min(attendanceRate, 100) + '%';
-        }, 300);
-    }
-
-    // Present Today (calculate percentage)
-    const presentToday = parseInt('{{ present_today|default:0 }}') || 0;
-    const employeeCount = parseInt('{{ employee_count|default:1 }}') || 1;
-    const presentPercent = Math.min(Math.round((presentToday / employeeCount) * 100), 100);
-    const presentFill = document.getElementById('presentTodayFill');
-    if (presentFill) {
-        setTimeout(() => {
-            presentFill.style.width = presentPercent + '%';
-        }, 400);
-    }
-
-    // Leave Utilization
-    const leaveFill = document.getElementById('leaveUtilizationFill');
-    if (leaveFill) {
-        setTimeout(() => {
-            leaveFill.style.width = '68%';
-        }, 500);
-    }
-
-    // On-Time Attendance
-    const onTimeFill = document.getElementById('onTimeFill');
-    if (onTimeFill) {
-        setTimeout(() => {
-            onTimeFill.style.width = '92%';
-        }, 600);
-    }
-});
-
     document.addEventListener('DOMContentLoaded', function() {
         // ============================================
         // TODAY SUMMARY BARS
@@ -1634,6 +1191,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
 
         // ============================================
+        // QUICK STATS BARS
+        // ============================================
+        const attendanceRate = parseInt('{{ attendance_percentage|default:0 }}') || 0;
+        const attendanceFill = document.getElementById('attendanceRateFill');
+        if (attendanceFill) {
+            setTimeout(() => {
+                attendanceFill.style.width = Math.min(attendanceRate, 100) + '%';
+            }, 300);
+        }
+
+        const presentToday = parseInt('{{ present_today|default:0 }}') || 0;
+        const employeeCount = parseInt('{{ employee_count|default:1 }}') || 1;
+        const presentPercentToday = Math.min(Math.round((presentToday / employeeCount) * 100), 100);
+        const presentFill = document.getElementById('presentTodayFill');
+        if (presentFill) {
+            setTimeout(() => {
+                presentFill.style.width = presentPercentToday + '%';
+            }, 400);
+        }
+
+        const leaveFill = document.getElementById('leaveUtilizationFill');
+        if (leaveFill) {
+            setTimeout(() => {
+                leaveFill.style.width = '68%';
+            }, 500);
+        }
+
+        const onTimeFill = document.getElementById('onTimeFill');
+        if (onTimeFill) {
+            setTimeout(() => {
+                onTimeFill.style.width = '92%';
+            }, 600);
+        }
+
+        // ============================================
         // ATTENDANCE RING ANIMATION
         // ============================================
         const ringFill = document.querySelector('.ring-fill');
@@ -1645,17 +1237,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         }
 
-        // ============================================
-        // ACTIVE NAV ITEM HIGHLIGHT
-        // ============================================
-        const currentUrl = window.location.pathname;
-        document.querySelectorAll('.side-nav-item').forEach(item => {
-            const href = item.getAttribute('href');
-            if (href && currentUrl.includes(href)) {
-                item.classList.add('active');
-            }
-        });
-
         console.log('📊 HR Dashboard loaded');
         console.log('👥 Total Employees: {{ employee_count|default:0 }}');
         console.log('📈 Attendance Rate: {{ attendance_percentage|default:0 }}%');
@@ -1663,5 +1244,4 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🎉 Upcoming Holidays: {{ holiday_count|default:0 }}');
     });
 </script>
-
 {% endblock %}

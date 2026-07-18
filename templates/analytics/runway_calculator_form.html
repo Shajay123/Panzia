@@ -1,0 +1,83 @@
+{% extends 'analytics/base_analytics.html' %}
+{% load static %}
+
+{% block page_title %}Calculate Runway{% endblock %}
+{% block page_icon %}✈️{% endblock %}
+{% block page_subtitle %}Enter your financials to calculate runway{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'analytics:runway_calculator' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Calculations
+</a>
+{% endblock %}
+
+{% block analytics_content %}
+<div class="runway-form-container" style="max-width: 600px; margin: 0 auto;">
+    
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 32px;">
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Current Cash Balance</label>
+                    {{ form.current_cash }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total cash available</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Monthly Burn Rate</label>
+                    {{ form.monthly_burn_rate }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total monthly expenses</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Monthly Revenue</label>
+                    {{ form.monthly_revenue }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total monthly income</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Funding Rounds (JSON)</label>
+                    {{ form.funding_rounds }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Optional: List of funding rounds</span>
+                </div>
+            </div>
+            
+            <style>
+                #id_current_cash, #id_monthly_burn_rate, #id_monthly_revenue, #id_funding_rounds {
+                    background: rgba(167, 139, 250, 0.04);
+                    border: 1px solid rgba(167, 139, 250, 0.1);
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    color: #e8edf5;
+                    font-size: 0.9rem;
+                    transition: all 0.3s;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                #id_funding_rounds {
+                    min-height: 80px;
+                    resize: vertical;
+                    font-family: monospace;
+                }
+                #id_current_cash:focus, #id_monthly_burn_rate:focus, #id_monthly_revenue:focus, #id_funding_rounds:focus {
+                    outline: none;
+                    border-color: rgba(167, 139, 250, 0.3);
+                    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+                }
+            </style>
+            
+            <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 32px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; flex: 1; justify-content: center;">
+                    ✈️ Calculate Runway
+                </button>
+                <a href="{% url 'analytics:runway_calculator' %}" class="btn btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

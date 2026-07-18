@@ -1,400 +1,863 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}
-Employee Documents
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'document_create' %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">⬆</span> Upload Document
+    </a>
+    <button class="btn btn-secondary btn-sm" id="exportBtn">
+        <span class="btn-icon">📥</span> Export
+    </button>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/documents.css' %}">
-{% endblock %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       EMPLOYEE DOCUMENTS - HRMS STYLES
+       ============================================ */
+    .documents-page {
+        max-width: 100%;
+    }
 
-{% block content %}
+    /* ===== SUMMARY GRID ===== */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .summary-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .summary-card h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .summary-card p {
+        margin: 2px 0 0;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .summary-card .trend {
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+    }
+
+    .trend.up { color: #34d399; }
+    .trend.down { color: #f87171; }
+    .trend.neutral { color: #94a3b8; }
+
+    .summary-card.blue { border-left: 3px solid #60a5fa; }
+    .summary-card.green { border-left: 3px solid #34d399; }
+    .summary-card.orange { border-left: 3px solid #f59e0b; }
+    .summary-card.purple { border-left: 3px solid #a78bfa; }
+
+    /* ===== FILTER CARD ===== */
+    .filter-card {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filter-card .search-wrapper {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        align-items: center;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        padding: 0 12px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-card .search-wrapper:focus-within {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.05);
+    }
+
+    .filter-card .search-wrapper input {
+        flex: 1;
+        padding: 10px 12px;
+        border: none;
+        background: transparent;
+        color: #e8edf5;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    .filter-card .search-wrapper input::placeholder {
+        color: #64748b;
+    }
+
+    .filter-card .search-wrapper .clear-btn {
+        background: none;
+        border: none;
+        color: #64748b;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 8px;
+        display: none;
+        transition: color 0.2s;
+    }
+
+    .filter-card .search-wrapper .clear-btn:hover {
+        color: #f87171;
+    }
+
+    .filter-card .search-wrapper .clear-btn.show {
+        display: block;
+    }
+
+    /* ===== TABLE CARD ===== */
+    .table-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s;
+        margin-bottom: 24px;
+    }
+
+    .table-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        padding: 0 4px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 800px;
+    }
+
+    thead th {
+        text-align: left;
+        padding: 12px 16px;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        white-space: nowrap;
+    }
+
+    tbody td {
+        padding: 10px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    tbody tr:hover {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ===== EMPLOYEE BOX ===== */
+    .employee-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .employee-box img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-box .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-box strong {
+        display: block;
+        color: #e8edf5;
+        font-size: 0.85rem;
+    }
+
+    .employee-box small {
+        font-size: 0.65rem;
+        color: #94a3b8;
+    }
+
+    /* ===== DOC ICON ===== */
+    .doc-icon {
+        margin-right: 6px;
+    }
+
+    /* ===== PREVIEW BUTTON ===== */
+    .preview-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        text-decoration: none;
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+        transition: all 0.2s;
+    }
+
+    .preview-btn:hover {
+        background: rgba(59, 130, 246, 0.2);
+        transform: translateY(-2px);
+    }
+
+    /* ===== TABLE ACTIONS ===== */
+    .table-actions {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-btn.view {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+    }
+
+    .action-btn.view:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+
+    .action-btn.edit {
+        background: rgba(245, 158, 11, 0.1);
+        color: #fbbf24;
+    }
+
+    .action-btn.edit:hover {
+        background: rgba(245, 158, 11, 0.2);
+    }
+
+    .action-btn.delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+
+    .action-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+
+    .action-btn.download {
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+    }
+
+    .action-btn.download:hover {
+        background: rgba(167, 139, 250, 0.2);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.1rem;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin: 0 0 16px;
+    }
+
+    .empty-state .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .empty-state .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    /* ===== TABLE FOOTER ===== */
+    .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .table-info {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .table-info strong {
+        color: #e8edf5;
+    }
+
+    /* ===== MOBILE CARDS ===== */
+    .documents-cards {
+        display: none;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+
+    .documents-cards.visible {
+        display: grid;
+    }
+
+    .document-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        transition: all 0.3s ease;
+    }
+
+    .document-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .document-card .card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .document-card .card-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .document-card .card-header .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .document-card .card-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .document-card .card-header span {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .document-card .card-body {
+        margin-bottom: 12px;
+    }
+
+    .document-card .card-body p {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        margin: 0;
+    }
+
+    .document-card .card-body p:last-child {
+        border-bottom: none;
+    }
+
+    .document-card .card-body p strong {
+        color: #d6e0f0;
+    }
+
+    .document-card .card-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .document-card .card-actions .btn-light {
+        flex: 1;
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        text-decoration: none;
+        text-align: center;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .document-card .card-actions .btn-light:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .document-card .card-actions .btn-primary {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .document-card .card-actions .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .table-card {
+            display: none;
+        }
+
+        .documents-cards {
+            display: grid !important;
+        }
+
+        .filter-card .search-wrapper {
+            min-width: unset;
+        }
+
+        .table-footer {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-card h2 {
+            font-size: 1.2rem;
+        }
+
+        .documents-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .document-card .card-header h3 {
+            font-size: 0.85rem;
+        }
+
+        .document-card .card-body p {
+            font-size: 0.8rem;
+        }
+
+        .document-card .card-actions {
+            flex-direction: column;
+        }
+
+        .document-card .card-actions .btn-light,
+        .document-card .card-actions .btn-primary {
+            width: 100%;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .summary-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .summary-card:nth-child(1) { animation-delay: 0.05s; }
+    .summary-card:nth-child(2) { animation-delay: 0.1s; }
+    .summary-card:nth-child(3) { animation-delay: 0.15s; }
+    .summary-card:nth-child(4) { animation-delay: 0.2s; }
+</style>
 
 <div class="documents-page">
 
-    <!-- ================= HEADER ================= -->
-
-    <div class="page-header">
-
-        <div>
-
-            <h1>📂 Employee Documents</h1>
-
-            <p>
-                Manage employee documents, certificates and contracts securely.
-            </p>
-
-        </div>
-
-        <div class="header-actions">
-
-            <a href="{% url 'document_create' %}" class="btn-primary">
-                ⬆ Upload Document
-            </a>
-
-            <a href="#" class="btn-secondary">
-                📥 Export
-            </a>
-
-        </div>
-
-    </div>
-
-    {% include 'people/includes/startup_banner.html' %}
     <!-- ================= SUMMARY ================= -->
-
     <div class="summary-grid">
-
         <div class="summary-card blue">
-
-            <h2>{{ total_documents }}</h2>
-
+            <h2>{{ total_documents|default:0 }}</h2>
             <p>Total Documents</p>
-
+            <span class="trend up">↑ 12%</span>
         </div>
-
         <div class="summary-card green">
-
-            <h2>{{ employees_count }}</h2>
-
+            <h2>{{ employees_count|default:0 }}</h2>
             <p>Employees</p>
-
+            <span class="trend up">↑ 8%</span>
         </div>
-
         <div class="summary-card orange">
-
-            <h2>{{ verified_documents }}</h2>
-
+            <h2>{{ verified_documents|default:0 }}</h2>
             <p>Verified</p>
-
+            <span class="trend neutral">→ 0%</span>
         </div>
-
         <div class="summary-card purple">
-
-            <h2>{{ pending_documents }}</h2>
-
+            <h2>{{ pending_documents|default:0 }}</h2>
             <p>Pending Review</p>
-
+            <span class="trend down">↓ 5%</span>
         </div>
-
     </div>
-
 
     <!-- ================= SEARCH ================= -->
-
     <div class="filter-card">
-
-        <input
-            type="text"
-            id="documentSearch"
-            placeholder="🔍 Search Employee / Document..."
-        >
-
+        <div class="search-wrapper">
+            <input
+                type="text"
+                id="documentSearch"
+                placeholder="🔍 Search by employee name or document title..."
+                autocomplete="off"
+            >
+            <button class="clear-btn" id="clearSearch" title="Clear search">✕</button>
+        </div>
     </div>
 
-
-    <!-- ================= TABLE ================= -->
-
-    <div class="table-card">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Employee</th>
-
-                    <th>Department</th>
-
-                    <th>Document</th>
-
-                    <th>Uploaded</th>
-
-                    <th>Preview</th>
-
-                    <th>Actions</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% for doc in documents %}
-
-                <tr>
-
-                    <td>
-
-                        <div class="employee-box">
-
-                            {% if doc.employee.profile_image %}
-
-                                <img src="{{ doc.employee.profile_image.url }}">
-
-                            {% else %}
-
-                                <div class="avatar">
-
-                                    {{ doc.employee.user.first_name|first|default:doc.employee.user.username|first|upper }}
-
+    <!-- ================= TABLE VIEW ================= -->
+    <div class="table-card" id="tableView">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Document</th>
+                        <th>Uploaded</th>
+                        <th>Preview</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for doc in documents %}
+                    <tr data-search="{{ doc.employee.user.get_full_name|default:doc.employee.user.username|lower }} {{ doc.title|lower }}">
+                        <td>
+                            <div class="employee-box">
+                                {% if doc.employee.profile_image %}
+                                    <img src="{{ doc.employee.profile_image.url }}" alt="{{ doc.employee.user.get_full_name }}">
+                                {% else %}
+                                    <div class="avatar">
+                                        {{ doc.employee.user.first_name|first|default:doc.employee.user.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ doc.employee.user.get_full_name|default:doc.employee.user.username }}</strong>
+                                    <small>{{ doc.employee.designation|default:"-" }}</small>
                                 </div>
-
-                            {% endif %}
-
-                            <div>
-
-                                <strong>
-
-                                    {{ doc.employee.user.get_full_name|default:doc.employee.user.username }}
-
-                                </strong>
-
-                                <small>
-
-                                    {{ doc.employee.designation }}
-
-                                </small>
-
                             </div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        {{ doc.employee.department }}
-
-                    </td>
-
-                    <td>
-
-                        <span class="doc-icon">
-
-                            📄
-
-                        </span>
-
-                        {{ doc.title }}
-
-                    </td>
-
-                    <td>
-
-                        {{ doc.uploaded_at|date:"d M Y" }}
-
-                    </td>
-
-                    <td>
-
-                        <a href="{{ doc.file.url }}"
-                           target="_blank"
-                           class="preview-btn">
-
-                            View
-
-                        </a>
-
-                    </td>
-
-                    <td>
-
-                        <div class="table-actions">
-
-                            <a href="{% url 'document_detail' doc.id %}" class="action-btn view">
-
-                                👁
-
+                        </td>
+                        <td>{{ doc.employee.department.name|default:"-" }}</td>
+                        <td>
+                            <span class="doc-icon">
+                                {% with extension=doc.file.name|cut:"employee_documents/"|cut:" "|slice:"-4:" %}
+                                {% if extension|upper == ".PDF" %}📄
+                                {% elif extension|upper in ".DOC,.DOCX" %}📝
+                                {% elif extension|upper in ".XLS,.XLSX" %}📊
+                                {% elif extension|upper in ".JPG,.JPEG,.PNG,.GIF" %}🖼️
+                                {% else %}📎{% endif %}
+                                {% endwith %}
+                            </span>
+                            {{ doc.title }}
+                        </td>
+                        <td>{{ doc.uploaded_at|date:"d M Y" }}</td>
+                        <td>
+                            <a href="{{ doc.file.url }}" target="_blank" class="preview-btn">
+                                👁 View
                             </a>
-
-                            <a href="{% url 'document_update' doc.id %}" class="action-btn edit">
-
-                                ✏
-
-                            </a>
-
-                            <a href="{% url 'document_delete' doc.id %}" class="action-btn delete">
-
-                                🗑
-
-                            </a>
-
-                            <a href="{{ doc.file.url }}"
-                               download
-                               class="action-btn download">
-
-                                ⬇
-
-                            </a>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-            {% empty %}
-
-                <tr>
-
-                    <td colspan="6">
-
-                        <div class="empty-state">
-
-                            <div class="empty-icon">
-
-                                📂
-
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="{% url 'document_detail' doc.id %}" class="action-btn view" title="View Details">👁</a>
+                                <a href="{% url 'document_update' doc.id %}" class="action-btn edit" title="Edit Document">✏</a>
+                                <a href="{% url 'document_delete' doc.id %}" class="action-btn delete" title="Delete Document" onclick="return confirm('Are you sure you want to delete this document?')">🗑</a>
+                                <a href="{{ doc.file.url }}" download class="action-btn download" title="Download Document">⬇</a>
                             </div>
-
-                            <h3>
-
-                                No Documents Uploaded
-
-                            </h3>
-
-                            <p>
-
-                                Upload employee documents to begin maintaining records.
-
-                            </p>
-
-                            <a href="{% url 'document_create' %}" class="btn-primary">
-
-                                Upload First Document
-
-                            </a>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-            {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-
-    <!-- ================= MOBILE CARDS ================= -->
-
-    <div class="documents-cards">
-
-        {% for doc in documents %}
-
-        <div class="document-card">
-
-            <div class="card-header">
-
-                {% if doc.employee.profile_image %}
-
-                    <img src="{{ doc.employee.profile_image.url }}">
-
-                {% else %}
-
-                    <div class="avatar">
-
-                        {{ doc.employee.user.first_name|first|default:doc.employee.user.username|first|upper }}
-
-                    </div>
-
-                {% endif %}
-
-                <div>
-
-                    <h3>
-
-                        {{ doc.employee.user.get_full_name|default:doc.employee.user.username }}
-
-                    </h3>
-
-                    <span>
-
-                        {{ doc.employee.designation }}
-
-                    </span>
-
-                </div>
-
-            </div>
-
-            <div class="card-body">
-
-                <p>
-
-                    <strong>Department</strong>
-
-                    {{ doc.employee.department }}
-
-                </p>
-
-                <p>
-
-                    <strong>Document</strong>
-
-                    {{ doc.title }}
-
-                </p>
-
-                <p>
-
-                    <strong>Uploaded</strong>
-
-                    {{ doc.uploaded_at|date:"d M Y" }}
-
-                </p>
-
-            </div>
-
-            <div class="card-actions">
-
-                <a href="{% url 'document_detail' doc.id %}" class="btn-light">
-
-                    View
-
-                </a>
-
-                <a href="{% url 'document_update' doc.id %}" class="btn-primary">
-
-                    Edit
-
-                </a>
-
-            </div>
-
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <span class="empty-icon">📂</span>
+                                <h3>No Documents Uploaded</h3>
+                                <p>Upload employee documents to begin maintaining records.</p>
+                                <a href="{% url 'document_create' %}" class="btn-primary">
+                                    ⬆ Upload First Document
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
-        {% endfor %}
+        <!-- Table Footer -->
+        <div class="table-footer">
+            <div class="table-info">
+                Showing <strong id="visibleCount">{{ documents|length }}</strong> of <strong id="totalCount">{{ documents|length }}</strong> documents
+            </div>
+        </div>
+    </div>
 
+    <!-- ================= MOBILE CARDS ================= -->
+    <div class="documents-cards" id="cardsView">
+        {% for doc in documents %}
+        <div class="document-card" data-search="{{ doc.employee.user.get_full_name|default:doc.employee.user.username|lower }} {{ doc.title|lower }}">
+            <div class="card-header">
+                {% if doc.employee.profile_image %}
+                    <img src="{{ doc.employee.profile_image.url }}" alt="{{ doc.employee.user.get_full_name }}">
+                {% else %}
+                    <div class="avatar">
+                        {{ doc.employee.user.first_name|first|default:doc.employee.user.username|first|upper }}
+                    </div>
+                {% endif %}
+                <div>
+                    <h3>{{ doc.employee.user.get_full_name|default:doc.employee.user.username }}</h3>
+                    <span>{{ doc.employee.designation|default:"-" }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Department</strong>
+                    {{ doc.employee.department.name|default:"-" }}
+                </p>
+                <p>
+                    <strong>Document</strong>
+                    {{ doc.title }}
+                </p>
+                <p>
+                    <strong>Uploaded</strong>
+                    {{ doc.uploaded_at|date:"d M Y" }}
+                </p>
+            </div>
+            <div class="card-actions">
+                <a href="{% url 'document_detail' doc.id %}" class="btn-light">👁 View</a>
+                <a href="{% url 'document_update' doc.id %}" class="btn-primary">✏ Edit</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="grid-column: 1 / -1;">
+            <span class="empty-icon">📂</span>
+            <h3>No Documents Uploaded</h3>
+            <p>Upload employee documents to begin maintaining records.</p>
+            <a href="{% url 'document_create' %}" class="btn-primary">
+                ⬆ Upload First Document
+            </a>
+        </div>
+        {% endfor %}
     </div>
 
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // SEARCH FUNCTIONALITY
+        // ============================================
+        const searchInput = document.getElementById('documentSearch');
+        const clearBtn = document.getElementById('clearSearch');
+        const tableRows = document.querySelectorAll('#tableBody tr:not(:has(.empty-state))');
+        const cards = document.querySelectorAll('.document-card');
+        const visibleCount = document.getElementById('visibleCount');
+        const totalCount = document.getElementById('totalCount');
 
-const search=document.getElementById("documentSearch");
+        function filterDocuments() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visible = 0;
 
-search.addEventListener("keyup",function(){
+            // Filter table rows
+            tableRows.forEach(row => {
+                const searchData = row.dataset.search || '';
+                const match = searchData.includes(query);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
 
-let filter=this.value.toLowerCase();
+            // Filter cards
+            cards.forEach(card => {
+                const searchData = card.dataset.search || '';
+                const match = searchData.includes(query);
+                card.style.display = match ? '' : 'none';
+            });
 
-let rows=document.querySelectorAll("tbody tr");
+            // Update count
+            if (visibleCount) visibleCount.textContent = visible;
+            if (totalCount) totalCount.textContent = tableRows.length;
 
-rows.forEach(function(row){
+            // Show/hide clear button
+            clearBtn.classList.toggle('show', query.length > 0);
+        }
 
-row.style.display=row.innerText.toLowerCase().includes(filter)?"":"none";
+        searchInput.addEventListener('input', filterDocuments);
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            filterDocuments();
+            searchInput.focus();
+        });
 
-});
+        // ============================================
+        // EXPORT FUNCTIONALITY
+        // ============================================
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const rows = document.querySelectorAll('#tableBody tr:not(:has(.empty-state))');
+            let csv = 'Employee,Department,Document,Uploaded\n';
+            
+            rows.forEach(row => {
+                if (row.style.display !== 'none') {
+                    const employee = row.querySelector('.employee-box strong')?.textContent?.trim() || '';
+                    const department = row.querySelector('td:nth-child(2)')?.textContent?.trim() || '';
+                    const document = row.querySelector('td:nth-child(3)')?.textContent?.trim() || '';
+                    const uploaded = row.querySelector('td:nth-child(4)')?.textContent?.trim() || '';
+                    
+                    const clean = (str) => str.replace(/,/g, ';');
+                    csv += `${clean(employee)},${clean(department)},${clean(document)},${clean(uploaded)}\n`;
+                }
+            });
 
-});
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `documents_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
 
+        // ============================================
+        // KEYBOARD SHORTCUT
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+        });
+
+        console.log('📂 Employee Documents loaded');
+        console.log('📊 Total documents: {{ documents|length }}');
+    });
 </script>
 
 {% endblock %}

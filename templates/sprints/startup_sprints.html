@@ -1,267 +1,951 @@
-{% extends 'base.html' %}
+{% extends 'sprints/base_sprint.html' %}
 {% load static %}
 
-{% block title %}
-My Sprints
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'execution_dashboard' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📊</span> Dashboard
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/startup_sprints.css' %}">
-{% endblock %}
+{% block execution_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        animation: fadeInUp 0.4s ease;
+    }
 
-{% block content %}
+    /* ===== HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
 
-<section class="dashboard-section">
+    .page-header .header-left {
+        flex: 1;
+    }
 
-    <div class="dashboard-main">
+    .page-header .page-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 8px;
+    }
 
-        <!-- Header -->
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+        letter-spacing: -0.5px;
+    }
 
-        <div class="dashboard-header-main">
+    .page-header h1 .header-count {
+        font-size: 1rem;
+        font-weight: 400;
+        color: #94a3b8;
+        margin-left: 8px;
+    }
 
-            <div>
+    .page-header p {
+        margin: 4px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
 
-                <span class="dashboard-badge">
-                    🚀 Startup Workspace
-                </span>
+    .page-header .create-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        white-space: nowrap;
+    }
 
-                <h1>
-                    My Sprints
-                </h1>
+    .page-header .create-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
 
-                <p>
-                    Manage execution sprints, monitor progress and build your startup faster.
-                </p>
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
 
-            </div>
+    .stat-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
 
-            <div>
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
 
-                <a href="{% url 'create_sprint' %}" class="primary-btn">
-                    + Create Sprint
-                </a>
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
 
-            </div>
+    .stat-card:hover::before {
+        opacity: 1;
+    }
 
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card .stat-icon {
+        font-size: 1.5rem;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #e8edf5;
+        letter-spacing: -0.5px;
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .stat-card.total { border-left: 3px solid #a78bfa; }
+    .stat-card.total::before { background: linear-gradient(90deg, #a78bfa, #c4b5fd); }
+
+    .stat-card.active { border-left: 3px solid #34d399; }
+    .stat-card.active::before { background: linear-gradient(90deg, #34d399, #6ee7b7); }
+
+    .stat-card.completed { border-left: 3px solid #60a5fa; }
+    .stat-card.completed::before { background: linear-gradient(90deg, #60a5fa, #93bbfc); }
+
+    .stat-card.open { border-left: 3px solid #fbbf24; }
+    .stat-card.open::before { background: linear-gradient(90deg, #fbbf24, #fcd34d); }
+
+    /* ===== FILTER BAR ===== */
+    .filter-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        padding: 10px 16px;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        align-items: center;
+    }
+
+    .filter-bar .filter-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .filter-bar .filter-btn {
+        padding: 4px 14px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        background: rgba(167, 139, 250, 0.04);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        cursor: pointer;
+    }
+
+    .filter-bar .filter-btn:hover,
+    .filter-bar .filter-btn.active {
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    /* ===== TABLE VIEW ===== */
+    .table-wrapper {
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    table {
+        width: 100%;
+        min-width: 1000px;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    thead {
+        background: rgba(167, 139, 250, 0.04);
+    }
+
+    th {
+        text-align: left;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+
+    tr:hover td {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ===== SPRINT NAME WITH EMOJI BADGE ===== */
+    .sprint-name-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sprint-emoji-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        background: rgba(167, 139, 250, 0.08);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .sprint-name-cell .sprint-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sprint-name-cell .sprint-info .name {
+        font-weight: 600;
+        color: #e8edf5;
+        font-size: 0.9rem;
+    }
+
+    .sprint-name-cell .sprint-info .meta {
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .table-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .table-status.open {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+
+    .table-status.active {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .table-status.completed {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    .table-status.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    /* ===== TABLE ACTIONS - SMALL CARD VIEW ===== */
+    .table-actions {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .action-card {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.3s;
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        min-width: 32px;
+        cursor: pointer;
+    }
+
+    .action-card:hover {
+        background: rgba(167, 139, 250, 0.12);
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-card .action-emoji {
+        font-size: 0.9rem;
+        line-height: 1;
+    }
+
+    .action-card .action-label {
+        font-size: 0.5rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .action-card:hover .action-label {
+        color: #a78bfa;
+    }
+
+    /* ===== EDIT & DELETE BUTTONS ===== */
+    .action-card.edit {
+        background: rgba(251, 191, 36, 0.08);
+        border-color: rgba(251, 191, 36, 0.1);
+    }
+
+    .action-card.edit:hover {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.2);
+    }
+
+    .action-card.delete {
+        background: rgba(239, 68, 68, 0.08);
+        border-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .action-card.delete:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .action-card .action-emoji.edit-emoji {
+        color: #fbbf24;
+    }
+
+    .action-card .action-emoji.delete-emoji {
+        color: #f87171;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state-card {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+    }
+
+    .empty-state-card .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state-card h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        margin: 0 0 8px;
+    }
+
+    .empty-state-card p {
+        margin: 0 0 20px;
+        font-size: 0.95rem;
+    }
+
+    .empty-state-card .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .empty-state-card .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    /* ===== CONFIRMATION MODAL ===== */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-box {
+        background: #1a1035;
+        border: 1px solid rgba(167, 139, 250, 0.15);
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        animation: scaleIn 0.3s ease;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-box .modal-icon {
+        font-size: 3.5rem;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .modal-box h3 {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0 0 8px;
+        font-size: 1.3rem;
+    }
+
+    .modal-box p {
+        color: #94a3b8;
+        margin: 0 0 20px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .modal-box .sprint-title {
+        color: #a78bfa;
+        font-weight: 600;
+    }
+
+    .modal-box .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .modal-box .modal-actions .btn {
+        padding: 10px 28px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .modal-box .modal-actions .btn-cancel {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .modal-box .modal-actions .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-2px);
+    }
+
+    .modal-box .modal-actions .btn-confirm {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+    }
+
+    .modal-box .modal-actions .btn-confirm:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.35);
+        background: linear-gradient(135deg, #f87171, #ef4444);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 14px;
+        }
+
+        .page-header {
+            flex-direction: column;
+        }
+
+        .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .page-header .create-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .filter-bar {
+            flex-wrap: wrap;
+        }
+
+        .filter-bar .filter-btn {
+            flex: 1;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .table-wrapper {
+            margin: 0 -10px;
+            border-radius: 0;
+        }
+
+        table {
+            font-size: 0.8rem;
+            min-width: 700px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+        }
+
+        .sprint-emoji-badge {
+            width: 30px;
+            height: 30px;
+            font-size: 1rem;
+        }
+
+        .action-card {
+            padding: 3px 6px;
+            min-width: 28px;
+        }
+
+        .action-card .action-emoji {
+            font-size: 0.8rem;
+        }
+
+        .action-card .action-label {
+            font-size: 0.45rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-content {
+            padding: 10px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 1.2rem;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            font-size: 0.75rem;
+        }
+
+        .sprint-emoji-badge {
+            width: 26px;
+            height: 26px;
+            font-size: 0.8rem;
+        }
+
+        .sprint-name-cell .sprint-info .name {
+            font-size: 0.8rem;
+        }
+
+        .sprint-name-cell .sprint-info .meta {
+            font-size: 0.6rem;
+        }
+
+        .action-card {
+            padding: 2px 5px;
+            min-width: 24px;
+        }
+
+        .action-card .action-emoji {
+            font-size: 0.7rem;
+        }
+
+        .action-card .action-label {
+            font-size: 0.4rem;
+        }
+
+        .empty-state-card .empty-icon {
+            font-size: 3rem;
+        }
+
+        .modal-box {
+            padding: 24px 16px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+</style>
+
+<div class="page-content">
+    <!-- ===== HEADER ===== -->
+    <div class="page-header">
+        <div class="header-left">
+            <span class="page-badge">🚀 Startup Workspace</span>
+            <h1>
+                My Sprints
+                <span class="header-count">({{ sprints|length|default:"0" }})</span>
+            </h1>
+            <p>Manage execution sprints, monitor progress and build your startup faster.</p>
         </div>
-
-        <!-- Stats -->
-
-        <div class="sprint-stats">
-
-            <div class="stat-card total">
-
-                <div class="stat-icon">🚀</div>
-
-                <h2>
-                    {{ sprints|length }}
-                </h2>
-
-                <p>Total Sprints</p>
-
-            </div>
-
-            <div class="stat-card active">
-
-                <div class="stat-icon">🟢</div>
-
-                <h2>
-                    {{ active_count }}
-                </h2>
-
-                <p>Active</p>
-
-            </div>
-
-            <div class="stat-card completed">
-
-                <div class="stat-icon">🏆</div>
-
-                <h2>
-                    {{ completed_count }}
-                </h2>
-
-                <p>Completed</p>
-
-            </div>
-
-            <div class="stat-card open">
-
-                <div class="stat-icon">📂</div>
-
-                <h2>
-                    {{ open_count }}
-                </h2>
-
-                <p>Open</p>
-
-            </div>
-
-        </div>
-
-        {% if sprints %}
-
-        <div class="sprints-grid">
-
-            {% for sprint in sprints %}
-
-            <div class="sprint-card">
-
-                <div class="sprint-header">
-
-                    <h3>
-                        🚀 {{ sprint.title }}
-                    </h3>
-
-                    <span class="status-badge status-{{ sprint.status }}">
-                        {{ sprint.get_status_display }}
-                    </span>
-
-                </div>
-
-                <p class="sprint-description">
-                    {{ sprint.description|truncatechars:150 }}
-                </p>
-
-                <div class="sprint-details">
-
-                    <div class="detail-row">
-                        <span>📂 Category</span>
-                        <strong>
-                            {{ sprint.category }}
-                        </strong>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>🌐 Domain</span>
-                        <strong>
-                            {{ sprint.domain }}
-                        </strong>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>👥 Contributors</span>
-                        <strong>
-                            {{ sprint.max_contributors }}
-                        </strong>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>📅 Deadline</span>
-                        <strong>
-                            {{ sprint.deadline }}
-                        </strong>
-                    </div>
-
-                </div>
-
-                <!-- Progress -->
-
-                <div class="progress-wrapper">
-
-                    <div class="progress-top">
-
-                        <span>
-                            Progress
-                        </span>
-
-                        <span>
-                            {{ sprint.progress_percentage }}%
-                        </span>
-
-                    </div>
-
-                    <!-- <div class="progress-bar-bg">
-
-                        <div
-                            class="progress-bar-fill"
-                            style="width: {{ sprint.progress_percentage }}%;"
-                        >
-                        </div>
-
-                    </div> -->
-
-                    <p>
-                        <strong>Status:</strong>
-
-                        <span class="status-badge status-{{ sprint.status }}">
-                            {{ sprint.get_status_display }}
-                        </span>
-                    </p>
-
-                </div>
-
-                <div class="sprint-footer">
-
-                    <small>
-                        Created {{ sprint.created_at|timesince }} ago
-                    </small>
-
-                </div>
-
-                <div class="sprint-actions">
-
-                    <a href="{% url 'sprint_detail' sprint.id %}" class="action-btn">
-                        📄 Details
-                    </a>
-
-                    <a href="{% url 'sprint_applications' sprint.id %}" class="action-btn">
-                        📥 Applications
-                    </a>
-
-                    <a href="{% url 'sprint_members' sprint.id %}" class="action-btn">
-                        👥 Members
-                    </a>
-
-                    <a href="{% url 'sprint_tasks' sprint.id %}" class="action-btn">
-                        ✅ Tasks
-                    </a>
-
-                    <a href="{% url 'create_task' sprint.id %}" class="action-btn">
-                        ➕ Create Task
-                    </a>
-
-                    <a href="{% url 'review_submissions' sprint.id %}" class="action-btn">
-
-                        📝 Review Work
-
-                    </a>
-
-
-                </div>
-
-            </div>
-
-            {% endfor %}
-
-        </div>
-
-        {% else %}
-
-        <div class="empty-state-card">
-
-            <div class="empty-icon">
-                🚀
-            </div>
-
-            <h3>
-                No Sprints Yet
-            </h3>
-
-            <p>
-                Start your startup execution journey by creating your first sprint.
-            </p>
-
-            <a href="{% url 'create_sprint' %}" class="primary-btn">
-                Create Sprint
-            </a>
-
-        </div>
-
-        {% endif %}
-
+        <a href="{% url 'create_sprint' %}" class="create-btn">
+            <span>➕</span> Create Sprint
+        </a>
     </div>
 
-</section>
+    <!-- ===== FILTER BAR ===== -->
+    <div class="filter-bar">
+        <span class="filter-label">🔍 Filter:</span>
+        <button class="filter-btn active" onclick="filterSprints('all')">All</button>
+        <button class="filter-btn" onclick="filterSprints('open')">📂 Open</button>
+        <button class="filter-btn" onclick="filterSprints('active')">🟢 Active</button>
+        <button class="filter-btn" onclick="filterSprints('completed')">🏆 Completed</button>
+    </div>
 
+    <!-- ===== STATS ===== -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <span class="stat-icon">🚀</span>
+            <div class="stat-value">{{ sprints|length|default:"0" }}</div>
+            <div class="stat-label">Total Sprints</div>
+        </div>
+
+        <div class="stat-card active">
+            <span class="stat-icon">🟢</span>
+            <div class="stat-value">{{ active_count|default:"0" }}</div>
+            <div class="stat-label">Active Sprints</div>
+        </div>
+
+        <div class="stat-card completed">
+            <span class="stat-icon">🏆</span>
+            <div class="stat-value">{{ completed_count|default:"0" }}</div>
+            <div class="stat-label">Completed Sprints</div>
+        </div>
+
+        <div class="stat-card open">
+            <span class="stat-icon">📂</span>
+            <div class="stat-value">{{ open_count|default:"0" }}</div>
+            <div class="stat-label">Open Sprints</div>
+        </div>
+    </div>
+
+    <!-- ===== TABLE VIEW ===== -->
+    <div class="table-wrapper">
+        <table id="sprintTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Sprint</th>
+                    <th>Category</th>
+                    <th>Domain</th>
+                    <th>Contributors</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="sprintTableBody">
+                {% for sprint in sprints %}
+                <tr data-status="{{ sprint.status }}" data-sprint-id="{{ sprint.id }}" data-sprint-title="{{ sprint.title }}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div class="sprint-name-cell">
+                            <div class="sprint-emoji-badge">
+                                {% if sprint.status == 'open' %}📂{% elif sprint.status == 'active' %}🟢{% elif sprint.status == 'completed' %}🏆{% else %}🚀{% endif %}
+                            </div>
+                            <div class="sprint-info">
+                                <span class="name">{{ sprint.title }}</span>
+                                <span class="meta">Created {{ sprint.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ sprint.category }}</td>
+                    <td>{{ sprint.domain }}</td>
+                    <td>{{ sprint.max_contributors }}</td>
+                    <td>
+                        <span class="table-status {{ sprint.status }}">
+                            {% if sprint.status == 'open' %}📂{% elif sprint.status == 'active' %}🟢{% elif sprint.status == 'completed' %}🏆{% else %}⏳{% endif %}
+                            {{ sprint.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <a href="{% url 'sprint_detail' sprint.id %}" class="action-card" title="Details">
+                                <span class="action-emoji">📄</span>
+                                <span class="action-label">Details</span>
+                            </a>
+                            <a href="{% url 'sprint_applications' sprint.id %}" class="action-card" title="Applications">
+                                <span class="action-emoji">📥</span>
+                                <span class="action-label">Apps</span>
+                            </a>
+                            <a href="{% url 'sprint_members' sprint.id %}" class="action-card" title="Members">
+                                <span class="action-emoji">👥</span>
+                                <span class="action-label">Members</span>
+                            </a>
+                            <a href="{% url 'sprint_tasks' sprint.id %}" class="action-card" title="Tasks">
+                                <span class="action-emoji">✅</span>
+                                <span class="action-label">Tasks</span>
+                            </a>
+                            <!-- Edit Button -->
+                            <a href="{% url 'edit_sprint' sprint.id %}" class="action-card edit" title="Edit Sprint">
+                                <span class="action-emoji edit-emoji">✏️</span>
+                                <span class="action-label">Edit</span>
+                            </a>
+                            <!-- Delete Button -->
+                            <button class="action-card delete" title="Delete Sprint" onclick="openDeleteModal('{{ sprint.id }}', '{{ sprint.title|escapejs }}')">
+                                <span class="action-emoji delete-emoji">🗑️</span>
+                                <span class="action-label">Delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state-card" style="border: none; background: transparent;">
+                            <span class="empty-icon">🚀</span>
+                            <h3>No Sprints Yet</h3>
+                            <p>Start your startup execution journey by creating your first sprint.</p>
+                            <a href="{% url 'create_sprint' %}" class="btn btn-primary">
+                                <span class="btn-icon">➕</span> Create Sprint
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ===== DELETE CONFIRMATION MODAL ===== -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+        <span class="modal-icon">🗑️</span>
+        <h3>Delete Sprint</h3>
+        <p>
+            Are you sure you want to delete the sprint <br>
+            <span class="sprint-title" id="modalSprintTitle">"Sprint Name"</span>?
+            <br><br>
+            <span style="color: #f87171; font-size: 0.85rem;">
+                ⚠️ This action cannot be undone. All associated tasks and data will be permanently removed.
+            </span>
+        </p>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeDeleteModal()">
+                ❌ Cancel
+            </button>
+            <form id="deleteForm" method="POST" action="">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-confirm">
+                    🗑️ Confirm Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // FILTER SPRINTS
+    // ============================================
+    function filterSprints(status) {
+        const rows = document.querySelectorAll('#sprintTableBody tr');
+        const buttons = document.querySelectorAll('.filter-btn');
+        
+        // Update active button
+        buttons.forEach(btn => btn.classList.remove('active'));
+        if (event && event.target) {
+            event.target.classList.add('active');
+        } else {
+            // If called programmatically
+            buttons.forEach(btn => {
+                if (btn.textContent.trim().toLowerCase() === status) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // Filter table rows
+        rows.forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // ============================================
+    // DELETE MODAL
+    // ============================================
+    function openDeleteModal(sprintId, sprintTitle) {
+        const modal = document.getElementById('deleteModal');
+        const form = document.getElementById('deleteForm');
+        const titleSpan = document.getElementById('modalSprintTitle');
+        
+        // Set the form action URL
+        form.action = `/sprints/delete/${sprintId}/`;
+        
+        // Set the sprint title in the modal
+        titleSpan.textContent = `"${sprintTitle}"`;
+        
+        // Show the modal
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+
+    console.log('🚀 Startup Sprints loaded successfully');
+    console.log(`📊 Total sprints: {{ sprints|length|default:"0" }}`);
+</script>
 {% endblock %}

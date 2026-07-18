@@ -1,39 +1,461 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/leave_form.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'leave_dashboard' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Dashboard
+    </a>
+    {% if is_edit %}
+    <a href="{% url 'leave_detail' leave.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">👁️</span> View Details
+    </a>
+    {% endif %}
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       LEAVE FORM - HRMS STYLES
+       ============================================ */
+    .leave-form-page {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* ===== FORM CARD ===== */
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        transition: all 0.3s;
+        margin-bottom: 20px;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-badge {
+        font-size: 0.65rem;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+    }
+
+    .card-badge.required {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+
+    /* ===== FORM GRID ===== */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    .form-label .required {
+        color: #f87171;
+    }
+
+    .form-control {
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #64748b;
+    }
+
+    .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+    }
+
+    .field-error {
+        font-size: 0.8rem;
+        color: #f87171;
+        margin-top: 2px;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    /* ===== DATE INPUT ===== */
+    .form-group input[type="date"] {
+        color-scheme: dark;
+    }
+
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.6);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+
+    .form-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
+        filter: invert(0.8);
+        background: rgba(167, 139, 250, 0.1);
+    }
+
+    .form-group input[type="date"]:focus::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+
+    /* ===== STATUS DISPLAY ===== */
+    .status-display {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .status-badge .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.status-pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+    .status-badge.status-pending .status-dot { background: #f59e0b; }
+
+    .status-badge.status-approved {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.status-approved .status-dot { background: #22c55e; }
+
+    .status-badge.status-rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+    .status-badge.status-rejected .status-dot { background: #ef4444; }
+
+    .status-badge.status-cancelled {
+        background: rgba(148, 163, 184, 0.08);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.06);
+    }
+    .status-badge.status-cancelled .status-dot { background: #64748b; }
+
+    .status-hint {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    .status-hint.warning {
+        color: #f87171;
+    }
+
+    /* ===== DURATION DISPLAY ===== */
+    .duration-display {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        min-height: 42px;
+    }
+
+    .duration-display .duration-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #a78bfa;
+    }
+
+    .duration-display .duration-label {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    /* ===== ERROR ALERT ===== */
+    .error-alert {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.12);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+
+    .error-alert-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .error-alert-header .error-icon {
+        font-size: 1.2rem;
+    }
+
+    .error-alert-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #f87171;
+    }
+
+    .error-list {
+        margin: 0;
+        padding-left: 20px;
+        color: #fca5a5;
+        font-size: 0.9rem;
+    }
+
+    .error-list li {
+        margin-bottom: 2px;
+    }
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .form-actions .btn {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-light {
+        background: rgba(167, 139, 250, 0.03);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-light:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .leave-form-page {
+            padding: 0;
+        }
+
+        .form-card {
+            padding: 16px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .status-display {
+            flex-wrap: wrap;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card {
+            padding: 14px;
+        }
+
+        .form-control {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-light {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+
+        .duration-display .duration-value {
+            font-size: 1rem;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .form-actions {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.1s;
+        opacity: 0;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div class="leave-form-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">{{ page_icon }}</div>
-                <div>
-                    <h1>{{ page_title }}</h1>
-                    <p class="header-subtitle">
-                        {% if is_edit %}
-                        Update leave request for <strong>{{ leave.employee.user.get_full_name|default:leave.employee.user.username }}</strong>
-                        {% else %}
-                        Create a new leave request for an employee.
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'leave_dashboard' %}" class="btn-back">
-                    ← Back to Dashboard
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- ================= FORM ================= -->
     <form method="POST" novalidate id="leaveForm">
@@ -70,7 +492,7 @@
         <div class="form-card">
             <div class="card-header">
                 <h2>📝 Leave Details</h2>
-                <span class="card-badge">Required</span>
+                <span class="card-badge required">Required</span>
             </div>
 
             <div class="form-grid">
@@ -186,14 +608,14 @@
 
         <!-- ====== FORM ACTIONS ====== -->
         <div class="form-actions">
-            <button type="submit" class="btn-primary btn-save">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
                 {% if is_edit %}💾 Update Request{% else %}🚀 Create Request{% endif %}
             </button>
-            <a href="{% url 'leave_dashboard' %}" class="btn-secondary">
+            <a href="{% url 'leave_dashboard' %}" class="btn btn-secondary">
                 Cancel
             </a>
             {% if is_edit %}
-            <a href="{% url 'leave_detail' leave.id %}" class="btn-light">
+            <a href="{% url 'leave_detail' leave.id %}" class="btn btn-light">
                 👁️ View Details
             </a>
             {% endif %}
@@ -205,6 +627,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('leaveForm');
+        const submitBtn = document.getElementById('submitBtn');
+
         // ============================================
         // DURATION CALCULATOR
         // ============================================
@@ -241,7 +666,6 @@
         if (fromDate && toDate) {
             fromDate.addEventListener('change', calculateDuration);
             toDate.addEventListener('change', calculateDuration);
-            // Calculate on load
             calculateDuration();
         }
 
@@ -254,10 +678,37 @@
         }
 
         // ============================================
+        // REAL-TIME VALIDATION FEEDBACK
+        // ============================================
+        form.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(function(field) {
+            field.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.hasAttribute('required')) {
+                    this.classList.add('error');
+                    this.classList.remove('success');
+                } else if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                }
+            });
+
+            field.addEventListener('focus', function() {
+                this.classList.remove('error');
+            });
+
+            field.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                } else {
+                    this.classList.remove('success');
+                }
+            });
+        });
+
+        // ============================================
         // CONFIRMATION ON CANCEL
         // ============================================
         let formChanged = false;
-        const form = document.querySelector('form');
 
         form.addEventListener('input', function(e) {
             if (e.target.tagName !== 'BUTTON') {
@@ -278,18 +729,44 @@
         }
 
         // ============================================
-        // DEBUG - Log form data on submit
+        // PREVENT DOUBLE SUBMISSION
         // ============================================
         form.addEventListener('submit', function(e) {
-            console.log('Form submitted');
-            const formData = new FormData(form);
-            console.log('Form Data:');
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">{% if is_edit %}Updating...{% else %}Creating...{% endif %}</span>
+            `;
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUT: Ctrl+Enter to submit
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeElement = document.activeElement;
+                if (activeElement && activeElement.tagName !== 'BUTTON') {
+                    e.preventDefault();
+                    form.querySelector('button[type="submit"]').click();
+                }
             }
         });
 
+        // ============================================
+        // REMOVE ERROR STATE ON INPUT
+        // ============================================
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+            input.addEventListener('change', function() {
+                this.classList.remove('error');
+            });
+        });
+
         console.log('📝 Leave Form initialized');
+        console.log('📋 Mode: {% if is_edit %}Edit{% else %}Create{% endif %}');
     });
 </script>
 

@@ -1,132 +1,259 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/payslip_form.css' %}">
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_icon %}{{ page_icon }}{% endblock %}
+{% block page_subtitle %}
+    {% if is_edit %}
+    Editing payslip for <strong>{{ payslip.payroll.employee.user.get_full_name|default:payslip.payroll.employee.user.username }}</strong>
+    {% else %}
+    Generate a new payslip for a paid payroll record.
+    {% endif %}
 {% endblock %}
 
-{% block content %}
+{% block page_actions %}
+<a href="{% url 'payslips' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Payslips
+</a>
+{% if is_edit %}
+<a href="{% url 'payslip_detail' payslip.id %}" class="btn btn-secondary">
+    <span class="btn-icon">👁️</span> View Details
+</a>
+{% endif %}
+{% endblock %}
 
-<div class="payslip-form-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">{{ page_icon }}</div>
-                <div>
-                    <h1>{{ page_title }}</h1>
-                    <p class="header-subtitle">
-                        {% if is_edit %}
-                        Editing payslip for <strong>{{ payslip.payroll.employee }}</strong>
-                        {% else %}
-                        Generate a new payslip for a paid payroll record.
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'payslips' %}" class="btn-back">← Back to Payslips</a>
-            </div>
+{% block hrms_content %}
+<div class="payslip-form-container">
+    
+    <!-- ====== ERROR MESSAGES ====== -->
+    {% if form.errors or messages %}
+    <div class="error-alert" style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span style="font-size: 1.2rem;">⚠️</span>
+            <h3 style="color: #f87171; font-size: 0.95rem; margin: 0;">Please correct the errors below</h3>
         </div>
+        <ul style="color: #94a3b8; margin: 0; padding-left: 20px; font-size: 0.9rem;">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li><strong style="color: #e8edf5;">{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <li>{{ message }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
     </div>
+    {% endif %}
 
-    <!-- ================= FORM ================= -->
+    <!-- ====== FORM ====== -->
     <form method="POST" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
 
-        <!-- ====== ERROR MESSAGES ====== -->
-        {% if form.errors or messages %}
-        <div class="error-alert">
-            <div class="error-alert-header">
-                <span class="error-icon">⚠️</span>
-                <h3>Please correct the errors below</h3>
-            </div>
-            <ul class="error-list">
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-                {% for message in messages %}
-                    {% if message.tags == 'error' %}
-                        <li>{{ message }}</li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-        <!-- ====== FORM CARD ====== -->
-        <div class="form-card">
-            <div class="card-header">
-                <h2>📄 Payslip Details</h2>
-                <span class="card-badge">Required</span>
+        <div class="form-card" style="background: rgba(167, 139, 250, 0.02); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden; margin-bottom: 24px;">
+            <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                <h2 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">📄 Payslip Details</h2>
+                <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Required</span>
             </div>
 
-            <div class="form-grid">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr; gap: 20px; padding: 24px;">
+                
                 <!-- Payroll -->
-                <div class="form-group full-width">
-                    <label for="{{ form.payroll.id_for_label }}" class="form-label required">Payroll Record</label>
-                    {{ form.payroll }}
+                <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.payroll.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Payroll Record <span style="color: #f87171;">*</span>
+                    </label>
+                    <select name="payroll" id="{{ form.payroll.id_for_label }}" class="form-control" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; padding: 10px 14px; color: #e8edf5; font-size: 0.9rem; transition: all 0.3s; width: 100%;" required>
+                        <option value="">Select Payroll Record</option>
+                        {% for choice in form.fields.payroll.choices %}
+                            {% if choice.0 %}
+                            <option value="{{ choice.0 }}" {% if form.payroll.value|stringformat:"s" == choice.0|stringformat:"s" %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                     {% if form.payroll.errors %}
-                        <div class="field-error">{{ form.payroll.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.payroll.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Select a paid payroll record to generate the payslip.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Select a paid payroll record to generate the payslip.</span>
                 </div>
 
                 <!-- PDF File -->
-                <div class="form-group full-width">
-                    <label for="{{ form.pdf.id_for_label }}" class="form-label required">PDF File</label>
-                    <div class="file-upload-wrapper">
+                <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.pdf.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        PDF File <span style="color: #f87171;">*</span>
+                    </label>
+                    <div class="file-upload-wrapper" style="position: relative;">
                         {{ form.pdf }}
+                        <style>
+                            #id_pdf {
+                                position: absolute;
+                                opacity: 0;
+                                width: 100%;
+                                height: 100%;
+                                cursor: pointer;
+                                top: 0;
+                                left: 0;
+                                z-index: 2;
+                            }
+                            .file-upload-label {
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                                padding: 14px 18px;
+                                background: rgba(167, 139, 250, 0.04);
+                                border: 2px dashed rgba(167, 139, 250, 0.15);
+                                border-radius: 10px;
+                                cursor: pointer;
+                                transition: all 0.3s;
+                                color: #94a3b8;
+                            }
+                            .file-upload-label:hover {
+                                border-color: rgba(167, 139, 250, 0.3);
+                                background: rgba(167, 139, 250, 0.06);
+                            }
+                            .file-upload-label .upload-icon {
+                                font-size: 1.5rem;
+                            }
+                            .file-upload-label .upload-text {
+                                font-size: 0.9rem;
+                                font-weight: 500;
+                            }
+                        </style>
                         <label for="{{ form.pdf.id_for_label }}" class="file-upload-label">
                             <span class="upload-icon">📤</span>
                             <span class="upload-text">Choose PDF File</span>
                         </label>
                     </div>
                     {% if form.pdf.errors %}
-                        <div class="field-error">{{ form.pdf.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.pdf.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Upload the payslip PDF file.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Upload the payslip PDF file.</span>
                 </div>
 
                 <!-- Preview (if editing) -->
                 {% if is_edit and payslip.pdf %}
-                <div class="form-group full-width">
-                    <label class="form-label">Current PDF</label>
-                    <div class="current-file">
-                        <span class="file-icon">📄</span>
-                        <a href="{{ payslip.pdf.url }}" target="_blank" class="file-link">
+                <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Current PDF</label>
+                    <div class="current-file" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: rgba(52, 211, 153, 0.04); border: 1px solid rgba(52, 211, 153, 0.08); border-radius: 10px;">
+                        <span class="file-icon" style="font-size: 1.2rem;">📄</span>
+                        <a href="{{ payslip.pdf.url }}" target="_blank" class="file-link" style="color: #34d399; text-decoration: none; transition: all 0.3s; flex: 1;">
                             {{ payslip.pdf.name|cut:"payslips/" }}
                         </a>
-                        <span class="file-size">({{ payslip.pdf.size|filesizeformat }})</span>
+                        <span class="file-size" style="color: #64748b; font-size: 0.8rem;">({{ payslip.pdf.size|filesizeformat }})</span>
                     </div>
-                    <span class="help-text">Upload a new file to replace the current one.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Upload a new file to replace the current one.</span>
                 </div>
                 {% endif %}
             </div>
         </div>
 
         <!-- ====== FORM ACTIONS ====== -->
-        <div class="form-actions">
-            <button type="submit" class="btn-primary btn-save">
+        <div class="form-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="submit" class="btn-primary btn-save" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 32px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
                 {% if is_edit %}💾 Update Payslip{% else %}🚀 Generate Payslip{% endif %}
             </button>
-            <a href="{% url 'payslips' %}" class="btn-secondary">Cancel</a>
+            <a href="{% url 'payslips' %}" class="btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
+                Cancel
+            </a>
             {% if is_edit %}
-            <a href="{% url 'payslip_detail' payslip.id %}" class="btn-light">👁️ View Details</a>
+            <a href="{% url 'payslip_detail' payslip.id %}" class="btn-light" style="background: rgba(167, 139, 250, 0.04); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.06); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
+                👁️ View Details
+            </a>
             {% endif %}
         </div>
 
     </form>
 
 </div>
+
+<style>
+    .payslip-form-container .form-control:focus {
+        outline: none;
+        border-color: rgba(167, 139, 250, 0.3) !important;
+        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05) !important;
+    }
+    
+    .payslip-form-container .form-control:hover {
+        border-color: rgba(167, 139, 250, 0.2) !important;
+    }
+    
+    .payslip-form-container .btn-primary.btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .payslip-form-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .payslip-form-container .btn-light:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .payslip-form-container .form-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .payslip-form-container .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .payslip-form-container .file-link:hover {
+        color: #6ee7b7 !important;
+        text-decoration: underline !important;
+    }
+    
+    @media (max-width: 768px) {
+        .payslip-form-container .form-grid {
+            padding: 16px !important;
+            gap: 16px !important;
+        }
+        
+        .payslip-form-container .form-card .card-header {
+            padding: 14px 16px !important;
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 8px;
+        }
+        
+        .payslip-form-container .form-card .card-header h2 {
+            font-size: 1rem !important;
+        }
+        
+        .payslip-form-container .form-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .payslip-form-container .form-actions button,
+        .payslip-form-container .form-actions a {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .payslip-form-container .current-file {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 6px !important;
+        }
+    }
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -180,5 +307,4 @@
         console.log('📄 Payslip Form initialized');
     });
 </script>
-
 {% endblock %}

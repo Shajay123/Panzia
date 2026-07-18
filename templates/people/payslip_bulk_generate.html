@@ -1,99 +1,230 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}Bulk Generate Payslips{% endblock %}
+{% block page_icon %}📄{% endblock %}
+{% block page_subtitle %}Generate payslips for all paid payroll records.{% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/payslip_bulk_generate.css' %}">
+{% block page_actions %}
+<a href="{% url 'payslips' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Payslips
+</a>
 {% endblock %}
 
-{% block content %}
-
-<div class="payslip-bulk-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">📄</div>
-                <div>
-                    <h1>Bulk Generate Payslips</h1>
-                    <p class="header-subtitle">
-                        Generate payslips for all paid payroll records.
-                    </p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'payslips' %}" class="btn-back">← Back to Payslips</a>
-            </div>
-        </div>
-    </div>
-
+{% block hrms_content %}
+<div class="payslip-bulk-container">
+    
     <!-- ================= STATS ================= -->
-    <div class="stats-grid">
-        <div class="stat-card blue">
-            <div class="stat-icon">📄</div>
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="stat-card" style="background: rgba(96, 165, 250, 0.04); border: 1px solid rgba(96, 165, 250, 0.08); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.3s;">
+            <div style="font-size: 2rem;">📄</div>
             <div>
-                <h2>{{ total_count }}</h2>
-                <p>Payrolls to Generate</p>
+                <h2 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.5rem;">{{ total_count }}</h2>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.8rem;">Payrolls to Generate</p>
             </div>
         </div>
-        <div class="stat-card green">
-            <div class="stat-icon">✅</div>
+        <div class="stat-card" style="background: rgba(52, 211, 153, 0.04); border: 1px solid rgba(52, 211, 153, 0.08); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.3s;">
+            <div style="font-size: 2rem;">✅</div>
             <div>
-                <h2>0</h2>
-                <p>Generated</p>
+                <h2 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.5rem;">0</h2>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.8rem;">Generated</p>
             </div>
         </div>
-        <div class="stat-card orange">
-            <div class="stat-icon">⏳</div>
+        <div class="stat-card" style="background: rgba(251, 191, 36, 0.04); border: 1px solid rgba(251, 191, 36, 0.08); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.3s;">
+            <div style="font-size: 2rem;">⏳</div>
             <div>
-                <h2>{{ total_count }}</h2>
-                <p>Pending</p>
+                <h2 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.5rem;">{{ total_count }}</h2>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.8rem;">Pending</p>
             </div>
         </div>
     </div>
 
-    <!-- ================= CONFIRMATION ================= -->
-    <div class="confirmation-card">
-        <div class="confirmation-icon">⚠️</div>
-        <h3>Are you sure?</h3>
-        <p>
-            You are about to generate payslips for <strong>{{ total_count }}</strong> payroll record{{ total_count|pluralize }}.
+    <!-- ================= CONFIRMATION CARD ================= -->
+    <div class="confirmation-card" style="max-width: 700px; margin: 0 auto; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 32px; text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 12px;">⚠️</div>
+        <h3 style="color: #e8edf5; font-weight: 700; font-size: 1.3rem; margin-bottom: 12px;">Are you sure?</h3>
+        <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+            You are about to generate payslips for <strong style="color: #e8edf5;">{{ total_count }}</strong> payroll record{{ total_count|pluralize }}.
             This will create PDF payslips for all paid payrolls that don't have payslips yet.
         </p>
 
         {% if total_count > 0 %}
-        <div class="payroll-list">
-            <h4>Payrolls to be processed:</h4>
-            <ul>
+        <!-- Payroll List -->
+        <div class="payroll-list" style="background: rgba(167, 139, 250, 0.03); border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.06); padding: 16px 20px; margin-bottom: 24px; text-align: left;">
+            <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">📋 Payrolls to be processed:</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
                 {% for payroll in paid_payrolls %}
-                <li>
-                    <span class="employee-name">{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</span>
-                    <span class="month-year">{{ payroll.month }} {{ payroll.year }}</span>
-                    <span class="salary">₹{{ payroll.net_salary|floatformat:2 }}</span>
+                <li style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                    <span style="color: #e8edf5; font-size: 0.9rem; font-weight: 500;">{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</span>
+                    <span style="color: #94a3b8; font-size: 0.85rem;">{{ payroll.month }} {{ payroll.year }}</span>
+                    <span style="color: #a78bfa; font-weight: 600; font-size: 0.9rem;">₹{{ payroll.net_salary|floatformat:2 }}</span>
                 </li>
                 {% endfor %}
             </ul>
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(167, 139, 250, 0.06); display: flex; justify-content: space-between; color: #64748b; font-size: 0.8rem;">
+                <span>Total records: <strong style="color: #e8edf5;">{{ total_count }}</strong></span>
+                <span>Total amount: <strong style="color: #a78bfa;">₹{{ total_amount|floatformat:2|default:"0.00" }}</strong></span>
+            </div>
         </div>
 
         <form method="POST">
             {% csrf_token %}
-            <div class="form-actions">
-                <button type="submit" class="btn-primary btn-generate">🚀 Generate All Payslips</button>
-                <a href="{% url 'payslips' %}" class="btn-secondary">Cancel</a>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <button type="submit" class="btn-primary btn-generate" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 12px 36px; border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
+                    🚀 Generate All Payslips
+                </button>
+                <a href="{% url 'payslips' %}" class="btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
+                    Cancel
+                </a>
             </div>
         </form>
         {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">🎉</div>
-            <h3>All Payslips Generated!</h3>
-            <p>All paid payrolls already have payslips generated.</p>
-            <a href="{% url 'payslips' %}" class="btn-primary">View Payslips</a>
+        <!-- Empty State -->
+        <div class="empty-state" style="padding: 20px 0;">
+            <div style="font-size: 4rem; margin-bottom: 12px;">🎉</div>
+            <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">All Payslips Generated!</h3>
+            <p style="color: #94a3b8; margin-bottom: 20px;">All paid payrolls already have payslips generated.</p>
+            <a href="{% url 'payslips' %}" class="btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;">
+                View Payslips
+            </a>
         </div>
         {% endif %}
     </div>
 
+    <!-- ================= INFO NOTE ================= -->
+    <div style="margin-top: 20px; padding: 14px 20px; background: rgba(167, 139, 250, 0.03); border-radius: 10px; border: 1px solid rgba(167, 139, 250, 0.06); max-width: 700px; margin-left: auto; margin-right: auto;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span style="font-size: 1.2rem;">ℹ️</span>
+            <div style="text-align: left;">
+                <p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">
+                    <strong style="color: #e8edf5;">Note:</strong> This process will generate PDF payslips for all paid payrolls that don't already have payslips. 
+                    The generation may take a few moments depending on the number of records.
+                </p>
+            </div>
+        </div>
+    </div>
+
 </div>
 
+<style>
+    .payslip-bulk-container .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+    
+    .payslip-bulk-container .confirmation-card .btn-generate:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .payslip-bulk-container .confirmation-card .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .payslip-bulk-container .confirmation-card .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .payslip-bulk-container .payroll-list::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .payslip-bulk-container .payroll-list::-webkit-scrollbar-track {
+        background: rgba(167, 139, 250, 0.02);
+    }
+    
+    .payslip-bulk-container .payroll-list::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.2);
+        border-radius: 10px;
+    }
+    
+    .payslip-bulk-container .payroll-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(167, 139, 250, 0.3);
+    }
+    
+    .payslip-bulk-container .payroll-list li:last-child {
+        border-bottom: none !important;
+    }
+    
+    @media (max-width: 768px) {
+        .payslip-bulk-container .stats-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .payslip-bulk-container .confirmation-card {
+            padding: 24px 16px !important;
+            margin: 0 12px !important;
+        }
+        
+        .payslip-bulk-container .confirmation-card h3 {
+            font-size: 1.1rem !important;
+        }
+        
+        .payslip-bulk-container .payroll-list li {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 4px;
+            padding: 10px 0 !important;
+        }
+        
+        .payslip-bulk-container .payroll-list li .month-year {
+            font-size: 0.8rem !important;
+        }
+        
+        .payslip-bulk-container .payroll-list li .salary {
+            font-size: 0.85rem !important;
+        }
+        
+        .payslip-bulk-container .confirmation-card form > div {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .payslip-bulk-container .confirmation-card form button,
+        .payslip-bulk-container .confirmation-card form a {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .payslip-bulk-container .confirmation-card .payroll-list > div {
+            flex-direction: column !important;
+            gap: 4px !important;
+            align-items: flex-start !important;
+        }
+        
+        .payslip-bulk-container > div[style*="margin-top: 20px;"] {
+            margin: 20px 12px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .payslip-bulk-container .stats-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .payslip-bulk-container .confirmation-card {
+            padding: 20px 12px !important;
+        }
+        
+        .payslip-bulk-container .confirmation-card .payroll-list {
+            padding: 12px !important;
+        }
+        
+        .payslip-bulk-container .confirmation-card .payroll-list h4 {
+            font-size: 0.8rem !important;
+        }
+        
+        .payslip-bulk-container .confirmation-card .payroll-list li {
+            font-size: 0.85rem !important;
+        }
+    }
+</style>
 {% endblock %}

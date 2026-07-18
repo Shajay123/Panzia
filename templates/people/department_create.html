@@ -1,98 +1,492 @@
-
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}
-Create Department
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'departments' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Departments
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/department_create.css' %}">
-{% endblock %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       DEPARTMENT CREATE - HRMS STYLES
+       ============================================ */
+    .department-create-page {
+        max-width: 700px;
+        margin: 0 auto;
+    }
 
-{% block content %}
+    /* ===== FORM CARD ===== */
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .form-card h2 {
+        margin: 0 0 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+    }
+
+    .form-group .help-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .form-control {
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #64748b;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
+    /* ===== SUBMIT AREA ===== */
+    .submit-area {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .submit-area .btn {
+        padding: 10px 28px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-cancel {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    /* ===== ERROR ALERT ===== */
+    .alert-error {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        color: #f87171;
+    }
+
+    .alert-error .alert-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .alert-error ul {
+        margin: 4px 0 0 16px;
+        padding: 0;
+        color: #fca5a5;
+    }
+
+    .alert-error ul li {
+        margin-bottom: 2px;
+    }
+
+    /* ===== SUCCESS MESSAGE ===== */
+    .alert-success {
+        background: rgba(34, 197, 94, 0.06);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #4ade80;
+    }
+
+    .alert-success .alert-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .department-create-page {
+            padding: 0;
+        }
+
+        .form-card {
+            padding: 16px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .submit-area {
+            flex-direction: column;
+        }
+
+        .submit-area .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card {
+            padding: 14px;
+        }
+
+        .form-card h2 {
+            font-size: 1rem;
+        }
+
+        .form-control {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+
+        .btn-save,
+        .btn-cancel {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .submit-area {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.1s;
+        opacity: 0;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div class="department-create-page">
 
-    <div class="page-header">
-
-        <div>
-
-            <h1>🏢 Create Department</h1>
-
-            <p>
-                Add a new department to your startup.
-            </p>
-
-        </div>
-
-        <a href="{% url 'departments' %}" class="btn-back">
-
-            ← Back
-
-        </a>
-
-    </div>
-
-
-    <form method="POST">
-
+    <!-- ================= FORM ================= -->
+    <form method="POST" id="departmentForm">
         {% csrf_token %}
 
-        <div class="form-card">
+        <!-- ================= ERROR MESSAGES ================= -->
+        {% if form.errors %}
+        <div class="alert-error">
+            <div class="alert-icon">⚠️</div>
+            <div>
+                <strong>Please correct the following errors:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <li>
+                        {% if field == '__all__' %}
+                        General Error
+                        {% else %}
+                        {{ field|title }}
+                        {% endif %}
+                        : {{ error }}
+                    </li>
+                    {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
 
-            <h2>Department Information</h2>
+        <!-- ================= SUCCESS MESSAGES ================= -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert-success">
+                <div class="alert-icon">✅</div>
+                <div>{{ message }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ================= FORM CARD ================= -->
+        <div class="form-card">
+            <h2>🏢 Department Information</h2>
 
             <div class="form-grid">
-
                 <div class="form-group">
-
-                    <label>Department Name *</label>
-
+                    <label for="{{ form.name.id_for_label }}">
+                        Department Name <span class="required">*</span>
+                    </label>
                     {{ form.name }}
-
+                    {% if form.name.errors %}
+                    <div style="color: #f87171; font-size: 0.8rem; margin-top: 2px;">
+                        {{ form.name.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <span class="help-text">Enter the department name (e.g., Engineering, Sales)</span>
                 </div>
 
                 <div class="form-group">
-
-                    <label>Department Code</label>
-
+                    <label for="{{ form.code.id_for_label }}">
+                        Department Code
+                    </label>
                     {{ form.code }}
-
+                    {% if form.code.errors %}
+                    <div style="color: #f87171; font-size: 0.8rem; margin-top: 2px;">
+                        {{ form.code.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <span class="help-text">Enter a unique code (e.g., ENG, SALES)</span>
                 </div>
 
                 <div class="form-group full-width">
-
-                    <label>Description</label>
-
+                    <label for="{{ form.description.id_for_label }}">
+                        Description
+                    </label>
                     {{ form.description }}
-
+                    {% if form.description.errors %}
+                    <div style="color: #f87171; font-size: 0.8rem; margin-top: 2px;">
+                        {{ form.description.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <span class="help-text">Provide a brief description of the department</span>
                 </div>
-
             </div>
-
         </div>
 
-
+        <!-- ================= SUBMIT AREA ================= -->
         <div class="submit-area">
-
-            <button type="submit" class="btn-save">
-
+            <button type="submit" class="btn btn-save" id="submitBtn">
                 💾 Create Department
-
             </button>
-
-            <a href="{% url 'departments' %}" class="btn-cancel">
-
+            <a href="{% url 'departments' %}" class="btn btn-cancel">
                 Cancel
-
             </a>
-
         </div>
 
     </form>
 
 </div>
 
-{% endblock %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('departmentForm');
+        const submitBtn = document.getElementById('submitBtn');
 
+        // ============================================
+        // AUTO-FOCUS FIRST INPUT
+        // ============================================
+        const firstInput = form.querySelector('input:not([type="hidden"]), select, textarea');
+        if (firstInput) {
+            firstInput.focus();
+        }
+
+        // ============================================
+        // REAL-TIME VALIDATION FEEDBACK
+        // ============================================
+        form.querySelectorAll('input, select, textarea').forEach(function(field) {
+            field.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.hasAttribute('required')) {
+                    this.classList.add('error');
+                    this.classList.remove('success');
+                } else if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                }
+            });
+
+            field.addEventListener('focus', function() {
+                this.classList.remove('error');
+            });
+
+            field.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                } else {
+                    this.classList.remove('success');
+                }
+            });
+        });
+
+        // ============================================
+        // PREVENT DOUBLE SUBMISSION
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Creating...</span>
+            `;
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUT: Ctrl+S TO SUBMIT
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        // ============================================
+        // CONFIRMATION ON CANCEL IF DIRTY
+        // ============================================
+        let formChanged = false;
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+
+        const cancelBtn = document.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // REMOVE ERROR STATE ON INPUT
+        // ============================================
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+            input.addEventListener('change', function() {
+                this.classList.remove('error');
+            });
+        });
+
+        console.log('🏢 Create Department Form loaded');
+    });
+</script>
+
+{% endblock %}

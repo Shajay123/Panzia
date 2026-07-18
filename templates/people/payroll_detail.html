@@ -1,112 +1,206 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/payroll_detail.css' %}">
+{% block page_title %}Payroll Details{% endblock %}
+{% block page_icon %}💰{% endblock %}
+{% block page_subtitle %}
+    <strong>{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</strong>
+    · {{ payroll.month }} {{ payroll.year }}
 {% endblock %}
 
-{% block content %}
+{% block page_actions %}
+    {% if not payroll.paid %}
+    <a href="{% url 'payroll_update' payroll.id %}" class="btn btn-primary">
+        <span class="btn-icon">✏️</span> Edit
+    </a>
+    <a href="{% url 'payroll_mark_paid' payroll.id %}" class="btn btn-success" onclick="return confirm('Mark this payroll as paid?')">
+        <span class="btn-icon">✅</span> Mark Paid
+    </a>
+    <a href="{% url 'payroll_delete' payroll.id %}" class="btn btn-danger" onclick="return confirm('Delete this payroll record?')">
+        <span class="btn-icon">🗑️</span> Delete
+    </a>
+    {% endif %}
+    <a href="{% url 'payroll' %}" class="btn btn-secondary">
+        <span class="btn-icon">←</span> Back
+    </a>
+{% endblock %}
 
-<div class="payroll-detail-page">
-
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">{{ page_icon }}</div>
-                <div>
-                    <h1>Payroll Details</h1>
-                    <p class="header-subtitle">
-                        <strong>{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</strong>
-                        · {{ payroll.month }} {{ payroll.year }}
-                    </p>
-                </div>
+{% block hrms_content %}
+<div class="payroll-detail-container">
+    
+    <!-- Status Banner -->
+    <!-- <div style="margin-bottom: 24px; padding: 16px 20px; border-radius: 12px; background: {% if payroll.paid %}rgba(52, 211, 153, 0.06){% else %}rgba(251, 191, 36, 0.06){% endif %}; border: 1px solid {% if payroll.paid %}rgba(52, 211, 153, 0.12){% else %}rgba(251, 191, 36, 0.12){% endif %}; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;"> -->
+        <div style="display: flex; align-items: center; gap: 12px;">
+            {% if payroll.paid %}
+            <span style="font-size: 2rem;">✅</span>
+            <div>
+                <h4 style="color: #34d399; margin: 0; font-weight: 600;">Paid</h4>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.85rem;">Paid on {{ payroll.paid_date|date:"d M Y" }}</p>
             </div>
-            <div class="header-actions">
-                {% if not payroll.paid %}
-                <a href="{% url 'payroll_update' payroll.id %}" class="btn-edit">✏️ Edit</a>
-                <a href="{% url 'payroll_mark_paid' payroll.id %}" class="btn-paid" onclick="return confirm('Mark this payroll as paid?')">✅ Mark Paid</a>
-                <a href="{% url 'payroll_delete' payroll.id %}" class="btn-delete" onclick="return confirm('Delete this payroll record?')">🗑️ Delete</a>
-                {% endif %}
-                <a href="{% url 'payroll' %}" class="btn-back">← Back</a>
+            {% else %}
+            <span style="font-size: 2rem;">⏳</span>
+            <div>
+                <h4 style="color: #fbbf24; margin: 0; font-weight: 600;">Pending</h4>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.85rem;">This payroll has not been marked as paid yet</p>
             </div>
+            {% endif %}
+        </div>
+        <div style="display: flex; gap: 8px;">
+            {% if payroll.paid %}
+            <span style="background: rgba(52, 211, 153, 0.12); color: #34d399; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">✅ Paid</span>
+            {% else %}
+            <span style="background: rgba(251, 191, 36, 0.12); color: #fbbf24; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">⏳ Pending</span>
+            {% endif %}
         </div>
     </div>
 
-    <div class="detail-grid">
-        <div class="detail-card">
-            <div class="card-header">
-                <h3>📋 Payroll Information</h3>
-                <span class="card-badge">{{ payroll.month }} {{ payroll.year }}</span>
+    <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        
+        <!-- Payroll Information Card -->
+        <div class="detail-card" style="background: rgba(167, 139, 250, 0.03); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden;">
+            <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">📋 Payroll Information</h3>
+                <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">{{ payroll.month }} {{ payroll.year }}</span>
             </div>
-            <div class="detail-list">
-                <div class="detail-item">
-                    <span class="detail-label">Employee</span>
-                    <span class="detail-value">
-                        <div class="employee-info">
+            <div class="detail-list" style="padding: 8px 0;">
+                <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Employee</span>
+                    <span style="color: #e8edf5; font-size: 0.9rem;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
                             {% if payroll.employee.profile_image %}
-                            <img src="{{ payroll.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                            <img src="{{ payroll.employee.profile_image.url }}" alt="Employee" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                             {% else %}
-                            <div class="employee-avatar">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(167, 139, 250, 0.12); display: flex; align-items: center; justify-content: center; color: #a78bfa; font-weight: 600; font-size: 0.9rem;">
                                 {{ payroll.employee.user.first_name|first|default:payroll.employee.user.username|first|upper }}
                             </div>
                             {% endif %}
-                            <div>
-                                <strong>{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</strong>
-                                <small>{{ payroll.employee.designation|default:"-" }}</small>
+                            <div style="text-align: left;">
+                                <div style="font-weight: 500;">{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</div>
+                                <div style="font-size: 0.75rem; color: #94a3b8;">{{ payroll.employee.designation|default:"-" }}</div>
                             </div>
                         </div>
                     </span>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label">Month</span>
-                    <span class="detail-value">{{ payroll.month }}</span>
+                <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Month</span>
+                    <span style="color: #e8edf5; font-size: 0.9rem;">{{ payroll.month }}</span>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label">Year</span>
-                    <span class="detail-value">{{ payroll.year }}</span>
+                <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Year</span>
+                    <span style="color: #e8edf5; font-size: 0.9rem;">{{ payroll.year }}</span>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label">Status</span>
-                    <span class="detail-value">
-                        {% if payroll.paid %}
-                        <span class="badge paid">✅ Paid</span>
-                        <span class="paid-date">on {{ payroll.paid_date|date:"d M Y" }}</span>
-                        {% else %}
-                        <span class="badge pending">⏳ Pending</span>
-                        {% endif %}
-                    </span>
+                <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px;">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Created</span>
+                    <span style="color: #94a3b8; font-size: 0.85rem;">{{ payroll.created_at|date:"d M Y, h:i A" }}</span>
                 </div>
             </div>
         </div>
 
-        <div class="detail-card">
-            <div class="card-header">
-                <h3>💰 Salary Breakdown</h3>
-                <span class="card-badge">Details</span>
+        <!-- Salary Breakdown Card -->
+        <div class="detail-card" style="background: rgba(167, 139, 250, 0.03); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden;">
+            <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">💰 Salary Breakdown</h3>
+                <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Details</span>
             </div>
-            <div class="detail-list">
-                <div class="detail-item highlight">
-                    <span class="detail-label">Basic Salary</span>
-                    <span class="detail-value">₹{{ payroll.basic_salary|floatformat:2 }}</span>
+            <div class="detail-list" style="padding: 8px 0;">
+                <div class="detail-item highlight" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04); background: rgba(167, 139, 250, 0.02);">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Basic Salary</span>
+                    <span style="color: #e8edf5; font-size: 0.95rem; font-weight: 600;">₹{{ payroll.basic_salary|floatformat:2 }}</span>
                 </div>
-                <div class="detail-item highlight">
-                    <span class="detail-label">Allowances</span>
-                    <span class="detail-value">₹{{ payroll.allowances|floatformat:2 }}</span>
+                <div class="detail-item highlight" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04); background: rgba(52, 211, 153, 0.02);">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Allowances</span>
+                    <span style="color: #34d399; font-size: 0.95rem; font-weight: 600;">+₹{{ payroll.allowances|floatformat:2 }}</span>
                 </div>
-                <div class="detail-item highlight">
-                    <span class="detail-label">Deductions</span>
-                    <span class="detail-value">-₹{{ payroll.deductions|floatformat:2 }}</span>
+                <div class="detail-item highlight" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04); background: rgba(239, 68, 68, 0.02);">
+                    <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Deductions</span>
+                    <span style="color: #f87171; font-size: 0.95rem; font-weight: 600;">-₹{{ payroll.deductions|floatformat:2 }}</span>
                 </div>
-                <div class="detail-item total">
-                    <span class="detail-label"><strong>Net Salary</strong></span>
-                    <span class="detail-value"><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></span>
+                <div class="detail-item total" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(167, 139, 250, 0.05); border-top: 2px solid rgba(167, 139, 250, 0.1);">
+                    <span style="color: #e8edf5; font-size: 0.95rem; font-weight: 700;">Net Salary</span>
+                    <span style="color: #a78bfa; font-size: 1.2rem; font-weight: 700;">₹{{ payroll.net_salary|floatformat:2 }}</span>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Additional Information -->
+    <div style="margin-top: 24px; padding: 16px 20px; background: rgba(167, 139, 250, 0.02); border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <span style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Record ID</span>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 2px 0 0 0;">#{{ payroll.id }}</p>
+        </div>
+        <div>
+            <span style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Last Updated</span>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 2px 0 0 0;">{{ payroll.updated_at|date:"d M Y, h:i A" }}</p>
+        </div>
+    </div>
 </div>
 
+<style>
+    .payroll-detail-container .detail-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .payroll-detail-container .detail-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    .payroll-detail-container .detail-item.highlight:hover {
+        background: rgba(167, 139, 250, 0.04) !important;
+    }
+    
+    @media (max-width: 992px) {
+        .payroll-detail-container .detail-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .payroll-detail-container .detail-grid {
+            gap: 16px !important;
+        }
+        
+        .payroll-detail-container .detail-item {
+            padding: 12px 16px !important;
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 4px;
+        }
+        
+        .payroll-detail-container .detail-item .employee-info {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .payroll-detail-container .detail-card .card-header {
+            padding: 14px 16px !important;
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 8px;
+        }
+        
+        .payroll-detail-container .detail-card .card-header h3 {
+            font-size: 1rem !important;
+        }
+        
+        .payroll-detail-container .detail-item.total {
+            flex-direction: row !important;
+            padding: 14px 16px !important;
+        }
+        
+        .payroll-detail-container .detail-item.total .detail-value {
+            font-size: 1rem !important;
+        }
+        
+        .payroll-detail-container > div[style*="display: flex; align-items: center; justify-content: space-between;"] {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .payroll-detail-container > div[style*="display: flex; align-items: center; justify-content: space-between;"] > div {
+            width: 100%;
+        }
+    }
+</style>
 {% endblock %}

@@ -1,327 +1,38 @@
-{% extends 'base.html' %}
+{% extends 'people/employee_portal/base_side_navbar.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}My Attendance{% endblock %}
+{% block page_icon %}📅{% endblock %}
+{% block page_subtitle %}View your daily attendance history{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'employee_portal_attendance_checkin' %}" class="btn-portal-primary">
+    <span class="btn-icon">✅</span> Check In Today
+</a>
+<a href="{% url 'employee_portal_attendance_checkout' %}" class="btn-portal-secondary">
+    <span class="btn-icon">🚀</span> Check Out
+</a>
+{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+{{ block.super }}
 <style>
-    /* ===== ATTENDANCE CALENDAR STYLES ===== */
+    /* ============================================
+       ATTENDANCE CALENDAR STYLES
+       ============================================ */
+    
     .attendance-calendar-container {
         max-width: 1200px;
         margin: 0 auto;
+        padding: 0 10px;
     }
-
-    /* Calendar Header */
-    .calendar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .calendar-nav {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .calendar-nav button {
-        background: rgba(167, 139, 250, 0.06);
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        color: #94a3b8;
-        padding: 8px 16px;
-        cursor: pointer;
-        font-size: 1.1rem;
-        transition: all 0.2s;
-        font-family: inherit;
-    }
-
-    .calendar-nav button:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-    }
-
-    .calendar-nav .month-year {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #e8edf5;
-        min-width: 150px;
-        text-align: center;
-    }
-
-    .calendar-legend {
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .calendar-legend .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.75rem;
-        color: #94a3b8;
-    }
-
-    .legend-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        border: 1px solid rgba(167, 139, 250, 0.1);
-    }
-
-    .legend-dot.present { background: #22c55e; }
-    .legend-dot.absent { background: #ef4444; }
-    .legend-dot.wfh { background: #3b82f6; }
-    .legend-dot.leave { background: #f59e0b; }
-    .legend-dot.holiday { background: #a78bfa; }
-    .legend-dot.weekend { background: #64748b; }
-    .legend-dot.not-marked { background: rgba(167, 139, 250, 0.06); border: 1px dashed rgba(167, 139, 250, 0.15); }
-
-    /* Calendar Grid */
-    .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 6px;
-        background: transparent;
-        padding: 4px;
-    }
-
-    .calendar-day-header {
-        padding: 10px 4px;
-        text-align: center;
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        background: rgba(167, 139, 250, 0.03);
-        border-radius: 8px;
-    }
-
-    /* ===== CALENDAR DAY CARD ===== */
-    .calendar-day {
-        background: rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 12px;
-        padding: 12px 8px;
-        min-height: 100px;
-        display: flex;
-        flex-direction: column;
-        transition: all 0.3s ease;
-        position: relative;
-        cursor: default;
-    }
-
-    .calendar-day:hover {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(167, 139, 250, 0.15);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .calendar-day .day-number {
-        font-size: 1.5rem;
-        font-weight: 500;
-        color: #94a3b8;
-        margin-bottom: 6px;
-        line-height: 1;
-    }
-
-    .calendar-day .day-status {
-        font-size: 0.6rem;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 12px;
-        display: inline-block;
-        width: fit-content;
-        margin-bottom: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-    }
-
-    .calendar-day .day-status.present {
-        background: rgba(34, 197, 94, 0.15);
-        color: #4ade80;
-    }
-
-    .calendar-day .day-status.absent {
-        background: rgba(239, 68, 68, 0.15);
-        color: #f87171;
-    }
-
-    .calendar-day .day-status.wfh {
-        background: rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-    }
-
-    .calendar-day .day-status.leave {
-        background: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
-    }
-
-    .calendar-day .day-status.holiday {
-        background: rgba(167, 139, 250, 0.15);
-        color: #a78bfa;
-    }
-
-    .calendar-day .day-status.weekend {
-        background: rgba(100, 116, 139, 0.1);
-        color: #64748b;
-    }
-
-    .calendar-day .day-status.not-marked {
-        background: transparent;
-        color: #64748b;
-        font-size: 0.5rem;
-    }
-
-    .calendar-day .day-time {
-        font-size: 0.55rem;
-        color: #94a3b8;
-        margin-top: 2px;
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-    }
-
-    .calendar-day .day-time .time-entry {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 0.5rem;
-    }
-
-    .calendar-day .day-time .time-entry .label {
-        color: #64748b;
-        font-weight: 400;
-    }
-
-    .calendar-day .day-time .time-entry .value {
-        color: #e8edf5;
-        font-weight: 500;
-    }
-
-    .calendar-day .day-time .time-entry .value.present {
-        color: #4ade80;
-    }
-
-    .calendar-day .day-time .time-entry .value.late {
-        color: #fbbf24;
-    }
-
-    .calendar-day .day-time .time-entry .value.early {
-        color: #60a5fa;
-    }
-
-    /* Weekend Styling */
-    .calendar-day.weekend {
-        background: rgba(100, 116, 139, 0.04);
-        border-color: rgba(100, 116, 139, 0.06);
-    }
-
-    .calendar-day.weekend .day-number {
-        color: #64748b;
-    }
-
-    /* Today Highlight */
-    .calendar-day.today {
-        border-color: #7c3aed;
-        box-shadow: 0 0 30px rgba(124, 58, 237, 0.15);
-        background: rgba(124, 58, 237, 0.04);
-    }
-
-    .calendar-day.today .day-number {
-        color: #a78bfa;
-        font-weight: 700;
-    }
-
-    .calendar-day.today::before {
-        content: '● Today';
-        position: absolute;
-        top: -8px;
-        right: 8px;
-        font-size: 0.45rem;
-        font-weight: 600;
-        color: #7c3aed;
-        background: rgba(124, 58, 237, 0.1);
-        padding: 1px 8px;
-        border-radius: 10px;
-        letter-spacing: 0.5px;
-    }
-
-    /* Other Month */
-    .calendar-day.other-month {
-        opacity: 0.3;
-        pointer-events: none;
-    }
-
-    /* Tooltip */
-    .calendar-day .day-tooltip {
-        display: none;
-        position: absolute;
-        bottom: calc(100% + 8px);
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1a1035;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        padding: 8px 12px;
-        min-width: 140px;
-        z-index: 10;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        font-size: 0.7rem;
-        color: #d6e0f0;
-        text-align: center;
-        white-space: nowrap;
-    }
-
-    .calendar-day:hover .day-tooltip {
-        display: block;
-    }
-
-    .calendar-day .day-tooltip::after {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border: 6px solid transparent;
-        border-top-color: #1a1035;
-    }
-
-    /* Status Dot Indicator */
-    .calendar-day .day-dot-indicator {
-        display: flex;
-        gap: 3px;
-        margin-top: 2px;
-        flex-wrap: wrap;
-    }
-
-    .calendar-day .day-dot-indicator .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-    }
-
-    .calendar-day .day-dot-indicator .dot.present { background: #22c55e; }
-    .calendar-day .day-dot-indicator .dot.absent { background: #ef4444; }
-    .calendar-day .day-dot-indicator .dot.wfh { background: #3b82f6; }
-    .calendar-day .day-dot-indicator .dot.leave { background: #f59e0b; }
 
     /* Stats Summary */
     .attendance-stats-summary {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
         gap: 12px;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
 
     .stat-summary-item {
@@ -330,7 +41,6 @@
         border-radius: 12px;
         padding: 14px 16px;
         text-align: center;
-        backdrop-filter: blur(4px);
         transition: all 0.3s ease;
     }
 
@@ -356,21 +66,27 @@
     .stat-summary-item.absent .stat-number { color: #ef4444; }
     .stat-summary-item.wfh .stat-number { color: #3b82f6; }
     .stat-summary-item.leave .stat-number { color: #f59e0b; }
+    .stat-summary-item.total .stat-number { color: #a78bfa; }
+    .stat-summary-item.rate .stat-number { color: #ec4899; }
 
-    /* Filter */
+    /* Calendar Filter */
     .calendar-filter {
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
         margin-bottom: 20px;
         align-items: center;
+        background: rgba(167, 139, 250, 0.02);
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
     }
 
     .calendar-filter select {
         padding: 8px 14px;
         border: 1px solid rgba(167, 139, 250, 0.1);
         border-radius: 8px;
-        background: rgba(167, 139, 250, 0.03);
+        background: #2a1f3d;
         color: #e8edf5;
         font-size: 0.85rem;
         min-width: 120px;
@@ -419,6 +135,7 @@
         text-decoration: none;
         transition: all 0.2s;
         font-family: inherit;
+        cursor: pointer;
     }
 
     .calendar-filter .btn-reset:hover {
@@ -426,163 +143,768 @@
         color: #e8edf5;
     }
 
-    /* Responsive */
-    @media (max-width: 992px) {
-        .calendar-day {
-            min-height: 80px;
-            padding: 8px 6px;
-        }
-
-        .calendar-day .day-number {
-            font-size: 1.2rem;
-        }
+    .filter-label {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
+    /* Calendar Header */
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .calendar-nav {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .calendar-nav button {
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        color: #94a3b8;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .calendar-nav button:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .calendar-nav .month-year {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #e8edf5;
+        min-width: 150px;
+        text-align: center;
+    }
+
+    .calendar-nav .today-btn {
+        font-size: 0.8rem;
+        padding: 6px 14px;
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+        border-color: rgba(124, 58, 237, 0.15);
+    }
+
+    .calendar-nav .today-btn:hover {
+        background: rgba(124, 58, 237, 0.15);
+        color: #c4b5fd;
+    }
+
+    .calendar-legend {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .calendar-legend .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+    }
+
+    .legend-dot.present { background: #22c55e; }
+    .legend-dot.absent { background: #ef4444; }
+    .legend-dot.wfh { background: #3b82f6; }
+    .legend-dot.leave { background: #f59e0b; }
+    .legend-dot.weekend { background: #64748b; }
+    .legend-dot.not-marked { background: rgba(167, 139, 250, 0.08); border: 1px dashed rgba(167, 139, 250, 0.15); }
+    .legend-dot.checked-out { background: #8b5cf6; }
+
+    /* ============================================
+       UPDATED CALENDAR CELL STYLES
+       ============================================ */
+
+    /* Calendar Grid */
+    #calendarGrid {
+        display: grid !important;
+        grid-template-columns: repeat(7, 1fr) !important;
+        gap: 6px !important;
+        padding: 4px !important;
+        width: 100% !important;
+        background: transparent !important;
+    }
+
+    .calendar-day-header {
+        padding: 10px 4px !important;
+        text-align: center !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: #94a3b8 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        background: rgba(167, 139, 250, 0.03) !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .calendar-day {
+        background: rgba(167, 139, 250, 0.03) !important;
+        border: 1px solid rgba(167, 139, 250, 0.06) !important;
+        border-radius: 10px !important;
+        padding: 8px 4px !important;
+        min-height: 95px !important;
+        min-width: 50px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        cursor: default !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    .calendar-day:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+        border-color: rgba(167, 139, 250, 0.15) !important;
+    }
+
+    .calendar-day .day-number {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        color: #94a3b8 !important;
+        margin-bottom: 2px !important;
+        line-height: 1.2 !important;
+        display: block !important;
+        transition: color 0.3s ease !important;
+    }
+
+    .calendar-day .day-status-icon {
+        font-size: 0.85rem !important;
+        margin-bottom: 2px !important;
+        display: block !important;
+    }
+
+    /* ===== LEAVE TYPE BADGE ===== */
+    .calendar-day .leave-type-badge {
+        font-size: 0.4rem !important;
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        padding: 1px 6px !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.3px !important;
+        margin-top: 1px !important;
+        display: inline-block !important;
+        border: 1px solid rgba(245, 158, 11, 0.1) !important;
+    }
+
+    /* ===== TIME DISPLAY INSIDE CELLS ===== */
+    .calendar-day .day-time {
+        font-size: 0.45rem !important;
+        color: #94a3b8 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        margin-top: auto !important;
+        width: 100% !important;
+        background: rgba(167, 139, 250, 0.05) !important;
+        border-radius: 6px !important;
+        padding: 4px 3px !important;
+        border: 1px solid rgba(167, 139, 250, 0.06) !important;
+        backdrop-filter: blur(4px) !important;
+    }
+
+    .calendar-day .day-time .time-entry {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        font-size: 0.45rem !important;
+        padding: 2px 4px !important;
+        border-radius: 4px !important;
+        background: rgba(167, 139, 250, 0.03) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .calendar-day .day-time .time-entry:hover {
+        background: rgba(167, 139, 250, 0.08) !important;
+    }
+
+    .calendar-day .day-time .time-entry .label {
+        color: #64748b !important;
+        font-weight: 700 !important;
+        min-width: 20px !important;
+        font-size: 0.4rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .calendar-day .day-time .time-entry .value {
+        color: #e8edf5 !important;
+        font-weight: 600 !important;
+        font-size: 0.5rem !important;
+        font-family: 'Courier New', monospace !important;
+        letter-spacing: 0.5px !important;
+        padding: 0 2px !important;
+    }
+
+    .calendar-day .day-time .time-entry .value.early {
+        color: #60a5fa !important;
+        text-shadow: 0 0 10px rgba(96, 165, 250, 0.2) !important;
+    }
+
+    .calendar-day .day-time .time-entry .value.on-time {
+        color: #4ade80 !important;
+        text-shadow: 0 0 10px rgba(74, 222, 128, 0.2) !important;
+    }
+
+    .calendar-day .day-time .time-entry .value.late {
+        color: #fbbf24 !important;
+        text-shadow: 0 0 10px rgba(251, 191, 36, 0.2) !important;
+    }
+
+    .calendar-day .day-time .time-entry .value.very-late {
+        color: #f87171 !important;
+        text-shadow: 0 0 10px rgba(248, 113, 113, 0.2) !important;
+    }
+
+    .calendar-day .day-time .time-entry.check-in {
+        border-left: 2px solid #22c55e !important;
+        padding-left: 6px !important;
+    }
+
+    .calendar-day .day-time .time-entry.check-out {
+        border-left: 2px solid #8b5cf6 !important;
+        padding-left: 6px !important;
+    }
+
+    /* ===== LEAVE STATUS IN CELL ===== */
+    .calendar-day .leave-info {
+        font-size: 0.4rem !important;
+        color: #fbbf24 !important;
+        margin-top: 2px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        background: rgba(245, 158, 11, 0.08) !important;
+        padding: 2px 6px !important;
+        border-radius: 4px !important;
+        border: 1px solid rgba(245, 158, 11, 0.08) !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+
+    .calendar-day .leave-info .leave-icon {
+        font-size: 0.5rem !important;
+    }
+
+    .calendar-day .leave-info .leave-text {
+        font-weight: 500 !important;
+        font-size: 0.4rem !important;
+    }
+
+    .calendar-day .leave-info .leave-status-badge {
+        font-size: 0.35rem !important;
+    }
+
+    /* ===== STATUS COLORS ===== */
+    .calendar-day.status-present {
+        background: rgba(34, 197, 94, 0.06) !important;
+        border-color: rgba(34, 197, 94, 0.12) !important;
+    }
+    .calendar-day.status-present .day-number { 
+        color: #4ade80 !important;
+        text-shadow: 0 0 20px rgba(74, 222, 128, 0.1) !important;
+    }
+    .calendar-day.status-present:hover {
+        border-color: rgba(34, 197, 94, 0.3) !important;
+        background: rgba(34, 197, 94, 0.1) !important;
+    }
+
+    .calendar-day.status-absent {
+        background: rgba(239, 68, 68, 0.06) !important;
+        border-color: rgba(239, 68, 68, 0.12) !important;
+    }
+    .calendar-day.status-absent .day-number { 
+        color: #f87171 !important;
+        text-shadow: 0 0 20px rgba(248, 113, 113, 0.1) !important;
+    }
+    .calendar-day.status-absent:hover {
+        border-color: rgba(239, 68, 68, 0.3) !important;
+        background: rgba(239, 68, 68, 0.1) !important;
+    }
+
+    .calendar-day.status-wfh {
+        background: rgba(59, 130, 246, 0.06) !important;
+        border-color: rgba(59, 130, 246, 0.12) !important;
+    }
+    .calendar-day.status-wfh .day-number { 
+        color: #60a5fa !important;
+        text-shadow: 0 0 20px rgba(96, 165, 250, 0.1) !important;
+    }
+    .calendar-day.status-wfh:hover {
+        border-color: rgba(59, 130, 246, 0.3) !important;
+        background: rgba(59, 130, 246, 0.1) !important;
+    }
+
+    .calendar-day.status-leave {
+        background: rgba(245, 158, 11, 0.06) !important;
+        border-color: rgba(245, 158, 11, 0.12) !important;
+    }
+    .calendar-day.status-leave .day-number { 
+        color: #fbbf24 !important;
+        text-shadow: 0 0 20px rgba(251, 191, 36, 0.1) !important;
+    }
+    .calendar-day.status-leave:hover {
+        border-color: rgba(245, 158, 11, 0.3) !important;
+        background: rgba(245, 158, 11, 0.1) !important;
+    }
+
+    .calendar-day.status-weekend {
+        background: rgba(100, 116, 139, 0.04) !important;
+        border-color: rgba(100, 116, 139, 0.06) !important;
+    }
+    .calendar-day.status-weekend .day-number { 
+        color: #64748b !important;
+        opacity: 0.6 !important;
+    }
+    .calendar-day.status-weekend:hover {
+        border-color: rgba(100, 116, 139, 0.15) !important;
+    }
+
+    .calendar-day.status-not-marked {
+        background: rgba(167, 139, 250, 0.02) !important;
+        border-color: rgba(167, 139, 250, 0.04) !important;
+    }
+    .calendar-day.status-not-marked .day-number { 
+        color: #64748b !important;
+        opacity: 0.5 !important;
+    }
+    .calendar-day.status-not-marked:hover {
+        border-color: rgba(167, 139, 250, 0.1) !important;
+        background: rgba(167, 139, 250, 0.04) !important;
+    }
+
+    /* ===== CHECKED OUT INDICATOR ===== */
+    .calendar-day.has-checkout {
+        border-bottom: 3px solid #8b5cf6 !important;
+        position: relative !important;
+    }
+    .calendar-day.has-checkout::after {
+        content: '✓' !important;
+        position: absolute !important;
+        bottom: 2px !important;
+        right: 4px !important;
+        font-size: 0.5rem !important;
+        color: #8b5cf6 !important;
+        opacity: 0.6 !important;
+    }
+
+    /* ===== TODAY ===== */
+    .calendar-day.today {
+        border-color: #7c3aed !important;
+        box-shadow: 0 0 30px rgba(124, 58, 237, 0.15) !important;
+        background: rgba(124, 58, 237, 0.04) !important;
+    }
+    .calendar-day.today .day-number {
+        color: #a78bfa !important;
+        font-weight: 800 !important;
+        font-size: 1.2rem !important;
+    }
+    .calendar-day.today::before {
+        content: '●' !important;
+        position: absolute !important;
+        top: 3px !important;
+        right: 5px !important;
+        font-size: 0.4rem !important;
+        color: #7c3aed !important;
+        animation: pulse-dot 2s infinite !important;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 0.4; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* ===== OTHER MONTH ===== */
+    .calendar-day.other-month {
+        opacity: 0.25 !important;
+        pointer-events: none !important;
+        display: flex !important;
+        min-height: 95px !important;
+        background: transparent !important;
+        border: 1px solid transparent !important;
+    }
+
+    /* ===== TOOLTIP ===== */
+    .calendar-day .day-tooltip {
+        display: none !important;
+        position: absolute !important;
+        bottom: calc(100% + 10px) !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        background: rgba(26, 16, 53, 0.95) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(167, 139, 250, 0.12) !important;
+        border-radius: 10px !important;
+        padding: 12px 16px !important;
+        min-width: 200px !important;
+        z-index: 100 !important;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
+        font-size: 0.7rem !important;
+        color: #d6e0f0 !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        pointer-events: none !important;
+    }
+
+    .calendar-day:hover .day-tooltip {
+        display: block !important;
+    }
+
+    .calendar-day .day-tooltip::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 100% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        border: 6px solid transparent !important;
+        border-top-color: rgba(26, 16, 53, 0.95) !important;
+    }
+
+    .calendar-day .day-tooltip .tooltip-status {
+        font-weight: 700 !important;
+        font-size: 0.75rem !important;
+    }
+    .calendar-day .day-tooltip .tooltip-status.present { color: #4ade80 !important; }
+    .calendar-day .day-tooltip .tooltip-status.absent { color: #f87171 !important; }
+    .calendar-day .day-tooltip .tooltip-status.wfh { color: #60a5fa !important; }
+    .calendar-day .day-tooltip .tooltip-status.leave { color: #fbbf24 !important; }
+    .calendar-day .day-tooltip .tooltip-status.weekend { color: #64748b !important; }
+    .calendar-day .day-tooltip .tooltip-status.not-marked { color: #94a3b8 !important; }
+
+    .calendar-day .day-tooltip .tooltip-time {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        margin-top: 6px !important;
+        font-size: 0.65rem !important;
+        color: #94a3b8 !important;
+        border-top: 1px solid rgba(167, 139, 250, 0.06) !important;
+        padding-top: 6px !important;
+    }
+
+    .calendar-day .day-tooltip .tooltip-time span {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    .calendar-day .day-tooltip .tooltip-time .check-in-time {
+        color: #4ade80 !important;
+        font-weight: 600 !important;
+    }
+
+    .calendar-day .day-tooltip .tooltip-time .check-out-time {
+        color: #a78bfa !important;
+        font-weight: 600 !important;
+    }
+
+    .calendar-day .day-tooltip .tooltip-hours {
+        margin-top: 4px !important;
+        font-size: 0.6rem !important;
+        color: #64748b !important;
+    }
+
+    .calendar-day .day-tooltip .tooltip-leave-type {
+        margin-top: 4px !important;
+        font-size: 0.6rem !important;
+        color: #fbbf24 !important;
+        background: rgba(245, 158, 11, 0.1) !important;
+        padding: 2px 8px !important;
+        border-radius: 4px !important;
+        display: inline-block !important;
+    }
+
+    /* Portal Card */
+    .portal-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        overflow: visible;
+    }
+
+    .portal-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .portal-card-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .record-count {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 12px;
+        border-radius: 20px;
+    }
+
+    /* Buttons */
+    .btn-portal-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white !important;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-portal-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        color: white !important;
+    }
+
+    .btn-portal-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8 !important;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-portal-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5 !important;
+    }
+
+    /* Debug styles */
+    .debug-info {
+        background: rgba(167, 139, 250, 0.08);
+        border: 1px solid rgba(167, 139, 250, 0.15);
+        border-radius: 8px;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        font-size: 0.8rem;
+        color: #a78bfa;
+        display: none;
+    }
+    .debug-info.show {
+        display: block;
+    }
+    .debug-info .debug-success {
+        color: #4ade80;
+    }
+    .debug-info .debug-warning {
+        color: #fbbf24;
+    }
+    .debug-info .debug-error {
+        color: #f87171;
+    }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-        .calendar-grid {
-            gap: 4px;
-            padding: 2px;
+        #calendarGrid {
+            gap: 4px !important;
+            padding: 2px !important;
         }
-
         .calendar-day {
-            min-height: 70px;
-            padding: 6px 4px;
-            border-radius: 8px;
+            min-height: 75px !important;
+            padding: 6px 2px !important;
+            min-width: 30px !important;
+            border-radius: 8px !important;
         }
-
         .calendar-day .day-number {
-            font-size: 1rem;
+            font-size: 0.85rem !important;
         }
-
-        .calendar-day .day-status {
-            font-size: 0.45rem;
-            padding: 1px 6px;
+        .calendar-day .day-status-icon {
+            font-size: 0.75rem !important;
         }
-
+        .calendar-day .day-time {
+            font-size: 0.4rem !important;
+            padding: 2px 2px !important;
+        }
         .calendar-day .day-time .time-entry {
-            font-size: 0.4rem;
+            font-size: 0.35rem !important;
+            padding: 1px 2px !important;
+            gap: 2px !important;
         }
-
+        .calendar-day .day-time .time-entry .value {
+            font-size: 0.4rem !important;
+        }
+        .calendar-day .day-time .time-entry .label {
+            font-size: 0.35rem !important;
+            min-width: 14px !important;
+        }
+        .calendar-day .leave-info {
+            font-size: 0.35rem !important;
+            padding: 1px 4px !important;
+        }
+        .calendar-day .leave-type-badge {
+            font-size: 0.35rem !important;
+            padding: 0px 4px !important;
+        }
+        .calendar-day.other-month {
+            min-height: 75px !important;
+        }
         .calendar-day-header {
-            font-size: 0.55rem;
-            padding: 6px 2px;
+            font-size: 0.5rem !important;
+            padding: 4px 2px !important;
         }
-
         .calendar-nav .month-year {
-            font-size: 1rem;
-            min-width: 120px;
-        }
-
-        .calendar-nav button {
-            padding: 6px 12px;
             font-size: 0.9rem;
+            min-width: 100px;
         }
-
+        .calendar-nav button {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+        }
         .calendar-legend {
-            gap: 8px;
+            gap: 6px;
         }
-
         .calendar-legend .legend-item {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
         }
-
         .attendance-stats-summary {
             grid-template-columns: repeat(3, 1fr);
         }
-
         .calendar-filter {
             flex-direction: column;
             align-items: stretch;
         }
-
         .calendar-filter select,
         .calendar-filter .btn-filter,
         .calendar-filter .btn-reset {
             width: 100%;
         }
-
-        .calendar-day.today::before {
-            content: '●';
-            top: 2px;
-            right: 4px;
-            font-size: 0.4rem;
-            padding: 0;
-            background: transparent;
+        .calendar-day .day-tooltip {
+            min-width: 150px !important;
+            font-size: 0.6rem !important;
+            padding: 8px 12px !important;
         }
     }
 
     @media (max-width: 480px) {
         .calendar-day {
-            min-height: 60px;
-            padding: 4px 3px;
-            border-radius: 6px;
+            min-height: 60px !important;
+            padding: 4px 1px !important;
+            min-width: 22px !important;
+            border-radius: 6px !important;
         }
-
         .calendar-day .day-number {
-            font-size: 0.8rem;
+            font-size: 0.7rem !important;
         }
-
-        .calendar-day .day-status {
-            font-size: 0.4rem;
-            padding: 1px 4px;
+        .calendar-day .day-status-icon {
+            font-size: 0.6rem !important;
         }
-
+        .calendar-day .day-time {
+            font-size: 0.35rem !important;
+            padding: 2px 1px !important;
+        }
         .calendar-day .day-time .time-entry {
-            font-size: 0.35rem;
+            font-size: 0.3rem !important;
+            padding: 1px 1px !important;
+            gap: 1px !important;
         }
-
+        .calendar-day .day-time .time-entry .value {
+            font-size: 0.35rem !important;
+        }
+        .calendar-day .day-time .time-entry .label {
+            display: none !important;
+        }
+        .calendar-day .day-time .time-entry.check-in {
+            border-left: 2px solid #22c55e !important;
+            padding-left: 2px !important;
+        }
+        .calendar-day .day-time .time-entry.check-out {
+            border-left: 2px solid #8b5cf6 !important;
+            padding-left: 2px !important;
+        }
+        .calendar-day .leave-info {
+            font-size: 0.3rem !important;
+            padding: 1px 3px !important;
+        }
+        .calendar-day .leave-type-badge {
+            font-size: 0.3rem !important;
+            padding: 0px 3px !important;
+        }
         .calendar-day .day-tooltip {
             display: none !important;
         }
-
-        .calendar-header {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
+        .calendar-day.other-month {
+            min-height: 60px !important;
         }
-
-        .calendar-nav {
-            justify-content: center;
-        }
-
-        .calendar-legend {
-            justify-content: center;
-        }
-
         .attendance-stats-summary {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr !important;
+        }
+        .calendar-day.has-checkout::after {
+            font-size: 0.4rem !important;
+            bottom: 1px !important;
+            right: 2px !important;
         }
     }
 </style>
 {% endblock %}
 
-{% block content %}
-
-<div class="employee-portal">
+{% block portal_content %}
+<div class="employee-portal-content">
     <div class="attendance-calendar-container">
 
-        <!-- ================= HEADER ================= -->
-        <div class="portal-header">
-            <div class="portal-header-content">
-                <div class="portal-header-left">
-                    <div class="portal-header-icon">📅</div>
-                    <div>
-                        <h1>My Attendance</h1>
-                        <p class="portal-header-subtitle">
-                            View your daily attendance history
-                        </p>
-                    </div>
-                </div>
-                <div class="portal-header-right">
-                    <a href="{% url 'employee_portal_attendance_mark' %}" class="btn-portal-primary">
-                        <span class="btn-icon">📝</span> Mark Today
-                    </a>
-                    <a href="{% url 'employee_portal_dashboard' %}" class="btn-portal-secondary">← Back</a>
-                </div>
-            </div>
+        <!-- Debug Info -->
+        <div class="debug-info show" id="debugInfo">
+            <strong>🔍 Debug:</strong>
+            <span id="debugMessage">Loading...</span>
+            <br>
+            <small id="debugDetails"></small>
         </div>
 
-        <!-- ================= STATS SUMMARY ================= -->
+        <!-- Stats Summary -->
         <div class="attendance-stats-summary">
             <div class="stat-summary-item present">
                 <div class="stat-number">{{ present_days|default:0 }}</div>
@@ -600,18 +922,19 @@
                 <div class="stat-number">{{ leave_days|default:0 }}</div>
                 <div class="stat-label">🌴 Leave</div>
             </div>
-            <div class="stat-summary-item" style="border-color: rgba(167, 139, 250, 0.1);">
-                <div class="stat-number" style="color: #a78bfa;">{{ total_days|default:0 }}</div>
+            <div class="stat-summary-item total">
+                <div class="stat-number">{{ total_days|default:0 }}</div>
                 <div class="stat-label">📊 Total Days</div>
             </div>
-            <div class="stat-summary-item" style="border-color: rgba(167, 139, 250, 0.1);">
-                <div class="stat-number" style="color: #ec4899;">{{ attendance_percentage|default:0 }}%</div>
+            <div class="stat-summary-item rate">
+                <div class="stat-number">{{ attendance_percentage|default:0 }}%</div>
                 <div class="stat-label">📈 Attendance Rate</div>
             </div>
         </div>
 
-        <!-- ================= FILTER ================= -->
+        <!-- Filter -->
         <div class="calendar-filter">
+            <span class="filter-label">📅 Filter</span>
             <select id="monthFilter">
                 <option value="1">January</option>
                 <option value="2">February</option>
@@ -643,10 +966,10 @@
                 <option value="Leave">🌴 Leave</option>
             </select>
             <button class="btn-filter" onclick="applyFilters()">🔍 Apply</button>
-            <a href="{% url 'employee_portal_attendance' %}" class="btn-reset">↩️ Reset</a>
+            <button class="btn-reset" onclick="resetFilters()">↩️ Reset</button>
         </div>
 
-        <!-- ================= CALENDAR ================= -->
+        <!-- Calendar -->
         <div class="portal-card">
             <div class="portal-card-header">
                 <h3>📅 Attendance Calendar</h3>
@@ -657,9 +980,9 @@
             <div class="calendar-header">
                 <div class="calendar-nav">
                     <button onclick="changeMonth(-1)">‹</button>
-                    <span class="month-year" id="currentMonthYear">June 2026</span>
+                    <span class="month-year" id="currentMonthYear">July 2026</span>
                     <button onclick="changeMonth(1)">›</button>
-                    <button onclick="goToToday()" style="font-size: 0.8rem;">📅 Today</button>
+                    <button class="today-btn" onclick="goToToday()">📅 Today</button>
                 </div>
                 <div class="calendar-legend">
                     <span class="legend-item"><span class="legend-dot present"></span> Present</span>
@@ -668,71 +991,21 @@
                     <span class="legend-item"><span class="legend-dot leave"></span> Leave</span>
                     <span class="legend-item"><span class="legend-dot weekend"></span> Weekend</span>
                     <span class="legend-item"><span class="legend-dot not-marked"></span> Not Marked</span>
+                    <span class="legend-item"><span class="legend-dot checked-out"></span> Checked Out</span>
                 </div>
             </div>
 
             <!-- Calendar Grid -->
-            <div class="calendar-grid" id="calendarGrid">
-                <!-- Will be rendered by JavaScript -->
+            <div id="calendarGrid">
+                <!-- Rendered by JavaScript -->
             </div>
         </div>
 
-        <!-- ================= ATTENDANCE LIST ================= -->
-        <div class="portal-card" style="margin-top: 20px;">
-            <div class="portal-card-header">
-                <h3>📋 Attendance Records</h3>
-                <span class="record-count">{{ attendances|length }} records</span>
-            </div>
-            <div class="table-responsive">
-                <table class="portal-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Day</th>
-                            <th>Check In</th>
-                            <th>Check Out</th>
-                            <th>Status</th>
-                            <th>Working Hours</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for att in attendances %}
-                        <tr>
-                            <td>{{ att.date|date:"d M Y" }}</td>
-                            <td>{{ att.date|date:"l" }}</td>
-                            <td>{% if att.check_in %}{{ att.check_in|time:"H:i" }}{% else %}--{% endif %}</td>
-                            <td>{% if att.check_out %}{{ att.check_out|time:"H:i" }}{% else %}--{% endif %}</td>
-                            <td>
-                                <span class="status-badge status-{{ att.status|lower }}">
-                                    {% if att.status == 'Present' %}✅
-                                    {% elif att.status == 'Absent' %}❌
-                                    {% elif att.status == 'WFH' %}🏠
-                                    {% elif att.status == 'Leave' %}🌴
-                                    {% endif %}
-                                    {{ att.status }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="duration-badge">
-                                    {% if att.check_in and att.check_out %}
-                                        {{ att.working_hours }}
-                                    {% else %}
-                                        --
-                                    {% endif %}
-                                </span>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center">
-                                <span class="empty-icon">📭</span>
-                                <p>No attendance records found.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <!-- Footer Legend -->
+        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 12px; padding: 12px; background: rgba(167, 139, 250, 0.02); border-radius: 8px; border: 1px solid rgba(167, 139, 250, 0.04);">
+            <span style="color: #94a3b8; font-size: 0.7rem;">💡 Hover on any day for details</span>
+            <span style="color: #64748b; font-size: 0.7rem;">|</span>
+            <span style="color: #a78bfa; font-size: 0.7rem;">✅ Click "Check In Today" to mark attendance</span>
         </div>
 
     </div>
@@ -741,20 +1014,80 @@
 <!-- ============================================ -->
 <!-- ATTENDANCE DATA - Passed from Django -->
 <!-- ============================================ -->
-{{ attendance_data|json_script:"attendanceData" }}
+<script id="attendanceData" type="application/json">
+{{ attendance_data|safe }}
+</script>
 
 <script>
     // ============================================
-    // ATTENDANCE DATA - Load from json_script
+    // DEBUG HELPER
+    // ============================================
+    function showDebug(message, type = 'info') {
+        const debugInfo = document.getElementById('debugInfo');
+        const debugMessage = document.getElementById('debugMessage');
+        const debugDetails = document.getElementById('debugDetails');
+        
+        if (debugInfo && debugMessage) {
+            debugInfo.classList.add('show');
+            const prefix = type === 'success' ? '✅ ' : type === 'warning' ? '⚠️ ' : type === 'error' ? '❌ ' : 'ℹ️ ';
+            debugMessage.textContent = prefix + message;
+            debugMessage.className = type === 'success' ? 'debug-success' : type === 'warning' ? 'debug-warning' : type === 'error' ? 'debug-error' : '';
+        }
+        console.log('🔍 Debug:', message);
+    }
+
+    function setDebugDetails(details) {
+        const debugDetails = document.getElementById('debugDetails');
+        if (debugDetails) {
+            debugDetails.textContent = details;
+        }
+    }
+
+    // ============================================
+    // ATTENDANCE DATA - Load directly from script tag
     // ============================================
     let attendanceData = [];
     try {
         const dataElement = document.getElementById('attendanceData');
-        if (dataElement && dataElement.textContent) {
-            attendanceData = JSON.parse(dataElement.textContent);
+        if (dataElement && dataElement.textContent && dataElement.textContent !== '[]') {
+            const parsedData = JSON.parse(dataElement.textContent);
+            console.log('📊 Raw data from Django:', parsedData);
+            
+            // DIRECTLY use the data - it's already an array from Django
+            if (Array.isArray(parsedData)) {
+                attendanceData = parsedData;
+                showDebug(`✅ Using ${attendanceData.length} records directly from Django`, 'success');
+            } else if (typeof parsedData === 'object' && parsedData !== null) {
+                const values = Object.values(parsedData);
+                if (values.length > 0) {
+                    attendanceData = values;
+                    showDebug(`✅ Converted object to array: ${attendanceData.length} records`, 'success');
+                } else {
+                    attendanceData = [];
+                    showDebug('⚠️ Data object is empty', 'warning');
+                }
+            } else {
+                attendanceData = [];
+                showDebug('⚠️ Unknown data format', 'warning');
+            }
+            
+            if (attendanceData.length > 0) {
+                console.log('📊 First record:', attendanceData[0]);
+                console.log('📊 Leave records:', attendanceData.filter(r => r.status === 'Leave'));
+            }
+            
+            const withCheckIn = attendanceData.filter(r => r.check_in).length;
+            const withCheckOut = attendanceData.filter(r => r.check_out).length;
+            const withLeave = attendanceData.filter(r => r.status === 'Leave').length;
+            setDebugDetails(`Total: ${attendanceData.length} records, ${withCheckIn} with check-in, ${withCheckOut} with check-out, ${withLeave} with leave`);
+            
+        } else {
+            showDebug('No attendance data found', 'warning');
+            attendanceData = [];
         }
     } catch (e) {
-        console.error('Error parsing attendance data:', e);
+        showDebug(`Error parsing data: ${e.message}`, 'error');
+        console.error('❌ Error parsing attendance data:', e);
         attendanceData = [];
     }
 
@@ -765,98 +1098,132 @@
     let currentMonth = currentDate.getMonth();
     let currentYear = currentDate.getFullYear();
 
+    function getDateStr(year, month, day) {
+        return year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    }
+
     function renderCalendar(month, year) {
         const grid = document.getElementById('calendarGrid');
+        if (!grid) {
+            showDebug('Calendar grid not found!', 'error');
+            return;
+        }
+        
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         
-        // Update header
-        document.getElementById('currentMonthYear').textContent = monthNames[month] + ' ' + year;
-        document.getElementById('monthFilter').value = month + 1;
-        document.getElementById('yearFilter').value = year;
+        const monthYearElement = document.getElementById('currentMonthYear');
+        if (monthYearElement) {
+            monthYearElement.textContent = monthNames[month] + ' ' + year;
+        }
+        
+        const monthFilter = document.getElementById('monthFilter');
+        if (monthFilter) monthFilter.value = month + 1;
+        
+        const yearFilter = document.getElementById('yearFilter');
+        if (yearFilter) yearFilter.value = year;
 
-        // Get first day of month
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
         const startDayOfWeek = firstDay.getDay();
 
-        // Get today
         const today = new Date();
-        const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+        const todayStr = getDateStr(today.getFullYear(), today.getMonth(), today.getDate());
 
-        // Build calendar
         let html = '';
         const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         
-        // Day headers
         for (let header of dayHeaders) {
             html += `<div class="calendar-day-header">${header}</div>`;
         }
 
-        // Empty cells for days before first day
         for (let i = 0; i < startDayOfWeek; i++) {
             html += `<div class="calendar-day other-month"></div>`;
         }
 
-        // Days of the month
+        let recordsFound = 0;
+        let recordsWithTime = 0;
+
         for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+            const dateStr = getDateStr(year, month, day);
             const isToday = dateStr === todayStr;
             const dateObj = new Date(year, month, day);
             const dayOfWeek = dateObj.getDay();
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
             
-            // Find attendance for this day
-            const attendance = attendanceData.find(a => a.date === dateStr);
+            let attendance = null;
+            if (Array.isArray(attendanceData) && attendanceData.length > 0) {
+                attendance = attendanceData.find(a => a.date === dateStr);
+            }
+            
+            if (attendance) {
+                recordsFound++;
+                if (attendance.check_in) recordsWithTime++;
+            }
             
             let statusClass = 'not-marked';
-            let statusText = '—';
+            let statusText = 'Not Marked';
+            let statusIcon = '⏳';
             let checkInDisplay = '';
             let checkOutDisplay = '';
-            let statusEmoji = '';
             let timeClass = '';
+            let workingHours = '';
+            let hasCheckout = false;
+            let leaveType = '';
+            let leaveStatus = '';
 
             if (attendance) {
-                statusClass = attendance.status.toLowerCase();
-                statusText = attendance.status;
+                statusClass = attendance.status ? attendance.status.toLowerCase() : 'not-marked';
+                statusText = attendance.status || 'Not Marked';
                 
-                if (attendance.status === 'Present') { statusEmoji = '✅'; }
-                else if (attendance.status === 'Absent') { statusEmoji = '❌'; }
-                else if (attendance.status === 'WFH') { statusEmoji = '🏠'; }
-                else if (attendance.status === 'Leave') { statusEmoji = '🌴'; }
+                if (attendance.status === 'Present') { statusIcon = '✅'; }
+                else if (attendance.status === 'Absent') { statusIcon = '❌'; }
+                else if (attendance.status === 'WFH') { statusIcon = '🏠'; }
+                else if (attendance.status === 'Leave') { 
+                    statusIcon = '🌴';
+                    leaveType = attendance.leave_type || 'Leave';
+                    leaveStatus = attendance.leave_status || '';
+                }
                 
                 if (attendance.check_in) {
                     checkInDisplay = attendance.check_in;
-                    // Check if late (after 9:30)
-                    const checkInTime = new Date(`2000-01-01T${attendance.check_in}:00`);
-                    const threshold = new Date('2000-01-01T09:30:00');
-                    if (checkInTime > threshold) {
-                        timeClass = 'late';
-                    } else if (checkInTime < threshold) {
-                        timeClass = 'early';
-                    } else {
-                        timeClass = 'present';
+                    try {
+                        const checkInTime = new Date(`2000-01-01T${attendance.check_in}:00`);
+                        const threshold = new Date('2000-01-01T09:30:00');
+                        if (checkInTime > threshold) {
+                            const diff = (checkInTime - threshold) / (1000 * 60);
+                            if (diff <= 15) timeClass = 'late';
+                            else timeClass = 'very-late';
+                        } else {
+                            timeClass = 'early';
+                        }
+                    } catch(e) {
+                        timeClass = 'on-time';
                     }
                 }
                 if (attendance.check_out) {
                     checkOutDisplay = attendance.check_out;
+                    hasCheckout = true;
+                }
+                if (attendance.working_hours) {
+                    workingHours = attendance.working_hours;
                 }
             }
 
-            // Check if it's a weekend
             if (isWeekend && !attendance) {
                 statusClass = 'weekend';
                 statusText = 'Weekend';
+                statusIcon = '📅';
             }
 
-            // Build time display HTML
+            // Build time HTML
             let timeHtml = '';
             if (checkInDisplay || checkOutDisplay) {
                 timeHtml = `<div class="day-time">`;
                 if (checkInDisplay) {
-                    const lateClass = timeClass === 'late' ? 'late' : (timeClass === 'early' ? 'early' : 'present');
+                    const lateClass = timeClass === 'very-late' ? 'very-late' : (timeClass === 'late' ? 'late' : (timeClass === 'early' ? 'early' : 'on-time'));
                     timeHtml += `
-                        <div class="time-entry">
+                        <div class="time-entry check-in">
                             <span class="label">In:</span>
                             <span class="value ${lateClass}">${checkInDisplay}</span>
                         </div>
@@ -864,7 +1231,7 @@
                 }
                 if (checkOutDisplay) {
                     timeHtml += `
-                        <div class="time-entry">
+                        <div class="time-entry check-out">
                             <span class="label">Out:</span>
                             <span class="value">${checkOutDisplay}</span>
                         </div>
@@ -873,29 +1240,75 @@
                 timeHtml += `</div>`;
             }
 
+            // Build leave info HTML
+            let leaveHtml = '';
+            if (statusClass === 'leave') {
+                const statusBadge = leaveStatus === 'Approved' ? '✅' : (leaveStatus === 'Pending' ? '⏳' : '');
+                leaveHtml = `
+                    <div class="leave-info">
+                        <span class="leave-icon">🌴</span>
+                        <span class="leave-text">${leaveType}</span>
+                        ${statusBadge ? `<span class="leave-status-badge">${statusBadge}</span>` : ''}
+                    </div>
+                `;
+            }
+
+            const hasCheckoutClass = hasCheckout ? 'has-checkout' : '';
+            const tooltipStatusClass = statusClass === 'weekend' ? 'weekend' : (statusClass === 'not-marked' ? 'not-marked' : statusClass);
+
+            let tooltipHtml = `
+                <strong>${dateObj.toDateString()}</strong><br>
+                Status: <span class="tooltip-status ${tooltipStatusClass}">${statusText}</span>
+            `;
+            
+            if (statusClass === 'leave') {
+                tooltipHtml += `<div class="tooltip-leave-type">🌴 ${leaveType}</div>`;
+                if (leaveStatus) {
+                    const statusColor = leaveStatus === 'Approved' ? '#4ade80' : (leaveStatus === 'Pending' ? '#fbbf24' : '#f87171');
+                    tooltipHtml += `<div style="font-size:0.6rem;color:${statusColor};">${leaveStatus}</div>`;
+                }
+                if (attendance && attendance.leave_reason) {
+                    tooltipHtml += `<div style="font-size:0.55rem;color:#94a3b8;margin-top:2px;">"${attendance.leave_reason}"</div>`;
+                }
+            }
+            
+            if (checkInDisplay || checkOutDisplay) {
+                tooltipHtml += `<div class="tooltip-time">`;
+                if (checkInDisplay) {
+                    tooltipHtml += `<span>🟢 In: <span class="check-in-time">${checkInDisplay}</span></span>`;
+                }
+                if (checkOutDisplay) {
+                    tooltipHtml += `<span>🟣 Out: <span class="check-out-time">${checkOutDisplay}</span></span>`;
+                }
+                tooltipHtml += `</div>`;
+            }
+            
+            if (workingHours) {
+                tooltipHtml += `<br>⏱ Hours: ${workingHours}`;
+            }
+
             html += `
-                <div class="calendar-day ${statusClass} ${isToday ? 'today' : ''} ${isWeekend ? 'weekend' : ''}" 
+                <div class="calendar-day status-${statusClass} ${isToday ? 'today' : ''} ${hasCheckoutClass}" 
                      data-date="${dateStr}"
                      data-status="${statusClass}">
                     <span class="day-number">${day}</span>
-                    <span class="day-status ${statusClass}">${statusEmoji} ${statusText}</span>
+                    <span class="day-status-icon">${statusIcon}</span>
                     ${timeHtml}
+                    ${leaveHtml}
                     <div class="day-tooltip">
-                        <strong>${dateObj.toDateString()}</strong><br>
-                        Status: ${statusText}<br>
-                        ${checkInDisplay ? `Check In: ${checkInDisplay}` : ''}
-                        ${checkOutDisplay ? `<br>Check Out: ${checkOutDisplay}` : ''}
-                        ${attendance && attendance.working_hours ? `<br>Hours: ${attendance.working_hours}` : ''}
+                        ${tooltipHtml}
                     </div>
                 </div>
             `;
         }
 
         grid.innerHTML = html;
+        
+        showDebug(`Calendar rendered: ${daysInMonth} days, ${recordsFound} records found, ${recordsWithTime} with check-in time`, 'success');
+        setDebugDetails(`Month: ${monthNames[month]} ${year}, Records in data: ${attendanceData.length}`);
 
-        // Apply status filter if set
-        const statusFilter = document.getElementById('statusFilter').value;
-        if (statusFilter) {
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter && statusFilter.value) {
             applyFilters();
         }
     }
@@ -920,22 +1333,14 @@
     }
 
     function applyFilters() {
-        const statusFilter = document.getElementById('statusFilter').value;
-        const monthFilter = parseInt(document.getElementById('monthFilter').value) - 1;
-        const yearFilter = parseInt(document.getElementById('yearFilter').value);
-
-        // Update current month/year
-        currentMonth = monthFilter;
-        currentYear = yearFilter;
+        const statusFilter = document.getElementById('statusFilter');
+        if (!statusFilter) return;
         
-        // Re-render calendar
-        renderCalendar(currentMonth, currentYear);
-
-        // Filter days
+        const filterValue = statusFilter.value;
         const days = document.querySelectorAll('.calendar-day:not(.other-month)');
         days.forEach(day => {
             const status = day.dataset.status;
-            if (statusFilter && status !== statusFilter.toLowerCase()) {
+            if (filterValue && status !== filterValue.toLowerCase()) {
                 day.style.display = 'none';
             } else {
                 day.style.display = 'flex';
@@ -943,31 +1348,58 @@
         });
     }
 
+    function resetFilters() {
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) statusFilter.value = '';
+        
+        const days = document.querySelectorAll('.calendar-day:not(.other-month)');
+        days.forEach(day => {
+            day.style.display = 'flex';
+        });
+    }
+
     // ============================================
     // INIT
     // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // Set current month/year in filters
+    function initCalendar() {
+        showDebug('Initializing calendar...', 'info');
+        
         const today = new Date();
-        document.getElementById('monthFilter').value = today.getMonth() + 1;
-        document.getElementById('yearFilter').value = today.getFullYear();
+        const monthFilter = document.getElementById('monthFilter');
+        const yearFilter = document.getElementById('yearFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        if (monthFilter) monthFilter.value = today.getMonth() + 1;
+        if (yearFilter) yearFilter.value = today.getFullYear();
         
         renderCalendar(currentMonth, currentYear);
 
-        // Update stats on filter change
-        document.getElementById('statusFilter').addEventListener('change', applyFilters);
-        document.getElementById('monthFilter').addEventListener('change', function() {
-            currentMonth = parseInt(this.value) - 1;
-            renderCalendar(currentMonth, currentYear);
-        });
-        document.getElementById('yearFilter').addEventListener('change', function() {
-            currentYear = parseInt(this.value);
-            renderCalendar(currentMonth, currentYear);
-        });
+        if (statusFilter) {
+            statusFilter.addEventListener('change', applyFilters);
+        }
+        
+        if (monthFilter) {
+            monthFilter.addEventListener('change', function() {
+                currentMonth = parseInt(this.value) - 1;
+                renderCalendar(currentMonth, currentYear);
+            });
+        }
+        
+        if (yearFilter) {
+            yearFilter.addEventListener('change', function() {
+                currentYear = parseInt(this.value);
+                renderCalendar(currentMonth, currentYear);
+            });
+        }
 
-        console.log('📅 Attendance Calendar loaded');
-        console.log(`📊 Total records: ${attendanceData.length}`);
-    });
+        showDebug(`✅ Calendar initialized with ${attendanceData.length} records`, 'success');
+        console.log('📅 Attendance Calendar initialized');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCalendar);
+    } else {
+        setTimeout(initCalendar, 100);
+    }
 </script>
-
 {% endblock %}

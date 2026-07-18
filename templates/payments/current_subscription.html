@@ -1,0 +1,228 @@
+{% extends 'payments/base_payments.html' %}
+{% load static %}
+
+{% block page_title %}My Subscription{% endblock %}
+{% block page_icon %}✅{% endblock %}
+{% block page_subtitle %}View your current subscription details{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'payments:subscription_plans' %}" class="btn btn-secondary">
+    <span class="btn-icon">📋</span> View Plans
+</a>
+<a href="{% url 'payments:payments_dashboard' %}" class="btn btn-secondary">
+    <span class="btn-icon">📊</span> Dashboard
+</a>
+{% if subscription %}
+    <a href="{% url 'payments:cancel_subscription' %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel your subscription? This action cannot be undone.')">
+        <span class="btn-icon">❌</span> Cancel Subscription
+    </a>
+{% endif %}
+{% endblock %}
+
+{% block payments_content %}
+<div class="current-subscription-container" style="max-width: 700px; margin: 0 auto;">
+    
+    {% if subscription %}
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 32px; transition: all 0.3s;">
+        
+        <!-- Status Banner -->
+        <div style="background: rgba(52, 211, 153, 0.06); border: 1px solid rgba(52, 211, 153, 0.12); border-radius: 12px; padding: 12px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 1.5rem;">✅</span>
+            <div>
+                <span style="color: #34d399; font-weight: 600;">Active Subscription</span>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.85rem;">Your subscription is currently active</p>
+            </div>
+            {% if days_remaining <= 7 and days_remaining > 0 %}
+                <span style="margin-left: auto; background: rgba(251, 191, 36, 0.12); color: #fbbf24; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                    ⚠️ Expiring Soon
+                </span>
+            {% endif %}
+        </div>
+        
+        <!-- Plan Header -->
+        <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+            <div style="font-size: 4rem; margin-bottom: 8px;">
+                {% if subscription.plan.name == "FREE" %}🆓
+                {% elif subscription.plan.name == "PRO" %}⭐
+                {% elif subscription.plan.name == "ELITE" %}💎
+                {% elif subscription.plan.name == "STARTER" %}🚀
+                {% elif subscription.plan.name == "GROWTH" %}📈
+                {% elif subscription.plan.name == "SCALE" %}🏢
+                {% else %}💎
+                {% endif %}
+            </div>
+            <h2 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 2rem;">{{ subscription.plan.name }}</h2>
+            <p style="color: #94a3b8; margin: 4px 0 0; font-size: 0.95rem;">{{ subscription.plan.description|default:"Premium Subscription Plan" }}</p>
+        </div>
+        
+        <!-- Details Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
+            <div style="background: rgba(167, 139, 250, 0.03); border-radius: 10px; padding: 16px;">
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</span>
+                <p style="color: #34d399; font-weight: 600; margin: 4px 0 0; font-size: 0.95rem;">✅ Active</p>
+            </div>
+            <div style="background: rgba(167, 139, 250, 0.03); border-radius: 10px; padding: 16px;">
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Price</span>
+                <p style="color: #a78bfa; font-weight: 700; margin: 4px 0 0; font-size: 0.95rem;">₹{{ subscription.plan.price|floatformat:2 }}</p>
+            </div>
+            <div style="background: rgba(167, 139, 250, 0.03); border-radius: 10px; padding: 16px;">
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Duration</span>
+                <p style="color: #e8edf5; font-weight: 500; margin: 4px 0 0; font-size: 0.95rem;">{{ subscription.plan.duration_days }} days</p>
+            </div>
+            <div style="background: rgba(167, 139, 250, 0.03); border-radius: 10px; padding: 16px;">
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Started</span>
+                <p style="color: #e8edf5; font-weight: 500; margin: 4px 0 0; font-size: 0.95rem;">{{ subscription.created_at|date:"d M Y" }}</p>
+            </div>
+        </div>
+        
+        <!-- End Date & Progress -->
+        <div style="margin-top: 20px; background: rgba(167, 139, 250, 0.03); border-radius: 10px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">End Date</span>
+                    <!-- <p style="color: {% if days_remaining <= 7 %}#f87171{% elif days_remaining <= 30 %}#fbbf24{% else %}#34d399{% endif %}; font-weight: 700; margin: 4px 0 0; font-size: 1rem;"> -->
+                        {{ subscription.end_date|date:"d M Y" }}
+                        {% if days_remaining > 0 %}
+                            <span style="color: #94a3b8; font-weight: 400; font-size: 0.85rem;">
+                                ({{ days_remaining }} days remaining)
+                            </span>
+                        {% else %}
+                            <span style="color: #f87171; font-weight: 400; font-size: 0.85rem;">
+                                (Expired)
+                            </span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Subscription Progress</span>
+                    <p style="color: #e8edf5; font-weight: 500; margin: 4px 0 0; font-size: 0.95rem;">
+                        {% with total_days=subscription.plan.duration_days %}
+                            {% with used_days=total_days|add:days_remaining|add:total_days %}
+                                {% widthratio days_remaining total_days 100 %}%
+                            {% endwith %}
+                        {% endwith %}
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <!-- <div style="width: 100%; height: 8px; background: rgba(167, 139, 250, 0.1); border-radius: 4px; overflow: hidden; margin-top: 12px;">
+                <div style="width: {% widthratio days_remaining subscription.plan.duration_days 100 %}%; height: 100%; background: linear-gradient(90deg, #7c3aed, #a78bfa); border-radius: 4px; transition: width 0.5s ease;"></div>
+            </div> -->
+        </div>
+        
+        <!-- Features -->
+        {% if subscription.plan.features %}
+        <div style="margin-top: 20px; background: rgba(167, 139, 250, 0.03); border-radius: 10px; padding: 16px;">
+            <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">Features Included</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                {% for feature in subscription.plan.features.split %}
+                    <div style="display: flex; align-items: center; gap: 8px; color: #e8edf5; font-size: 0.85rem;">
+                        <span style="color: #34d399;">✓</span> {{ feature }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Upgrade Options -->
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(167, 139, 250, 0.06); text-align: center;">
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Looking for more features? Upgrade your plan.</p>
+            <a href="{% url 'payments:subscription_plans' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;">
+                📋 View All Plans
+            </a>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- No Active Subscription -->
+    <div style="text-align: center; padding: 60px 20px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px;">
+        <div style="font-size: 4rem; margin-bottom: 16px;">❌</div>
+        <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Active Subscription</h3>
+        <p style="color: #94a3b8; margin-bottom: 20px;">You don't have an active subscription. Choose a plan to get started.</p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'payments:subscription_plans' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;">
+                📋 View Plans
+            </a>
+            <a href="{% url 'payments:payments_dashboard' %}" class="btn btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s;">
+                📊 Dashboard
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .current-subscription-container .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .current-subscription-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .current-subscription-container .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+    }
+    
+    .current-subscription-container > div[style*="background: rgba"]:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .current-subscription-container > div {
+            padding: 20px !important;
+        }
+        
+        .current-subscription-container .detail-grid {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        .current-subscription-container .features-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .current-subscription-container .end-date-section {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 8px !important;
+        }
+        
+        .current-subscription-container .page-actions {
+            flex-direction: column;
+        }
+        
+        .current-subscription-container .page-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .current-subscription-container > div {
+            padding: 16px !important;
+        }
+        
+        .current-subscription-container .detail-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .current-subscription-container h2 {
+            font-size: 1.5rem !important;
+        }
+        
+        .current-subscription-container .plan-icon {
+            font-size: 3rem !important;
+        }
+    }
+</style>
+{% endblock %}

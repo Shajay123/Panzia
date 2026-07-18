@@ -1,115 +1,102 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/payroll_form.css' %}">
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_icon %}{{ page_icon }}{% endblock %}
+{% block page_subtitle %}
+    {% if is_edit %}
+    Editing payroll for <strong>{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</strong>
+    {% else %}
+    Create a new payroll record for an employee.
+    {% endif %}
 {% endblock %}
 
-{% block content %}
+{% block page_actions %}
+    <a href="{% url 'payroll' %}" class="btn btn-secondary">
+        <span class="btn-icon">←</span> Back
+    </a>
+    {% if is_edit and not payroll.paid %}
+    <a href="{% url 'payroll_detail' payroll.id %}" class="btn btn-secondary">
+        <span class="btn-icon">👁️</span> View Details
+    </a>
+    {% endif %}
+{% endblock %}
 
-<div class="payroll-form-page">
-
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">{{ page_icon }}</div>
-                <div>
-                    <h1>{{ page_title }}</h1>
-                    <p class="header-subtitle">
-                        {% if is_edit %}
-                        Editing payroll for <strong>{{ payroll.employee }}</strong>
-                        {% else %}
-                        Create a new payroll record for an employee.
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'payroll' %}" class="btn-back">← Back</a>
-            </div>
-        </div>
+{% block hrms_content %}
+<div class="payroll-form-container">
+    
+    {% if form.errors or messages %}
+    <div class="error-alert" style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
+        <h3 style="color: #f87171; font-size: 0.95rem; margin: 0 0 8px 0;">⚠️ Please correct the errors below</h3>
+        <ul style="color: #94a3b8; margin: 0; padding-left: 20px; font-size: 0.9rem;">
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+            {% for field in form %}
+            {% for error in field.errors %}
+            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+            {% endfor %}
+            {% for message in messages %}
+            {% if message.tags == 'error' %}
+            <li>{{ message }}</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
     </div>
+    {% endif %}
 
     <form method="POST" novalidate>
         {% csrf_token %}
 
-        {% if form.errors or messages %}
-        <div class="error-alert">
-            <h3>⚠️ Please correct the errors below</h3>
-            <ul>
-                {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-                {% for field in form %}
-                {% for error in field.errors %}
-                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                {% endfor %}
-                {% endfor %}
-                {% for message in messages %}
-                {% if message.tags == 'error' %}
-                <li>{{ message }}</li>
-                {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-        <div class="form-card">
-            <div class="card-header">
-                <h2>📋 Payroll Details</h2>
-                <span class="card-badge">Required</span>
+        <div class="form-card" style="background: rgba(167, 139, 250, 0.02); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden; margin-bottom: 24px;">
+            <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                <h2 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">📋 Payroll Details</h2>
+                <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Required</span>
             </div>
 
-            <div class="form-grid">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 24px;">
+                
                 <!-- Employee -->
-                <!-- Employee -->
-<div class="form-group">
-    <label for="{{ form.employee.id_for_label }}" class="form-label required">
-        Employee
-    </label>
-
-    <select
-        name="employee"
-        id="id_employee"
-        class="form-control"
-        required
-    >
-        <option value="">Select Employee</option>
-
-        {% for emp in employees %}
-        <option
-            value="{{ emp.id }}"
-            data-salary="{{ emp.salary }}"
-            {% if form.employee.value|stringformat:"s" == emp.id|stringformat:"s" %}
-                selected
-            {% endif %}
-        >
-            {{ emp.user.get_full_name|default:emp.user.username }}
-            ({{ emp.employee_id }})
-        </option>
-        {% empty %}
-        <option value="">No employees available</option>
-        {% endfor %}
-
-    </select>
-
-    {% if form.employee.errors %}
-        <div class="field-error">
-            {{ form.employee.errors.0 }}
-        </div>
-    {% endif %}
-
-    <span class="help-text">
-        Select the employee for payroll.
-    </span>
-</div>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.employee.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Employee <span style="color: #f87171;">*</span>
+                    </label>
+                    <select
+                        name="employee"
+                        id="id_employee"
+                        class="form-control"
+                        style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; padding: 10px 14px; color: #e8edf5; font-size: 0.9rem; transition: all 0.3s; width: 100%;"
+                        required
+                    >
+                        <option value="">Select Employee</option>
+                        {% for emp in employees %}
+                        <option
+                            value="{{ emp.id }}"
+                            data-salary="{{ emp.salary }}"
+                            {% if form.employee.value|stringformat:"s" == emp.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ emp.user.get_full_name|default:emp.user.username }}
+                            ({{ emp.employee_id }})
+                        </option>
+                        {% empty %}
+                        <option value="">No employees available</option>
+                        {% endfor %}
+                    </select>
+                    {% if form.employee.errors %}
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.employee.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Select the employee for payroll.</span>
+                </div>
 
                 <!-- Month -->
-                <div class="form-group">
-                    <label for="{{ form.month.id_for_label }}" class="form-label required">Month</label>
-                    <select name="month" id="{{ form.month.id_for_label }}" class="form-control" required>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.month.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Month <span style="color: #f87171;">*</span>
+                    </label>
+                    <select name="month" id="{{ form.month.id_for_label }}" class="form-control" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; padding: 10px 14px; color: #e8edf5; font-size: 0.9rem; transition: all 0.3s; width: 100%;" required>
                         <option value="">Select Month</option>
                         {% for choice in form.fields.month.choices %}
                             {% if choice.0 %}
@@ -120,15 +107,17 @@
                         {% endfor %}
                     </select>
                     {% if form.month.errors %}
-                        <div class="field-error">{{ form.month.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.month.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Month of the payroll.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Month of the payroll.</span>
                 </div>
 
                 <!-- Year -->
-                <div class="form-group">
-                    <label for="{{ form.year.id_for_label }}" class="form-label required">Year</label>
-                    <select name="year" id="{{ form.year.id_for_label }}" class="form-control" required>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.year.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Year <span style="color: #f87171;">*</span>
+                    </label>
+                    <select name="year" id="{{ form.year.id_for_label }}" class="form-control" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; padding: 10px 14px; color: #e8edf5; font-size: 0.9rem; transition: all 0.3s; width: 100%;" required>
                         <option value="">Select Year</option>
                         {% for choice in form.fields.year.choices %}
                             {% if choice.0 %}
@@ -139,77 +128,188 @@
                         {% endfor %}
                     </select>
                     {% if form.year.errors %}
-                        <div class="field-error">{{ form.year.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.year.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Year of the payroll.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Year of the payroll.</span>
                 </div>
 
                 <!-- Basic Salary -->
-                <div class="form-group">
-                    <label for="{{ form.basic_salary.id_for_label }}" class="form-label required">Basic Salary</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.basic_salary.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Basic Salary <span style="color: #f87171;">*</span>
+                    </label>
                     {{ form.basic_salary }}
+                    <style>
+                        #id_basic_salary, #id_allowances, #id_deductions, #id_net_salary {
+                            background: rgba(167, 139, 250, 0.04);
+                            border: 1px solid rgba(167, 139, 250, 0.1);
+                            border-radius: 10px;
+                            padding: 10px 14px;
+                            color: #e8edf5;
+                            font-size: 0.9rem;
+                            transition: all 0.3s;
+                            width: 100%;
+                        }
+                        #id_basic_salary:focus, #id_allowances:focus, #id_deductions:focus, #id_net_salary:focus {
+                            outline: none;
+                            border-color: rgba(167, 139, 250, 0.3);
+                            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+                        }
+                        #id_basic_salary:hover, #id_allowances:hover, #id_deductions:hover, #id_net_salary:hover {
+                            border-color: rgba(167, 139, 250, 0.2);
+                        }
+                        #id_net_salary {
+                            color: #a78bfa;
+                            font-weight: 600;
+                            background: rgba(167, 139, 250, 0.06);
+                            border-color: rgba(167, 139, 250, 0.15);
+                        }
+                    </style>
                     {% if form.basic_salary.errors %}
-                        <div class="field-error">{{ form.basic_salary.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.basic_salary.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Base salary amount.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Base salary amount.</span>
                 </div>
 
                 <!-- Allowances -->
-                <div class="form-group">
-                    <label for="{{ form.allowances.id_for_label }}" class="form-label">Allowances</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.allowances.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Allowances</label>
                     {{ form.allowances }}
                     {% if form.allowances.errors %}
-                        <div class="field-error">{{ form.allowances.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.allowances.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Additional allowances (HRA, DA, etc.).</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Additional allowances (HRA, DA, etc.).</span>
                 </div>
 
                 <!-- Deductions -->
-                <div class="form-group">
-                    <label for="{{ form.deductions.id_for_label }}" class="form-label">Deductions</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.deductions.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Deductions</label>
                     {{ form.deductions }}
                     {% if form.deductions.errors %}
-                        <div class="field-error">{{ form.deductions.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.deductions.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Deductions (tax, insurance, etc.).</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Deductions (tax, insurance, etc.).</span>
                 </div>
 
                 <!-- Net Salary -->
-                <div class="form-group">
-                    <label for="{{ form.net_salary.id_for_label }}" class="form-label">Net Salary</label>
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.net_salary.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Net Salary</label>
                     {{ form.net_salary }}
-                    <span class="help-text">Calculated automatically (Basic + Allowances - Deductions).</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Calculated automatically (Basic + Allowances - Deductions).</span>
                 </div>
 
                 <!-- Status -->
-                <div class="form-group">
-                    <label class="form-label">Status</label>
-                    <div class="status-display">
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Status</label>
+                    <div class="status-display" style="padding: 12px 16px; background: rgba(167, 139, 250, 0.03); border-radius: 10px; border: 1px solid rgba(167, 139, 250, 0.06);">
                         {% if is_edit and payroll.paid %}
-                        <span class="badge paid">✅ Paid</span>
-                        <span class="help-text">This payroll is already paid and cannot be modified.</span>
+                        <span style="background: rgba(52, 211, 153, 0.12); color: #34d399; padding: 4px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">✅ Paid</span>
+                        <span style="color: #64748b; font-size: 0.8rem; margin-left: 12px;">This payroll is already paid and cannot be modified.</span>
                         {% else %}
-                        <span class="badge pending">⏳ Pending</span>
-                        <span class="help-text">New payroll will be pending until marked as paid.</span>
+                        <span style="background: rgba(251, 191, 36, 0.12); color: #fbbf24; padding: 4px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block;">⏳ Pending</span>
+                        <span style="color: #64748b; font-size: 0.8rem; margin-left: 12px;">New payroll will be pending until marked as paid.</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="form-actions">
-            <button type="submit" class="btn-primary btn-save">
+        <div class="form-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="submit" class="btn-primary btn-save" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 32px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
                 {% if is_edit %}💾 Update Payroll{% else %}🚀 Create Payroll{% endif %}
             </button>
-            <a href="{% url 'payroll' %}" class="btn-secondary">Cancel</a>
-            {% if is_edit and not payroll.paid %}
-            <a href="{% url 'payroll_detail' payroll.id %}" class="btn-light">👁️ View Details</a>
-            {% endif %}
+            <a href="{% url 'payroll' %}" class="btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
+                Cancel
+            </a>
         </div>
 
     </form>
 
 </div>
+
+<style>
+    .payroll-form-container .form-control:focus {
+        outline: none;
+        border-color: rgba(167, 139, 250, 0.3) !important;
+        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05) !important;
+    }
+    
+    .payroll-form-container .form-control:hover {
+        border-color: rgba(167, 139, 250, 0.2) !important;
+    }
+    
+    .payroll-form-container .btn-primary.btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .payroll-form-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .payroll-form-container .form-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .payroll-form-container .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 992px) {
+        .payroll-form-container .form-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .payroll-form-container .form-grid .form-group:last-child {
+            grid-column: span 1 !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .payroll-form-container .form-grid {
+            padding: 16px !important;
+            gap: 16px !important;
+        }
+        
+        .payroll-form-container .form-card .card-header {
+            padding: 14px 16px !important;
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 8px;
+        }
+        
+        .payroll-form-container .form-card .card-header h2 {
+            font-size: 1rem !important;
+        }
+        
+        .payroll-form-container .form-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .payroll-form-container .form-actions button,
+        .payroll-form-container .form-actions a {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .payroll-form-container .status-display {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .payroll-form-container .status-display span:last-child {
+            margin-left: 0 !important;
+        }
+    }
+</style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

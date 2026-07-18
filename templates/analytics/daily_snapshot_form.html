@@ -1,0 +1,141 @@
+{% extends 'analytics/base_analytics.html' %}
+{% load static %}
+
+{% block page_title %}Create Daily Snapshot{% endblock %}
+{% block page_icon %}📊{% endblock %}
+{% block page_subtitle %}Record daily analytics metrics{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'analytics:daily_snapshot' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Snapshots
+</a>
+{% endblock %}
+
+{% block analytics_content %}
+<div class="snapshot-form-container" style="max-width: 800px; margin: 0 auto;">
+    
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 32px;">
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                
+                <!-- Employee Metrics -->
+                <div style="grid-column: span 2;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">👥 Employee Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Employees</label>
+                    {{ form.total_employees }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Active Employees</label>
+                    {{ form.active_employees }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">New Employees</label>
+                    {{ form.new_employees }}
+                </div>
+                
+                <!-- Financial Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">💰 Financial Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Payroll</label>
+                    {{ form.total_payroll }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Revenue</label>
+                    {{ form.total_revenue }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Expenses</label>
+                    {{ form.total_expenses }}
+                </div>
+                
+                <!-- Attendance Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">📋 Attendance Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Present Count</label>
+                    {{ form.present_count }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Absent Count</label>
+                    {{ form.absent_count }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">On Leave Count</label>
+                    {{ form.on_leave_count }}
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">⭐ Performance Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Avg Performance Rating</label>
+                    {{ form.avg_performance_rating }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Completed Reviews</label>
+                    {{ form.completed_reviews }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Pending Reviews</label>
+                    {{ form.pending_reviews }}
+                </div>
+            </div>
+            
+            <style>
+                #id_total_employees, #id_active_employees, #id_new_employees,
+                #id_total_payroll, #id_total_revenue, #id_total_expenses,
+                #id_present_count, #id_absent_count, #id_on_leave_count,
+                #id_avg_performance_rating, #id_completed_reviews, #id_pending_reviews {
+                    background: rgba(167, 139, 250, 0.04);
+                    border: 1px solid rgba(167, 139, 250, 0.1);
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    color: #e8edf5;
+                    font-size: 0.9rem;
+                    transition: all 0.3s;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                #id_total_employees:focus, #id_active_employees:focus, #id_new_employees:focus,
+                #id_total_payroll:focus, #id_total_revenue:focus, #id_total_expenses:focus,
+                #id_present_count:focus, #id_absent_count:focus, #id_on_leave_count:focus,
+                #id_avg_performance_rating:focus, #id_completed_reviews:focus, #id_pending_reviews:focus {
+                    outline: none;
+                    border-color: rgba(167, 139, 250, 0.3);
+                    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+                }
+            </style>
+            
+            <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 32px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; flex: 1; justify-content: center;">
+                    💾 Save Snapshot
+                </button>
+                <a href="{% url 'analytics:daily_snapshot' %}" class="btn btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

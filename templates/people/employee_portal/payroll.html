@@ -1,108 +1,510 @@
-{% extends 'base.html' %}
+{% extends 'people/employee_portal/base_side_navbar.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}My Payroll{% endblock %}
+{% block page_icon %}💰{% endblock %}
+{% block page_subtitle %}View your payroll history{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+{{ block.super }}
+<style>
+    /* ============================================
+       PAYROLL PAGE - ENHANCED STYLES
+       ============================================ */
+    
+    /* ===== STATS CARDS ===== */
+    .portal-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .portal-stat-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: default;
+    }
+
+    .portal-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 12px;
+    }
+
+    .portal-stat-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .portal-stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .portal-stat-card .stat-icon {
+        font-size: 2.2rem;
+        line-height: 1;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .portal-stat-card:hover .stat-icon {
+        transform: scale(1.1);
+    }
+
+    .portal-stat-card .stat-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .portal-stat-card h2 {
+        margin: 0;
+        font-size: 1.6rem;
+        font-weight: 700;
+        line-height: 1.2;
+        transition: color 0.3s ease;
+    }
+
+    .portal-stat-card p {
+        margin: 0;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    .portal-stat-card .stat-trend {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .portal-stat-card:hover .stat-trend {
+        opacity: 1;
+    }
+
+    .stat-trend.up { color: #34d399; }
+    .stat-trend.down { color: #f87171; }
+    .stat-trend.neutral { color: #94a3b8; }
+
+    /* Stat Card Colors */
+    .portal-stat-card.blue {
+        border-left: 4px solid #3b82f6;
+    }
+    .portal-stat-card.blue .stat-icon { color: #60a5fa; }
+    .portal-stat-card.blue h2 { color: #60a5fa; }
+    .portal-stat-card.blue::before {
+        background: radial-gradient(circle at 30% 50%, rgba(59, 130, 246, 0.05), transparent 70%);
+    }
+
+    .portal-stat-card.green {
+        border-left: 4px solid #22c55e;
+    }
+    .portal-stat-card.green .stat-icon { color: #4ade80; }
+    .portal-stat-card.green h2 { color: #4ade80; }
+    .portal-stat-card.green::before {
+        background: radial-gradient(circle at 30% 50%, rgba(34, 197, 94, 0.05), transparent 70%);
+    }
+
+    .portal-stat-card.orange {
+        border-left: 4px solid #f59e0b;
+    }
+    .portal-stat-card.orange .stat-icon { color: #fbbf24; }
+    .portal-stat-card.orange h2 { color: #fbbf24; }
+    .portal-stat-card.orange::before {
+        background: radial-gradient(circle at 30% 50%, rgba(245, 158, 11, 0.05), transparent 70%);
+    }
+
+    .portal-stat-card.purple {
+        border-left: 4px solid #7c3aed;
+    }
+    .portal-stat-card.purple .stat-icon { color: #a78bfa; }
+    .portal-stat-card.purple h2 { color: #a78bfa; }
+    .portal-stat-card.purple::before {
+        background: radial-gradient(circle at 30% 50%, rgba(124, 58, 237, 0.05), transparent 70%);
+    }
+
+    /* ===== TABLE ===== */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -4px;
+    }
+
+    .portal-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 700px;
+    }
+
+    .portal-table th {
+        text-align: left;
+        padding: 12px 16px;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 2px solid rgba(167, 139, 250, 0.06);
+        position: sticky;
+        top: 0;
+        background: rgba(15, 10, 26, 0.9);
+        backdrop-filter: blur(8px);
+        z-index: 10;
+    }
+
+    .portal-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        vertical-align: middle;
+        transition: background 0.2s ease;
+    }
+
+    .portal-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .portal-table tbody tr:hover {
+        background: rgba(167, 139, 250, 0.04);
+    }
+
+    .portal-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* ===== AMOUNT STYLES ===== */
+    .amount-positive {
+        color: #4ade80;
+        font-weight: 500;
+    }
+
+    .amount-negative {
+        color: #f87171;
+        font-weight: 500;
+    }
+
+    .amount-net {
+        color: #a78bfa;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+    }
+
+    .status-badge .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse-dot 2s infinite;
+    }
+
+    .status-badge.status-present {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.1);
+    }
+    .status-badge.status-present .status-dot { background: #22c55e; }
+
+    .status-badge.status-pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.1);
+    }
+    .status-badge.status-pending .status-dot { background: #f59e0b; }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 0.4; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        margin: 0 0 8px;
+    }
+
+    .empty-state p {
+        margin: 0 0 20px;
+        font-size: 0.95rem;
+        color: #94a3b8;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .portal-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .portal-stats {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .portal-stat-card {
+            padding: 14px 16px;
+        }
+
+        .portal-stat-card .stat-icon {
+            font-size: 1.6rem;
+        }
+
+        .portal-stat-card h2 {
+            font-size: 1.3rem;
+        }
+
+        .portal-table th,
+        .portal-table td {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+        }
+
+        .portal-table {
+            min-width: 550px;
+        }
+
+        .status-badge {
+            font-size: 0.65rem;
+            padding: 3px 10px;
+        }
+
+        .amount-net {
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .portal-stats {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .portal-stat-card {
+            padding: 12px 14px;
+        }
+
+        .portal-stat-card .stat-icon {
+            font-size: 1.3rem;
+        }
+
+        .portal-stat-card h2 {
+            font-size: 1.1rem;
+        }
+
+        .portal-stat-card p {
+            font-size: 0.6rem;
+        }
+
+        .portal-table {
+            min-width: 450px;
+        }
+
+        .portal-table th:nth-child(3),
+        .portal-table td:nth-child(3),
+        .portal-table th:nth-child(4),
+        .portal-table td:nth-child(4) {
+            display: none;
+        }
+
+        .empty-state {
+            padding: 40px 16px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+        }
+
+        .amount-net {
+            font-size: 0.85rem;
+        }
+    }
+</style>
 {% endblock %}
 
-{% block content %}
+{% block portal_content %}
+<div class="employee-portal-content">
+    <div class="attendance-calendar-container">
 
-<div class="employee-portal">
-
-    <!-- ================= HEADER ================= -->
-    <div class="portal-header">
-        <div class="portal-header-content">
-            <div class="portal-header-left">
-                <div class="portal-header-icon">💰</div>
-                <div>
-                    <h1>My Payroll</h1>
-                    <p class="portal-header-subtitle">View your payroll history</p>
+        <!-- ================= STATS ================= -->
+        <div class="portal-stats">
+            <div class="portal-stat-card blue">
+                <span class="stat-icon">💰</span>
+                <div class="stat-content">
+                    <h2>₹{{ employee.salary|floatformat:0|default:"0" }}</h2>
+                    <p>Monthly Salary</p>
                 </div>
+                <span class="stat-trend neutral">→ 0%</span>
             </div>
-            <div class="portal-header-right">
-                <a href="{% url 'employee_portal_dashboard' %}" class="btn-portal-secondary">← Back</a>
+            <div class="portal-stat-card green">
+                <span class="stat-icon">✅</span>
+                <div class="stat-content">
+                    <h2>{{ payrolls|length }}</h2>
+                    <p>Total Payrolls</p>
+                </div>
+                <span class="stat-trend up">↑ 12%</span>
+            </div>
+            <div class="portal-stat-card orange">
+                <span class="stat-icon">⏳</span>
+                <div class="stat-content">
+                    <h2>{{ payrolls|length }}</h2>
+                    <p>Processed</p>
+                </div>
+                <span class="stat-trend up">↑ 8%</span>
+            </div>
+            <div class="portal-stat-card purple">
+                <span class="stat-icon">📊</span>
+                <div class="stat-content">
+                    <h2>{% now "F Y" %}</h2>
+                    <p>Current Month</p>
+                </div>
+                <span class="stat-trend neutral">→ 0%</span>
             </div>
         </div>
-    </div>
 
-    <!-- ================= STATS ================= -->
-    <div class="portal-stats">
-        <div class="portal-stat-card blue">
-            <span class="stat-icon">💰</span>
-            <div>
-                <h2>₹{{ employee.salary|floatformat:0|default:"0" }}</h2>
-                <p>Monthly Salary</p>
+        <!-- ================= PAYROLL TABLE ================= -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3>📋 Payroll Records</h3>
+                <span class="record-count">{{ payrolls|length }} records</span>
+            </div>
+            <div class="table-responsive">
+                <table class="portal-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Year</th>
+                            <th>Basic Salary</th>
+                            <th>Allowances</th>
+                            <th>Deductions</th>
+                            <th>Net Salary</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payroll in payrolls %}
+                        <tr>
+                            <td><strong>{{ payroll.month }}</strong></td>
+                            <td>{{ payroll.year }}</td>
+                            <td>
+                                <span class="amount-positive">₹{{ payroll.basic_salary|floatformat:2 }}</span>
+                            </td>
+                            <td>
+                                <span class="amount-positive">+₹{{ payroll.allowances|floatformat:2 }}</span>
+                            </td>
+                            <td>
+                                <span class="amount-negative">-₹{{ payroll.deductions|floatformat:2 }}</span>
+                            </td>
+                            <td>
+                                <span class="amount-net">₹{{ payroll.net_salary|floatformat:2 }}</span>
+                            </td>
+                            <td>
+                                <span class="status-badge {% if payroll.paid %}status-present{% else %}status-pending{% endif %}">
+                                    <span class="status-dot"></span>
+                                    {% if payroll.paid %}Paid{% else %}Pending{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <span class="empty-icon">💰</span>
+                                    <h3>No Payroll Records Found</h3>
+                                    <p>Your payroll history will appear here once processed.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="portal-stat-card green">
-            <span class="stat-icon">✅</span>
-            <div>
-                <h2>{{ payrolls|length }}</h2>
-                <p>Total Payrolls</p>
-            </div>
-        </div>
-        <div class="portal-stat-card orange">
-            <span class="stat-icon">⏳</span>
-            <div>
-                <h2>{{ payrolls|length }}</h2>
-                <p>Processed</p>
-            </div>
-        </div>
-        <div class="portal-stat-card purple">
-            <span class="stat-icon">📊</span>
-            <div>
-                <h2>{% now "F Y" %}</h2>
-                <p>Current Month</p>
-            </div>
-        </div>
-    </div>
 
-    <!-- ================= PAYROLL TABLE ================= -->
-    <div class="portal-card">
-        <div class="portal-card-header">
-            <h3>📋 Payroll Records</h3>
-            <span class="record-count">{{ payrolls|length }} records</span>
-        </div>
-        <div class="table-responsive">
-            <table class="portal-table">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Year</th>
-                        <th>Basic Salary</th>
-                        <th>Allowances</th>
-                        <th>Deductions</th>
-                        <th>Net Salary</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for payroll in payrolls %}
-                    <tr>
-                        <td><strong>{{ payroll.month }}</strong></td>
-                        <td>{{ payroll.year }}</td>
-                        <td>₹{{ payroll.basic_salary|floatformat:2 }}</td>
-                        <td>+₹{{ payroll.allowances|floatformat:2 }}</td>
-                        <td>-₹{{ payroll.deductions|floatformat:2 }}</td>
-                        <td><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
-                        <td>
-                            <span class="status-badge {% if payroll.paid %}status-present{% else %}status-pending{% endif %}">
-                                {% if payroll.paid %}✅ Paid{% else %}⏳ Pending{% endif %}
-                            </span>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center">No payroll records found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
     </div>
-
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stats cards on scroll
+        const statCards = document.querySelectorAll('.portal-stat-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        statCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.4s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+
+        console.log('💰 Payroll page loaded');
+        console.log('📋 Total payrolls: {{ payrolls|length }}');
+    });
+</script>
 {% endblock %}

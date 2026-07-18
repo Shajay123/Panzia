@@ -1,0 +1,817 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Apply to PANZIA{% endblock %}
+
+{% block css %}
+<style>
+    /* ============================================
+       ENHANCED APPLICATION PAGE STYLES - DARK THEME
+       ============================================ */
+    .application-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at top, #1a1035, #0a0618);
+        padding: 40px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .application-wrapper::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 50%, rgba(124, 58, 237, 0.03), transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(236, 72, 153, 0.03), transparent 50%);
+        animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(2%, -2%) rotate(2deg); }
+    }
+
+    .application-container {
+        position: relative;
+        z-index: 1;
+        max-width: 820px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 40px 48px;
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.95), rgba(45, 27, 74, 0.95));
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 8px 64px rgba(0, 0, 0, 0.4);
+        animation: slideUp 0.6s ease forwards;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== HEADER ===== */
+    .application-header {
+        text-align: center;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .application-header .icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 8px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .application-header .badge {
+        display: inline-block;
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 8px;
+    }
+
+    .application-header h1 {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0;
+        font-size: 2rem;
+        letter-spacing: -0.5px;
+    }
+
+    .application-header h1 .highlight {
+        color: #a78bfa;
+    }
+
+    .application-header p {
+        color: #94a3b8;
+        margin: 8px 0 0;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    /* ===== SECTION HEADERS ===== */
+    .section-title {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 28px 0 16px 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title .section-icon {
+        font-size: 1.2rem;
+    }
+
+    /* ===== FORM GROUP ===== */
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #d6e0f0;
+        font-weight: 500;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+        font-weight: 700;
+        margin-left: 2px;
+    }
+
+    .form-group label .label-icon {
+        font-size: 1rem;
+    }
+
+    .form-group .help-text {
+        display: block;
+        color: #64748b;
+        font-size: 0.72rem;
+        margin-top: 4px;
+        padding-left: 4px;
+    }
+
+    .form-group .error-text {
+        color: #f87171;
+        font-size: 0.78rem;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .form-group .error-text::before {
+        content: '⚠️';
+        font-size: 0.8rem;
+    }
+
+    /* ===== ALL FORM CONTROLS - DARK GRAY BACKGROUND ===== */
+    /* Target all input types, selects, and textareas */
+    input[type="text"],
+    input[type="email"],
+    input[type="url"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="password"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="week"],
+    input[type="time"],
+    input[type="search"],
+    input[type="color"],
+    select,
+    textarea,
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        background: #2a1f3d !important;
+        border: 1.5px solid rgba(167, 139, 250, 0.1);
+        border-radius: 10px;
+        color: #e8edf5 !important;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        font-family: inherit;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="url"]:focus,
+    input[type="tel"]:focus,
+    input[type="number"]:focus,
+    input[type="password"]:focus,
+    input[type="date"]:focus,
+    input[type="datetime-local"]:focus,
+    input[type="month"]:focus,
+    input[type="week"]:focus,
+    input[type="time"]:focus,
+    input[type="search"]:focus,
+    input[type="color"]:focus,
+    select:focus,
+    textarea:focus,
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.08);
+        background: #2f2345 !important;
+    }
+
+    input[type="text"]:hover,
+    input[type="email"]:hover,
+    input[type="url"]:hover,
+    input[type="tel"]:hover,
+    input[type="number"]:hover,
+    input[type="password"]:hover,
+    input[type="date"]:hover,
+    input[type="datetime-local"]:hover,
+    input[type="month"]:hover,
+    input[type="week"]:hover,
+    input[type="time"]:hover,
+    input[type="search"]:hover,
+    input[type="color"]:hover,
+    select:hover,
+    textarea:hover,
+    .form-control:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+        background: #2f2345 !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder,
+    .form-control::placeholder {
+        color: #94a3b8;
+        opacity: 0.7;
+    }
+
+    .form-control.error {
+        border-color: #f87171;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+    }
+
+    .form-control.error:focus {
+        border-color: #f87171;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    }
+
+    /* ===== SELECT DROPDOWN - DARK GRAY ===== */
+    select {
+        background: #2a1f3d !important;
+        color: #e8edf5 !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 14px center !important;
+        padding-right: 40px;
+        cursor: pointer;
+    }
+
+    select:hover {
+        background: #2f2345 !important;
+    }
+
+    select:focus {
+        background: #2f2345 !important;
+    }
+
+    select option {
+        background: #1a1035 !important;
+        color: #e8edf5 !important;
+        padding: 8px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    select option:hover {
+        background: rgba(167, 139, 250, 0.1) !important;
+    }
+
+    select option:checked {
+        background: rgba(124, 58, 237, 0.2) !important;
+        color: #a78bfa !important;
+    }
+
+    /* ===== TEXTAREA - DARK GRAY ===== */
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.7;
+        background: #2a1f3d !important;
+        color: #e8edf5 !important;
+    }
+
+    textarea:hover {
+        background: #2f2345 !important;
+    }
+
+    textarea:focus {
+        background: #2f2345 !important;
+    }
+
+    textarea::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    textarea::-webkit-scrollbar-track {
+        background: rgba(167, 139, 250, 0.02);
+        border-radius: 3px;
+    }
+
+    textarea::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.15);
+        border-radius: 3px;
+    }
+
+    textarea::-webkit-scrollbar-thumb:hover {
+        background: rgba(167, 139, 250, 0.25);
+    }
+
+    /* ===== FILE INPUT - DARK GRAY ===== */
+    .file-upload-wrapper {
+        position: relative;
+    }
+
+    .file-upload-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        z-index: 2;
+    }
+
+    .file-upload-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        background: #2a1f3d !important;
+        border: 1.5px dashed rgba(167, 139, 250, 0.12);
+        border-radius: 10px;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-upload-label:hover {
+        border-color: rgba(167, 139, 250, 0.25);
+        background: #2f2345 !important;
+    }
+
+    .file-upload-label .upload-icon {
+        font-size: 1.5rem;
+    }
+
+    .file-upload-label .upload-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #94a3b8;
+    }
+
+    .file-upload-label .file-name {
+        color: #a78bfa;
+        font-weight: 500;
+    }
+
+    /* ===== GRID LAYOUT ===== */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .form-grid .full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 32px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        border: none;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #ffffff;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: #ffffff;
+    }
+
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        flex: 0.5;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-2px);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    /* ===== SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ===== AUTOCOMPLETE FIX - ALL INPUTS ===== */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px #2a1f3d inset !important;
+        -webkit-text-fill-color: #e8edf5 !important;
+        caret-color: #e8edf5 !important;
+        border-color: rgba(167, 139, 250, 0.2) !important;
+        background-color: #2a1f3d !important;
+    }
+
+    input:-moz-autofill {
+        background: #2a1f3d !important;
+        color: #e8edf5 !important;
+    }
+
+    /* Force all inputs to have dark background */
+    input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea {
+        background: #2a1f3d !important;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .application-container {
+            padding: 24px 20px;
+            margin: 16px;
+            border-radius: 16px;
+        }
+
+        .application-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .application-header .icon {
+            font-size: 3rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .form-grid .full-width {
+            grid-column: 1;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            flex: none;
+        }
+
+        .btn-secondary {
+            flex: none;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .application-container {
+            padding: 16px;
+            margin: 8px;
+            border-radius: 12px;
+        }
+
+        .application-header h1 {
+            font-size: 1.3rem;
+        }
+
+        .application-header p {
+            font-size: 0.85rem;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="url"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        textarea,
+        .form-control {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="application-wrapper">
+    <div class="application-container">
+        
+        <!-- ===== HEADER ===== -->
+        <div class="application-header">
+            <span class="icon">🚀</span>
+            <span class="badge">✨ Early Access</span>
+            <h1>Apply to <span class="highlight">PANZIA</span></h1>
+            <p>Start your startup journey with PANZIA. Fill in the details below to apply for access.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="applicationForm" novalidate>
+            {% csrf_token %}
+
+            <!-- ===== COMPANY INFORMATION ===== -->
+            <div class="section-title">
+                <span class="section-icon">🏢</span>
+                Company Information
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.company_name.id_for_label }}">
+                    <span class="label-icon">📛</span>
+                    Company Name <span class="required">*</span>
+                </label>
+                {{ form.company_name }}
+                {% if form.company_name.errors %}
+                    <div class="error-text">{{ form.company_name.errors.0 }}</div>
+                {% endif %}
+                <span class="help-text">Your official company or startup name.</span>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.tagline.id_for_label }}">
+                        <span class="label-icon">💡</span>
+                        Tagline
+                    </label>
+                    {{ form.tagline }}
+                    <span class="help-text">A short, catchy phrase.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.industry.id_for_label }}">
+                        <span class="label-icon">🏭</span>
+                        Industry <span class="required">*</span>
+                    </label>
+                    {{ form.industry }}
+                    <span class="help-text">Technology, Healthcare, etc.</span>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.website.id_for_label }}">
+                        <span class="label-icon">🌐</span>
+                        Website
+                    </label>
+                    {{ form.website }}
+                    <span class="help-text">Your company website URL.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.logo.id_for_label }}">
+                        <span class="label-icon">🖼️</span>
+                        Logo
+                    </label>
+                    <div class="file-upload-wrapper">
+                        {{ form.logo }}
+                        <div class="file-upload-label">
+                            <span class="upload-icon">📤</span>
+                            <span class="upload-text">Choose Logo</span>
+                            <span class="file-name" id="fileName"></span>
+                        </div>
+                    </div>
+                    <span class="help-text">PNG, JPG - max 5MB (optional).</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">
+                    <span class="label-icon">📝</span>
+                    Description <span class="required">*</span>
+                </label>
+                {{ form.description }}
+                <span class="help-text">Describe your startup's vision, mission, and what you do.</span>
+            </div>
+
+            <!-- ===== LOCATION ===== -->
+            <div class="section-title">
+                <span class="section-icon">📍</span>
+                Location
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.address.id_for_label }}">
+                    <span class="label-icon">🏠</span>
+                    Address
+                </label>
+                {{ form.address }}
+                <span class="help-text">Your company's registered address.</span>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.city.id_for_label }}">
+                        <span class="label-icon">🏙️</span>
+                        City
+                    </label>
+                    {{ form.city }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.state.id_for_label }}">
+                        <span class="label-icon">🗺️</span>
+                        State
+                    </label>
+                    {{ form.state }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.country.id_for_label }}">
+                    <span class="label-icon">🌍</span>
+                    Country
+                </label>
+                {{ form.country }}
+            </div>
+
+            <!-- ===== CONTACT INFORMATION ===== -->
+            <div class="section-title">
+                <span class="section-icon">👤</span>
+                Contact Information
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.applicant_name.id_for_label }}">
+                        <span class="label-icon">👤</span>
+                        Full Name <span class="required">*</span>
+                    </label>
+                    {{ form.applicant_name }}
+                    <span class="help-text">Your full name as the applicant.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.applicant_email.id_for_label }}">
+                        <span class="label-icon">📧</span>
+                        Email Address <span class="required">*</span>
+                    </label>
+                    {{ form.applicant_email }}
+                    {% if form.applicant_email.errors %}
+                        <div class="error-text">{{ form.applicant_email.errors.0 }}</div>
+                    {% endif %}
+                    <span class="help-text">You will receive updates on this email.</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.applicant_phone.id_for_label }}">
+                    <span class="label-icon">📱</span>
+                    Phone Number
+                </label>
+                {{ form.applicant_phone }}
+                <span class="help-text">Contact number for verification.</span>
+            </div>
+
+            <!-- ===== FORM ACTIONS ===== -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    🚀 Submit Application
+                </button>
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    ❌ Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // FILE INPUT LABEL UPDATE
+        // ============================================
+        const fileInput = document.querySelector('input[type="file"]');
+        const fileNameSpan = document.getElementById('fileName');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileNameSpan.textContent = this.files[0].name;
+                    const label = this.closest('.file-upload-wrapper').querySelector('.upload-text');
+                    label.textContent = 'File selected';
+                } else {
+                    fileNameSpan.textContent = '';
+                    const label = this.closest('.file-upload-wrapper').querySelector('.upload-text');
+                    label.textContent = 'Choose Logo';
+                }
+            });
+        }
+
+        // ============================================
+        // AUTO-FOCUS FIRST FIELD
+        // ============================================
+        const firstInput = document.querySelector('input:not([type="file"]):not([type="hidden"]), select, textarea');
+        if (firstInput && !firstInput.disabled) {
+            setTimeout(() => {
+                firstInput.focus();
+            }, 300);
+        }
+
+        // ============================================
+        // FORM SUBMISSION
+        // ============================================
+        const form = document.getElementById('applicationForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+            submitBtn.style.opacity = '0.7';
+            submitBtn.style.cursor = 'not-allowed';
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const form = document.getElementById('applicationForm');
+                if (form) {
+                    e.preventDefault();
+                    form.submit();
+                }
+            }
+        });
+
+        console.log('🚀 Application form loaded');
+    });
+</script>
+{% endblock %}

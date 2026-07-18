@@ -1,104 +1,473 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}
-Delete Document
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'document_detail' document.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Document
+    </a>
+    <a href="{% url 'documents' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📂</span> All Documents
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/document_delete.css' %}">
-{% endblock %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       DELETE DOCUMENT - HRMS STYLES
+       ============================================ */
+    .delete-page {
+        max-width: 550px;
+        margin: 0 auto;
+    }
 
-{% block content %}
+    .delete-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 40px 32px;
+        text-align: center;
+        transition: all 0.3s;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .delete-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+    }
+
+    .delete-card .delete-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .delete-card h1 {
+        margin: 0 0 8px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f87171;
+    }
+
+    .delete-card .delete-message {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .delete-card .delete-message strong {
+        color: #e8edf5;
+    }
+
+    /* ===== DOCUMENT PREVIEW ===== */
+    .document-preview {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        text-align: left;
+    }
+
+    .document-preview .doc-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        margin-bottom: 12px;
+    }
+
+    .document-preview .doc-header .doc-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .document-preview .doc-header .doc-title {
+        flex: 1;
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        word-break: break-word;
+    }
+
+    .document-preview .doc-header .doc-badge {
+        font-size: 0.6rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .document-preview .doc-detail {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.85rem;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .document-preview .doc-detail:last-child {
+        border-bottom: none;
+    }
+
+    .document-preview .doc-detail .detail-label {
+        color: #94a3b8;
+    }
+
+    .document-preview .doc-detail .detail-value {
+        color: #d6e0f0;
+        font-weight: 500;
+        text-align: right;
+        max-width: 60%;
+        word-break: break-word;
+    }
+
+    /* ===== WARNING BOX ===== */
+    .warning-box {
+        background: rgba(251, 191, 36, 0.06);
+        border: 1px solid rgba(251, 191, 36, 0.1);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: #fbbf24;
+        font-size: 0.85rem;
+        text-align: left;
+    }
+
+    .warning-box .warning-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .warning-box strong {
+        color: #fcd34d;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .button-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .button-group .btn {
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .btn-delete:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .btn-cancel {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .delete-page {
+            padding: 0;
+        }
+
+        .delete-card {
+            padding: 28px 20px;
+        }
+
+        .delete-card h1 {
+            font-size: 1.3rem;
+        }
+
+        .document-preview {
+            padding: 14px 16px;
+        }
+
+        .document-preview .doc-detail {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+
+        .document-preview .doc-detail .detail-value {
+            text-align: left;
+            max-width: 100%;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .button-group .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .delete-card {
+            padding: 20px 14px;
+        }
+
+        .delete-card .delete-icon {
+            font-size: 3rem;
+        }
+
+        .delete-card h1 {
+            font-size: 1.1rem;
+        }
+
+        .document-preview .doc-header .doc-icon {
+            font-size: 1.5rem;
+        }
+
+        .document-preview .doc-header .doc-title {
+            font-size: 0.95rem;
+        }
+
+        .btn-delete,
+        .btn-cancel {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+
+        .warning-box {
+            font-size: 0.8rem;
+            padding: 10px 14px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .delete-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .document-preview {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.1s;
+        opacity: 0;
+    }
+
+    .warning-box {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .button-group {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div class="delete-page">
 
     <div class="delete-card">
 
-        <div class="delete-icon">
+        <span class="delete-icon">🗑</span>
 
-            🗑
+        <h1>Delete Employee Document</h1>
 
-        </div>
-
-        <h1>
-
-            Delete Employee Document
-
-        </h1>
-
-        <p>
-
+        <p class="delete-message">
             Are you sure you want to permanently delete this document?
-
+            <br>
+            This action <strong>cannot be undone</strong>.
         </p>
 
+        <!-- Document Preview -->
         <div class="document-preview">
-
-            <h3>
-
-                📄 {{ document.title }}
-
-            </h3>
-
-            <p>
-
-                <strong>Employee :</strong>
-
-                {{ document.employee.user.get_full_name|default:document.employee.user.username }}
-
-            </p>
-
-            <p>
-
-                <strong>Department :</strong>
-
-                {{ document.employee.department }}
-
-            </p>
-
-            <p>
-
-                <strong>Designation :</strong>
-
-                {{ document.employee.designation }}
-
-            </p>
-
-            <p>
-
-                <strong>Uploaded :</strong>
-
-                {{ document.uploaded_at|date:"d M Y" }}
-
-            </p>
-
+            <div class="doc-header">
+                <span class="doc-icon">📄</span>
+                <h3 class="doc-title">{{ document.title }}</h3>
+                <span class="doc-badge">Document</span>
+            </div>
+            
+            <div class="doc-detail">
+                <span class="detail-label">👤 Employee</span>
+                <span class="detail-value">{{ document.employee.user.get_full_name|default:document.employee.user.username }}</span>
+            </div>
+            
+            {% if document.employee.department %}
+            <div class="doc-detail">
+                <span class="detail-label">🏢 Department</span>
+                <span class="detail-value">{{ document.employee.department.name }}</span>
+            </div>
+            {% endif %}
+            
+            {% if document.employee.designation %}
+            <div class="doc-detail">
+                <span class="detail-label">💼 Designation</span>
+                <span class="detail-value">{{ document.employee.designation }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="doc-detail">
+                <span class="detail-label">📅 Uploaded</span>
+                <span class="detail-value">{{ document.uploaded_at|date:"d M Y, H:i" }}</span>
+            </div>
+            
+            {% if document.file %}
+            <div class="doc-detail">
+                <span class="detail-label">📎 File</span>
+                <span class="detail-value">
+                    <a href="{{ document.file.url }}" target="_blank" style="color: #a78bfa; text-decoration: none;">
+                        View File →
+                    </a>
+                </span>
+            </div>
+            {% endif %}
         </div>
 
-        <form method="POST">
-
-            {% csrf_token %}
-
-            <div class="button-group">
-
-                <button type="submit" class="btn-delete">
-
-                    🗑 Yes, Delete
-
-                </button>
-
-                <a href="{% url 'document_detail' document.id %}" class="btn-cancel">
-
-                    Cancel
-
-                </a>
-
+        <!-- Warning Box -->
+        <div class="warning-box">
+            <span class="warning-icon">⚠️</span>
+            <div>
+                <strong>Warning:</strong> This action will permanently delete this document and all associated data. 
+                This cannot be recovered.
             </div>
+        </div>
 
+        <!-- Action Buttons -->
+        <form method="POST" id="deleteForm">
+            {% csrf_token %}
+            <div class="button-group">
+                <button type="submit" class="btn btn-delete" id="deleteBtn">
+                    <span class="btn-icon">🗑</span>
+                    <span class="btn-text">Yes, Delete</span>
+                </button>
+                <a href="{% url 'document_detail' document.id %}" class="btn btn-cancel">
+                    <span class="btn-icon">✕</span>
+                    Cancel
+                </a>
+            </div>
         </form>
 
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('deleteForm');
+        const deleteBtn = document.getElementById('deleteBtn');
+
+        // ============================================
+        // CONFIRMATION BEFORE SUBMIT
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            const confirmDelete = confirm('Are you sure you want to delete the document "{{ document.title }}"? This action cannot be undone.');
+            if (!confirmDelete) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Show loading state
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Deleting...</span>
+            `;
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUT
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Enter key to submit
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                if (!deleteBtn.disabled) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+            // Escape key to cancel
+            if (e.key === 'Escape') {
+                const cancelBtn = document.querySelector('.btn-cancel');
+                if (cancelBtn) {
+                    window.location.href = cancelBtn.href;
+                }
+            }
+        });
+
+        console.log('🗑 Document Delete page loaded');
+        console.log('📄 Document: {{ document.title }}');
+        console.log('👤 Employee: {{ document.employee.user.get_full_name }}');
+    });
+</script>
 
 {% endblock %}

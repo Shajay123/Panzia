@@ -1,104 +1,32 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Employee Profile - {{ employee.user.get_full_name|default:employee.user.username }}{% endblock %}
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'employee_update' employee.id %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">✏️</span> Edit Profile
+    </a>
+    <a href="{% url 'employee_timing_config' employee.id %}" class="btn btn-timing btn-sm">
+        <span class="btn-icon">⏰</span> Configure Timings
+    </a>
+    <a href="{% url 'employees' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Employees
+    </a>
+</div>
+{% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_detail.css' %}">
+{% block hrms_content %}
 <style>
     /* ============================================
-       ENHANCED EMPLOYEE DETAIL STYLES
+       EMPLOYEE PROFILE - HRMS STYLES
        ============================================ */
-    
     .employee-profile-page {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 20px;
-        color: #e8edf5;
-    }
-
-    /* ===== PAGE NAV ===== */
-    .page-nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .page-nav-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .btn-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .btn-back:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-        transform: translateX(-2px);
-    }
-
-    .btn-back-dashboard {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .btn-back-dashboard:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-        transform: translateX(-2px);
-    }
-
-    .btn-timing-nav {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .btn-timing-nav:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+        max-width: 100%;
     }
 
     /* ===== PROFILE CARD ===== */
     .profile-card {
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
+        background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 16px;
         padding: 24px 28px;
@@ -284,67 +212,9 @@
         color: #94a3b8;
     }
 
-    .profile-actions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 4px;
-    }
-
-    .profile-actions .btn {
-        padding: 8px 20px;
-        border-radius: 8px;
+    .phone-number {
+        color: #60a5fa;
         font-weight: 600;
-        font-size: 0.85rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-secondary {
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-    }
-
-    .btn-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-    }
-
-    .btn-light {
-        background: rgba(167, 139, 250, 0.03);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.06);
-    }
-
-    .btn-light:hover {
-        background: rgba(167, 139, 250, 0.08);
-        color: #e8edf5;
-    }
-
-    .btn-timing {
-        background: linear-gradient(135deg, #ec4899, #f472b6);
-        color: white;
-    }
-
-    .btn-timing:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
     }
 
     /* ===== STATS GRID ===== */
@@ -356,8 +226,7 @@
     }
 
     .stat-card {
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
+        background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
         padding: 16px 20px;
@@ -426,8 +295,7 @@
     }
 
     .info-card {
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
+        background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
         padding: 20px;
@@ -497,11 +365,6 @@
         font-weight: 700;
     }
 
-    .info-value .phone-number {
-        color: #60a5fa;
-        font-weight: 600;
-    }
-
     .badge {
         display: inline-block;
         padding: 2px 10px;
@@ -553,25 +416,10 @@
         color: #4ade80;
     }
 
-    .manager-name {
-        font-weight: 600;
-        color: #a78bfa;
-    }
-
-    .manager-email {
-        display: block;
-        font-size: 0.75rem;
-        color: #94a3b8;
-    }
-
     .time-ago {
         font-size: 0.7rem;
         color: #64748b;
         margin-left: 4px;
-    }
-
-    .notes-content {
-        padding: 4px 0;
     }
 
     .notes-content p {
@@ -584,11 +432,6 @@
     .notes-content .text-muted {
         color: #94a3b8;
         font-style: italic;
-    }
-
-    /* ===== FULL WIDTH CARDS ===== */
-    .info-card.full-width {
-        grid-column: 1 / -1;
     }
 
     /* ===== RESPONSIVE ===== */
@@ -614,10 +457,6 @@
             justify-content: center;
         }
 
-        .profile-actions {
-            justify-content: center;
-        }
-
         .info-grid {
             grid-template-columns: 1fr;
         }
@@ -635,27 +474,11 @@
 
     @media (max-width: 768px) {
         .employee-profile-page {
-            padding: 12px;
+            padding: 0;
         }
 
-        .page-nav {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .page-nav-left {
-            flex-wrap: wrap;
-        }
-
-        .page-nav .btn-back,
-        .page-nav .btn-back-dashboard,
-        .page-nav .btn-timing-nav {
-            flex: 1;
-            justify-content: center;
-        }
-
-        .profile-left {
-            width: 100%;
+        .profile-card {
+            padding: 16px;
         }
 
         .profile-image-wrapper,
@@ -671,23 +494,9 @@
         .stats-grid {
             grid-template-columns: 1fr 1fr;
         }
-
-        .profile-actions {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .profile-actions .btn {
-            width: 100%;
-            justify-content: center;
-        }
     }
 
     @media (max-width: 480px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
         .profile-image-wrapper,
         .avatar {
             width: 100px;
@@ -701,28 +510,51 @@
         .profile-header h1 {
             font-size: 1.2rem;
         }
-    }
-</style>
-{% endblock %}
 
-{% block content %}
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .profile-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.15s; }
+    .stat-card:nth-child(3) { animation-delay: 0.2s; }
+    .stat-card:nth-child(4) { animation-delay: 0.25s; }
+
+    .info-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .info-card:nth-child(1) { animation-delay: 0.15s; }
+    .info-card:nth-child(2) { animation-delay: 0.2s; }
+    .info-card:nth-child(3) { animation-delay: 0.25s; }
+    .info-card:nth-child(4) { animation-delay: 0.3s; }
+</style>
 
 <div class="employee-profile-page">
-
-    <!-- ================= PAGE NAV ================= -->
-    <div class="page-nav">
-        <div class="page-nav-left">
-            <a href="{% url 'employees' %}" class="btn-back">
-                ← Back to Employees
-            </a>
-            <a href="{% url 'people_dashboard' %}" class="btn-back-dashboard">
-                📊 Dashboard
-            </a>
-        </div>
-        <a href="{% url 'employee_timing_config' employee.id %}" class="btn-timing-nav">
-            ⏰ Configure Timings
-        </a>
-    </div>
 
     <!-- ================= PROFILE CARD ================= -->
     <div class="profile-card">
@@ -791,24 +623,6 @@
                     </span>
                 </div>
             </div>
-
-            <div class="profile-actions">
-                <a href="{% url 'employee_update' employee.id %}" class="btn btn-primary">
-                    ✏️ Edit Profile
-                </a>
-                <a href="{% url 'employee_timing_config' employee.id %}" class="btn btn-timing">
-                    ⏰ Configure Timings
-                </a>
-                <a href="{% url 'attendance' %}" class="btn btn-secondary">
-                    🕒 Attendance
-                </a>
-                <a href="{% url 'payroll' %}" class="btn btn-secondary">
-                    💰 Payroll
-                </a>
-                <button class="btn btn-light" id="shareBtn">
-                    📤 Share
-                </button>
-            </div>
         </div>
     </div>
 
@@ -850,7 +664,6 @@
 
     <!-- ================= INFO GRID ================= -->
     <div class="info-grid">
-
         <!-- Personal Information -->
         <div class="info-card">
             <div class="card-header">
@@ -954,8 +767,8 @@
                     <span class="info-label">Manager</span>
                     <span class="info-value">
                         {% if employee.manager %}
-                        <span class="manager-name">{{ employee.manager.user.get_full_name }}</span>
-                        <span class="manager-email">{{ employee.manager.user.email }}</span>
+                        {{ employee.manager.user.get_full_name }}
+                        <span style="display: block; font-size: 0.75rem; color: #94a3b8;">{{ employee.manager.user.email }}</span>
                         {% else %}
                         <span class="text-muted">—</span>
                         {% endif %}
@@ -1021,41 +834,12 @@
                 {% endif %}
             </div>
         </div>
-
     </div>
 
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // ============================================
-        // SHARE FUNCTIONALITY
-        // ============================================
-        const shareBtn = document.getElementById('shareBtn');
-        if (shareBtn) {
-            shareBtn.addEventListener('click', function() {
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'Employee Profile',
-                        text: '{{ employee.user.get_full_name|default:employee.user.username }} - {{ employee.designation }}',
-                        url: window.location.href
-                    }).catch(() => {});
-                } else {
-                    // Fallback - copy to clipboard
-                    const url = window.location.href;
-                    navigator.clipboard.writeText(url).then(() => {
-                        const originalText = this.innerHTML;
-                        this.innerHTML = '✅ Copied!';
-                        setTimeout(() => {
-                            this.innerHTML = originalText;
-                        }, 2000);
-                    }).catch(() => {
-                        alert('Copy this URL: ' + window.location.href);
-                    });
-                }
-            });
-        }
-
         // ============================================
         // KEYBOARD SHORTCUTS
         // ============================================

@@ -1,105 +1,93 @@
-{% extends 'base.html' %}
+{% extends 'placements/base_placements.html' %}
 {% load static %}
 
-{% block content %}
+{% block page_title %}Applicants for {{ job.title }}{% endblock %}
+{% block page_icon %}👥{% endblock %}
+{% block page_subtitle %}Manage candidates and move them through your hiring pipeline.{% endblock %}
 
-<link rel="stylesheet" href="{% static 'css/job_applications.css' %}">
+{% block page_actions %}
+<a href="{% url 'startup_jobs' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Jobs
+</a>
+<a href="{% url 'recommended_candidates' job.id %}" class="btn btn-secondary">
+    <span class="btn-icon">🤖</span> AI Candidates
+</a>
+{% endblock %}
 
-<div class="applications-page">
-
-    <div class="page-header">
-
-        <h1>👥 Applicants</h1>
-
-        <p>
-            Manage candidates and move them through your hiring pipeline.
-        </p>
-
-    </div>
-
-
-    <div class="applications-grid">
-
+{% block placements_content %}
+<div class="job-applications-container">
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
         {% for app in applications %}
-
-        <div class="candidate-card">
-
-            <div class="candidate-top">
-
-                <div class="avatar">
-
+        <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 24px; transition: all 0.3s;">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #6d28d9); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1.2rem; flex-shrink: 0;">
                     {{ app.talent.username|first|upper }}
-
                 </div>
-
-                <div>
-
-                    <h3>
-
-                        {{ app.talent.username }}
-
-                    </h3>
-
-                    <span class="status status-{{ app.status|lower }}">
-
+                <div style="flex: 1;">
+                    <h3 style="color: #e8edf5; font-weight: 600; margin: 0; font-size: 1rem;">{{ app.talent.username }}</h3>
+                    <!-- <span style="display: inline-block; padding: 2px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; 
+                        {% if app.status == 'Shortlisted' %}background: rgba(251, 191, 36, 0.12); color: #fbbf24;
+                        {% elif app.status == 'Interview' %}background: rgba(96, 165, 250, 0.12); color: #60a5fa;
+                        {% elif app.status == 'Hired' %}background: rgba(52, 211, 153, 0.12); color: #34d399;
+                        {% else %}background: rgba(167, 139, 250, 0.08); color: #94a3b8;{% endif %}">
                         {{ app.status }}
-
-                    </span>
-
+                    </span> -->
                 </div>
-
             </div>
-
-            <div class="candidate-actions">
-
-                <a href="{% url 'portfolio_showcase' app.talent.id %}"
-                   class="portfolio-btn">
-
-                    🌐 Portfolio
-
-                </a>
-
-                <a href="{% url 'shortlist_application' app.id %}"
-                   class="shortlist-btn">
-
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <a href="{% url 'shortlist_application' app.id %}" style="background: rgba(251, 191, 36, 0.06); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.08); padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.75rem; text-decoration: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 4px;">
                     ⭐ Shortlist
-
                 </a>
-
-                <a href="{% url 'interview_application' app.id %}"
-                   class="interview-btn">
-
+                <a href="{% url 'interview_application' app.id %}" style="background: rgba(96, 165, 250, 0.06); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.08); padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.75rem; text-decoration: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 4px;">
                     🎤 Interview
-
                 </a>
-
-                <a href="{% url 'hire_application' app.id %}"
-                   class="hire-btn">
-
+                <a href="{% url 'hire_application' app.id %}" style="background: rgba(52, 211, 153, 0.06); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.08); padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.75rem; text-decoration: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 4px;">
                     ✅ Hire
-
                 </a>
-
             </div>
-
         </div>
-
         {% empty %}
-
-        <div class="empty-card">
-
-            <h3>No Applicants Yet</h3>
-
-            <p>
-                Applications will appear here once talents apply.
-            </p>
-
+        <div style="text-align: center; padding: 60px 20px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; grid-column: 1 / -1;">
+            <div style="font-size: 4rem; margin-bottom: 16px;">👥</div>
+            <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Applicants Yet</h3>
+            <p style="color: #94a3b8;">Applications will appear here once talents apply.</p>
         </div>
-
         {% endfor %}
-
     </div>
-
 </div>
 
+<style>
+    .job-applications-container > div[style*="display: grid;"] > div:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    
+    .job-applications-container a:hover {
+        transform: translateY(-2px);
+    }
+    
+    .job-applications-container a:first-child:hover {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fcd34d;
+    }
+    
+    .job-applications-container a:nth-child(2):hover {
+        background: rgba(96, 165, 250, 0.12);
+        color: #93c5fd;
+    }
+    
+    .job-applications-container a:last-child:hover {
+        background: rgba(52, 211, 153, 0.12);
+        color: #6ee7b7;
+    }
+    
+    @media (max-width: 768px) {
+        .job-applications-container > div[style*="display: grid;"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
 {% endblock %}

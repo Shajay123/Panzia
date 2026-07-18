@@ -1,10 +1,13 @@
-{% extends 'base.html' %}
+{% extends 'people/employee_portal/base_side_navbar.html' %}
 {% load static %}
 {% load people_filters %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}Employee Dashboard{% endblock %}
+{% block page_icon %}👤{% endblock %}
+{% block page_subtitle %}Welcome back, <strong>{{ employee.user.get_full_name|default:employee.user.username }}</strong>!{% endblock %}
 
 {% block css %}
+{{ block.super }}
 <link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
 <style>
     /* ===== ADDITIONAL STYLES ===== */
@@ -288,7 +291,634 @@
         color: white;
     }
 
+    /* ===== PORTAL HEADER STYLES ===== */
+    .portal-header {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+    }
+
+    .portal-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .portal-header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .portal-header-icon {
+        font-size: 2.5rem;
+    }
+
+    .portal-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .portal-header-subtitle {
+        margin: 2px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .portal-header-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .portal-date {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .portal-date .date-icon {
+        font-size: 1.1rem;
+    }
+
+    .btn-portal-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-portal-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-portal-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-portal-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    /* ===== PORTAL STATS ===== */
+    .portal-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .portal-stat-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .portal-stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .portal-stat-card .stat-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .portal-stat-card h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .portal-stat-card p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .portal-stat-card.blue { border-left: 3px solid #60a5fa; }
+    .portal-stat-card.blue h2 { color: #60a5fa; }
+    .portal-stat-card.orange { border-left: 3px solid #fbbf24; }
+    .portal-stat-card.orange h2 { color: #fbbf24; }
+    .portal-stat-card.green { border-left: 3px solid #34d399; }
+    .portal-stat-card.green h2 { color: #34d399; }
+    .portal-stat-card.purple { border-left: 3px solid #a78bfa; }
+    .portal-stat-card.purple h2 { color: #a78bfa; }
+
+    /* ===== QUICK ACTIONS ===== */
+    .portal-quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .portal-quick-action {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 16px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .portal-quick-action:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .portal-quick-action .action-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .portal-quick-action span:not(.action-icon):not(.action-badge) {
+        color: #e8edf5;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .portal-quick-action .action-badge {
+        margin-left: auto;
+        padding: 1px 10px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+    }
+
+    .portal-quick-action .action-badge.badge-new {
+        background: rgba(52, 211, 153, 0.15);
+        color: #34d399;
+    }
+
+    .portal-quick-action .action-badge.badge-count {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    /* ===== PORTAL CARD ===== */
+    .portal-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+
+    .portal-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .portal-card-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .portal-view-all {
+        color: #a78bfa;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .portal-view-all:hover {
+        color: #8b5cf6;
+        text-decoration: underline;
+    }
+
+    /* ===== PORTAL GRID ===== */
+    .portal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .portal-left,
+    .portal-right {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* ===== ATTENDANCE SUMMARY ===== */
+    .portal-attendance-summary {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .summary-circle {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        flex-shrink: 0;
+    }
+
+    .summary-circle svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    .summary-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .summary-text strong {
+        display: block;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .summary-text span {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    .summary-details {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 16px;
+        min-width: 140px;
+    }
+
+    .summary-detail {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .summary-detail .detail-label {
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+
+    .summary-detail .detail-value {
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .summary-detail .detail-value.present { color: #34d399; }
+    .summary-detail .detail-value.absent { color: #f87171; }
+    .summary-detail .detail-value.leave { color: #fbbf24; }
+    .summary-detail .detail-value.wfh { color: #60a5fa; }
+
+    /* ===== PAYROLL ITEM ===== */
+    .portal-payroll-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: rgba(167, 139, 250, 0.03);
+        border-radius: 8px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .portal-payroll-item .payroll-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .portal-payroll-item .payroll-month {
+        font-weight: 600;
+        color: #e8edf5;
+        font-size: 0.95rem;
+    }
+
+    .portal-payroll-item .payroll-status {
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .portal-payroll-item .payroll-status.paid {
+        background: rgba(52, 211, 153, 0.12);
+        color: #34d399;
+    }
+
+    .portal-payroll-item .payroll-status.pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+    }
+
+    .portal-payroll-item .payroll-amount {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #a78bfa;
+    }
+
+    /* ===== ATTENDANCE CHIPS ===== */
+    .portal-attendance-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .attendance-chip {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 60px;
+    }
+
+    .attendance-chip .chip-date {
+        color: #94a3b8;
+        font-size: 0.65rem;
+    }
+
+    .attendance-chip .chip-status {
+        font-weight: 600;
+        font-size: 0.7rem;
+    }
+
+    .attendance-chip.present { border-color: rgba(52, 211, 153, 0.2); }
+    .attendance-chip.present .chip-status { color: #34d399; }
+    
+    .attendance-chip.absent { border-color: rgba(239, 68, 68, 0.2); }
+    .attendance-chip.absent .chip-status { color: #f87171; }
+    
+    .attendance-chip.leave { border-color: rgba(251, 191, 36, 0.2); }
+    .attendance-chip.leave .chip-status { color: #fbbf24; }
+    
+    .attendance-chip.wfh { border-color: rgba(96, 165, 250, 0.2); }
+    .attendance-chip.wfh .chip-status { color: #60a5fa; }
+
+    /* ===== LEAVE ITEMS ===== */
+    .portal-leave-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .portal-leave-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        background: rgba(167, 139, 250, 0.02);
+        border-radius: 8px;
+        border-left: 3px solid rgba(167, 139, 250, 0.2);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .portal-leave-item .leave-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .portal-leave-item .leave-type {
+        font-weight: 600;
+        color: #e8edf5;
+        font-size: 0.9rem;
+    }
+
+    .portal-leave-item .leave-dates {
+        color: #94a3b8;
+        font-size: 0.75rem;
+    }
+
+    .portal-leave-item .leave-status {
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .leave-status.status-pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+    }
+
+    .leave-status.status-approved {
+        background: rgba(52, 211, 153, 0.12);
+        color: #34d399;
+    }
+
+    .leave-status.status-rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+    }
+
+    .portal-text-muted {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    /* ===== NOTIFICATIONS DROPDOWN ===== */
+    .portal-notifications {
+        position: relative;
+    }
+
+    .notification-btn {
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        color: #94a3b8;
+        padding: 8px 12px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .notification-btn:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .notification-dropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        background: #1a1035;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 12px;
+        width: 320px;
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        z-index: 100;
+    }
+
+    .notification-dropdown.show {
+        display: block;
+    }
+
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        position: sticky;
+        top: 0;
+        background: #1a1035;
+        z-index: 1;
+    }
+
+    .notification-header span {
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .notification-header .mark-all-read {
+        color: #a78bfa;
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .notification-list {
+        padding: 8px 0;
+    }
+
+    .notification-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 16px;
+        transition: background 0.2s;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.02);
+    }
+
+    .notification-item:hover {
+        background: rgba(167, 139, 250, 0.03);
+    }
+
+    .notification-item.unread {
+        background: rgba(124, 58, 237, 0.04);
+        border-left: 3px solid #7c3aed;
+    }
+
+    .notification-item .notif-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .notification-item p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #d6e0f0;
+        line-height: 1.4;
+    }
+
+    .notification-item .notif-time {
+        font-size: 0.65rem;
+        color: #64748b;
+        display: block;
+        margin-top: 2px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .portal-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
     @media (max-width: 768px) {
+        .portal-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .portal-quick-actions {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .portal-header-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .portal-header-right {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .portal-attendance-summary {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .summary-details {
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+        }
+
         .portal-quick-stats {
             grid-template-columns: 1fr;
         }
@@ -316,107 +946,130 @@
             min-width: auto;
             font-size: 0.6rem;
         }
+
+        .notification-dropdown {
+            width: 280px;
+            right: -40px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .portal-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .portal-quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .portal-header-icon {
+            font-size: 2rem;
+        }
+
+        .portal-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .portal-header-right {
+            flex-wrap: wrap;
+        }
+
+        .portal-card {
+            padding: 16px;
+        }
+
+        .summary-details {
+            grid-template-columns: 1fr;
+        }
+
+        .notification-dropdown {
+            width: 260px;
+            right: -60px;
+        }
     }
 </style>
 {% endblock %}
 
-{% block content %}
+{% block page_actions %}
+<div class="portal-date">
+    <span class="date-icon">📅</span>
+    <span>{% now "l, d M Y" %}</span>
+</div>
 
-<div class="employee-portal">
-
-    <!-- ================= HEADER ================= -->
-    <div class="portal-header">
-        <div class="portal-header-content">
-            <div class="portal-header-left">
-                <div class="portal-header-icon">👤</div>
+<div class="portal-notifications">
+    <button class="notification-btn" onclick="toggleNotifications()">
+        🔔
+        <span class="notification-dot" {% if pending_leaves > 0 %}style="display:block;"{% else %}style="display:none;"{% endif %}></span>
+        <span class="notification-count">{{ pending_leaves }}</span>
+    </button>
+    <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-header">
+            <span>🔔 Notifications</span>
+            <a href="#" class="mark-all-read" onclick="markAllRead(); return false;">Mark all read</a>
+        </div>
+        <div class="notification-list">
+            {% if pending_leaves > 0 %}
+            <div class="notification-item unread">
+                <span class="notif-icon">🌴</span>
                 <div>
-                    <h1>Employee Dashboard</h1>
-                    <p class="portal-header-subtitle">
-                        Welcome back, <strong>{{ employee.user.get_full_name|default:employee.user.username }}</strong>!
-                    </p>
+                    <p>You have <strong>{{ pending_leaves }}</strong> pending leave request{{ pending_leaves|pluralize }}</p>
+                    <span class="notif-time">Just now</span>
                 </div>
             </div>
-            <div class="portal-header-right">
-                <div class="portal-date">
-                    <span class="date-icon">📅</span>
-                    <span>{% now "l, d M Y" %}</span>
+            {% endif %}
+            {% if attendance_today %}
+            <div class="notification-item">
+                <span class="notif-icon">✅</span>
+                <div>
+                    <p>Attendance marked as <strong>{{ attendance_today.status }}</strong> today</p>
+                    <span class="notif-time">Today</span>
                 </div>
-
-                <!-- ================= NOTIFICATIONS ================= -->
-                <div class="portal-notifications">
-                    <button class="notification-btn" onclick="toggleNotifications()">
-                        🔔
-                        <span class="notification-dot" {% if pending_leaves > 0 %}style="display:block;"{% else %}style="display:none;"{% endif %}></span>
-                        <span class="notification-count">{{ pending_leaves }}</span>
-                    </button>
-                    <div class="notification-dropdown" id="notificationDropdown">
-                        <div class="notification-header">
-                            <span>🔔 Notifications</span>
-                            <a href="#" class="mark-all-read" onclick="markAllRead(); return false;">Mark all read</a>
-                        </div>
-                        <div class="notification-list">
-                            {% if pending_leaves > 0 %}
-                            <div class="notification-item unread">
-                                <span class="notif-icon">🌴</span>
-                                <div>
-                                    <p>You have <strong>{{ pending_leaves }}</strong> pending leave request{{ pending_leaves|pluralize }}</p>
-                                    <span class="notif-time">Just now</span>
-                                </div>
-                            </div>
-                            {% endif %}
-                            {% if attendance_today %}
-                            <div class="notification-item">
-                                <span class="notif-icon">✅</span>
-                                <div>
-                                    <p>Attendance marked as <strong>{{ attendance_today.status }}</strong> today</p>
-                                    <span class="notif-time">Today</span>
-                                </div>
-                            </div>
-                            {% else %}
-                            <div class="notification-item">
-                                <span class="notif-icon">⏳</span>
-                                <div>
-                                    <p>Don't forget to mark your attendance today!</p>
-                                    <span class="notif-time">Today</span>
-                                </div>
-                            </div>
-                            {% endif %}
-                            {% if upcoming_holidays %}
-                            <div class="notification-item">
-                                <span class="notif-icon">🎉</span>
-                                <div>
-                                    <p>Upcoming holiday: <strong>{{ upcoming_holidays|first|default:"" }}</strong></p>
-                                    <span class="notif-time">Soon</span>
-                                </div>
-                            </div>
-                            {% endif %}
-                            <div class="notification-item">
-                                <span class="notif-icon">💰</span>
-                                <div>
-                                    <p>Payroll for {{ latest_payroll.month|default:"current" }} month is {{ latest_payroll.paid|yesno:"paid,pending" }}</p>
-                                    <span class="notif-time">This month</span>
-                                </div>
-                            </div>
-                            {% if upcoming_leaves %}
-                            <div class="notification-item">
-                                <span class="notif-icon">📅</span>
-                                <div>
-                                    <p>Upcoming leave: <strong>{{ upcoming_leaves|first|default:"" }}</strong></p>
-                                    <span class="notif-time">Soon</span>
-                                </div>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <a href="{% url 'employee_portal_profile' %}" class="btn-portal-primary">
-                    <span class="btn-icon">👤</span> My Profile
-                </a>
             </div>
+            {% else %}
+            <div class="notification-item">
+                <span class="notif-icon">⏳</span>
+                <div>
+                    <p>Don't forget to mark your attendance today!</p>
+                    <span class="notif-time">Today</span>
+                </div>
+            </div>
+            {% endif %}
+            {% if upcoming_holidays %}
+            <div class="notification-item">
+                <span class="notif-icon">🎉</span>
+                <div>
+                    <p>Upcoming holiday: <strong>{{ upcoming_holidays|first|default:"" }}</strong></p>
+                    <span class="notif-time">Soon</span>
+                </div>
+            </div>
+            {% endif %}
+            <div class="notification-item">
+                <span class="notif-icon">💰</span>
+                <div>
+                    <p>Payroll for {{ latest_payroll.month|default:"current" }} month is {{ latest_payroll.paid|yesno:"paid,pending" }}</p>
+                    <span class="notif-time">This month</span>
+                </div>
+            </div>
+            {% if upcoming_leaves %}
+            <div class="notification-item">
+                <span class="notif-icon">📅</span>
+                <div>
+                    <p>Upcoming leave: <strong>{{ upcoming_leaves|first|default:"" }}</strong></p>
+                    <span class="notif-time">Soon</span>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
+</div>
 
+<a href="{% url 'employee_portal_profile' %}" class="btn-portal-primary">
+    <span class="btn-icon">👤</span> My Profile
+</a>
+{% endblock %}
+
+{% block portal_content %}
+<div class="employee-portal-content">
     <!-- ================= STARTUP BANNER ================= -->
     {% include 'people/includes/startup_banner.html' %}
 
@@ -454,11 +1107,7 @@
 
     <!-- ================= QUICK ACTIONS WITH BADGES ================= -->
     <div class="portal-quick-actions">
-        <a href="{% url 'employee_portal_attendance_mark' %}" class="portal-quick-action">
-            <span class="action-icon">📝</span>
-            <span>Mark Attendance</span>
-            <span class="action-badge badge-new">Today</span>
-        </a>
+        
         <a href="{% url 'employee_portal_leave_create' %}" class="portal-quick-action">
             <span class="action-icon">➕</span>
             <span>Apply Leave</span>
@@ -478,11 +1127,6 @@
             <span class="action-icon">💰</span>
             <span>Payroll</span>
             <span class="action-badge">Latest</span>
-        </a>
-        <a href="{% url 'employee_portal_payslips' %}" class="portal-quick-action">
-            <span class="action-icon">🧾</span>
-            <span>Payslips</span>
-            <span class="action-badge">Download</span>
         </a>
     </div>
 
@@ -695,7 +1339,6 @@
         </div>
 
     </div>
-
 </div>
 
 <script>
@@ -756,7 +1399,6 @@
     // ============================================
     document.addEventListener('DOMContentLoaded', function() {
         try {
-            // Get data from data attributes (NO Django template tags inside JavaScript)
             const statsContainer = document.getElementById('quickStats');
             if (!statsContainer) {
                 console.error('Quick stats container not found');
@@ -768,11 +1410,9 @@
             const isPayrollPaid = statsContainer.dataset.payroll === 'true';
             const totalLeaves = 12;
 
-            // Calculate leaves percentage
             let leavesPercent = Math.round((leavesUsed / totalLeaves) * 100);
             leavesPercent = Math.min(leavesPercent, 100);
 
-            // Update Attendance Bar
             const attendanceBar = document.getElementById('attendanceBar');
             const attendanceBadge = document.getElementById('attendanceBadge');
             if (attendanceBar) {
@@ -794,7 +1434,6 @@
                 }
             }
 
-            // Update Leaves Bar
             const leavesBar = document.getElementById('leavesBar');
             const leavesBadge = document.getElementById('leavesBadge');
             if (leavesBar) {
@@ -813,7 +1452,6 @@
                 }
             }
 
-            // Update Payroll Bar
             const payrollBar = document.getElementById('payrollBar');
             const payrollBadge = document.getElementById('payrollBadge');
             if (payrollBar) {
@@ -836,7 +1474,6 @@
             
         } catch (error) {
             console.error('Error updating quick stats:', error);
-            // Set default values if error occurs
             document.querySelectorAll('.qs-fill').forEach(function(bar) {
                 bar.style.width = '0%';
             });
@@ -862,5 +1499,4 @@
     console.log('🌴 Pending Leaves: {{ pending_leaves }}');
     console.log('🎉 Upcoming Holidays: {{ upcoming_holidays|length }}');
 </script>
-
 {% endblock %}

@@ -350,11 +350,30 @@ class Attendance(models.Model):
         null=True
     )
 
-    photo = models.ImageField(
-        upload_to=get_attendance_photo_path,  # Use the helper function
+    # ============================================
+    # SEPARATE CHECK-IN AND CHECK-OUT PHOTOS
+    # ============================================
+    checkin_photo = models.ImageField(
+        upload_to=get_attendance_photo_path,
         blank=True,
         null=True,
-        help_text="Attendance verification photo"
+        help_text="Check-in verification photo"
+    )
+    
+    checkout_photo = models.ImageField(
+        upload_to=get_attendance_photo_path,
+        blank=True,
+        null=True,
+        help_text="Check-out verification photo"
+    )
+    
+    # Keep the old photo field for backward compatibility
+    # But we'll deprecate it in favor of checkin_photo and checkout_photo
+    photo = models.ImageField(
+        upload_to=get_attendance_photo_path,
+        blank=True,
+        null=True,
+        help_text="Attendance verification photo (deprecated)"
     )
     
     location_lat = models.DecimalField(
@@ -440,6 +459,47 @@ class Attendance(models.Model):
         return f"{self.employee} - {self.date} - {self.status}"
 
     # ============================================
+    # PHOTO PROPERTIES
+    # ============================================
+    
+    @property
+    def has_checkin_photo(self):
+        """Check if attendance has a check-in photo."""
+        return bool(self.checkin_photo)
+    
+    @property
+    def has_checkout_photo(self):
+        """Check if attendance has a check-out photo."""
+        return bool(self.checkout_photo)
+    
+    @property
+    def has_photo(self):
+        """Check if attendance has any photo (backward compatibility)."""
+        return bool(self.checkin_photo or self.checkout_photo or self.photo)
+    
+    def get_checkin_photo_url(self):
+        """Get check-in photo URL or placeholder."""
+        if self.checkin_photo:
+            return self.checkin_photo.url
+        return None
+    
+    def get_checkout_photo_url(self):
+        """Get check-out photo URL or placeholder."""
+        if self.checkout_photo:
+            return self.checkout_photo.url
+        return None
+    
+    def get_photo_url(self):
+        """Get primary photo URL (backward compatibility)."""
+        if self.checkin_photo:
+            return self.checkin_photo.url
+        elif self.checkout_photo:
+            return self.checkout_photo.url
+        elif self.photo:
+            return self.photo.url
+        return None
+
+    # ============================================
     # PROPERTIES - FIXED
     # ============================================
 
@@ -447,7 +507,7 @@ class Attendance(models.Model):
     def working_hours(self):
         """Get working hours as formatted string."""
         if not self.check_in or not self.check_out:
-            return "-"
+            return None
         
         # Get time objects
         check_in_time = self.check_in
@@ -461,7 +521,7 @@ class Attendance(models.Model):
                 try:
                     check_in_time = datetime.strptime(check_in_time, '%H:%M:%S').time()
                 except ValueError:
-                    return "-"
+                    return None
         
         if isinstance(check_out_time, str):
             try:
@@ -470,10 +530,10 @@ class Attendance(models.Model):
                 try:
                     check_out_time = datetime.strptime(check_out_time, '%H:%M:%S').time()
                 except ValueError:
-                    return "-"
+                    return None
         
         if not isinstance(check_in_time, time) or not isinstance(check_out_time, time):
-            return "-"
+            return None
         
         start = datetime.combine(self.date, check_in_time)
         end = datetime.combine(self.date, check_out_time)
@@ -486,7 +546,7 @@ class Attendance(models.Model):
         hours = diff.seconds // 3600
         minutes = (diff.seconds % 3600) // 60
         return f"{hours}h {minutes}m"
-
+    
     @property
     def working_hours_decimal(self):
         """Get working hours as decimal (e.g., 8.5 for 8h 30m)."""
@@ -620,11 +680,6 @@ class Attendance(models.Model):
             'very_late': '❌ Very Late',
         }
         return status_map.get(self.check_in_status, 'Unknown')
-
-    @property
-    def has_photo(self):
-        """Check if attendance has a photo."""
-        return bool(self.photo)
 
     @property
     def has_location(self):
@@ -884,12 +939,6 @@ class Attendance(models.Model):
             return f"{self.location_lat:.6f}, {self.location_lng:.6f}"
         return "No location"
 
-    def get_photo_url(self):
-        """Get photo URL or placeholder."""
-        if self.photo:
-            return self.photo.url
-        return None
-
     def get_status_color(self):
         """Get color code for status."""
         colors = {
@@ -920,7 +969,6 @@ class Attendance(models.Model):
         """Get weekday name."""
         weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         return weekdays[self.date.weekday()]
-
 
 # ==========================================
 # LEAVE REQUEST

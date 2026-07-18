@@ -1,182 +1,81 @@
-{% extends 'base.html' %}
+{% extends 'placements/base_placements.html' %}
 {% load static %}
 
-{% block content %}
-
-<link rel="stylesheet" href="{% static 'css/jobs.css' %}">
-
-<div class="job-page">
-
-    <div class="job-container">
-
-        <!-- HERO -->
-
-        <div class="job-header">
-
-            <h1>
-                🚀 Startup Opportunities
-            </h1>
-
-            <p>
-                Discover internships, freelance projects and full-time opportunities from startups.
-            </p>
-
-        </div>
-
-
-        {% if jobs %}
-
-        <div class="job-grid">
-
-            {% for job in jobs %}
-
-            <div class="job-card">
-
-                <!-- Title -->
-
-                <div class="d-flex justify-content-between align-items-center mb-3">
-
-                    <h3>
-
-                        {{ job.title }}
-
-                    </h3>
-
-                    <br>
-
-                    <span class="job-badge">
-
-                        {{ job.job_type }}
-
-                    </span>
-
-                    <br>
-
-                </div>
-
-                <br>
-
-                <!-- Description -->
-
-                <p class="text-secondary">
-
-                    {{ job.description|truncatechars:150 }}
-
-                </p>
-                <br>
-
-
-
-                <!-- Skills -->
-
-                <div class="mb-4">
-
-                    <small class="text-secondary">
-
-                        Required Skills
-
-                    </small>
-                    <br>
-                    <br>
-
-                    <div class="mt-2">
-
-                        {% for skill in job.skills.split %}
-
-                        <span class="badge bg-dark me-1">
-
-                            {{ skill }}
-
-                        </span>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-
-                <!-- Meta -->
-
-                <div class="job-meta mb-4">
-
-                    <div>
-
-                        📍 {{ job.location }}
-
-                    </div>
-
-                    <div>
-
-                        💰 {{ job.salary }}
-
-                    </div>
-
-                </div>
-
-
-                <!-- Footer -->
-
-                <div class="d-flex justify-content-between align-items-center">
-
-                    <small class="text-secondary">
-
-                        Posted
-
-                        {{ job.created_at|date:"d M Y" }}
-
-                    </small>
-
-                    {% if job.id in applied_jobs %}
-
-                    <button class="applied-btn" disabled>
-
-                        ✓ Applied
-
-                    </button>
-
-                    {% else %}
-
-                    <a href="{% url 'apply_job' job.id %}" class="view-btn">
-
-                        Apply →
-
-                    </a>
-
-                    {% endif %}
-
-                </div>
-
+{% block page_title %}Startup Opportunities{% endblock %}
+{% block page_icon %}🚀{% endblock %}
+{% block page_subtitle %}Discover internships, freelance projects and full-time opportunities from startups.{% endblock %}
+
+{% block placements_content %}
+<div class="browse-jobs-container">
+    
+    {% if jobs %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+        {% for job in jobs %}
+        <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 24px; transition: all 0.3s;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">{{ job.title }}</h3>
+                <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 2px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; white-space: nowrap;">{{ job.job_type }}</span>
             </div>
-
-            {% endfor %}
-
+            
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 12px 0; line-height: 1.6;">{{ job.description|truncatechars:150 }}</p>
+            
+            {% if job.skills %}
+            <div style="margin: 12px 0;">
+                <small style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Required Skills</small>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                    {% for skill in job.skills.split|slice:":5" %}
+                    <span style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem;">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <hr style="border-color: rgba(167, 139, 250, 0.06); margin: 12px 0;">
+            
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <span style="color: #64748b; font-size: 0.8rem;">📍 {{ job.location }}</span>
+                <span style="color: #a78bfa; font-size: 0.8rem; font-weight: 600;">💰 {{ job.salary }}</span>
+            </div>
+            
+            <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <small style="color: #64748b; font-size: 0.7rem;">Posted {{ job.created_at|date:"d M Y" }}</small>
+                {% if job.id in applied_jobs %}
+                <span style="background: rgba(52, 211, 153, 0.12); color: #34d399; padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 0.8rem;">✓ Applied</span>
+                {% else %}
+                <a href="{% url 'apply_job' job.id %}" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px;">
+                    Apply →
+                </a>
+                {% endif %}
+            </div>
         </div>
-
-        {% else %}
-
-        <!-- Empty State -->
-
-        <div class="glass-card text-center">
-
-            <h2>
-
-                😔 No Opportunities Available
-
-            </h2>
-
-            <p class="text-secondary">
-
-                There are currently no active startup opportunities.
-
-            </p>
-
-        </div>
-
-        {% endif %}
-
+        {% endfor %}
     </div>
-
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px;">
+        <div style="font-size: 4rem; margin-bottom: 16px;">😔</div>
+        <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Opportunities Available</h3>
+        <p style="color: #94a3b8;">There are currently no active startup opportunities.</p>
+    </div>
+    {% endif %}
 </div>
 
+<style>
+    .browse-jobs-container > div[style*="display: grid;"] > div:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    
+    .browse-jobs-container a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    @media (max-width: 768px) {
+        .browse-jobs-container > div[style*="display: grid;"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
 {% endblock %}

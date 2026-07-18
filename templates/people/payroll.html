@@ -1,174 +1,176 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Payroll Management{% endblock %}
+{% block page_title %}Payroll Management{% endblock %}
+{% block page_icon %}💰{% endblock %}
+{% block page_subtitle %}Manage employee salaries, payroll processing and payment status.{% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/payroll.css' %}">
+{% block page_actions %}
+<button class="btn btn-secondary" id="exportBtn">
+    <span class="btn-icon">📥</span> Export
+</button>
+<a href="{% url 'payroll_create' %}" class="btn btn-primary">
+    <span class="btn-icon">➕</span> Add Payroll
+</a>
 {% endblock %}
 
-{% block content %}
-
-<div class="payroll-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">💰</div>
-                <div>
-                    <h1>Payroll Management</h1>
-                    <p class="header-subtitle">Manage employee salaries, payroll processing and payment status.</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <button class="btn-secondary" id="exportBtn">
-                    📥 Export
-                </button>
-                <a href="{% url 'payroll_create' %}" class="btn-primary">
-                    ➕ Add Payroll
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- STARTUP BANNER - RIGHT AFTER HEADER -->
-    <!-- ============================================================ -->
-    {% include 'people/includes/startup_banner.html' %}
+{% block hrms_content %}
+<div class="payroll-container">
+    
+    <!-- Startup Banner -->
     {% if is_super_admin %}
-    <div class="current-startup-banner">
-        <span class="banner-icon">🏢</span>
+    <div style="background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 12px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-size: 1.2rem;">🏢</span>
         {% if current_startup %}
-            <span class="banner-text">Viewing: <strong>{{ current_startup.company_name }}</strong></span>
-            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="banner-reset">↺ View All</a>
+            <span style="color: #94a3b8; font-size: 0.9rem;">Viewing: <strong style="color: #e8edf5;">{{ current_startup.company_name }}</strong></span>
+            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" style="color: #a78bfa; font-size: 0.85rem; text-decoration: none; margin-left: auto;">↺ View All</a>
         {% else %}
-            <span class="banner-text">Viewing: <strong>All Startups</strong></span>
+            <span style="color: #94a3b8; font-size: 0.9rem;">Viewing: <strong style="color: #e8edf5;">All Startups</strong></span>
         {% endif %}
     </div>
     {% endif %}
 
     <!-- ================= SUMMARY CARDS ================= -->
-    <div class="summary-grid">
-        <div class="summary-card blue">
-            <div class="card-icon">👥</div>
-            <div class="card-content">
-                <h2>{{ total_payrolls|default:0 }}</h2>
-                <p>Total Payrolls</p>
+    <div class="summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="summary-card" style="background: rgba(96, 165, 250, 0.04); border: 1px solid rgba(96, 165, 250, 0.08); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.3s;">
+            <div style="font-size: 2rem;">👥</div>
+            <div>
+                <h2 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.5rem;">{{ total_payrolls|default:0 }}</h2>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.8rem;">Total Payrolls</p>
             </div>
-            <span class="trend up">↑ 12%</span>
+            <span style="color: #34d399; font-size: 0.75rem; font-weight: 600; margin-left: auto;">↑ 12%</span>
         </div>
-        <div class="summary-card green">
-            <div class="card-icon">✅</div>
-            <div class="card-content">
-                <h2>{{ paid_count|default:0 }}</h2>
-                <p>Paid</p>
+        <div class="summary-card" style="background: rgba(52, 211, 153, 0.04); border: 1px solid rgba(52, 211, 153, 0.08); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.3s;">
+            <div style="font-size: 2rem;">✅</div>
+            <div>
+                <h2 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.5rem;">{{ paid_count|default:0 }}</h2>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.8rem;">Paid</p>
             </div>
-            <span class="trend up">↑ 8%</span>
+            <span style="color: #34d399; font-size: 0.75rem; font-weight: 600; margin-left: auto;">↑ 8%</span>
         </div>
-        <div class="summary-card orange">
-            <div class="card-icon">⏳</div>
-            <div class="card-content">
-                <h2>{{ pending_count|default:0 }}</h2>
-                <p>Pending</p>
+        <div class="summary-card" style="background: rgba(251, 191, 36, 0.04); border: 1px solid rgba(251, 191, 36, 0.08); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.3s;">
+            <div style="font-size: 2rem;">⏳</div>
+            <div>
+                <h2 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.5rem;">{{ pending_count|default:0 }}</h2>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.8rem;">Pending</p>
             </div>
-            <span class="trend down">↓ 3%</span>
+            <span style="color: #f87171; font-size: 0.75rem; font-weight: 600; margin-left: auto;">↓ 3%</span>
         </div>
-        <div class="summary-card purple">
-            <div class="card-icon">💸</div>
-            <div class="card-content">
-                <h2>₹{{ total_salary|floatformat:0|default:"0" }}</h2>
-                <p>Total Salary</p>
+        <div class="summary-card" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; transition: all 0.3s;">
+            <div style="font-size: 2rem;">💸</div>
+            <div>
+                <h2 style="color: #a78bfa; font-weight: 700; margin: 0; font-size: 1.5rem;">₹{{ total_salary|floatformat:0|default:"0" }}</h2>
+                <p style="color: #94a3b8; margin: 0; font-size: 0.8rem;">Total Salary</p>
             </div>
-            <span class="trend neutral">→</span>
+            <span style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; margin-left: auto;">→</span>
         </div>
     </div>
 
     <!-- ================= FILTERS ================= -->
-    <div class="filter-card">
-        <div class="filter-header">
-            <h3>🔍 Filter Records</h3>
-            <div class="filter-header-actions">
-                <button class="btn-toggle-filters" id="toggleFilters" title="Toggle Filters">▼</button>
-                <button class="btn-reset-filters" id="resetFilters" title="Reset All Filters">↺</button>
+    <div class="filter-card" style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+        <div class="filter-header" style="padding: 14px 20px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <h3 style="color: #e8edf5; font-weight: 600; font-size: 0.95rem; margin: 0;">🔍 Filter Records</h3>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-toggle-filters" id="toggleFilters" style="background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.08); color: #94a3b8; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">▼</button>
+                <button class="btn-reset-filters" id="resetFilters" style="background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.08); color: #94a3b8; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">↺</button>
             </div>
         </div>
         <form method="GET" id="filterForm">
-            <div class="filter-grid" id="filterGrid">
-                <div class="filter-group">
-                    <label for="{{ filter_form.employee.id_for_label }}">
-                        <span class="filter-icon">👤</span> Employee
+            <div class="filter-grid" id="filterGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; padding: 20px;">
+                <div class="filter-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ filter_form.employee.id_for_label }}" style="color: #94a3b8; font-size: 0.8rem; font-weight: 500;">
+                        <span style="margin-right: 4px;">👤</span> Employee
                     </label>
                     {{ filter_form.employee }}
+                    <style>
+                        #id_employee, #id_month, #id_year, #id_status {
+                            background: rgba(167, 139, 250, 0.04);
+                            border: 1px solid rgba(167, 139, 250, 0.08);
+                            border-radius: 8px;
+                            padding: 8px 12px;
+                            color: #e8edf5;
+                            font-size: 0.85rem;
+                            width: 100%;
+                            transition: all 0.3s;
+                        }
+                        #id_employee:focus, #id_month:focus, #id_year:focus, #id_status:focus {
+                            outline: none;
+                            border-color: rgba(167, 139, 250, 0.3);
+                            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+                        }
+                        #id_employee option, #id_month option, #id_year option, #id_status option {
+                            background: #1a1035;
+                            color: #e8edf5;
+                        }
+                    </style>
                 </div>
-                <div class="filter-group">
-                    <label for="{{ filter_form.month.id_for_label }}">
-                        <span class="filter-icon">📅</span> Month
+                <div class="filter-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ filter_form.month.id_for_label }}" style="color: #94a3b8; font-size: 0.8rem; font-weight: 500;">
+                        <span style="margin-right: 4px;">📅</span> Month
                     </label>
                     {{ filter_form.month }}
                 </div>
-                <div class="filter-group">
-                    <label for="{{ filter_form.year.id_for_label }}">
-                        <span class="filter-icon">📆</span> Year
+                <div class="filter-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ filter_form.year.id_for_label }}" style="color: #94a3b8; font-size: 0.8rem; font-weight: 500;">
+                        <span style="margin-right: 4px;">📆</span> Year
                     </label>
                     {{ filter_form.year }}
                 </div>
-                <div class="filter-group">
-                    <label for="{{ filter_form.status.id_for_label }}">
-                        <span class="filter-icon">📊</span> Status
+                <div class="filter-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ filter_form.status.id_for_label }}" style="color: #94a3b8; font-size: 0.8rem; font-weight: 500;">
+                        <span style="margin-right: 4px;">📊</span> Status
                     </label>
                     {{ filter_form.status }}
                 </div>
-                <div class="filter-group filter-actions">
-                    <label>&nbsp;</label>
-                    <div class="filter-buttons">
-                        <button type="submit" class="btn-primary btn-filter">
-                            🔍 Apply Filters
+                <div class="filter-group filter-actions" style="display: flex; flex-direction: column; gap: 6px; justify-content: flex-end;">
+                    <div class="filter-buttons" style="display: flex; gap: 8px;">
+                        <button type="submit" class="btn-primary btn-filter" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s; flex: 1;">
+                            🔍 Apply
                         </button>
-                        <a href="{% url 'payroll' %}" class="btn-light btn-reset">
+                        <a href="{% url 'payroll' %}" class="btn-light btn-reset" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: all 0.3s; display: inline-flex; align-items: center;">
                             ↩️ Reset
                         </a>
                     </div>
                 </div>
             </div>
         </form>
-        <div class="filter-stats">
-            <span id="recordCount">Showing {{ payrolls|length }} records</span>
+        <div class="filter-stats" style="padding: 10px 20px; border-top: 1px solid rgba(167, 139, 250, 0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <span id="recordCount" style="color: #94a3b8; font-size: 0.85rem;">Showing {{ payrolls|length }} records</span>
             <div id="activeFilters" class="active-filters">
                 {% if request.GET.employee or request.GET.month or request.GET.year or request.GET.status %}
-                <span class="filter-chip">Active Filters</span>
+                <span class="filter-chip" style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 2px 12px; border-radius: 12px; font-size: 0.75rem;">Active Filters</span>
                 {% endif %}
             </div>
         </div>
     </div>
 
     <!-- ================= PAYROLL TABLE ================= -->
-    <div class="table-card">
-        <div class="table-header">
-            <div class="table-header-left">
-                <h3>📋 Payroll Records</h3>
-                <span class="record-badge" id="totalRecords">{{ payrolls|length }}</span>
+    <div class="table-card" style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; overflow: hidden;">
+        <div class="table-header" style="padding: 14px 20px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div class="table-header-left" style="display: flex; align-items: center; gap: 12px;">
+                <h3 style="color: #e8edf5; font-weight: 600; font-size: 0.95rem; margin: 0;">📋 Payroll Records</h3>
+                <span class="record-badge" id="totalRecords" style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 2px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">{{ payrolls|length }}</span>
             </div>
-            <div class="table-header-right">
-                <div class="table-search">
-                    <input type="text" id="tableSearch" placeholder="🔍 Search..." class="search-input">
+            <div class="table-header-right" style="display: flex; align-items: center; gap: 12px;">
+                <div class="table-search" style="position: relative;">
+                    <input type="text" id="tableSearch" placeholder="🔍 Search..." class="search-input" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 8px; padding: 6px 14px; color: #e8edf5; font-size: 0.85rem; width: 200px; transition: all 0.3s;">
                 </div>
-                <button class="btn-light btn-sm" id="refreshTable">🔄 Refresh</button>
+                <button class="btn-light btn-sm" id="refreshTable" style="background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.08); color: #94a3b8; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s;">🔄 Refresh</button>
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table id="payrollTable">
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table id="payrollTable" style="width: 100%; border-collapse: collapse; min-width: 800px;">
                 <thead>
-                    <tr>
-                        <th class="sortable" data-sort="employee">Employee ↕</th>
-                        <th class="sortable" data-sort="month">Month ↕</th>
-                        <th class="sortable" data-sort="basic">Basic Salary ↕</th>
-                        <th class="sortable" data-sort="allowances">Allowances ↕</th>
-                        <th class="sortable" data-sort="deductions">Deductions ↕</th>
-                        <th class="sortable" data-sort="net">Net Salary ↕</th>
-                        <th class="sortable" data-sort="status">Status ↕</th>
-                        <th>Actions</th>
+                    <tr style="background: rgba(167, 139, 250, 0.03);">
+                        <th class="sortable" data-sort="employee" style="padding: 12px 16px; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">Employee ↕</th>
+                        <th class="sortable" data-sort="month" style="padding: 12px 16px; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">Month ↕</th>
+                        <th class="sortable" data-sort="basic" style="padding: 12px 16px; text-align: right; color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">Basic ↕</th>
+                        <th class="sortable" data-sort="allowances" style="padding: 12px 16px; text-align: right; color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">Allowances ↕</th>
+                        <th class="sortable" data-sort="deductions" style="padding: 12px 16px; text-align: right; color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">Deductions ↕</th>
+                        <th class="sortable" data-sort="net" style="padding: 12px 16px; text-align: right; color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">Net Salary ↕</th>
+                        <th class="sortable" data-sort="status" style="padding: 12px 16px; text-align: left; color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">Status ↕</th>
+                        <th style="padding: 12px 16px; text-align: center; color: #94a3b8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -179,68 +181,61 @@
                         data-year="{{ payroll.year }}"
                         data-status="{% if payroll.paid %}paid{% else %}pending{% endif %}"
                         data-basic="{{ payroll.basic_salary }}"
-                        data-net="{{ payroll.net_salary }}">
-                        <td>
-                            <div class="employee-box">
+                        data-net="{{ payroll.net_salary }}"
+                        style="border-bottom: 1px solid rgba(167, 139, 250, 0.04); transition: all 0.3s;">
+                        <td style="padding: 12px 16px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
                                 {% if payroll.employee.profile_image %}
-                                <img src="{{ payroll.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                <img src="{{ payroll.employee.profile_image.url }}" alt="Employee" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
                                 {% else %}
-                                <div class="avatar">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(167, 139, 250, 0.12); display: flex; align-items: center; justify-content: center; color: #a78bfa; font-weight: 600; font-size: 0.8rem;">
                                     {{ payroll.employee.user.first_name|first|default:payroll.employee.user.username|first|upper }}
                                 </div>
                                 {% endif %}
-                                <div class="employee-details">
-                                    <strong class="employee-name">{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</strong>
-                                    <span class="employee-designation">{{ payroll.employee.designation|default:"-" }}</span>
+                                <div>
+                                    <strong style="color: #e8edf5; font-size: 0.85rem; display: block;">{{ payroll.employee.user.get_full_name|default:payroll.employee.user.username }}</strong>
+                                    <span style="color: #64748b; font-size: 0.75rem;">{{ payroll.employee.designation|default:"-" }}</span>
                                 </div>
                             </div>
                         </td>
-                        <td class="month-cell">
-                            <span class="month-badge">{{ payroll.month }}</span>
-                            <span class="year-tag">{{ payroll.year }}</span>
+                        <td style="padding: 12px 16px;">
+                            <span style="color: #e8edf5; font-size: 0.85rem;">{{ payroll.month }}</span>
+                            <span style="color: #64748b; font-size: 0.75rem; display: block;">{{ payroll.year }}</span>
                         </td>
-                        <td class="salary-cell">₹{{ payroll.basic_salary|floatformat:2 }}</td>
-                        <td class="salary-cell">₹{{ payroll.allowances|floatformat:2 }}</td>
-                        <td class="salary-cell deduction">-₹{{ payroll.deductions|floatformat:2 }}</td>
-                        <td class="salary-cell net-salary"><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
-                        <td>
+                        <td style="padding: 12px 16px; text-align: right; color: #94a3b8; font-size: 0.85rem;">₹{{ payroll.basic_salary|floatformat:2 }}</td>
+                        <td style="padding: 12px 16px; text-align: right; color: #34d399; font-size: 0.85rem;">₹{{ payroll.allowances|floatformat:2 }}</td>
+                        <td style="padding: 12px 16px; text-align: right; color: #f87171; font-size: 0.85rem;">-₹{{ payroll.deductions|floatformat:2 }}</td>
+                        <td style="padding: 12px 16px; text-align: right; color: #a78bfa; font-weight: 700; font-size: 0.95rem;">₹{{ payroll.net_salary|floatformat:2 }}</td>
+                        <td style="padding: 12px 16px;">
                             {% if payroll.paid %}
-                            <span class="status-badge paid">
-                                <span class="status-dot"></span>
-                                Paid
-                            </span>
+                            <span style="background: rgba(52, 211, 153, 0.12); color: #34d399; padding: 3px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-block;">✅ Paid</span>
                             {% if payroll.paid_date %}
-                            <span class="paid-date">{{ payroll.paid_date|date:"d M Y" }}</span>
+                            <span style="color: #64748b; font-size: 0.65rem; display: block; margin-top: 2px;">{{ payroll.paid_date|date:"d M Y" }}</span>
                             {% endif %}
                             {% else %}
-                            <span class="status-badge pending">
-                                <span class="status-dot"></span>
-                                Pending
-                            </span>
+                            <span style="background: rgba(251, 191, 36, 0.12); color: #fbbf24; padding: 3px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-block;">⏳ Pending</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="{% url 'payroll_detail' payroll.id %}" class="action-btn view" title="View Details">👁️</a>
+                        <td style="padding: 12px 16px; text-align: center;">
+                            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+                                <a href="{% url 'payroll_detail' payroll.id %}" style="color: #60a5fa; text-decoration: none; font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; transition: all 0.3s;" title="View Details">👁️</a>
                                 {% if not payroll.paid %}
-                                <a href="{% url 'payroll_update' payroll.id %}" class="action-btn edit" title="Edit Payroll">✏️</a>
-                                <a href="{% url 'payroll_mark_paid' payroll.id %}" class="action-btn paid" title="Mark as Paid" onclick="return confirm('Mark this payroll as paid?')">✅</a>
-                                <a href="{% url 'payroll_delete' payroll.id %}" class="action-btn delete" title="Delete Payroll" onclick="return confirm('Delete this payroll record?')">🗑️</a>
+                                <a href="{% url 'payroll_update' payroll.id %}" style="color: #fbbf24; text-decoration: none; font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; transition: all 0.3s;" title="Edit Payroll">✏️</a>
+                                <a href="{% url 'payroll_mark_paid' payroll.id %}" style="color: #34d399; text-decoration: none; font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; transition: all 0.3s;" title="Mark as Paid" onclick="return confirm('Mark this payroll as paid?')">✅</a>
+                                <a href="{% url 'payroll_delete' payroll.id %}" style="color: #f87171; text-decoration: none; font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; transition: all 0.3s;" title="Delete Payroll" onclick="return confirm('Delete this payroll record?')">🗑️</a>
                                 {% else %}
-                                <span class="locked-badge">🔒</span>
+                                <span style="color: #64748b; font-size: 0.9rem;" title="Locked - Paid payroll cannot be modified">🔒</span>
                                 {% endif %}
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8">
-                            <div class="empty-state">
-                                <div class="empty-icon">💰</div>
-                                <h3>No Payroll Records Found</h3>
-                                <p>Start by creating your first payroll record.</p>
-                                <a href="{% url 'payroll_create' %}" class="btn-primary">➕ Add Payroll</a>
-                            </div>
+                        <td colspan="8" style="padding: 60px 20px; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 16px;">💰</div>
+                            <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Payroll Records Found</h3>
+                            <p style="color: #94a3b8; margin-bottom: 16px;">Start by creating your first payroll record.</p>
+                            <a href="{% url 'payroll_create' %}" class="btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;">➕ Add Payroll</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -249,17 +244,17 @@
         </div>
 
         <!-- ================= TABLE FOOTER ================= -->
-        <div class="table-footer">
-            <div class="footer-left">
-                <span><strong>Total:</strong> <span id="footerTotal">{{ payrolls|length }}</span> records</span>
-                <span><strong>Paid:</strong> {{ paid_count|default:0 }}</span>
-                <span><strong>Pending:</strong> {{ pending_count|default:0 }}</span>
-                <span><strong>Total Salary:</strong> ₹{{ total_salary|floatformat:0|default:"0" }}</span>
+        <div class="table-footer" style="padding: 12px 20px; border-top: 1px solid rgba(167, 139, 250, 0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div class="footer-left" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <span style="color: #94a3b8; font-size: 0.85rem;"><strong style="color: #e8edf5;">Total:</strong> <span id="footerTotal">{{ payrolls|length }}</span> records</span>
+                <span style="color: #94a3b8; font-size: 0.85rem;"><strong style="color: #34d399;">Paid:</strong> {{ paid_count|default:0 }}</span>
+                <span style="color: #94a3b8; font-size: 0.85rem;"><strong style="color: #fbbf24;">Pending:</strong> {{ pending_count|default:0 }}</span>
+                <span style="color: #94a3b8; font-size: 0.85rem;"><strong style="color: #a78bfa;">Total Salary:</strong> ₹{{ total_salary|floatformat:0|default:"0" }}</span>
             </div>
-            <div class="footer-right">
-                <button class="pagination-btn" id="prevPage" disabled>← Prev</button>
-                <span id="pageInfo">Page 1 of 1</span>
-                <button class="pagination-btn" id="nextPage" disabled>Next →</button>
+            <div class="footer-right" style="display: flex; align-items: center; gap: 12px;">
+                <button class="pagination-btn" id="prevPage" disabled style="background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.08); color: #94a3b8; padding: 6px 16px; border-radius: 6px; cursor: pointer; transition: all 0.3s; font-size: 0.85rem;">← Prev</button>
+                <span id="pageInfo" style="color: #94a3b8; font-size: 0.85rem;">Page 1 of 1</span>
+                <button class="pagination-btn" id="nextPage" disabled style="background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.08); color: #94a3b8; padding: 6px 16px; border-radius: 6px; cursor: pointer; transition: all 0.3s; font-size: 0.85rem;">Next →</button>
             </div>
         </div>
     </div>
@@ -446,9 +441,163 @@
             URL.revokeObjectURL(url);
         });
 
+        // ============================================
+        // HOVER EFFECTS FOR ACTION BUTTONS
+        // ============================================
+        document.querySelectorAll('.payroll-row').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = 'rgba(167, 139, 250, 0.02)';
+            });
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // ============================================
+        // ACTION BUTTON HOVER EFFECTS
+        // ============================================
+        document.querySelectorAll('.payroll-row a').forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.15)';
+                this.style.opacity = '1';
+            });
+            link.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+                this.style.opacity = '0.7';
+            });
+            // Set initial opacity
+            link.style.opacity = '0.7';
+            link.style.transition = 'all 0.2s';
+        });
+
         console.log('💰 Payroll Management initialized');
         console.log(`📊 ${document.querySelectorAll('.payroll-row').length} records loaded`);
     });
 </script>
 
+<style>
+    .payroll-container .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+    
+    .payroll-container .filter-card .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+    
+    .payroll-container .filter-card .btn-light.btn-reset:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+    
+    .payroll-container .table-card .search-input:focus {
+        outline: none;
+        border-color: rgba(167, 139, 250, 0.3);
+        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+        width: 250px;
+    }
+    
+    .payroll-container .table-card .search-input:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+    
+    .payroll-container .table-card #refreshTable:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+    
+    .payroll-container .table-card .sortable:hover {
+        color: #e8edf5;
+    }
+    
+    .payroll-container .table-card .sortable.asc::after {
+        content: ' ↑';
+        color: #a78bfa;
+    }
+    
+    .payroll-container .table-card .sortable.desc::after {
+        content: ' ↓';
+        color: #a78bfa;
+    }
+    
+    .payroll-container .table-card .pagination-btn:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+    
+    .payroll-container .table-card .pagination-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    
+    .payroll-container .table-card .empty-state .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+    }
+    
+    @media (max-width: 768px) {
+        .payroll-container .summary-grid {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        .payroll-container .filter-grid {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        .payroll-container .filter-grid .filter-actions {
+            grid-column: span 2;
+        }
+        
+        .payroll-container .table-card .table-header {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+        
+        .payroll-container .table-card .table-header-right {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .payroll-container .table-card .table-header-right .table-search {
+            width: 100%;
+        }
+        
+        .payroll-container .table-card .table-header-right .search-input {
+            width: 100% !important;
+        }
+        
+        .payroll-container .table-card .table-footer {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+        
+        .payroll-container .table-card .footer-left {
+            flex-direction: column;
+            gap: 4px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .payroll-container .summary-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .payroll-container .filter-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .payroll-container .filter-grid .filter-actions {
+            grid-column: span 1;
+        }
+        
+        .payroll-container .filter-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
 {% endblock %}

@@ -151,6 +151,20 @@ Register - PANZIA
         display: none;
     }
 
+    .role-card .badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        color: #fff;
+        font-size: 0.5rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
     /* Role-specific colors */
     .role-card.startup-owner { border-color: rgba(124, 58, 237, 0.2); }
     .role-card.startup-owner.selected { border-color: #7c3aed; background: rgba(124, 58, 237, 0.08); }
@@ -162,7 +176,7 @@ Register - PANZIA
     .role-card.talent.selected { border-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
 
     /* ============================================
-       FORM STYLES
+       FORM STYLES - DARK THEME
        ============================================ */
     .form-group {
         margin-bottom: 18px;
@@ -184,10 +198,10 @@ Register - PANZIA
     .form-group .form-control {
         width: 100%;
         padding: 10px 14px;
-        background: rgba(167, 139, 250, 0.04);
-        border: 1px solid rgba(167, 139, 250, 0.08);
+        background: #2a1f3d !important;
+        border: 1.5px solid rgba(167, 139, 250, 0.1);
         border-radius: 10px;
-        color: #e8edf5;
+        color: #e8edf5 !important;
         font-size: 0.95rem;
         transition: all 0.3s ease;
         box-sizing: border-box;
@@ -197,7 +211,12 @@ Register - PANZIA
         outline: none;
         border-color: #7c3aed;
         box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
-        background: rgba(167, 139, 250, 0.06);
+        background: #2f2345 !important;
+    }
+
+    .form-group .form-control:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+        background: #2f2345 !important;
     }
 
     .form-group .form-control::placeholder {
@@ -210,6 +229,47 @@ Register - PANZIA
 
     .form-group .form-control.error:focus {
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+    }
+
+    /* Select dropdown dark theme */
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 40px;
+        cursor: pointer;
+    }
+
+    select.form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+        padding: 8px 12px;
+    }
+
+    select.form-control option:hover {
+        background: rgba(167, 139, 250, 0.1);
+    }
+
+    select.form-control option:checked {
+        background: rgba(124, 58, 237, 0.2);
+        color: #a78bfa;
+    }
+
+    /* Autofill fix */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px #2a1f3d inset !important;
+        -webkit-text-fill-color: #e8edf5 !important;
+        caret-color: #e8edf5 !important;
+        border-color: rgba(167, 139, 250, 0.2) !important;
+    }
+
+    input:-moz-autofill {
+        background: #2a1f3d !important;
+        color: #e8edf5 !important;
     }
 
     .field-error {
@@ -296,6 +356,35 @@ Register - PANZIA
     }
 
     /* ============================================
+       APPLY BUTTON (for Startup Owner)
+       ============================================ */
+    .apply-btn {
+        display: none;
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 8px;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 24px rgba(245, 158, 11, 0.3);
+    }
+
+    .apply-btn.visible {
+        display: inline-block;
+    }
+
+    /* ============================================
        SUBMIT BUTTON
        ============================================ */
     .auth-btn {
@@ -337,6 +426,10 @@ Register - PANZIA
         animation: spin 0.6s linear infinite;
         vertical-align: middle;
         margin-right: 8px;
+    }
+
+    .auth-btn.hidden {
+        display: none;
     }
 
     @keyframes spin {
@@ -418,6 +511,43 @@ Register - PANZIA
         margin-top: 4px;
         color: #64748b;
         font-size: 0.7rem;
+    }
+
+    /* ============================================
+       STARTUP FIELD (Hidden for Talent)
+       ============================================ */
+    .startup-field-wrapper {
+        display: block;
+    }
+
+    .startup-field-wrapper.hidden {
+        display: none;
+    }
+
+    /* ============================================
+       DIVIDER
+       ============================================ */
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 16px 0;
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .divider::before {
+        margin-right: 12px;
+    }
+
+    .divider::after {
+        margin-left: 12px;
     }
 
     /* ============================================
@@ -507,31 +637,32 @@ Register - PANZIA
             <div class="role-selector" id="roleSelector">
                 
                 <!-- Startup Owner -->
-                <label class="role-card startup-owner selected" for="role_startup_owner" data-role="startup_owner">
-                    <input type="radio" name="role" id="role_startup_owner" value="startup_owner" checked>
+                <label class="role-card startup-owner" for="role_startup_owner" data-role="startup_owner" data-action="apply">
+                    <input type="radio" name="role" id="role_startup_owner" value="startup_owner">
                     <span class="role-icon">🏢</span>
                     <span class="role-name">Startup Owner</span>
-                    <span class="role-desc">Launch & manage your startup</span>
+                    <span class="role-desc">Apply to launch your startup</span>
+                    <span class="badge">Apply</span>
                 </label>
 
                 <!-- HRMS -->
-                <label class="role-card hrms" for="role_hrms" data-role="hrms">
-                    <input type="radio" name="role" id="role_hrms" value="hrms">
+                <label class="role-card hrms" for="role_hrms" data-role="hrms" data-action="register">
+                    <input type="radio" name="role" id="role_hrms" value="startup_hr">
                     <span class="role-icon">👔</span>
                     <span class="role-name">HRMS</span>
                     <span class="role-desc">Manage HR operations</span>
                 </label>
 
                 <!-- Employee -->
-                <label class="role-card employee" for="role_employee" data-role="employee">
-                    <input type="radio" name="role" id="role_employee" value="employee">
+                <label class="role-card employee selected" for="role_employee" data-role="employee" data-action="register">
+                    <input type="radio" name="role" id="role_employee" value="employee" checked>
                     <span class="role-icon">👤</span>
                     <span class="role-name">Employee</span>
                     <span class="role-desc">Work & collaborate</span>
                 </label>
 
                 <!-- Talent -->
-                <label class="role-card talent" for="role_talent" data-role="talent">
+                <label class="role-card talent" for="role_talent" data-role="talent" data-action="register">
                     <input type="radio" name="role" id="role_talent" value="talent">
                     <span class="role-icon">🌟</span>
                     <span class="role-name">Talent</span>
@@ -544,64 +675,86 @@ Register - PANZIA
             <!-- ROLE HELP TEXT                              -->
             <!-- ============================================ -->
             <div class="role-help-text" id="roleHelpText">
-                <span class="help-icon">🏢</span>
-                <span class="help-message" id="roleHelpMessage">Register as a Startup Owner to create and manage your company</span>
-                <span class="help-redirect" id="roleRedirect">You will be redirected to setup your startup profile</span>
+                <span class="help-icon">👤</span>
+                <span class="help-message" id="roleHelpMessage">Register as an Employee to work and collaborate with your team</span>
+                <span class="help-redirect" id="roleRedirect">You will be redirected to your employee portal after registration</span>
             </div>
 
             <!-- ============================================ -->
             <!-- FORM FIELDS                                  -->
             <!-- ============================================ -->
-            {% for field in form %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}">
-                        {{ field.label }}
-                        {% if field.field.required %}
-                            <span class="required">*</span>
+            <div id="formFields">
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="required">*</span>
+                            {% endif %}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.errors %}
+                            <small class="field-error">
+                                {{ field.errors|striptags }}
+                            </small>
                         {% endif %}
-                    </label>
 
-                    {{ field }}
+                        {% if field.name == 'password1' %}
+                            <div class="password-strength" id="passwordStrength">
+                                <div class="strength-bar" id="strengthBar"></div>
+                            </div>
+                            <div class="password-strength-text" id="strengthText"></div>
+                            <small class="password-hint">
+                                Use at least 8 characters with letters, numbers, and symbols.
+                            </small>
+                        {% endif %}
 
-                    {% if field.errors %}
-                        <small class="field-error">
-                            {{ field.errors|striptags }}
-                        </small>
-                    {% endif %}
+                        {% if field.name == 'password2' %}
+                            <small class="password-hint">
+                                Enter the same password as above for verification.
+                            </small>
+                        {% endif %}
 
-                    {% if field.name == 'password1' %}
-                        <div class="password-strength" id="passwordStrength">
-                            <div class="strength-bar" id="strengthBar"></div>
-                        </div>
-                        <div class="password-strength-text" id="strengthText"></div>
-                        <small class="password-hint">
-                            Use at least 8 characters with letters, numbers, and symbols.
-                        </small>
-                    {% endif %}
+                        {% if field.name == 'startup' %}
+                            <div class="startup-field-wrapper" id="startupFieldWrapper">
+                                <small class="password-hint" style="color: #a78bfa;">
+                                    💡 Select your startup if you've been invited. Otherwise, leave blank.
+                                </small>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
 
-                    {% if field.name == 'password2' %}
-                        <small class="password-hint">
-                            Enter the same password as above for verification.
-                        </small>
-                    {% endif %}
-                </div>
-            {% endfor %}
+            <!-- ============================================ -->
+            <!-- DIVIDER                                      -->
+            <!-- ============================================ -->
+            <div class="divider" id="registerDivider">or continue with</div>
 
             <!-- ============================================ -->
             <!-- TERMS                                        -->
             <!-- ============================================ -->
-            <div class="terms-text">
+            <div class="terms-text" id="termsText">
                 By creating an account, you agree to our 
                 <a href="#">Terms of Service</a> and 
                 <a href="#">Privacy Policy</a>.
             </div>
 
             <!-- ============================================ -->
-            <!-- SUBMIT BUTTON                                -->
+            <!-- REGISTER BUTTON                             -->
             <!-- ============================================ -->
             <button type="submit" class="auth-btn" id="registerBtn">
                 🚀 Create Account
             </button>
+
+            <!-- ============================================ -->
+            <!-- APPLY BUTTON (for Startup Owner)            -->
+            <!-- ============================================ -->
+            <a href="{% url 'accounts:startup_application' %}" class="apply-btn" id="applyBtn">
+                📝 Apply as Startup
+            </a>
 
         </form>
 
@@ -611,7 +764,7 @@ Register - PANZIA
         <div class="auth-footer">
             <p>
                 Already have an account?
-                <a href="{% url 'login' %}">
+                <a href="{% url 'accounts:login' %}">
                     Sign In
                 </a>
             </p>
@@ -624,34 +777,114 @@ Register - PANZIA
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // ============================================
-        // ROLE SELECTOR
+        // ROLE SELECTOR - SYNC WITH FORM
         // ============================================
         const roleCards = document.querySelectorAll('.role-card');
         const helpMessage = document.getElementById('roleHelpMessage');
         const redirectMessage = document.getElementById('roleRedirect');
+        const helpIcon = document.querySelector('.role-help-text .help-icon');
+        const applyBtn = document.getElementById('applyBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const formFields = document.getElementById('formFields');
+        const divider = document.getElementById('registerDivider');
+        const termsText = document.getElementById('termsText');
+        const startupFieldWrapper = document.getElementById('startupFieldWrapper');
+        const roleSelect = document.getElementById('id_role'); // Get the form's role select
         
         const roleData = {
             'startup_owner': {
                 icon: '🏢',
-                message: 'Register as a Startup Owner to create and manage your company',
-                redirect: 'You will be redirected to setup your startup profile'
+                message: 'Apply to launch your startup on PANZIA. Our team will review your application.',
+                redirect: 'You will be redirected to the application form',
+                action: 'apply',
+                showStartup: false,
+                formValue: 'startup_owner'
             },
             'hrms': {
                 icon: '👔',
                 message: 'Register as HRMS to manage employees, attendance, and payroll',
-                redirect: 'You will be redirected to the HR dashboard'
+                redirect: 'You will be redirected to the HR dashboard after registration',
+                action: 'register',
+                showStartup: true,
+                formValue: 'startup_hr'
             },
             'employee': {
                 icon: '👤',
                 message: 'Register as an Employee to work and collaborate with your team',
-                redirect: 'You will be redirected to your employee portal'
+                redirect: 'You will be redirected to your employee portal after registration',
+                action: 'register',
+                showStartup: true,
+                formValue: 'employee'
             },
             'talent': {
                 icon: '🌟',
                 message: 'Register as Talent to showcase your skills and find opportunities',
-                redirect: 'You will be redirected to your talent dashboard'
+                redirect: 'You will be redirected to your talent dashboard after registration',
+                action: 'register',
+                showStartup: false,
+                formValue: 'talent'
             }
         };
+
+        function updateRoleUI(role) {
+            const data = roleData[role];
+            if (!data) return;
+
+            // Update help text
+            helpIcon.textContent = data.icon;
+            helpMessage.textContent = data.message;
+            redirectMessage.textContent = data.redirect;
+
+            // Update the form's role select dropdown
+            if (roleSelect) {
+                // Find and select the matching option
+                for (let option of roleSelect.options) {
+                    if (option.value === data.formValue) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+                // Trigger change event to update any dependent logic
+                roleSelect.dispatchEvent(new Event('change'));
+            }
+
+            // Show/hide appropriate buttons
+            if (data.action === 'apply') {
+                // Show Apply button, hide Register button and form fields
+                applyBtn.classList.add('visible');
+                registerBtn.classList.add('hidden');
+                formFields.style.display = 'none';
+                divider.style.display = 'none';
+                termsText.style.display = 'none';
+            } else {
+                // Show Register button and form fields, hide Apply button
+                applyBtn.classList.remove('visible');
+                registerBtn.classList.remove('hidden');
+                formFields.style.display = 'block';
+                divider.style.display = 'flex';
+                termsText.style.display = 'block';
+            }
+
+            // Show/Hide Startup field based on role
+            if (startupFieldWrapper) {
+                if (data.showStartup) {
+                    startupFieldWrapper.style.display = 'block';
+                } else {
+                    startupFieldWrapper.style.display = 'none';
+                }
+            }
+
+            // Update the form action based on role
+            const form = document.getElementById('registerForm');
+            if (data.action === 'apply') {
+                form.action = "{% url 'accounts:startup_application' %}";
+            } else {
+                form.action = "";
+            }
+        }
+
+        // Set initial state for Employee (default selected)
+        updateRoleUI('employee');
 
         roleCards.forEach(card => {
             card.addEventListener('click', function() {
@@ -663,14 +896,10 @@ Register - PANZIA
                 const radio = this.querySelector('input[type="radio"]');
                 if (radio) {
                     radio.checked = true;
-                    // Update help text
+                    // Update UI based on role
                     const role = this.dataset.role;
                     if (role && roleData[role]) {
-                        const data = roleData[role];
-                        helpMessage.textContent = data.message;
-                        redirectMessage.textContent = data.redirect;
-                        // Update icon
-                        document.querySelector('.role-help-text .help-icon').textContent = data.icon;
+                        updateRoleUI(role);
                     }
                 }
             });
@@ -736,9 +965,17 @@ Register - PANZIA
         // FORM SUBMISSION
         // ============================================
         const form = document.getElementById('registerForm');
-        const submitBtn = document.getElementById('registerBtn');
 
         form.addEventListener('submit', function(e) {
+            const selectedRole = document.querySelector('input[name="role"]:checked');
+            const roleValue = selectedRole ? selectedRole.value : 'employee';
+            
+            // If startup owner, let the form submit to the application page
+            if (roleValue === 'startup_owner') {
+                return true;
+            }
+            
+            // For other roles, validate password match
             const password1 = document.getElementById('id_password1').value;
             const password2 = document.getElementById('id_password2').value;
             
@@ -748,11 +985,9 @@ Register - PANZIA
                 return false;
             }
             
-            const selectedRole = document.querySelector('input[name="role"]:checked');
-            const roleValue = selectedRole ? selectedRole.value : 'startup_owner';
-            
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner"></span> Creating Account...';
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Creating Account...';
             
             console.log('📝 Registering with role:', roleValue);
         });
@@ -771,6 +1006,8 @@ Register - PANZIA
         });
 
         console.log('🚀 Register page loaded');
+        console.log('📌 Default role: Employee');
+        console.log('📌 Role selection updates the form dropdown automatically');
     });
 </script>
 

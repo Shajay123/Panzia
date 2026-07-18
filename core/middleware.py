@@ -8,6 +8,7 @@ from people.models import Employee
 class RoleBasedRedirectMiddleware:
     """
     Middleware to redirect users based on their role
+    Django Super Admin has full access to everything
     """
     
     def __init__(self, get_response):
@@ -22,20 +23,215 @@ class RoleBasedRedirectMiddleware:
         if not request.user.is_authenticated:
             return None
         
-        # Skip if user is super admin or staff
-        if request.user.is_superuser or request.user.is_staff:
+        # ============================================
+        # DJANGO SUPER ADMIN - FULL ACCESS
+        # ============================================
+        if request.user.is_superuser:
+            return None  # Allow full access to everything
+        
+        # Skip if user is staff (but not super admin)
+        if request.user.is_staff:
             return None
         
-        # Check if user is trying to access HR dashboard
-        if request.path.startswith('/people/') and not request.path.startswith('/people/employee/'):
-            # Check if user is a regular employee
-            try:
-                employee = Employee.objects.get(user=request.user)
-                # If user is a regular employee (not admin/HR/manager)
-                if request.user.role not in ['startup_admin', 'startup_hr', 'startup_manager']:
-                    # Redirect to employee portal
-                    return redirect('employee_portal_dashboard')
-            except Employee.DoesNotExist:
-                pass
+        # ============================================
+        # STARTUP ADMIN, HR, MANAGER - FULL ACCESS TO EVERYTHING
+        # ============================================
+        if request.user.role in ['startup_admin', 'startup_hr', 'startup_manager']:
+            # Allow full access to all pages (don't redirect)
+            return None
+        
+        # ============================================
+        # EMPLOYEE - RESTRICTED TO EMPLOYEE PORTAL
+        # ============================================
+        if request.user.role == 'employee':
+            # Allow access to employee portal and related pages
+            employee_allowed_paths = [
+                '/dashboard/employee/',
+                '/people/employee/',
+                '/attendance/',
+                '/leave/',
+                '/payroll/',
+                '/employee/',
+                '/people/attendance/',
+                '/people/leave/',
+                '/people/payroll/',
+            ]
+            for path in employee_allowed_paths:
+                if request.path.startswith(path):
+                    try:
+                        Employee.objects.get(user=request.user)
+                        return None
+                    except Employee.DoesNotExist:
+                        return redirect('home')
+            
+            # If employee tries to access startup dashboard or other restricted areas
+            if request.path.startswith('/dashboard/startup/'):
+                return redirect('employee_portal_dashboard')
+            
+            # If employee tries to access people/HR pages that are restricted
+            if request.path.startswith('/people/') and not any(request.path.startswith(p) for p in employee_allowed_paths):
+                return redirect('employee_portal_dashboard')
+            
+            return None
+        
+        # ============================================
+        # TALENT - RESTRICTED TO TALENT DASHBOARD
+        # ============================================
+        if request.user.role == 'talent':
+            talent_allowed_paths = [
+                '/dashboard/talent/',
+                '/talents/',
+                '/browse-jobs/',
+                '/my-applications/',
+                '/placements/browse-jobs/',
+                '/placements/my-applications/',
+            ]
+            for path in talent_allowed_paths:
+                if request.path.startswith(path):
+                    return None
+            
+            # If talent tries to access restricted areas
+            if request.path.startswith('/dashboard/startup/'):
+                return redirect('talent_dashboard')
+            
+            return redirect('talent_dashboard')
+        
+        return None
+
+
+class StartupAccessMiddleware:
+    """
+    Middleware to ensure startup users have proper access
+    Django Super Admin has full access to everything
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        return response
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        # Skip if user is not authenticated
+        if not request.user.is_authenticated:
+            return None
+        
+        # ============================================
+        # DJANGO SUPER ADMIN - FULL ACCESS
+        # ============================================
+        if request.user.is_superuser:
+            return None  # Allow full access to everything
+        
+        # ============================================
+        # STARTUP USERS - ADMIN, HR, MANAGER - FULL ACCESS
+        # ============================================
+        if request.user.role in ['startup_admin', 'startup_hr', 'startup_manager']:
+            # Check if they have a startup (redirect to setup if not)
+            if not request.user.startup:
+                # Don't redirect if already on profile setup page
+                if not request.path.startswith('/startups/profile/setup/'):
+                    from django.contrib import messages
+                    messages.warning(request, 'Please complete your startup profile setup first.')
+                    return redirect('startups:startup_profile_setup')
+            # Allow full access to everything
+            return None
+        
+        # ============================================
+        # EMPLOYEE - RESTRICTED ACCESS
+        # ============================================
+        if request.user.role == 'employee':
+            # Allow access to employee portal and related pages
+            employee_allowed_paths = [
+                '/dashboard/employee/',
+                '/people/employee/',
+                '/attendance/',
+                '/leave/',
+                '/payroll/',
+                '/employee/',
+                '/people/attendance/',
+                '/people/leave/',
+                '/people/payroll/',
+            ]
+            for path in employee_allowed_paths:
+                if request.path.startswith(path):
+                    try:
+                        Employee.objects.get(user=request.user)
+                        return None
+                    except Employee.DoesNotExist:
+                        return redirect('home')
+            return redirect('employee_portal_dashboard')
+        
+        # ============================================
+        # TALENT - RESTRICTED ACCESS
+        # ============================================
+        if request.user.role == 'talent':
+            talent_allowed_paths = [
+                '/dashboard/talent/',
+                '/talents/',
+                '/browse-jobs/',
+                '/my-applications/',
+                '/placements/browse-jobs/',
+                '/placements/my-applications/',
+            ]
+            for path in talent_allowed_paths:
+                if request.path.startswith(path):
+                    return None
+            return redirect('talent_dashboard')
+        
+        return None
+
+
+class StartupProfileRequiredMiddleware:
+    """
+    Middleware to ensure startup users have a profile
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        return response
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        # Skip if user is not authenticated
+        if not request.user.is_authenticated:
+            return None
+        
+        # Skip if user is Django super admin
+        if request.user.is_superuser:
+            return None
+        
+        # Skip if user is staff
+        if request.user.is_staff:
+            return None
+        
+        # Skip if user is talent or employee (they don't need startup profile)
+        if request.user.role in ['talent', 'employee']:
+            return None
+        
+        # Skip if user is already on profile setup page
+        if request.path.startswith('/startups/profile/setup/'):
+            return None
+        
+        # Skip if user is on login, register, or apply pages
+        if request.path.startswith('/accounts/login/') or request.path.startswith('/accounts/register/') or request.path.startswith('/accounts/apply/'):
+            return None
+        
+        # Skip for homepage
+        if request.path == '/':
+            return None
+        
+        # For startup users (admin, HR, manager), check if they have a startup
+        if request.user.role in ['startup_admin', 'startup_hr', 'startup_manager']:
+            if not request.user.startup:
+                # Don't redirect if it's an AJAX request
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return None
+                
+                from django.contrib import messages
+                messages.warning(request, 'Please complete your startup profile setup first.')
+                return redirect('startups:startup_profile_setup')
         
         return None

@@ -1482,17 +1482,17 @@ PANZIA
                     {% endif %}
                 {% endif %}
 
-                <a href="{% url 'logout' %}" class="join-btn" title="Logout">
+                <a href="{% url 'accounts:logout' %}" class="join-btn" title="Logout">
                     🚪 Logout
                 </a>
 
             {% else %}
 
-                <a href="{% url 'login' %}" class="login-btn" title="Login">
+                <a href="{% url 'accounts:login' %}" class="login-btn" title="Login">
                     🔑 Login
                 </a>
 
-                <a href="{% url 'register' %}" class="join-btn" title="Join Panzia">
+                <a href="{% url 'accounts:register' %}" class="join-btn" title="Join Panzia">
                     🚀 Join Panzia
                 </a>
 

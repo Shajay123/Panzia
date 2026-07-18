@@ -1,172 +1,21 @@
-{% extends 'base.html' %}
+{% extends 'people/employee_portal/base_side_navbar.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}Check In{% endblock %}
+{% block page_icon %}✅{% endblock %}
+{% block page_subtitle %}Record your check-in time with photo and location{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_portal_attendance_mark.css' %}">
+{{ block.super }}
 <style>
     .attendance-container {
-        max-width: 600px;
+        max-width: 700px;
         margin: 0 auto;
     }
 
-    .portal-header {
-        background: rgba(167, 139, 250, 0.03);
-        border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-bottom: 24px;
-    }
-
-    .portal-header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .portal-header-left {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .portal-header-icon {
-        font-size: 2.5rem;
-    }
-
-    .portal-header h1 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #e8edf5;
-    }
-
-    .portal-header-subtitle {
-        margin: 2px 0 0;
-        color: #94a3b8;
-        font-size: 0.95rem;
-    }
-
-    .portal-header-right {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-
-    .btn-portal-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .btn-portal-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-portal-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .btn-portal-secondary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .btn-portal-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-    }
-
-    .btn-checkin-primary {
-        background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: white;
-        padding: 12px 32px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-checkin-primary:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
-    }
-
-    .btn-checkin-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .btn-checkin-success {
-        background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: white;
-        padding: 12px 32px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 1rem;
-        opacity: 0.7;
-        cursor: default;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .portal-card {
-        background: rgba(167, 139, 250, 0.03);
-        border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-bottom: 20px;
-    }
-
-    .portal-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
-    }
-
-    .portal-card-header h3 {
-        margin: 0;
-        font-size: 1.05rem;
-        font-weight: 600;
-        color: #e8edf5;
+    .portal-form {
+        max-width: 700px;
+        margin: 0 auto;
     }
 
     .form-group {
@@ -175,37 +24,36 @@
 
     .form-group label {
         display: block;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         font-weight: 500;
-        color: #d6e0f0;
-        font-size: 0.9rem;
+        color: #e8edf5;
     }
 
-    .form-control {
+    .form-group .form-control {
         width: 100%;
         padding: 10px 14px;
         border: 1px solid rgba(167, 139, 250, 0.1);
         border-radius: 8px;
-        background: rgba(167, 139, 250, 0.03);
+        background: #2a1f3d;
         color: #e8edf5;
         font-size: 0.95rem;
         transition: all 0.3s;
         box-sizing: border-box;
     }
 
-    .form-control:focus {
+    .form-group .form-control:focus {
         outline: none;
         border-color: #22c55e;
         box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
     }
 
-    .form-control:disabled,
-    .form-control[readonly] {
+    .form-group .form-control:disabled,
+    .form-group .form-control[readonly] {
         opacity: 0.7;
         cursor: not-allowed;
     }
 
-    .form-control.checked-in {
+    .form-group .form-control.checked-in {
         background: rgba(34, 197, 94, 0.05) !important;
         border-color: rgba(34, 197, 94, 0.2) !important;
     }
@@ -285,8 +133,8 @@
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .checkin-banner {
@@ -338,9 +186,9 @@
     }
 
     @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.6; }
-        100% { opacity: 1; }
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(0.8); }
+        100% { opacity: 1; transform: scale(1); }
     }
 
     .real-time-clock {
@@ -437,33 +285,169 @@
         justify-content: center;
     }
 
+    /* ===== PHOTO CAPTURE STYLES ===== */
+    .photo-capture-section {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px;
+        margin: 16px 0;
+    }
+
+    .photo-preview {
+        width: 100%;
+        max-width: 300px;
+        height: 200px;
+        border: 2px dashed rgba(167, 139, 250, 0.15);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px auto;
+        background: rgba(167, 139, 250, 0.02);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .photo-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .photo-preview .placeholder {
+        color: #64748b;
+        font-size: 0.85rem;
+        text-align: center;
+    }
+
+    .photo-preview .placeholder .icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .photo-controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 10px 0;
+    }
+
+    .btn-camera {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .btn-camera.primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+    }
+
+    .btn-camera.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-camera.success {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+    }
+
+    .btn-camera.success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-camera.danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .btn-camera.danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-camera:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    /* ===== LOCATION STYLES ===== */
+    .location-info {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .location-info .location-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .location-info .location-status .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .location-info .location-status .dot.success {
+        background: #22c55e;
+    }
+
+    .location-info .location-status .dot.warning {
+        background: #f59e0b;
+        animation: pulse 1.5s infinite;
+    }
+
+    .location-info .location-status .dot.error {
+        background: #ef4444;
+    }
+
+    .location-info .location-coords {
+        font-family: 'Courier New', monospace;
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+
+    /* ===== VIDEO PREVIEW (Camera) ===== */
+    #videoPreview {
+        display: none;
+        width: 100%;
+        max-width: 300px;
+        border-radius: 10px;
+        margin: 10px auto;
+        background: #0a0a0a;
+    }
+
+    #videoPreview.active {
+        display: block;
+    }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-        .portal-header {
-            padding: 16px;
-        }
-
-        .portal-header-content {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .portal-header-right {
-            width: 100%;
-            justify-content: space-between;
-        }
-
-        .portal-header-icon {
-            font-size: 2rem;
-        }
-
-        .portal-header h1 {
-            font-size: 1.2rem;
-        }
-
-        .portal-card {
-            padding: 16px;
-        }
-
         .form-actions {
             flex-direction: column;
         }
@@ -481,41 +465,55 @@
             padding: 12px 20px;
             font-size: 1rem;
         }
+
+        .real-time-clock {
+            flex-wrap: wrap;
+        }
+
+        .photo-preview {
+            max-width: 100%;
+            height: 180px;
+        }
+
+        .photo-controls {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-camera {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .location-info {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 
     @media (max-width: 480px) {
-        .portal-header-right {
-            flex-wrap: wrap;
-            gap: 8px;
+        .btn-checkin-action,
+        .btn-checkin-action-success {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+        }
+
+        .photo-preview {
+            height: 150px;
         }
     }
 </style>
 {% endblock %}
 
-{% block content %}
+{% block page_actions %}
+<a href="{% url 'employee_portal_attendance' %}" class="btn-portal-secondary">
+    <span class="btn-icon">←</span> Back to Attendance
+</a>
+{% endblock %}
 
-<div class="employee-portal">
+{% block portal_content %}
+<div class="employee-portal-content">
     <div class="attendance-container">
-
-        <!-- ================= HEADER ================= -->
-        <div class="portal-header">
-            <div class="portal-header-content">
-                <div class="portal-header-left">
-                    <div class="portal-header-icon">✅</div>
-                    <div>
-                        <h1>Check In</h1>
-                        <p class="portal-header-subtitle">
-                            Record your check-in time for today
-                        </p>
-                    </div>
-                </div>
-                <div class="portal-header-right">
-                    <a href="{% url 'employee_portal_attendance' %}" class="btn-portal-secondary">
-                        ← Back to Attendance
-                    </a>
-                </div>
-            </div>
-        </div>
 
         <!-- ================= REAL-TIME CLOCK ================= -->
         <div class="real-time-clock">
@@ -550,12 +548,12 @@
         {% endif %}
 
         <!-- ================= ATTENDANCE FORM ================= -->
-        <div class="portal-card">
-            <div class="portal-card-header">
-                <h3>📋 Check In Details</h3>
+        <div class="portal-card" style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.06); border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;">
+            <div class="portal-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: #e8edf5;">📋 Check In Details</h3>
             </div>
             
-            <form method="POST" class="portal-form" id="checkinForm" novalidate>
+            <form method="POST" class="portal-form" id="checkinForm" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
                 
                 {% if messages %}
@@ -606,6 +604,60 @@
                         {% endif %}
                     </small>
                 </div>
+
+                <!-- ================= PHOTO CAPTURE ================= -->
+                <div class="photo-capture-section">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #e8edf5;">
+                        📸 Check-in Photo
+                    </label>
+                    
+                    <div class="photo-preview" id="photoPreview">
+                        <div class="placeholder" id="photoPlaceholder">
+                            <span class="icon">📷</span>
+                            No photo captured yet
+                        </div>
+                        <img id="capturedPhoto" style="display: none;" alt="Check-in photo">
+                    </div>
+                    
+                    <!-- Video preview for camera -->
+                    <video id="videoPreview" autoplay playsinline></video>
+                    
+                    <div class="photo-controls">
+                        <button type="button" class="btn-camera primary" id="openCameraBtn" onclick="openCamera()">
+                            📷 Open Camera
+                        </button>
+                        <button type="button" class="btn-camera success" id="captureBtn" onclick="capturePhoto()" disabled>
+                            📸 Capture Photo
+                        </button>
+                        <button type="button" class="btn-camera danger" id="retakeBtn" onclick="retakePhoto()" style="display:none;">
+                            🔄 Retake
+                        </button>
+                        <button type="button" class="btn-camera danger" id="closeCameraBtn" onclick="closeCamera()" style="display:none;">
+                            ❌ Close Camera
+                        </button>
+                    </div>
+                    
+                    <small class="form-text">Take a photo to verify your check-in location</small>
+                    
+                    <!-- Hidden input for photo data -->
+                    <input type="hidden" name="photo_data" id="photoData" value="">
+                </div>
+
+                <!-- ================= LOCATION ================= -->
+                <div class="form-group">
+                    <label>📍 Location</label>
+                    <div class="location-info" id="locationInfo">
+                        <div class="location-status">
+                            <span class="dot warning" id="locationDot"></span>
+                            <span id="locationStatus">Fetching location...</span>
+                        </div>
+                        <div class="location-coords" id="locationCoords">--</div>
+                    </div>
+                    <input type="hidden" name="location_lat" id="locationLat" value="">
+                    <input type="hidden" name="location_lng" id="locationLng" value="">
+                    <input type="hidden" name="location_address" id="locationAddress" value="">
+                    <small class="form-text">GPS location will be captured automatically</small>
+                </div>
                 
                 <!-- ================= CHECK-IN BUTTON ================= -->
                 <div style="margin: 25px 0;">
@@ -620,14 +672,13 @@
                     {% endif %}
                 </div>
                 
-                <!-- Hidden field to track action type -->
                 <input type="hidden" name="action_type" id="actionType" value="check_in">
                 
                 <div class="form-actions">
                     <a href="{% url 'employee_portal_attendance' %}" class="btn-portal-secondary">
                         Cancel
                     </a>
-                    <button type="submit" class="btn-portal-primary" id="submitBtn">
+                    <button type="submit" class="btn-portal-primary" id="submitBtn" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; text-decoration: none; cursor: pointer; transition: all 0.2s ease;">
                         {% if existing_attendance and existing_attendance.check_in %}
                             🔄 Update Check In
                         {% else %}
@@ -657,9 +708,210 @@
     updateClock();
 
     // ============================================
+    // CAMERA & PHOTO CAPTURE
+    // ============================================
+    let stream = null;
+    let photoCaptured = false;
+
+    function openCamera() {
+        const video = document.getElementById('videoPreview');
+        const openBtn = document.getElementById('openCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const closeBtn = document.getElementById('closeCameraBtn');
+        const preview = document.getElementById('photoPreview');
+        
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                } 
+            })
+            .then(function(mediaStream) {
+                stream = mediaStream;
+                video.srcObject = mediaStream;
+                video.classList.add('active');
+                video.style.display = 'block';
+                
+                // Hide preview, show video
+                preview.style.display = 'none';
+                
+                openBtn.disabled = true;
+                captureBtn.disabled = false;
+                closeBtn.style.display = 'inline-flex';
+                
+                showNotification('📷 Camera opened. Click "Capture Photo" to take a picture.');
+            })
+            .catch(function(err) {
+                console.error('Camera error:', err);
+                alert('Unable to access camera. Please allow camera access and try again.\n\nError: ' + err.message);
+            });
+        } else {
+            alert('Camera not supported on this device.');
+        }
+    }
+
+    function capturePhoto() {
+        const video = document.getElementById('videoPreview');
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to base64
+        const photoData = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // Show preview
+        const preview = document.getElementById('photoPreview');
+        const img = document.getElementById('capturedPhoto');
+        const placeholder = document.getElementById('photoPlaceholder');
+        
+        img.src = photoData;
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+        preview.style.display = 'block';
+        
+        // Hide video
+        video.classList.remove('active');
+        video.style.display = 'none';
+        
+        // Store photo data
+        document.getElementById('photoData').value = photoData;
+        photoCaptured = true;
+        
+        // Update buttons
+        document.getElementById('captureBtn').disabled = true;
+        document.getElementById('retakeBtn').style.display = 'inline-flex';
+        document.getElementById('closeCameraBtn').style.display = 'none';
+        document.getElementById('openCameraBtn').disabled = false;
+        
+        // Close camera stream
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        
+        showNotification('✅ Photo captured successfully!');
+    }
+
+    function retakePhoto() {
+        // Clear photo
+        document.getElementById('photoData').value = '';
+        document.getElementById('capturedPhoto').style.display = 'none';
+        document.getElementById('photoPlaceholder').style.display = 'block';
+        document.getElementById('retakeBtn').style.display = 'none';
+        document.getElementById('openCameraBtn').disabled = false;
+        photoCaptured = false;
+        
+        // Show photo preview
+        document.getElementById('photoPreview').style.display = 'block';
+        
+        showNotification('📷 Photo removed. Click "Open Camera" to retake.');
+    }
+
+    function closeCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        
+        const video = document.getElementById('videoPreview');
+        video.classList.remove('active');
+        video.style.display = 'none';
+        
+        document.getElementById('openCameraBtn').disabled = false;
+        document.getElementById('captureBtn').disabled = true;
+        document.getElementById('closeCameraBtn').style.display = 'none';
+        
+        // Show preview if photo exists
+        if (!photoCaptured) {
+            document.getElementById('photoPreview').style.display = 'block';
+        }
+    }
+
+    // ============================================
+    // GPS LOCATION
+    // ============================================
+    function getLocation() {
+        const locationStatus = document.getElementById('locationStatus');
+        const locationDot = document.getElementById('locationDot');
+        const locationCoords = document.getElementById('locationCoords');
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    document.getElementById('locationLat').value = lat;
+                    document.getElementById('locationLng').value = lng;
+                    
+                    locationDot.className = 'dot success';
+                    locationStatus.textContent = '✅ Location captured';
+                    locationCoords.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    
+                    // Get address using reverse geocoding (optional)
+                    getAddress(lat, lng);
+                    
+                    showNotification('📍 Location captured successfully!');
+                },
+                function(error) {
+                    console.error('Location error:', error);
+                    locationDot.className = 'dot error';
+                    locationStatus.textContent = '❌ Unable to get location';
+                    locationCoords.textContent = error.message;
+                    
+                    // Allow manual entry
+                    showNotification('⚠️ Unable to get GPS location. Please enter manually if needed.', 'warning');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            locationDot.className = 'dot error';
+            locationStatus.textContent = '❌ Geolocation not supported';
+            locationCoords.textContent = 'Not available';
+        }
+    }
+
+    function getAddress(lat, lng) {
+        // Use Nominatim API for reverse geocoding (free, no API key required)
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    document.getElementById('locationAddress').value = data.display_name;
+                    console.log('📍 Address:', data.display_name);
+                }
+            })
+            .catch(error => {
+                console.log('Reverse geocoding error:', error);
+            });
+    }
+
+    // Get location on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(getLocation, 1000);
+    });
+
+    // ============================================
     // CHECK-IN HANDLING
     // ============================================
     function handleCheckIn() {
+        // Check if photo is captured
+        if (!photoCaptured) {
+            alert('📸 Please capture a photo before checking in.');
+            document.getElementById('openCameraBtn').focus();
+            return;
+        }
+        
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -712,12 +964,12 @@
     // ============================================
     // NOTIFICATIONS
     // ============================================
-    function showNotification(message) {
-        const existing = document.querySelectorAll('.message.success');
+    function showNotification(message, type = 'success') {
+        const existing = document.querySelectorAll('.message');
         existing.forEach(el => el.remove());
         
         const notification = document.createElement('div');
-        notification.className = 'message success';
+        notification.className = `message ${type}`;
         notification.textContent = message;
         notification.style.animation = 'fadeIn 0.3s ease';
         
@@ -728,7 +980,7 @@
                 notification.style.opacity = '0';
                 notification.style.transition = 'opacity 0.3s';
                 setTimeout(() => notification.remove(), 300);
-            }, 4000);
+            }, 5000);
         }
     }
 
@@ -742,6 +994,15 @@
             e.preventDefault();
             alert('Please set a check-in time.');
             checkInInput.focus();
+            return false;
+        }
+        
+        // Check if photo is captured (but allow if already checked in)
+        const isCheckedIn = checkInInput.readOnly && checkInInput.value;
+        if (!isCheckedIn && !photoCaptured) {
+            e.preventDefault();
+            alert('📸 Please capture a photo before submitting.');
+            document.getElementById('openCameraBtn').focus();
             return false;
         }
         
@@ -771,5 +1032,4 @@
     console.log('👤 Employee: {{ employee.user.get_full_name }}');
     console.log('📅 Date: {{ today }}');
 </script>
-
 {% endblock %}

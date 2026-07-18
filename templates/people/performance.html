@@ -1,72 +1,1052 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Performance Reviews{% endblock %}
+{% block page_title %}Performance Reviews{% endblock %}
+{% block page_icon %}⭐{% endblock %}
+{% block page_subtitle %}Track employee performance, ratings and growth.{% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/performance.css' %}">
+{% block page_actions %}
+<button class="btn btn-secondary" id="exportBtn">
+    <span class="btn-icon">📥</span> Export
+</button>
+<a href="{% url 'performance_create' %}" class="btn btn-primary">
+    <span class="btn-icon">➕</span> New Review
+</a>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       PERFORMANCE REVIEWS - ENHANCED STYLES
+       ============================================ */
+    
+    .performance-container {
+        max-width: 100%;
+        animation: fadeIn 0.5s ease;
+    }
 
-<div class="performance-page">
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">⭐</div>
-                <div>
-                    <h1>Performance Reviews</h1>
-                    <p class="header-subtitle">Track employee performance, ratings and growth.</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <button class="btn-secondary" id="exportBtn">
-                    <span class="btn-icon">📥</span> Export
-                </button>
-                <a href="{% url 'performance_create' %}" class="btn-primary">
-                    <span class="btn-icon">➕</span> New Review
-                </a>
-            </div>
-        </div>
+    /* ===== STARTUP BANNER ===== */
+    .startup-banner {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 12px;
+        padding: 12px 20px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        transition: all 0.3s ease;
+    }
+
+    .startup-banner:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .startup-banner .banner-icon {
+        font-size: 1.2rem;
+    }
+
+    .startup-banner .banner-text {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .startup-banner .banner-text strong {
+        color: #e8edf5;
+    }
+
+    .startup-banner .banner-link {
+        color: #a78bfa;
+        font-size: 0.85rem;
+        text-decoration: none;
+        margin-left: auto;
+        transition: all 0.3s ease;
+        padding: 4px 12px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .startup-banner .banner-link:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #c4b5fd;
+        transform: translateX(2px);
+    }
+
+    /* ===== SUMMARY GRID ===== */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: default;
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 12px;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .summary-card:hover::before {
+        opacity: 1;
+    }
+
+    .summary-card .card-icon {
+        font-size: 2rem;
+        line-height: 1;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .summary-card:hover .card-icon {
+        transform: scale(1.1);
+    }
+
+    .summary-card .card-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .summary-card h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+        line-height: 1.2;
+    }
+
+    .summary-card p {
+        margin: 0;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    .summary-card .card-trend {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .summary-card:hover .card-trend {
+        opacity: 1;
+    }
+
+    .card-trend.up { color: #34d399; }
+    .card-trend.down { color: #f87171; }
+    .card-trend.neutral { color: #94a3b8; }
+
+    /* Card Colors */
+    .summary-card.blue {
+        border-left: 4px solid #3b82f6;
+    }
+    .summary-card.blue .card-icon { color: #60a5fa; }
+    .summary-card.blue h2 { color: #60a5fa; }
+    .summary-card.blue::before {
+        background: radial-gradient(circle at 30% 50%, rgba(59, 130, 246, 0.05), transparent 70%);
+    }
+
+    .summary-card.gold {
+        border-left: 4px solid #f59e0b;
+    }
+    .summary-card.gold .card-icon { color: #fbbf24; }
+    .summary-card.gold h2 { color: #fbbf24; }
+    .summary-card.gold::before {
+        background: radial-gradient(circle at 30% 50%, rgba(245, 158, 11, 0.05), transparent 70%);
+    }
+
+    .summary-card.orange {
+        border-left: 4px solid #f97316;
+    }
+    .summary-card.orange .card-icon { color: #fb923c; }
+    .summary-card.orange h2 { color: #fb923c; }
+    .summary-card.orange::before {
+        background: radial-gradient(circle at 30% 50%, rgba(249, 115, 22, 0.05), transparent 70%);
+    }
+
+    .summary-card.purple {
+        border-left: 4px solid #7c3aed;
+    }
+    .summary-card.purple .card-icon { color: #a78bfa; }
+    .summary-card.purple h2 { color: #a78bfa; }
+    .summary-card.purple::before {
+        background: radial-gradient(circle at 30% 50%, rgba(124, 58, 237, 0.05), transparent 70%);
+    }
+
+    /* ===== FILTER CARD ===== */
+    .filter-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .filter-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-header h3 {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .btn-toggle-filters {
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        color: #94a3b8;
+        padding: 4px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .btn-toggle-filters:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        padding: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-group label {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .filter-group .form-control {
+        padding: 8px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .filter-group .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        background: rgba(167, 139, 250, 0.05);
+    }
+
+    .filter-group .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+        padding: 8px;
+    }
+
+    .filter-group .form-control option:hover {
+        background: #2d1b69;
+    }
+
+    .filter-group.filter-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-filter {
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        flex: 1;
+        min-width: 80px;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-filter:active {
+        transform: translateY(0);
+    }
+
+    .btn-reset {
+        padding: 8px 16px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    .btn-reset:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    .filter-stats {
+        padding: 10px 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-stats #recordCount {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .filter-stats #recordCount strong {
+        color: #e8edf5;
+    }
+
+    .filter-stats .record-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #7c3aed;
+        display: inline-block;
+        animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 0.4; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* ===== TABLE CARD ===== */
+    .table-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .table-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .table-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .table-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .table-header-left h3 {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .record-badge {
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .table-header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .table-search {
+        position: relative;
+    }
+
+    .search-input {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        padding: 6px 14px;
+        color: #e8edf5;
+        font-size: 0.85rem;
+        width: 200px;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: rgba(167, 139, 250, 0.3);
+        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+        width: 250px;
+    }
+
+    .search-input:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    .search-input::placeholder {
+        color: #64748b;
+    }
+
+    .btn-sm {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .btn-sm:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    /* ===== TABLE ===== */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .performance-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 900px;
+    }
+
+    .performance-table thead th {
+        padding: 12px 16px;
+        text-align: left;
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 2px solid rgba(167, 139, 250, 0.06);
+        cursor: pointer;
+        user-select: none;
+        position: sticky;
+        top: 0;
+        background: rgba(15, 10, 26, 0.95);
+        backdrop-filter: blur(8px);
+        z-index: 10;
+        transition: color 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .performance-table thead th:hover {
+        color: #e8edf5;
+    }
+
+    .performance-table thead th .sort-icon {
+        font-size: 0.6rem;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+    .performance-table thead th.asc .sort-icon {
+        opacity: 1;
+        color: #a78bfa;
+    }
+
+    .performance-table thead th.desc .sort-icon {
+        opacity: 1;
+        color: #a78bfa;
+    }
+
+    .performance-table tbody tr {
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        transition: all 0.3s ease;
+    }
+
+    .performance-table tbody tr:hover {
+        background: rgba(167, 139, 250, 0.03);
+    }
+
+    .performance-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .performance-table tbody td {
+        padding: 12px 16px;
+        vertical-align: middle;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+    }
+
+    /* ===== EMPLOYEE CELL ===== */
+    .employee-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .employee-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-avatar-placeholder {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+
+    .employee-name {
+        color: #e8edf5;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: block;
+    }
+
+    .employee-designation {
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    /* ===== RATING CELL ===== */
+    .rating-cell {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .rating-stars {
+        color: #fbbf24;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+    }
+
+    .rating-number {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    /* ===== PERIOD BADGE ===== */
+    .period-badge {
+        background: rgba(167, 139, 250, 0.06);
+        color: #a78bfa;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    /* ===== REVIEW CELL ===== */
+    .review-text {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        max-width: 200px;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .review-text:hover {
+        white-space: normal;
+        overflow: visible;
+        cursor: help;
+    }
+
+    /* ===== DATE CELL ===== */
+    .date-cell {
+        color: #e8edf5;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons {
+        display: flex;
+        gap: 4px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.9rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        opacity: 0.6;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+
+    .action-btn.view { color: #60a5fa; }
+    .action-btn.edit { color: #fbbf24; }
+    .action-btn.delete { color: #f87171; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin-bottom: 16px;
+        font-size: 0.95rem;
+    }
+
+    .empty-state .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    .empty-state .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+    }
+
+    /* ===== TABLE FOOTER ===== */
+    .table-footer {
+        padding: 12px 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .footer-left {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .footer-left .footer-label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .footer-left .footer-label strong {
+        color: #e8edf5;
+    }
+
+    .footer-divider {
+        color: #64748b;
+    }
+
+    .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pagination-btn {
+        background: rgba(167, 139, 250, 0.06);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        color: #94a3b8;
+        padding: 6px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+        font-family: inherit;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    .page-info {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .performance-table {
+            min-width: 750px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .summary-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .summary-card {
+            padding: 14px 16px;
+        }
+
+        .summary-card .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .summary-card h2 {
+            font-size: 1.2rem;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+            padding: 16px;
+        }
+
+        .filter-group.filter-actions {
+            grid-column: span 2;
+        }
+
+        .filter-buttons {
+            flex-direction: column;
+        }
+
+        .table-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .table-header-right {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .table-search {
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100% !important;
+        }
+
+        .table-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .footer-left {
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .footer-right {
+            justify-content: center;
+        }
+
+        .performance-table {
+            min-width: 650px;
+        }
+
+        .performance-table thead th,
+        .performance-table tbody td {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+        }
+
+        .rating-stars {
+            font-size: 0.75rem;
+        }
+
+        .action-btn {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+        }
+
+        .startup-banner {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .startup-banner .banner-link {
+            margin-left: 0;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .summary-card {
+            padding: 12px 14px;
+        }
+
+        .summary-card .card-icon {
+            font-size: 1.3rem;
+        }
+
+        .summary-card h2 {
+            font-size: 1.1rem;
+        }
+
+        .summary-card p {
+            font-size: 0.6rem;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+            padding: 12px;
+        }
+
+        .filter-group.filter-actions {
+            grid-column: span 1;
+        }
+
+        .performance-table {
+            min-width: 500px;
+        }
+
+        .performance-table thead th:nth-child(4),
+        .performance-table tbody td:nth-child(4) {
+            display: none;
+        }
+
+        .employee-cell .employee-designation {
+            display: none;
+        }
+
+        .empty-state {
+            padding: 40px 16px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+        }
+
+        .review-text {
+            max-width: 100px;
+        }
+
+        .period-badge {
+            font-size: 0.65rem;
+            padding: 1px 8px;
+        }
+
+        .footer-left {
+            gap: 8px;
+        }
+    }
+</style>
+
+<div class="performance-container">
+    
+    <!-- Startup Banner -->
+    {% if is_super_admin %}
+    <div class="startup-banner">
+        <span class="banner-icon">🏢</span>
+        {% if current_startup %}
+            <span class="banner-text">Viewing: <strong>{{ current_startup.company_name }}</strong></span>
+            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="banner-link">↺ View All</a>
+        {% else %}
+            <span class="banner-text">Viewing: <strong>All Startups</strong></span>
+        {% endif %}
     </div>
-
-    {% include 'people/includes/startup_banner.html' %}
+    {% endif %}
 
     <!-- ================= SUMMARY ================= -->
     <div class="summary-grid">
         <div class="summary-card blue">
-            <span class="icon">📋</span>
-            <div>
+            <span class="card-icon">📋</span>
+            <div class="card-content">
                 <h2>{{ total_reviews|default:0 }}</h2>
                 <p>Total Reviews</p>
             </div>
-            <span class="trend up">↑ 12%</span>
+            <span class="card-trend up">↑ 12%</span>
         </div>
-        <div class="summary-card green">
-            <span class="icon">⭐</span>
-            <div>
+        <div class="summary-card gold">
+            <span class="card-icon">⭐</span>
+            <div class="card-content">
                 <h2>{{ avg_rating|default:0 }}</h2>
                 <p>Average Rating</p>
             </div>
-            <span class="trend up">↑ 8%</span>
+            <span class="card-trend up">↑ 8%</span>
         </div>
         <div class="summary-card orange">
-            <span class="icon">⏳</span>
-            <div>
+            <span class="card-icon">⏳</span>
+            <div class="card-content">
                 <h2>{{ pending_reviews|default:0 }}</h2>
                 <p>Pending Reviews</p>
             </div>
-            <span class="trend down">↓ 3%</span>
+            <span class="card-trend down">↓ 3%</span>
         </div>
         <div class="summary-card purple">
-            <span class="icon">📈</span>
-            <div>
+            <span class="card-icon">📈</span>
+            <div class="card-content">
                 <h2>{{ completion_rate|default:0 }}%</h2>
                 <p>Completion Rate</p>
             </div>
-            <span class="trend up">↑ 5%</span>
+            <span class="card-trend up">↑ 5%</span>
         </div>
     </div>
 
@@ -99,16 +1079,18 @@
                     {{ filter_form.to_date }}
                 </div>
                 <div class="filter-group filter-actions">
-                    <label>&nbsp;</label>
                     <div class="filter-buttons">
-                        <button type="submit" class="btn-primary btn-filter">🔍 Apply</button>
-                        <a href="{% url 'performance' %}" class="btn-light btn-reset">↩️ Reset</a>
+                        <button type="submit" class="btn-filter">🔍 Apply</button>
+                        <a href="{% url 'performance' %}" class="btn-reset">↩️ Reset</a>
                     </div>
                 </div>
             </div>
         </form>
         <div class="filter-stats">
-            <span id="recordCount">Showing <strong>{{ reviews|length }}</strong> reviews</span>
+            <span id="recordCount">
+                <span class="record-dot"></span>
+                Showing <strong>{{ reviews|length }}</strong> reviews
+            </span>
         </div>
     </div>
 
@@ -123,21 +1105,21 @@
                 <div class="table-search">
                     <input type="text" id="tableSearch" placeholder="🔍 Search..." class="search-input">
                 </div>
-                <button class="btn-light btn-sm" id="refreshTable">🔄 Refresh</button>
+                <button class="btn-sm" id="refreshTable">🔄 Refresh</button>
             </div>
         </div>
 
         <div class="table-responsive">
-            <table>
+            <table class="performance-table" id="performanceTable">
                 <thead>
                     <tr>
-                        <th class="sortable" data-sort="employee">Employee ↕</th>
-                        <th class="sortable" data-sort="reviewer">Reviewer ↕</th>
-                        <th class="sortable" data-sort="rating">Rating ↕</th>
-                        <th class="sortable" data-sort="period">Period ↕</th>
+                        <th class="sortable" data-sort="employee">Employee <span class="sort-icon">↕</span></th>
+                        <th class="sortable" data-sort="reviewer">Reviewer <span class="sort-icon">↕</span></th>
+                        <th class="sortable" data-sort="rating">Rating <span class="sort-icon">↕</span></th>
+                        <th class="sortable" data-sort="period">Period <span class="sort-icon">↕</span></th>
                         <th>Review</th>
-                        <th class="sortable" data-sort="date">Date ↕</th>
-                        <th>Actions</th>
+                        <th class="sortable" data-sort="date">Date <span class="sort-icon">↕</span></th>
+                        <th style="text-align: center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -149,45 +1131,51 @@
                         data-period="{{ review.review_period|lower }}"
                         data-date="{{ review.created_at|date:'Y-m-d' }}">
                         <td>
-                            <div class="employee-box">
+                            <div class="employee-cell">
                                 {% if review.employee.profile_image %}
                                 <img src="{{ review.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
                                 {% else %}
-                                <div class="avatar">
+                                <div class="employee-avatar-placeholder">
                                     {{ review.employee.user.first_name|first|default:review.employee.user.username|first|upper }}
                                 </div>
                                 {% endif %}
-                                <div class="employee-details">
-                                    <strong class="employee-name">{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>
+                                <div>
+                                    <span class="employee-name">{{ review.employee.user.get_full_name|default:review.employee.user.username }}</span>
                                     <span class="employee-designation">{{ review.employee.designation|default:"-" }}</span>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <div class="reviewer-info">
-                                <span class="reviewer-name">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</span>
-                            </div>
+                            <span style="color: #e8edf5; font-size: 0.85rem;">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</span>
                         </td>
                         <td>
-                            <div class="rating-display">
-                                <span class="rating-stars">{{ review.get_rating_stars }}</span>
+                            <div class="rating-cell">
+                                <span class="rating-stars">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= review.rating %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
                                 <span class="rating-number">{{ review.rating }}/5</span>
                             </div>
                         </td>
                         <td>
                             <span class="period-badge">{{ review.get_review_period_display }}</span>
                         </td>
-                        <td class="review-cell">
-                            {{ review.review|truncatechars:50 }}
+                        <td>
+                            <span class="review-text" title="{{ review.review }}">{{ review.review|truncatechars:50 }}</span>
                         </td>
                         <td>
                             <span class="date-cell">{{ review.created_at|date:"d M Y" }}</span>
                         </td>
-                        <td>
+                        <td style="text-align: center;">
                             <div class="action-buttons">
-                                <a href="{% url 'performance_detail' review.id %}" class="action-btn view" title="View">👁️</a>
-                                <a href="{% url 'performance_update' review.id %}" class="action-btn edit" title="Edit">✏️</a>
-                                <a href="{% url 'performance_delete' review.id %}" class="action-btn delete" title="Delete" onclick="return confirm('Delete this review?')">🗑️</a>
+                                <a href="{% url 'performance_detail' review.id %}" class="action-btn view" title="View Details">👁️</a>
+                                <a href="{% url 'performance_update' review.id %}" class="action-btn edit" title="Edit Review">✏️</a>
+                                <a href="{% url 'performance_delete' review.id %}" class="action-btn delete" title="Delete Review" onclick="return confirm('Are you sure you want to delete this review?')">🗑️</a>
                             </div>
                         </td>
                     </tr>
@@ -195,10 +1183,12 @@
                     <tr>
                         <td colspan="7">
                             <div class="empty-state">
-                                <div class="empty-icon">⭐</div>
+                                <span class="empty-icon">⭐</span>
                                 <h3>No Performance Reviews Found</h3>
                                 <p>Start by creating your first performance review.</p>
-                                <a href="{% url 'performance_create' %}" class="btn-primary">➕ New Review</a>
+                                <a href="{% url 'performance_create' %}" class="btn-primary">
+                                    ➕ New Review
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -210,13 +1200,13 @@
         <!-- Table Footer -->
         <div class="table-footer">
             <div class="footer-left">
-                <span><strong>Total:</strong> <span id="footerTotal">{{ reviews|length }}</span> reviews</span>
+                <span class="footer-label"><strong>Total:</strong> <span id="footerTotal">{{ reviews|length }}</span> reviews</span>
                 <span class="footer-divider">|</span>
-                <span><strong>Average Rating:</strong> {{ avg_rating|default:0 }} ⭐</span>
+                <span class="footer-label"><strong style="color: #fbbf24;">Average Rating:</strong> {{ avg_rating|default:0 }} ⭐</span>
             </div>
             <div class="footer-right">
                 <button class="pagination-btn" id="prevPage" disabled>← Prev</button>
-                <span id="pageInfo">Page 1 of 1</span>
+                <span class="page-info" id="pageInfo">Page 1 of 1</span>
                 <button class="pagination-btn" id="nextPage" disabled>Next →</button>
             </div>
         </div>
@@ -259,8 +1249,25 @@
                     if (match) visible++;
                 });
 
-                document.getElementById('recordCount').innerHTML = `Showing <strong>${visible}</strong> reviews`;
+                document.getElementById('recordCount').innerHTML = `
+                    <span class="record-dot"></span>
+                    Showing <strong>${visible}</strong> reviews
+                `;
                 document.getElementById('footerTotal').textContent = visible;
+
+                // Update page info
+                updatePagination(visible);
+            });
+
+            // Keyboard shortcut: Ctrl+F
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    if (tableSearch && document.activeElement !== tableSearch) {
+                        e.preventDefault();
+                        tableSearch.focus();
+                        tableSearch.select();
+                    }
+                }
             });
         }
 
@@ -329,17 +1336,48 @@
         }
 
         // ============================================
-        // KEYBOARD SHORTCUTS
+        // PAGINATION
         // ============================================
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-                if (tableSearch && document.activeElement !== tableSearch) {
-                    e.preventDefault();
-                    tableSearch.focus();
-                    tableSearch.select();
-                }
+        let currentPage = 1;
+        const rowsPerPage = 10;
+
+        function updatePagination(totalRows) {
+            const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        }
+
+        function paginate() {
+            const rows = document.querySelectorAll('#tableBody .review-row:not([style*="display: none"])');
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            rows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? '' : 'none';
+            });
+
+            updatePagination(rows.length);
+        }
+
+        document.getElementById('prevPage').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                paginate();
             }
         });
+
+        document.getElementById('nextPage').addEventListener('click', function() {
+            const rows = document.querySelectorAll('#tableBody .review-row:not([style*="display: none"])');
+            const totalPages = Math.ceil(rows.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                paginate();
+            }
+        });
+
+        // Initial pagination
+        paginate();
 
         // ============================================
         // REFRESH
@@ -384,9 +1422,31 @@
             URL.revokeObjectURL(url);
         });
 
+        // ============================================
+        // ANIMATE SUMMARY CARDS ON SCROLL
+        // ============================================
+        const summaryCards = document.querySelectorAll('.summary-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        summaryCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.4s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+
+        // ============================================
+        // CONSOLE LOG
+        // ============================================
         console.log('⭐ Performance Reviews initialized');
         console.log(`📊 ${document.querySelectorAll('.review-row').length} reviews loaded`);
     });
 </script>
-
 {% endblock %}

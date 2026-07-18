@@ -1,84 +1,182 @@
-{% extends "base.html" %}
+{% extends 'payments/base_payments.html' %}
 {% load static %}
 
-{% block content %}
+{% block page_title %}Invoices{% endblock %}
+{% block page_icon %}📄{% endblock %}
+{% block page_subtitle %}Download your invoice receipts{% endblock %}
 
-<link rel="stylesheet" href="{% static 'css/payment_history.css' %}">
+{% block page_actions %}
+<a href="{% url 'payments:payments_dashboard' %}" class="btn btn-secondary">
+    <span class="btn-icon">📊</span> Dashboard
+</a>
+<a href="{% url 'payments:payment_history' %}" class="btn btn-secondary">
+    <span class="btn-icon">📜</span> Payment History
+</a>
+<a href="{% url 'payments:billing_history' %}" class="btn btn-secondary">
+    <span class="btn-icon">🧾</span> Billing
+</a>
+{% endblock %}
 
-<div class="payment-page">
-
-    <div class="page-header">
-
-        <h1>🧾 Invoices</h1>
-
-        <p>
-
-            Download your invoice receipts.
-
-        </p>
-
-    </div>
-
-    <div class="invoice-grid">
-
+{% block payments_content %}
+<div class="invoices-container">
+    
+    {% if invoices %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
         {% for invoice in invoices %}
-
-        <div class="invoice-card">
-
-            <div class="invoice-icon">
-
-                🧾
-
+        <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 24px; text-align: center; transition: all 0.3s; position: relative;">
+            
+            <!-- Status Badge -->
+            <div style="position: absolute; top: 12px; right: 12px;">
+                <!-- <span style="background: {% if invoice.status == 'success' %}rgba(52,211,153,0.12); color: #34d399;{% else %}rgba(239,68,68,0.12); color: #f87171;{% endif %}; padding: 2px 12px; border-radius: 12px; font-size: 0.65rem; font-weight: 600;">
+                    {% if invoice.status == 'success' %}✅ Paid{% else %}❌ Unpaid{% endif %}
+                </span> -->
             </div>
-
-            <h3>
-
-                Invoice #{{ invoice.id }}
-
+            
+            <!-- Invoice Icon -->
+            <div style="font-size: 3rem; margin-bottom: 12px;">🧾</div>
+            
+            <!-- Invoice Number -->
+            <h3 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.1rem; font-family: monospace;">
+                #INV-{{ invoice.id|stringformat:"06d" }}
             </h3>
-
-            <p>
-
-                {{ invoice.plan }}
-
-            </p>
-
-            <h2>
-
-                ₹{{ invoice.amount }}
-
-            </h2>
-
-            <small>
-
-                {{ invoice.created_at|date:"d M Y" }}
-
+            
+            <!-- Plan Name -->
+            <div style="margin: 8px 0;">
+                <span style="font-size: 1.5rem;">
+                    {% if invoice.plan.name == "FREE" %}🆓
+                    {% elif invoice.plan.name == "PRO" %}⭐
+                    {% elif invoice.plan.name == "ELITE" %}💎
+                    {% elif invoice.plan.name == "STARTER" %}🚀
+                    {% elif invoice.plan.name == "GROWTH" %}📈
+                    {% elif invoice.plan.name == "SCALE" %}🏢
+                    {% else %}📋
+                    {% endif %}
+                </span>
+                <p style="color: #94a3b8; margin: 4px 0 0; font-size: 0.9rem;">{{ invoice.plan.name }} Plan</p>
+            </div>
+            
+            <!-- Amount -->
+            <div style="margin: 12px 0;">
+                <span style="color: #a78bfa; font-weight: 700; font-size: 2rem;">₹{{ invoice.amount|floatformat:2 }}</span>
+            </div>
+            
+            <!-- Date -->
+            <small style="color: #64748b; font-size: 0.8rem;">
+                📅 {{ invoice.created_at|date:"d M Y" }}
+                <span style="display: block; font-size: 0.7rem; margin-top: 2px;">{{ invoice.created_at|date:"h:i A" }}</span>
             </small>
-
-            <br><br>
-
-            <a href="#"
-
-               class="download-btn">
-
-                Download Invoice
-
+            
+            <!-- Divider -->
+            <hr style="border-color: rgba(167, 139, 250, 0.06); margin: 16px 0;">
+            
+            <!-- Payment ID -->
+            <div style="margin-bottom: 16px;">
+                <span style="color: #64748b; font-size: 0.65rem;">Payment ID</span>
+                <p style="color: #94a3b8; font-family: monospace; font-size: 0.7rem; margin: 2px 0 0;">
+                    {{ invoice.payment_id|default:"-"|truncatechars:16 }}
+                </p>
+            </div>
+            
+            <!-- Download Button -->
+            <a href="#" class="download-btn" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border-radius: 10px; font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: all 0.3s; width: 100%; justify-content: center; box-sizing: border-box;">
+                📥 Download Invoice
             </a>
-
         </div>
-
-        {% empty %}
-
-        <h4>
-
-            No invoices found.
-
-        </h4>
-
         {% endfor %}
-
     </div>
-
+    
+    <!-- Summary -->
+    <div style="margin-top: 24px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 12px; padding: 16px 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; align-items: center;">
+        <div>
+            <span style="color: #64748b; font-size: 0.8rem;">Total Invoices: </span>
+            <span style="color: #e8edf5; font-weight: 600;">{{ invoices|length }}</span>
+        </div>
+        <div>
+            <span style="color: #64748b; font-size: 0.8rem;">Total Amount: </span>
+            <span style="color: #a78bfa; font-weight: 700;">
+                {% with total=0 %}
+                    {% for invoice in invoices %}
+                        {% with total=total|add:invoice.amount %}
+                        {% endwith %}
+                    {% endfor %}
+                    ₹{{ total|floatformat:2 }}
+                {% endwith %}
+            </span>
+        </div>
+        <div>
+            <span style="color: #64748b; font-size: 0.8rem;">Paid Invoices: </span>
+            <span style="color: #34d399; font-weight: 600;">
+                {{ invoices|length }}
+            </span>
+        </div>
+    </div>
+    
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px;">
+        <div style="font-size: 4rem; margin-bottom: 16px;">📄</div>
+        <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Invoices Found</h3>
+        <p style="color: #94a3b8; margin-bottom: 20px;">You don't have any invoices yet. Subscribe to a plan to generate invoices.</p>
+        <a href="{% url 'payments:subscription_plans' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;">
+            📋 View Plans
+        </a>
+    </div>
+    {% endif %}
 </div>
 
+<style>
+    .invoices-container > div[style*="display: grid;"] > div:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    .invoices-container .download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .invoices-container .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .invoices-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .invoices-container > div[style*="display: grid;"] {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        .invoices-container > div[style*="margin-top: 24px;"] {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 8px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .invoices-container > div[style*="display: grid;"] {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .invoices-container .invoice-card {
+            padding: 16px !important;
+        }
+        
+        .invoices-container .invoice-card h3 {
+            font-size: 0.95rem !important;
+        }
+        
+        .invoices-container .invoice-card .amount {
+            font-size: 1.5rem !important;
+        }
+    }
+</style>
 {% endblock %}

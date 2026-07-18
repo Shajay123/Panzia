@@ -1,0 +1,161 @@
+{% extends 'placements/base_placements.html' %}
+{% load static %}
+
+{% block page_title %}Delete Job{% endblock %}
+{% block page_icon %}🗑️{% endblock %}
+{% block page_subtitle %}Confirm job deletion.{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'startup_jobs' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Jobs
+</a>
+{% endblock %}
+
+{% block placements_content %}
+<style>
+    .delete-container {
+        max-width: 500px;
+        margin: 40px auto;
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .delete-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    .delete-warning {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+
+    .delete-warning .job-title {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .delete-warning .job-details {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin-top: 8px;
+    }
+
+    .delete-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 24px;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        padding: 10px 32px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-cancel {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        padding: 10px 32px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .delete-container {
+            padding: 0 16px;
+        }
+
+        .delete-actions {
+            flex-direction: column;
+        }
+
+        .btn-delete,
+        .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="delete-container">
+    <span class="delete-icon">🗑️</span>
+    <h2 style="color: #e8edf5; font-weight: 700; margin: 0;">Delete Job</h2>
+    <p style="color: #94a3b8; margin: 8px 0 0;">This action cannot be undone.</p>
+
+    <div class="delete-warning">
+        <div class="job-title">"{{ job.title }}"</div>
+        <div class="job-details">
+            <div>📍 {{ job.location }}</div>
+            <div>💰 {{ job.salary|default:"Negotiable" }}</div>
+            <div>📋 {{ job.get_job_type_display|default:job.job_type }}</div>
+            <div style="margin-top: 8px; color: #64748b; font-size: 0.8rem;">
+                Created: {{ job.created_at|date:"d M Y" }}
+            </div>
+        </div>
+    </div>
+
+    <div style="color: #f87171; font-size: 0.9rem; margin-top: 8px;">
+        ⚠️ This will also remove all applications associated with this job.
+    </div>
+
+    <div class="delete-actions">
+        <a href="{% url 'startup_jobs' %}" class="btn-cancel">Cancel</a>
+        <form method="POST" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-delete">
+                🗑️ Yes, Delete Job
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🗑️ Delete Job page loaded');
+        console.log('📋 Job: {{ job.title }}');
+    });
+</script>
+{% endblock %}

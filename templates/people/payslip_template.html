@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payslip - {{ employee.user.get_full_name }}</title>
+    <title>Payslip - {{ employee.user.get_full_name|default:employee.user.username }}</title>
     <style>
         /* ============================================
            PAYSLIP STYLES (For PDF Generation)
@@ -15,165 +15,239 @@
         }
         
         body {
-            font-family: 'Arial', 'Helvetica', sans-serif;
-            background: #ffffff;
+            font-family: 'Arial', 'Helvetica', 'Segoe UI', sans-serif;
+            background: #f5f5f7;
             color: #1a1a2e;
             padding: 40px;
             font-size: 12px;
         }
         
         .payslip-container {
-            max-width: 800px;
+            max-width: 850px;
             margin: 0 auto;
             background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
             overflow: hidden;
         }
         
-        /* Header */
+        /* ===== HEADER ===== */
         .payslip-header {
-            background: linear-gradient(135deg, #1a1a2e, #2d2d4a);
+            background: linear-gradient(135deg, #1a1035 0%, #2d1b69 50%, #1a1035 100%);
             color: #ffffff;
-            padding: 30px 35px;
+            padding: 32px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 3px solid rgba(167, 139, 250, 0.3);
+        }
+        
+        .payslip-header .company-section {
+            display: flex;
+            flex-direction: column;
         }
         
         .payslip-header .company-name {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            color: #ffffff;
         }
         
-        .payslip-header .company-name span {
-            color: #4a9eff;
+        .payslip-header .company-name .accent {
+            color: #a78bfa;
+        }
+        
+        .payslip-header .company-tagline {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 2px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
         
         .payslip-header .payslip-title {
-            font-size: 14px;
-            opacity: 0.8;
-            margin-top: 4px;
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
         
-        .payslip-header .payslip-id {
+        .payslip-header .payslip-id-section {
             text-align: right;
+            background: rgba(167, 139, 250, 0.1);
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(167, 139, 250, 0.15);
         }
         
-        .payslip-header .payslip-id .label {
-            font-size: 10px;
+        .payslip-header .payslip-id-section .label {
+            font-size: 9px;
             opacity: 0.6;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         
-        .payslip-header .payslip-id .value {
+        .payslip-header .payslip-id-section .value {
             font-size: 18px;
-            font-weight: 600;
+            font-weight: 700;
             margin-top: 2px;
+            color: #a78bfa;
+            letter-spacing: 0.5px;
         }
         
-        /* Body */
+        /* ===== BODY ===== */
         .payslip-body {
-            padding: 30px 35px;
+            padding: 32px 40px;
         }
         
-        /* Employee Info */
+        /* ===== EMPLOYEE INFO ===== */
         .employee-info {
             display: flex;
             justify-content: space-between;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-            margin-bottom: 25px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #f0edf8;
+            margin-bottom: 28px;
         }
         
         .employee-details h2 {
-            font-size: 20px;
-            color: #1a1a2e;
+            font-size: 22px;
+            color: #1a1035;
             margin-bottom: 2px;
+            font-weight: 700;
         }
         
         .employee-details .designation {
-            color: #666;
+            color: #6b5b8a;
             font-size: 14px;
             font-weight: 500;
         }
         
         .employee-details .employee-id {
-            color: #888;
+            color: #94a3b8;
             font-size: 12px;
             margin-top: 4px;
         }
         
+        .employee-details .employee-id strong {
+            color: #4a3a6a;
+        }
+        
         .employee-meta {
             text-align: right;
+            background: #f8f6ff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid #f0edf8;
         }
         
         .employee-meta .meta-item {
             font-size: 12px;
-            color: #666;
+            color: #6b5b8a;
             margin-bottom: 4px;
         }
         
-        .employee-meta .meta-item strong {
-            color: #1a1a2e;
+        .employee-meta .meta-item:last-child {
+            margin-bottom: 0;
         }
         
-        /* Salary Table */
+        .employee-meta .meta-item strong {
+            color: #1a1035;
+        }
+        
+        /* ===== SALARY TABLE ===== */
         .salary-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
+            margin-bottom: 28px;
         }
         
-        .salary-table th {
+        .salary-table thead th {
             text-align: left;
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #888;
-            padding: 8px 12px;
-            border-bottom: 2px solid #e0e0e0;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            padding: 10px 14px;
+            border-bottom: 2px solid #e8e4f0;
+            font-weight: 600;
         }
         
-        .salary-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #f0f0f0;
+        .salary-table thead th:last-child {
+            text-align: right;
+        }
+        
+        .salary-table tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0edf8;
             font-size: 13px;
         }
         
-        .salary-table .amount {
+        .salary-table tbody td:last-child {
             text-align: right;
             font-weight: 500;
         }
         
-        .salary-table .positive {
-            color: #22c55e;
+        .salary-table .description-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .salary-table .negative {
-            color: #ef4444;
+        .salary-table .description-icon {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .salary-table .amount-positive {
+            color: #16a34a;
+        }
+        
+        .salary-table .amount-negative {
+            color: #dc2626;
         }
         
         .salary-table .total-row td {
-            border-top: 2px solid #1a1a2e;
+            border-top: 2px solid #1a1035;
             border-bottom: none;
             font-weight: 700;
             font-size: 15px;
-            padding-top: 12px;
+            padding-top: 14px;
+            padding-bottom: 6px;
         }
         
         .salary-table .total-row .amount {
-            color: #3b6aff;
-            font-size: 16px;
+            color: #7c3aed;
+            font-size: 18px;
+            font-weight: 800;
         }
         
-        /* Status Badge */
+        .salary-table .total-row .amount .currency {
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        
+        /* ===== STATUS ===== */
+        .status-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 16px;
+            background: #f8f6ff;
+            border-radius: 8px;
+            border: 1px solid #f0edf8;
+            margin-top: 4px;
+        }
+        
         .status-badge {
-            display: inline-block;
-            padding: 4px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 18px;
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
@@ -181,9 +255,20 @@
             letter-spacing: 0.5px;
         }
         
+        .status-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
         .status-badge.paid {
             background: #dcfce7;
             color: #16a34a;
+        }
+        
+        .status-badge.paid .dot {
+            background: #16a34a;
         }
         
         .status-badge.pending {
@@ -191,70 +276,214 @@
             color: #d97706;
         }
         
-        /* Footer */
+        .status-badge.pending .dot {
+            background: #d97706;
+        }
+        
+        .status-date {
+            color: #6b5b8a;
+            font-size: 12px;
+        }
+        
+        .status-date strong {
+            color: #1a1035;
+        }
+        
+        /* ===== FOOTER ===== */
         .payslip-footer {
-            background: #f8f8f8;
-            padding: 20px 35px;
+            background: #faf9fc;
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid #f0edf8;
             font-size: 11px;
-            color: #888;
+            color: #94a3b8;
+        }
+        
+        .payslip-footer .footer-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .payslip-footer .footer-left .note {
+            color: #6b5b8a;
         }
         
         .payslip-footer .signature {
             text-align: right;
         }
         
-        .payslip-footer .signature .line {
-            border-top: 1px solid #ccc;
-            width: 200px;
-            margin-left: auto;
-            margin-top: 20px;
-            padding-top: 4px;
+        .payslip-footer .signature .signature-label {
+            color: #6b5b8a;
             font-size: 10px;
-            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        /* Print Styles */
+        .payslip-footer .signature .signature-line {
+            border-top: 2px solid #d8d0e8;
+            width: 180px;
+            margin-left: auto;
+            margin-top: 14px;
+            padding-top: 4px;
+            font-size: 10px;
+            color: #94a3b8;
+            text-align: center;
+        }
+        
+        /* ===== GENERATED TIMESTAMP ===== */
+        .generated-timestamp {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 10px;
+            color: #c4b8d8;
+            letter-spacing: 0.3px;
+        }
+        
+        /* ===== PRINT STYLES ===== */
         @media print {
             body {
                 padding: 0;
                 background: white;
             }
+            
             .payslip-container {
                 box-shadow: none;
-                border: none;
                 border-radius: 0;
+                max-width: 100%;
             }
+            
+            .payslip-header {
+                background: #1a1035 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .payslip-header .payslip-id-section {
+                background: rgba(167, 139, 250, 0.1) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .employee-meta {
+                background: #f8f6ff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .status-section {
+                background: #f8f6ff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .status-badge.paid {
+                background: #dcfce7 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .payslip-footer {
+                background: #faf9fc !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
             .no-print {
                 display: none !important;
+            }
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            body {
+                padding: 16px;
+            }
+            
+            .payslip-header {
+                padding: 24px 20px;
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+            
+            .payslip-header .company-name {
+                font-size: 20px;
+            }
+            
+            .payslip-header .payslip-id-section {
+                text-align: center;
+                width: 100%;
+            }
+            
+            .payslip-body {
+                padding: 20px;
+            }
+            
+            .employee-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+            
+            .employee-meta {
+                text-align: center;
+                width: 100%;
+            }
+            
+            .salary-table thead th:last-child,
+            .salary-table tbody td:last-child {
+                text-align: right;
+            }
+            
+            .payslip-footer {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+                padding: 16px 20px;
+            }
+            
+            .payslip-footer .signature .signature-line {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .status-section {
+                flex-direction: column;
+                gap: 8px;
+                padding: 12px;
             }
         }
     </style>
 </head>
 <body>
     <div class="payslip-container">
-        <!-- Header -->
+        
+        <!-- ===== HEADER ===== -->
         <div class="payslip-header">
-            <div>
-                <div class="company-name">{{ startup.company_name|default:"Company Name" }}</div>
+            <div class="company-section">
+                <div class="company-name">
+                    {{ startup.company_name|default:"HRMS" }} <span class="accent">Payroll</span>
+                </div>
+                <div class="company-tagline">{{ startup.tagline|default:"Human Resource Management System" }}</div>
                 <div class="payslip-title">Monthly Payslip</div>
             </div>
-            <div class="payslip-id">
-                <div class="label">Payslip #</div>
+            <div class="payslip-id-section">
+                <div class="label">Payslip ID</div>
                 <div class="value">{{ payslip.get_payslip_id|default:"PS-000001" }}</div>
             </div>
         </div>
 
-        <!-- Body -->
+        <!-- ===== BODY ===== -->
         <div class="payslip-body">
+            
             <!-- Employee Info -->
             <div class="employee-info">
                 <div class="employee-details">
                     <h2>{{ employee.user.get_full_name|default:employee.user.username }}</h2>
                     <div class="designation">{{ employee.designation|default:"-" }}</div>
-                    <div class="employee-id">Employee ID: {{ employee.employee_id }}</div>
+                    <div class="employee-id"><strong>Employee ID:</strong> {{ employee.employee_id|default:"-" }}</div>
                 </div>
                 <div class="employee-meta">
                     <div class="meta-item"><strong>Month:</strong> {{ payroll.month }} {{ payroll.year }}</div>
@@ -268,53 +497,91 @@
                 <thead>
                     <tr>
                         <th>Description</th>
-                        <th style="text-align:right;">Amount (₹)</th>
+                        <th>Amount (₹)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Basic Salary</td>
-                        <td class="amount positive">₹{{ payroll.basic_salary|floatformat:2 }}</td>
+                        <td>
+                            <div class="description-cell">
+                                <span class="description-icon">💰</span>
+                                Basic Salary
+                            </div>
+                        </td>
+                        <td class="amount-positive">₹{{ payroll.basic_salary|floatformat:2 }}</td>
                     </tr>
                     <tr>
-                        <td>Allowances</td>
-                        <td class="amount positive">+₹{{ payroll.allowances|floatformat:2 }}</td>
+                        <td>
+                            <div class="description-cell">
+                                <span class="description-icon">➕</span>
+                                Allowances
+                            </div>
+                        </td>
+                        <td class="amount-positive">+₹{{ payroll.allowances|floatformat:2 }}</td>
                     </tr>
                     <tr>
-                        <td>Deductions</td>
-                        <td class="amount negative">-₹{{ payroll.deductions|floatformat:2 }}</td>
+                        <td>
+                            <div class="description-cell">
+                                <span class="description-icon">➖</span>
+                                Deductions
+                            </div>
+                        </td>
+                        <td class="amount-negative">-₹{{ payroll.deductions|floatformat:2 }}</td>
                     </tr>
                     <tr class="total-row">
-                        <td><strong>Net Salary</strong></td>
-                        <td class="amount"><strong>₹{{ payroll.net_salary|floatformat:2 }}</strong></td>
+                        <td>
+                            <div class="description-cell">
+                                <span class="description-icon">⭐</span>
+                                <strong>Net Salary</strong>
+                            </div>
+                        </td>
+                        <td class="amount">
+                            <span class="currency">₹</span> {{ payroll.net_salary|floatformat:2 }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
 
             <!-- Status -->
-            <div style="text-align:center; margin-top:10px;">
-                <span class="status-badge paid">✅ Paid</span>
-                <span style="margin-left:20px; color:#666; font-size:12px;">
-                    Paid on: {{ payroll.paid_date|date:"d M Y"|default:"-" }}
+            <div class="status-section">
+                <span class="status-badge paid">
+                    <span class="dot"></span>
+                    Paid
+                </span>
+                <span class="status-date">
+                    <strong>Paid on:</strong> {{ payroll.paid_date|date:"d M Y"|default:"-" }}
+                </span>
+                <span class="status-date" style="color:#94a3b8;">
+                    <strong>Reference:</strong> #{{ payslip.id|stringformat:"06d" }}
                 </span>
             </div>
         </div>
 
-        <!-- Footer -->
+        <!-- ===== FOOTER ===== -->
         <div class="payslip-footer">
-            <div>
-                <div>This is a computer-generated payslip.</div>
-                <div style="margin-top:4px;">For any queries, please contact HR.</div>
+            <div class="footer-left">
+                <div class="note">📄 This is a computer-generated payslip.</div>
+                <div class="note">For any queries, please contact HR Department.</div>
+                <div style="color:#c4b8d8; font-size:10px; margin-top:4px;">
+                    {{ startup.address|default:"123 Corporate Tower, Business District" }}
+                </div>
             </div>
             <div class="signature">
-                <div>Authorized Signature</div>
-                <div class="line">_________________________</div>
+                <div class="signature-label">Authorized Signature</div>
+                <div class="signature-line">_________________________</div>
+                <div style="font-size:9px; color:#c4b8d8; margin-top:4px;">
+                    {{ startup.authorized_signatory|default:"HR Manager" }}
+                </div>
             </div>
         </div>
+        
     </div>
 
-    <div style="text-align:center; margin-top:20px; font-size:11px; color:#999;">
+    <!-- ===== TIMESTAMP ===== -->
+    <div class="generated-timestamp">
         Generated on {{ generated_date }} at {{ generated_time|default:"" }}
+        <span style="margin:0 8px;">•</span>
+        Payslip #{{ payslip.get_payslip_id|default:"PS-000001" }}
     </div>
 </body>
 </html>

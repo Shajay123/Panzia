@@ -1,9 +1,18 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Mark Attendance{% endblock %}
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'attendance' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Attendance List
+    </a>
+    <a href="{% url 'attendance_report' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📊</span> Reports
+    </a>
+</div>
+{% endblock %}
 
-{% block css %}
+{% block hrms_content %}
 <style>
     /* ============================================
        ATTENDANCE FORM - HRMS STYLES
@@ -11,7 +20,6 @@
     .attendance-form-page {
         max-width: 900px;
         margin: 0 auto;
-        padding: 20px;
     }
 
     /* ===== PAGE HEADER ===== */
@@ -19,7 +27,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        margin-bottom: 24px;
         flex-wrap: wrap;
         gap: 15px;
     }
@@ -35,51 +43,6 @@
         margin: 5px 0 0;
         color: #94a3b8;
         font-size: 0.95rem;
-    }
-
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.85rem;
-        color: #94a3b8;
-        margin-bottom: 8px;
-    }
-
-    .breadcrumb a {
-        color: #a78bfa;
-        text-decoration: none;
-        transition: color 0.2s;
-    }
-
-    .breadcrumb a:hover {
-        color: #c4b5fd;
-        text-decoration: underline;
-    }
-
-    .breadcrumb-separator {
-        color: #64748b;
-    }
-
-    .btn-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-    }
-
-    .btn-back:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-        transform: translateX(-2px);
     }
 
     /* ===== FORM CARDS ===== */
@@ -442,7 +405,7 @@
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         .attendance-form-page {
-            padding: 12px;
+            padding: 0;
         }
 
         .page-header {
@@ -540,29 +503,84 @@
             transform: rotate(360deg);
         }
     }
-</style>
-{% endblock %}
 
-{% block content %}
+    /* ===== QUICK ACTION BUTTONS ===== */
+    .quick-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    .quick-actions .btn-quick {
+        padding: 6px 16px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-quick.primary {
+        background: rgba(124, 58, 237, 0.1);
+        color: #a78bfa;
+        border-color: rgba(124, 58, 237, 0.15);
+    }
+
+    .btn-quick.primary:hover {
+        background: rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-quick.success {
+        background: rgba(34, 197, 94, 0.1);
+        color: #4ade80;
+        border-color: rgba(34, 197, 94, 0.15);
+    }
+
+    .btn-quick.success:hover {
+        background: rgba(34, 197, 94, 0.2);
+    }
+
+    /* ===== NOTIFICATION TOAST ===== */
+    .notification-toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: rgba(26, 16, 53, 0.95);
+        border: 1px solid rgba(167, 139, 250, 0.15);
+        border-radius: 8px;
+        color: #e8edf5;
+        font-size: 0.9rem;
+        z-index: 9999;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        backdrop-filter: blur(10px);
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
 
 <div class="attendance-form-page">
 
     <!-- ================= PAGE HEADER ================= -->
     <div class="page-header">
         <div class="page-header-left">
-            <div class="breadcrumb">
-                <a href="{% url 'people_dashboard' %}">Dashboard</a>
-                <span class="breadcrumb-separator">/</span>
-                <a href="{% url 'attendance' %}">Attendance</a>
-                <span class="breadcrumb-separator">/</span>
-                <span>Mark Attendance</span>
-            </div>
             <h1>🕒 Mark Employee Attendance</h1>
             <p>Record today's attendance with timings, status, and notes.</p>
         </div>
-        <a href="{% url 'attendance' %}" class="btn-back">
-            ← Back to Attendance
-        </a>
     </div>
 
     <!-- ================= SUCCESS MESSAGES ================= -->
@@ -678,14 +696,14 @@
             </div>
             
             <!-- Quick Action Buttons -->
-            <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
-                <button type="button" class="btn" style="padding: 6px 16px; background: rgba(124, 58, 237, 0.1); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.15); border-radius: 6px; font-size: 0.8rem; cursor: pointer;" onclick="setCurrentTime('id_check_in')">
+            <div class="quick-actions">
+                <button type="button" class="btn-quick primary" onclick="setCurrentTime('id_check_in')">
                     ⏰ Set Check In Now
                 </button>
-                <button type="button" class="btn" style="padding: 6px 16px; background: rgba(124, 58, 237, 0.1); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.15); border-radius: 6px; font-size: 0.8rem; cursor: pointer;" onclick="setCurrentTime('id_check_out')">
+                <button type="button" class="btn-quick primary" onclick="setCurrentTime('id_check_out')">
                     ⏰ Set Check Out Now
                 </button>
-                <button type="button" class="btn" style="padding: 6px 16px; background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.15); border-radius: 6px; font-size: 0.8rem; cursor: pointer;" onclick="setDefaultTimings()">
+                <button type="button" class="btn-quick success" onclick="setDefaultTimings()">
                     🔄 Set Default (9:30 - 18:30)
                 </button>
             </div>
@@ -795,9 +813,7 @@
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 input.value = hours + ':' + minutes;
-                // Trigger change event
                 input.dispatchEvent(new Event('change'));
-                // Show feedback
                 showNotification('⏰ Time set to ' + hours + ':' + minutes);
             }
         };
@@ -837,7 +853,6 @@
                     const mins = diff % 60;
                     hoursPreview.innerHTML = hrs + "h " + mins + "m";
                     
-                    // Color coding based on hours
                     if (hrs >= 8) {
                         hoursPreview.style.color = '#4ade80';
                     } else if (hrs >= 6) {
@@ -892,7 +907,6 @@
                 document.getElementById("statusPreview").innerHTML = statusMap[status.value] || status.value;
             }
 
-            // Calculate hours
             calculateHours();
         }
 
@@ -918,7 +932,6 @@
         // NOTIFICATION SYSTEM
         // ============================================
         function showNotification(message) {
-            // Check if notification already exists
             let existing = document.querySelector('.notification-toast');
             if (existing) {
                 existing.remove();
@@ -927,21 +940,6 @@
             const toast = document.createElement('div');
             toast.className = 'notification-toast';
             toast.innerHTML = message;
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                padding: 12px 20px;
-                background: rgba(26, 16, 53, 0.95);
-                border: 1px solid rgba(167, 139, 250, 0.15);
-                border-radius: 8px;
-                color: #e8edf5;
-                font-size: 0.9rem;
-                z-index: 9999;
-                animation: slideUp 0.3s ease;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                backdrop-filter: blur(10px);
-            `;
             document.body.appendChild(toast);
 
             setTimeout(() => {
@@ -951,16 +949,6 @@
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
-
-        // Add animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideUp {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        `;
-        document.head.appendChild(style);
 
         // ============================================
         // FORM VALIDATION
@@ -994,10 +982,6 @@
                 return false;
             }
 
-            // Check if already marked
-            // This would require an AJAX call - we'll add that later
-
-            // Show loading state
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner"></span> Saving...';
         });
@@ -1052,7 +1036,6 @@
                     formChanged = false;
                     showNotification('🔄 Form has been reset');
                     
-                    // Reset date to today
                     if (date) {
                         const today = new Date().toISOString().split('T')[0];
                         date.value = today;
@@ -1068,7 +1051,6 @@
         updatePreview();
 
         console.log('🕒 HRMS Attendance Form initialized');
-        console.log('📊 Form is ready for attendance marking');
     });
 </script>
 

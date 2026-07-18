@@ -1,107 +1,88 @@
-{% extends 'base.html' %}
+{% extends 'placements/base_placements.html' %}
 {% load static %}
 
-{% block content %}
+{% block page_title %}AI Recommended Candidates{% endblock %}
+{% block page_icon %}🤖{% endblock %}
+{% block page_subtitle %}Top candidates ranked intelligently for <strong>{{ job.title }}</strong>{% endblock %}
 
-<link rel="stylesheet" href="{% static 'css/recommended_candidates.css' %}">
+{% block page_actions %}
+<a href="{% url 'job_applications' job.id %}" class="btn btn-secondary">
+    <span class="btn-icon">👥</span> View Applicants
+</a>
+<a href="{% url 'startup_jobs' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Jobs
+</a>
+{% endblock %}
 
-<div class="candidate-page">
-
-    <div class="page-header">
-
-        <h1>🤖 AI Recommended Candidates</h1>
-
-        <p>
-            Top candidates ranked intelligently for
-            <strong>{{ job.title }}</strong>
-        </p>
-
-    </div>
-
-
-    <div class="candidate-grid">
-
+{% block placements_content %}
+<div class="recommended-candidates-container">
+    
+    {% if ranked %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
         {% for item in ranked %}
-
-        <div class="candidate-card">
-
-            <div class="rank-badge">
-
+        <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 24px; text-align: center; transition: all 0.3s; position: relative;">
+            <!-- Rank Badge -->
+            <div style="position: absolute; top: -10px; right: -10px; width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #6d28d9); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);">
                 #{{ forloop.counter }}
-
             </div>
-
-
-            <div class="candidate-info">
-
-                <div class="avatar">
-
-                    {{ item.talent.username|first|upper }}
-
-                </div>
-
-                <h3>
-
-                    {{ item.talent.username }}
-
-                </h3>
-
+            
+            <!-- Avatar -->
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #6d28d9); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1.5rem; margin: 0 auto 12px;">
+                {{ item.talent.username|first|upper }}
             </div>
-
-
-            <div class="match-section">
-
-                <div class="score-circle">
-
-                    <div class="inner-circle">
-
-                        <h2>
-
-                            {{ item.score }}%
-
-                        </h2>
-
-                        <span>
-
-                            Match
-
-                        </span>
-
+            
+            <h3 style="color: #e8edf5; font-weight: 600; margin: 0; font-size: 1rem;">{{ item.talent.username }}</h3>
+            
+            <!-- Match Score -->
+            <div style="margin: 16px 0; display: flex; flex-direction: column; align-items: center;">
+                <!-- <div style="width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#a78bfa {{ item.score }}%, rgba(167, 139, 250, 0.08) 0%); display: flex; align-items: center; justify-content: center; position: relative;"> -->
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: #0f0a1a; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <h2 style="color: #a78bfa; font-weight: 700; margin: 0; font-size: 1.5rem;">{{ item.score }}%</h2>
+                        <span style="color: #64748b; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px;">Match</span>
                     </div>
-
                 </div>
-
             </div>
-
-
-            <div class="action-buttons">
-
-                <a href="{% url 'portfolio_showcase' item.talent.id %}" class="portfolio-btn">
-
-                    🌐 Portfolio
-
-                </a>
-
-            </div>
-
+            
+            <!-- Action -->
+            <a href="#" style="background: rgba(167, 139, 250, 0.06); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.08); padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px;">
+                🌐 Portfolio
+            </a>
         </div>
-
-        {% empty %}
-
-        <div class="empty-card">
-
-            <h3>
-
-                No Matching Candidates Found
-
-            </h3>
-
-        </div>
-
         {% endfor %}
-
     </div>
-
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px;">
+        <div style="font-size: 4rem; margin-bottom: 16px;">🤖</div>
+        <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Matching Candidates Found</h3>
+        <p style="color: #94a3b8;">Try adjusting your job requirements or check back later.</p>
+    </div>
+    {% endif %}
 </div>
 
+<style>
+    .recommended-candidates-container > div[style*="display: grid;"] > div:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    .recommended-candidates-container .portfolio-btn:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+        .recommended-candidates-container > div[style*="display: grid;"] {
+            grid-template-columns: 1fr 1fr !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .recommended-candidates-container > div[style*="display: grid;"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
 {% endblock %}

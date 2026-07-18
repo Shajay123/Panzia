@@ -1,725 +1,1315 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Startup Dashboard{% endblock %}
 
 {% block css %}
-
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    /* ============================================
+       MODERN DASHBOARD STYLES
+       ============================================ */
+    * {
+        box-sizing: border-box;
+    }
+    
+    .dashboard-section {
+        background: radial-gradient(ellipse at top left, rgba(167, 139, 250, 0.03), transparent 70%);
+        min-height: 100vh;
+    }
+    
+    .dashboard-wrapper {
+        display: flex;
+        gap: 0;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* ============================================
+       SIDEBAR - MODERN
+       ============================================ */
+    .sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, #0f0a1a 0%, #1a1035 100%);
+        border-right: 1px solid rgba(167, 139, 250, 0.06);
+        min-height: 100vh;
+        padding: 20px 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .sidebar::-webkit-scrollbar-track {
+        background: rgba(167, 139, 250, 0.02);
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.2);
+        border-radius: 10px;
+    }
+    
+    .sidebar-logo {
+        padding: 0 20px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 12px;
+    }
+    
+    .sidebar-logo h2 {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .sidebar-logo h2 .logo-icon {
+        font-size: 1.5rem;
+    }
+    
+    .sidebar-logo .dashboard-subtitle {
+        color: #94a3b8;
+        font-size: 0.7rem;
+        margin: 2px 0 0;
+        padding-left: 4px;
+    }
+    
+    .sidebar-menu {
+        list-style: none;
+        padding: 0 12px;
+        margin: 0;
+    }
+    
+    .sidebar-menu .menu-divider {
+        padding: 12px 14px 6px;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #64748b;
+        font-weight: 600;
+    }
+    
+    .sidebar-menu li {
+        margin-bottom: 2px;
+    }
+    
+    .sidebar-menu li a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        color: #94a3b8;
+        text-decoration: none;
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 0.85rem;
+        position: relative;
+    }
+    
+    .sidebar-menu li a:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+        transform: translateX(4px);
+    }
+    
+    .sidebar-menu li a.active {
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.06);
+    }
+    
+    .sidebar-menu li a .badge {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        font-size: 0.6rem;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+        margin-left: auto;
+    }
+    
+    .sidebar-menu .has-submenu {
+        position: relative;
+    }
+    
+    .sidebar-menu .has-submenu .menu-link {
+        cursor: pointer;
+    }
+    
+    .sidebar-menu .has-submenu .menu-arrow {
+        margin-left: auto;
+        font-size: 0.7rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar-menu .has-submenu .menu-arrow.open {
+        transform: rotate(90deg);
+    }
+    
+    .sidebar-menu .submenu {
+        list-style: none;
+        padding: 4px 0 4px 36px;
+        margin: 0;
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height 0.3s ease;
+    }
+    
+    .sidebar-menu .submenu.open {
+        max-height: 500px;
+    }
+    
+    .sidebar-menu .submenu li a {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    
+    .sidebar-menu .submenu li a:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+    }
+    
+    .sidebar-menu .submenu li a.active {
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+    }
+    
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .dashboard-main {
+        flex: 1;
+        padding: 24px 32px;
+        background: radial-gradient(ellipse at top left, rgba(167, 139, 250, 0.02), transparent 70%);
+    }
+    
+    /* ============================================
+       HEADER - MODERN WITH SUBSCRIPTION
+       ============================================ */
+    .dashboard-header-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 20px 24px;
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .company-logo-wrapper {
+        width: 72px;
+        height: 72px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(167, 139, 250, 0.04);
+        border: 2px solid rgba(167, 139, 250, 0.08);
+        flex-shrink: 0;
+    }
+    
+    .company-logo-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .company-logo-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #a78bfa;
+        background: rgba(167, 139, 250, 0.06);
+    }
+    
+    .dashboard-badge {
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+    }
+    
+    .header-left h1 {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 4px 0 2px;
+        font-size: 1.5rem;
+    }
+    
+    .header-left .tagline {
+        color: #94a3b8;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .company-meta {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+    }
+    
+    .company-meta span {
+        color: #64748b;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .company-meta .website-link {
+        color: #60a5fa;
+        text-decoration: none;
+    }
+    
+    .company-meta .website-link:hover {
+        color: #93c5fd;
+        text-decoration: underline;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .header-actions .subscription-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        background: rgba(167, 139, 250, 0.08);
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 20px;
+        color: #a78bfa;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .header-actions .subscription-badge:hover {
+        background: rgba(167, 139, 250, 0.12);
+        border-color: rgba(167, 139, 250, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .header-actions .subscription-badge .plan-icon {
+        font-size: 1rem;
+    }
+    
+    .header-actions .subscription-badge .plan-name {
+        color: #e8edf5;
+    }
+    
+    .primary-btn {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+    }
+    
+    .primary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+        color: #fff;
+    }
+    
+    .secondary-btn {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+    
+    .secondary-btn:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* ============================================
+       PROFILE COMPLETION
+       ============================================ */
+    .dashboard-panel {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+    }
+    
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .panel-header h3 {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .panel-header .completion-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .panel-header .completion-text {
+        color: #a78bfa;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .panel-header .progress-bar {
+        width: 120px;
+        height: 6px;
+        background: rgba(167, 139, 250, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .panel-header .progress-bar .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7c3aed, #a78bfa);
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+    
+    .panel-header .glass-view-btn {
+        color: #a78bfa;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .panel-header .glass-view-btn:hover {
+        color: #8b5cf6;
+        transform: translateX(4px);
+    }
+    
+    /* ============================================
+       STATS CARDS - MODERN
+       ============================================ */
+    .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .dash-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dash-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.3), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .dash-card:hover::before {
+        opacity: 1;
+    }
+    
+    .dash-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dash-card .card-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 4px;
+    }
+    
+    .dash-card h2 {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.8rem;
+    }
+    
+    .dash-card p {
+        color: #94a3b8;
+        margin: 4px 0 0;
+        font-size: 0.8rem;
+    }
+    
+    .dash-card .trend {
+        font-size: 0.65rem;
+        font-weight: 600;
+        margin-top: 4px;
+        display: inline-block;
+    }
+    
+    .dash-card .trend.up {
+        color: #34d399;
+    }
+    
+    .dash-card .trend.down {
+        color: #f87171;
+    }
+    
+    /* ============================================
+       MODULE GRID - QUICK ACCESS
+       ============================================ */
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+    
+    .module-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s;
+        position: relative;
+    }
+    
+    .module-card:hover {
+        background: rgba(167, 139, 250, 0.04);
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateX(6px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .module-card .module-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .module-card .module-info {
+        flex: 1;
+    }
+    
+    .module-card .module-info h4 {
+        color: #e8edf5;
+        font-weight: 600;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    .module-card .module-info p {
+        color: #94a3b8;
+        margin: 2px 0 0;
+        font-size: 0.75rem;
+    }
+    
+    .module-card .module-status {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 10px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+    
+    .module-card .module-status.active {
+        background: rgba(52, 211, 153, 0.12);
+        color: #34d399;
+    }
+    
+    .module-card .module-status.inactive {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+    }
+    
+    .module-card .module-arrow {
+        color: #64748b;
+        font-size: 1.2rem;
+        transition: all 0.3s;
+    }
+    
+    .module-card:hover .module-arrow {
+        color: #a78bfa;
+        transform: translateX(4px);
+    }
+    
+    .module-count {
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    
+    /* ============================================
+       ANALYTICS GRID
+       ============================================ */
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .analytics-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 14px;
+        padding: 24px;
+        transition: all 0.3s;
+    }
+    
+    .analytics-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+    }
+    
+    .analytics-card h3 {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .analytics-card p {
+        color: #94a3b8;
+        line-height: 1.8;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    .analytics-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+    
+    .analytics-row:last-child {
+        border-bottom: none;
+    }
+    
+    .analytics-row span {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .analytics-row strong {
+        color: #a78bfa;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    /* ============================================
+       SPRINT ITEMS
+       ============================================ */
+    .sprint-item {
+        padding: 14px 18px;
+        background: rgba(167, 139, 250, 0.02);
+        border-radius: 10px;
+        margin-bottom: 8px;
+        border-left: 3px solid rgba(167, 139, 250, 0.2);
+        transition: all 0.3s;
+    }
+    
+    .sprint-item:hover {
+        background: rgba(167, 139, 250, 0.04);
+        border-left-color: #a78bfa;
+        transform: translateX(4px);
+    }
+    
+    .sprint-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .sprint-top h4 {
+        color: #e8edf5;
+        font-weight: 600;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .sprint-item p {
+        color: #94a3b8;
+        margin: 4px 0;
+        font-size: 0.8rem;
+    }
+    
+    .sprint-item small {
+        color: #64748b;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .status-badge {
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+    
+    .status-badge.status-active {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+    }
+    
+    .status-badge.status-completed {
+        background: rgba(52, 211, 153, 0.12);
+        color: #34d399;
+    }
+    
+    .status-badge.status-pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+    }
+    
+    .status-badge.status-archived {
+        background: rgba(167, 139, 250, 0.08);
+        color: #94a3b8;
+    }
+    
+    /* ============================================
+       EMPTY STATE
+       ============================================ */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .empty-state .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+    }
+    
+    .empty-state h4 {
+        color: #e8edf5;
+        font-weight: 600;
+        margin: 0 0 4px;
+    }
+    
+    .empty-state p {
+        color: #94a3b8;
+        margin: 0 0 16px;
+        font-size: 0.85rem;
+    }
+    
+    .empty-state .primary-btn {
+        display: inline-flex;
+    }
+    
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1024px) {
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .sidebar {
+            display: none;
+        }
+        
+        .dashboard-main {
+            padding: 16px;
+        }
+        
+        .dashboard-header-main {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px;
+        }
+        
+        .header-left {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .company-meta {
+            justify-content: center;
+        }
+        
+        .header-actions {
+            justify-content: center;
+        }
+        
+        .header-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .dashboard-cards {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .module-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .module-card {
+            padding: 14px 16px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .dashboard-cards {
+            grid-template-columns: 1fr;
+        }
+        
+        .dashboard-main {
+            padding: 12px;
+        }
+        
+        .dashboard-header-main {
+            padding: 12px;
+        }
+        
+        .header-left {
+            gap: 12px;
+        }
+        
+        .company-logo-wrapper {
+            width: 56px;
+            height: 56px;
+        }
+        
+        .header-actions .subscription-badge {
+            font-size: 0.7rem;
+            padding: 4px 12px;
+        }
+    }
+</style>
 {% endblock %}
-
-{% block title %}
-Startup Dashboard
-{% endblock %}
-
-
 
 {% block content %}
-
 <section class="dashboard-section">
-
-
     <div class="dashboard-wrapper">
 
-        <!-- SIDEBAR -->
-
+        <!-- ============================================
+        SIDEBAR
+        ============================================ -->
         <aside class="sidebar">
-
             <div class="sidebar-logo">
-                <h2>PANZIA</h2>
+                <h2>
+                    <span class="logo-icon">🚀</span> PANZIA
+                </h2>
                 <p class="dashboard-subtitle">Startup Workspace</p>
             </div>
 
             <ul class="sidebar-menu">
-
                 <!-- Dashboard -->
                 <li>
-                    <a href="{% url 'startup_dashboard' %}">
+                    <a href="{% url 'startup_dashboard' %}" class="active">
                         🏠 Dashboard
                     </a>
                 </li>
 
-                <!-- ================= PEOPLE ================= -->
-
-                <!-- ================= PEOPLE ================= -->
-
+                <!-- HRMS -->
                 <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
-                        👥 HR
+                    <a href="{% url 'people_dashboard' %}" class="menu-link">
+                        👥 HRMS
                         <span class="menu-arrow">▶</span>
                     </a>
-
-                    <ul class="submenu">
-
-                        <!-- ================= OVERVIEW ================= -->
-
-                        <li class="submenu-heading">
-                            <span>Overview</span>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'people_dashboard' %}">
-                                📊 Dashboard
-                            </a>
-                        </li>
-
-                        <!-- ================= ORGANIZATION ================= -->
-
-                        <li class="submenu-heading">
-                            <span>Organization</span>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'departments' %}">
-                                🏢 Departments
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'holidays' %}">
-                                🎉 Holiday Calendar
-                            </a>
-                        </li>
-
-                        <!-- ================= EMPLOYEE MANAGEMENT ================= -->
-
-                        <li class="submenu-heading">
-                            <span>Employees</span>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'employees' %}">
-                                👥 Employee Directory
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'employee_create' %}">
-                                ➕ Hire / Add Employee
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'onboarding' %}">
-                                🚀 Employee Onboarding
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'documents' %}">
-                                📂 Employee Documents
-                            </a>
-                        </li>
-
-                        <!-- ================= ATTENDANCE ================= -->
-
-                        <li class="submenu-heading">
-                            <span>Attendance</span>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'attendance' %}">
-                                🕒 Daily Attendance
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'attendance_report' %}">
-                                📅 Attendance Reports
-                            </a>
-                        </li>
-
-                        <!-- ================= LEAVE ================= -->
-
-                        <li class="submenu-heading">
-                            <span>Leave</span>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'leave_dashboard' %}">
-                                🌴 Leave Dashboard
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'leave_requests' %}">
-                                📝 Leave Requests
-                            </a>
-                        </li>
-
-                        <!-- ================= PAYROLL ================= -->
-
-                        <li class="submenu-heading">
-                            <span>Payroll</span>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'payroll' %}">
-                                💰 Payroll
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'payslips' %}">
-                                🧾 Payslips
-                            </a>
-                        </li>
-
-                        <!-- ================= PERFORMANCE ================= -->
-
-                        <li class="submenu-heading">
-                            <span>Performance</span>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'performance' %}">
-                                ⭐ Performance Reviews
-                            </a>
-                        </li>
-
-                        <!-- ================= EXIT ================= -->
-
-                        <li class="submenu-heading">
-                            <span>Exit</span>
-                        </li>
-
-                        <li>
-                            <a href="{% url 'exit_management' %}">
-                                🚪 Exit Management
-                            </a>
-                        </li>
-
-                    </ul>
-
                 </li>
 
-                <!-- ================= FINANCE ================= -->
-
+                <!-- Finance -->
                 <li class="has-submenu">
-
                     <a href="{% url 'finance:finance_dashboard' %}" class="menu-link">
                         💰 Finance
                         <span class="menu-arrow">▶</span>
                     </a>
-
-                    <!-- <ul class="submenu">
-                        <li><a href="{% url 'finance:finance_dashboard' %}">🏠 Dashboard</a></li>
-                        <li><a href="{% url 'finance:income_list' %}">💵 Income</a></li>
-                        <li><a href="{% url 'finance:expense_list' %}">💸 Expenses</a></li>
-                        <li><a href="{% url 'finance:invoice_list' %}">🧾 Invoices</a></li>
-                        <li><a href="{% url 'finance:profit_loss' %}">📈 Profit & Loss</a></li>
-                        <li><a href="{% url 'finance:cash_flow' %}">💳 Cash Flow</a></li>
-                        <li><a href="{% url 'finance:receivable_list' %}">📥 Accounts Receivable</a></li>
-                        <li><a href="{% url 'finance:payable_list' %}">📤 Accounts Payable</a></li>
-                        <li><a href="{% url 'finance:vendor_list' %}">🏢 Vendors</a></li>
-                        <li><a href="{% url 'finance:reimbursement_list' %}">💳 Reimbursements</a></li>
-                    </ul> -->
-
                 </li>
 
-                <!-- ================= COMPLIANCE ================= -->
-
+                <!-- Compliance -->
                 <li class="has-submenu">
-
                     <a href="{% url 'compliance:compliance_dashboard' %}" class="menu-link">
                         📑 Compliance
                         <span class="menu-arrow">▶</span>
                     </a>
-
-                    <!-- <ul class="submenu">
-
-                        <li><a href="#">GST Dashboard</a></li>
-                        <li><a href="#">GSTR-1</a></li>
-                        <li><a href="#">GSTR-3B</a></li>
-                        <li><a href="#">TDS</a></li>
-                        <li><a href="#">PF / ESIC</a></li>
-                        <li><a href="#">Income Tax</a></li>
-                        <li><a href="#">MCA Filing</a></li>
-
-                    </ul> -->
-
                 </li>
 
-                <!-- ================= LEGAL ================= -->
-
+                <!-- Legal -->
                 <li class="has-submenu">
-
                     <a href="{% url 'legal:legal_dashboard' %}" class="menu-link">
-                        ⚖ Legal
+                        ⚖️ Legal
                         <span class="menu-arrow">▶</span>
                     </a>
-
-                    <!-- <ul class="submenu">
-
-                        <li><a href="#">Founder Agreements</a></li>
-                        <li><a href="#">Employment Contracts</a></li>
-                        <li><a href="#">Client Contracts</a></li>
-                        <li><a href="#">Vendor Agreements</a></li>
-                        <li><a href="#">NDA</a></li>
-                        <li><a href="#">Trademark</a></li>
-
-                    </ul> -->
-
                 </li>
 
-                <!-- ================= EXECUTION ================= -->
-
+                <!-- Execution -->
                 <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
+                    <a href="{% url 'execution_dashboard' %}" class="menu-link">
                         🚀 Execution
                         <span class="menu-arrow">▶</span>
                     </a>
-
-                    <ul class="submenu">
-
-                        <li><a href="{% url 'startup_sprints' %}">My Sprints</a></li>
-                        <li><a href="{% url 'create_sprint' %}">Create Sprint</a></li>
-                        <li><a href="#">Tasks</a></li>
-                        <li><a href="#">Team Members</a></li>
-                        <li><a href="#">Applications</a></li>
-                        <li><a href="#">AI Candidates</a></li>
-                        <li><a href="{% url 'activity_feed' %}">Activity Feed</a></li>
-
-                    </ul>
-
                 </li>
 
-                <!-- ================= HIRING ================= -->
-
+                <!-- Hiring -->
                 <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
+                    <a href="{% url 'hiring_dashboard' %}" class="menu-link">
                         💼 Hiring
                         <span class="menu-arrow">▶</span>
                     </a>
-
-                    <ul class="submenu">
-
-                        <li><a href="{% url 'create_job' %}">Create Job</a></li>
-                        <li><a href="{% url 'startup_jobs' %}">My Jobs</a></li>
-                        <li><a href="{% url 'hiring_dashboard' %}">Hiring Dashboard</a></li>
-
-                    </ul>
-
                 </li>
 
-                <!-- ================= SALES ================= -->
-
+                <!-- Analytics -->
                 <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
-                        📊 Sales
-                        <span class="menu-arrow">▶</span>
-                    </a>
-
-                    <ul class="submenu">
-
-                        <li><a href="#">CRM</a></li>
-                        <li><a href="#">Leads</a></li>
-                        <li><a href="#">Clients</a></li>
-                        <li><a href="#">Revenue</a></li>
-                        <li><a href="#">Subscriptions</a></li>
-
-                    </ul>
-
-                </li>
-
-                <!-- ================= BANKING ================= -->
-
-                <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
-                        🏦 Banking
-                        <span class="menu-arrow">▶</span>
-                    </a>
-
-                    <ul class="submenu">
-
-                        <li><a href="#">Transactions</a></li>
-                        <li><a href="#">Payments</a></li>
-                        <li><a href="#">Vendor Payments</a></li>
-                        <li><a href="#">Expense Cards</a></li>
-
-                    </ul>
-
-                </li>
-
-                <!-- ================= OPERATIONS ================= -->
-
-                <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
-                        📁 Operations
-                        <span class="menu-arrow">▶</span>
-                    </a>
-
-                    <ul class="submenu">
-
-                        <li><a href="#">Assets</a></li>
-                        <li><a href="#">Vendors</a></li>
-                        <li><a href="#">Meetings</a></li>
-                        <li><a href="#">SOP Library</a></li>
-                        <li><a href="#">Notes</a></li>
-                        <li><a href="#">Calendar</a></li>
-
-                    </ul>
-
-                </li>
-
-                <!-- ================= ANALYTICS ================= -->
-
-                <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
+                    <a href="{% url 'analytics:analytics_dashboard' %}" class="menu-link">
                         📈 Analytics
                         <span class="menu-arrow">▶</span>
                     </a>
-
-                    <ul class="submenu">
-
-                        <li><a href="#">Daily Snapshot</a></li>
-                        <li><a href="#">Weekly Report</a></li>
-                        <li><a href="#">Monthly Report</a></li>
-                        <li><a href="#">Runway Calculator</a></li>
-                        <li><a href="#">Burn Rate</a></li>
-                        <li><a href="#">Investor Reports</a></li>
-                        <li><a href="{% url 'leaderboard' %}">Leaderboard</a></li>
-                        <li><a href="{% url 'monthly_rankings' %}">Monthly Rankings</a></li>
-
-                    </ul>
-
                 </li>
 
-                <!-- ================= COMPANY ================= -->
+                <!-- Company -->
+            
 
+                <!-- Subscription -->
                 <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
-                        🏢 Company
-                        <span class="menu-arrow">▶</span>
-                    </a>
-
-                    <ul class="submenu">
-
-                        <li><a href="{% url 'startup_profile_setup' %}">Startup Profile</a></li>
-
-                        <li><a href="{% url 'startup_profile' startup_profile.id %}">Public Profile</a></li>
-
-                    </ul>
-
-                </li>
-
-                <!-- ================= SUBSCRIPTION ================= -->
-
-                <li class="has-submenu">
-
-                    <a href="#" class="menu-link">
+                    <a href="{% url 'payments:payments_dashboard' %}" class="menu-link">
                         💎 Subscription
                         <span class="menu-arrow">▶</span>
                     </a>
-
-                    <ul class="submenu">
-
-                        <li><a href="{% url 'subscription_plans' %}">Current Plan : {{ current_plan }}</a></li>
-
-                        <li><a href="{% url 'billing_history' %}">Billing History</a></li>
-
-                        <li><a href="{% url 'invoices' %}">Invoices</a></li>
-
-                        <li><a href="{% url 'payment_history' %}">Payment History</a></li>
-
-                    </ul>
-
                 </li>
-
             </ul>
-
         </aside>
 
-        <!-- MAIN -->
-
+        <!-- ============================================
+        MAIN CONTENT
+        ============================================ -->
         <main class="dashboard-main">
 
-            <!-- HEADER -->
-
+            <!-- ============================================
+            HEADER WITH SUBSCRIPTION PLAN
+            ============================================ -->
             <div class="dashboard-header-main">
-
                 <div class="header-left">
-
                     <div class="company-logo-wrapper">
-                        {% if user_startup.logo %}
-                        <img src="{{ user_startup.logo.url }}" alt="{{ user_startup.company_name }}"
-                            class="company-logo">
+                        {% if startup_profile.logo %}
+                            <img src="{{ startup_profile.logo.url }}" alt="{{ startup_profile.company_name }}" class="company-logo">
                         {% else %}
-                        <div class="company-logo-placeholder">
-                            {{ user_startup.company_name|first|upper }}
-                        </div>
+                            <div class="company-logo-placeholder">
+                                {{ startup_profile.company_name|first|upper }}
+                            </div>
                         {% endif %}
                     </div>
-
                     <div>
-                        <span class="dashboard-badge">
-                            Startup Workspace
-                        </span>
-                        <h1>{{ user_startup.company_name }}</h1>
-                        <p class="tagline">{{ user_startup.tagline }}</p>
+                        <span class="dashboard-badge">🚀 Startup Workspace</span>
+                        <h1>{{ startup_profile.company_name }}</h1>
+                        <p class="tagline">{{ startup_profile.tagline|default:"Building the future" }}</p>
                         <div class="company-meta">
-                            <span>🏭 {{ user_startup.industry }}</span>
-                            {% if user_startup.website %}
-                            <span>🌐 <a href="{{ user_startup.website }}" target="_blank" rel="noopener noreferrer"
-                                    class="website-link">
-                                    {% with url=user_startup.website %}
-                                    {% if "://" in url %}
-                                    {{ url|cut:"https://"|cut:"http://" }}
-                                    {% else %}
-                                    {{ url }}
-                                    {% endif %}
-                                    {% endwith %}
-                                </a></span>
+                            <span>🏭 {{ startup_profile.industry }}</span>
+                            {% if startup_profile.website %}
+                                <span>🌐 <a href="{{ startup_profile.website }}" target="_blank" class="website-link">{{ startup_profile.website|cut:"https://"|cut:"http://" }}</a></span>
                             {% endif %}
+                            <span>📍 {{ startup_profile.city|default:"N/A" }}{% if startup_profile.country %}, {{ startup_profile.country }}{% endif %}</span>
                         </div>
                     </div>
-
                 </div>
-
                 <div class="header-actions">
-
-                    <a href="{% url 'create_sprint' %}" class="primary-btn">
-                        + Create Sprint
+                    <!-- Subscription Plan Badge -->
+                    <a href="{% url 'payments:payments_dashboard' %}" class="subscription-badge">
+                        <span class="plan-icon">💎</span>
+                        <span>Plan: <span class="plan-name">{{ current_plan|default:"FREE" }}</span></span>
                     </a>
-
-                    <a href="{% url 'startup_profile_setup' %}" class="secondary-btn">
-                        Edit Profile
-                    </a>
-
+                    
+                    <a href="{% url 'startups:startup_profile_setup' %}" class="secondary-btn">✏️ Edit Profile</a>
+                    <a href="{% url 'startups:startup_profile' %}" class="secondary-btn">👤 My Profile</a>
                 </div>
-
             </div>
 
-            <!-- PROFILE COMPLETION -->
-
+            <!-- ============================================
+            PROFILE COMPLETION
+            ============================================ -->
             <div class="dashboard-panel">
-
                 <div class="panel-header">
-
-                    <h3>
-                        📋 Startup Profile Completion
-                    </h3>
-
-                    <span>
-                        {{ profile_completion }}%
-                    </span>
-
+                    <h3>📋 Profile Completion</h3>
+                    <div class="completion-wrapper">
+                        <span class="completion-text">{{ profile_completion|default:0 }}%</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ profile_completion|default:0 }}%;"></div>
+                        </div>
+                    </div>
                 </div>
-
-
             </div>
 
-            <br>
-
-            <!-- STATS -->
-
+            <!-- ============================================
+            STATS CARDS
+            ============================================ -->
             <div class="dashboard-cards">
-
                 <div class="dash-card">
                     <span class="card-icon">🚀</span>
-                    <h2>{{ total_sprints }}</h2>
+                    <h2>{{ total_sprints|default:0 }}</h2>
                     <p>Total Sprints</p>
+                    <span class="trend up">↑ 12%</span>
                 </div>
-
                 <div class="dash-card">
                     <span class="card-icon">📂</span>
-                    <h2>{{ open_sprints }}</h2>
+                    <h2>{{ open_sprints|default:0 }}</h2>
                     <p>Open Sprints</p>
+                    <span class="trend up">↑ 8%</span>
                 </div>
-
                 <div class="dash-card">
                     <span class="card-icon">⚡</span>
-                    <h2>{{ active_sprints }}</h2>
+                    <h2>{{ active_sprints|default:0 }}</h2>
                     <p>Active Sprints</p>
+                    <span class="trend up">↑ 5%</span>
                 </div>
-
                 <div class="dash-card">
                     <span class="card-icon">🏆</span>
-                    <h2>{{ completed_sprints }}</h2>
+                    <h2>{{ completed_sprints|default:0 }}</h2>
                     <p>Completed</p>
+                    <span class="trend up">↑ 15%</span>
                 </div>
-
                 <div class="dash-card">
                     <span class="card-icon">👥</span>
-                    <h2>{{ contributors }}</h2>
+                    <h2>{{ contributors|default:0 }}</h2>
                     <p>Contributors</p>
+                    <span class="trend up">↑ 10%</span>
                 </div>
-
                 <div class="dash-card">
                     <span class="card-icon">📨</span>
-                    <h2>{{ applications }}</h2>
+                    <h2>{{ applications|default:0 }}</h2>
                     <p>Applications</p>
+                    <span class="trend up">↑ 20%</span>
                 </div>
-
                 <div class="dash-card">
                     <span class="card-icon">🧑‍💻</span>
-                    <h2>{{ accepted_members }}</h2>
+                    <h2>{{ accepted_members|default:0 }}</h2>
                     <p>Team Members</p>
+                    <span class="trend up">↑ 7%</span>
                 </div>
-
                 <div class="dash-card">
                     <span class="card-icon">📋</span>
-                    <h2>{{ active_tasks }}</h2>
+                    <h2>{{ active_tasks|default:0 }}</h2>
                     <p>Active Tasks</p>
+                    <span class="trend down">↓ 3%</span>
                 </div>
-
                 <div class="dash-card">
                     <span class="card-icon">⭐</span>
-                    <h2>{{ completion_rate }}%</h2>
+                    <h2>{{ completion_rate|default:0 }}%</h2>
                     <p>Execution Rate</p>
+                    <span class="trend up">↑ 6%</span>
                 </div>
-
             </div>
 
-            <!-- ANALYTICS -->
-
-            <div class="analytics-grid">
-
-                <div class="analytics-card">
-
-                    <h3>
-                        📈 Execution Analytics
-                    </h3>
-
-                    <div class="analytics-row">
-                        <span>Applications Received</span>
-                        <strong>{{ applications }}</strong>
-                    </div>
-
-                    <div class="analytics-row">
-                        <span>Accepted Members</span>
-                        <strong>{{ accepted_members }}</strong>
-                    </div>
-
-                    <div class="analytics-row">
-                        <span>Completion Rate</span>
-                        <strong>{{ completion_rate }}%</strong>
-                    </div>
-
-                </div>
-
-                <div class="analytics-card">
-
-                    <h3>
-                        🚀 Startup Overview
-                    </h3>
-
-                    <p>
-                        {{ startup_profile.description|truncatechars:250 }}
-                    </p>
-
-                </div>
-
-            </div>
-
-            <!-- RECENT SPRINTS -->
-
+            <!-- ============================================
+            QUICK ACCESS MODULES
+            ============================================ -->
             <div class="dashboard-panel">
-
                 <div class="panel-header">
+                    <h3>🚀 Quick Access Modules</h3>
+                    <span class="module-count">9 Modules</span>
+                </div>
+                <br>
+                <div class="module-grid">
+                    <!-- 1. HRMS -->
+                    <a href="{% url 'people_dashboard' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(167, 139, 250, 0.08);">
+                            👥
+                        </div>
+                        <div class="module-info">
+                            <h4>HRMS</h4>
+                            <p>Manage employees, attendance & payroll</p>
+                            <span class="module-status active">Active</span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
 
-                    <h3>
-                        🚀 Recent Sprints
-                    </h3>
+                    <!-- 2. Finance -->
+                    <a href="{% url 'finance:finance_dashboard' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(52, 211, 153, 0.08);">
+                            💰
+                        </div>
+                        <div class="module-info">
+                            <h4>Finance</h4>
+                            <p>Track income, expenses & invoices</p>
+                            <span class="module-status active">Active</span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
 
+                    <!-- 3. Compliance -->
+                    <a href="{% url 'compliance:compliance_dashboard' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(251, 191, 36, 0.08);">
+                            📑
+                        </div>
+                        <div class="module-info">
+                            <h4>Compliance</h4>
+                            <p>GST, TDS, PF, ESIC & legal filings</p>
+                            <span class="module-status active">Active</span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
+
+                    <!-- 4. Legal -->
+                    <a href="{% url 'legal:legal_dashboard' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(96, 165, 250, 0.08);">
+                            ⚖️
+                        </div>
+                        <div class="module-info">
+                            <h4>Legal</h4>
+                            <p>Contracts, NDAs & legal agreements</p>
+                            <span class="module-status active">Active</span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
+
+                    <!-- 5. Execution -->
+                    <a href="{% url 'execution_dashboard' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(52, 211, 153, 0.08);">
+                            🚀
+                        </div>
+                        <div class="module-info">
+                            <h4>Execution</h4>
+                            <p>Manage sprints, tasks & team execution</p>
+                            <span class="module-status active">Active</span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
+
+                    <!-- 6. Hiring -->
+                    <a href="{% url 'hiring_dashboard' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(239, 68, 68, 0.08);">
+                            💼
+                        </div>
+                        <div class="module-info">
+                            <h4>Hiring</h4>
+                            <p>Post jobs, review applicants & hire talent</p>
+                            <span class="module-status active">Active</span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
+
+                    <!-- 7. Analytics -->
+                    <a href="{% url 'analytics:analytics_dashboard' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(167, 139, 250, 0.08);">
+                            📈
+                        </div>
+                        <div class="module-info">
+                            <h4>Analytics</h4>
+                            <p>Track metrics, reports & insights</p>
+                            <span class="module-status active">Active</span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
+
+                    <!-- 8. Company Profile -->
+                    <a href="{% url 'startups:startup_profile' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(251, 191, 36, 0.08);">
+                            🏢
+                        </div>
+                        <div class="module-info">
+                            <h4>Company Profile</h4>
+                            <p>Manage startup profile & branding</p>
+                            <span class="module-status active">Active</span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
+
+                    <!-- 9. Subscription -->
+                    <a href="{% url 'payments:payments_dashboard' %}" class="module-card">
+                        <div class="module-icon" style="background: rgba(52, 211, 153, 0.08);">
+                            💎
+                        </div>
+                        <div class="module-info">
+                            <h4>Subscription</h4>
+                            <p>Manage plans, payments & billing</p>
+                            <span class="module-status {% if current_plan %}active{% else %}inactive{% endif %}">
+                                {% if current_plan %}{{ current_plan }}{% else %}Upgrade{% endif %}
+                            </span>
+                        </div>
+                        <span class="module-arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ============================================
+            ANALYTICS GRID
+            ============================================ -->
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>📈 Execution Analytics</h3>
+                    <div class="analytics-row">
+                        <span>📨 Applications Received</span>
+                        <strong>{{ applications|default:0 }}</strong>
+                    </div>
+                    <div class="analytics-row">
+                        <span>🧑‍💻 Accepted Members</span>
+                        <strong>{{ accepted_members|default:0 }}</strong>
+                    </div>
+                    <div class="analytics-row">
+                        <span>⭐ Completion Rate</span>
+                        <strong>{{ completion_rate|default:0 }}%</strong>
+                    </div>
+                    <div class="analytics-row">
+                        <span>📋 Active Tasks</span>
+                        <strong>{{ active_tasks|default:0 }}</strong>
+                    </div>
+                    <div class="analytics-row">
+                        <span>🏆 Completed Sprints</span>
+                        <strong>{{ completed_sprints|default:0 }}</strong>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>🚀 Startup Overview</h3>
+                    <p>{{ startup_profile.description|truncatechars:300|default:"No description provided yet." }}</p>
+                    <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <span style="background: rgba(167, 139, 250, 0.04); padding: 4px 12px; border-radius: 8px; color: #94a3b8; font-size: 0.75rem;">
+                            🏭 {{ startup_profile.industry }}
+                        </span>
+                        {% if startup_profile.city %}
+                        <span style="background: rgba(167, 139, 250, 0.04); padding: 4px 12px; border-radius: 8px; color: #94a3b8; font-size: 0.75rem;">
+                            📍 {{ startup_profile.city }}
+                        </span>
+                        {% endif %}
+                        <span style="background: rgba(167, 139, 250, 0.04); padding: 4px 12px; border-radius: 8px; color: #94a3b8; font-size: 0.75rem;">
+                            👥 {{ contributors|default:0 }} Contributors
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================
+            RECENT SPRINTS
+            ============================================ -->
+            <div class="dashboard-panel">
+                <div class="panel-header">
+                    <h3>🚀 Recent Sprints</h3>
                     <a href="{% url 'startup_sprints' %}" class="glass-view-btn">
                         View All Sprints →
                     </a>
-
                 </div>
-
                 <br>
-
-
                 {% for sprint in recent_sprints %}
-
-                <div class="sprint-item">
-
-                    <div class="sprint-top">
-
-                        <h4>
-                            {{ sprint.title }}
-                        </h4>
-
-                        <span class="status-badge status-{{ sprint.status }}">
-                            {{ sprint.get_status_display }}
-                        </span>
-
+                    <div class="sprint-item">
+                        <div class="sprint-top">
+                            <h4>{{ sprint.title }}</h4>
+                            <span class="status-badge status-{{ sprint.status }}">
+                                {{ sprint.get_status_display }}
+                            </span>
+                        </div>
+                        <p>{{ sprint.category|default:"No category" }}</p>
+                        <small>📅 Deadline: {{ sprint.deadline }}</small>
                     </div>
-
-                    <p>
-                        {{ sprint.category }}
-                    </p>
-
-                    <small>
-                        Deadline:
-                        {{ sprint.deadline }}
-                    </small>
-
-                </div>
-
                 {% empty %}
-
-                <div class="empty-state">
-
-                    <h4>
-                        No Sprints Yet
-                    </h4>
-
-                    <p>
-                        Create your first sprint to start building your startup.
-                    </p>
-
-                    <a href="{% url 'create_sprint' %}" class="primary-btn">
-                        Create Sprint
-                    </a>
-
-                </div>
-
+                    <div class="empty-state">
+                        <div class="empty-icon">🚀</div>
+                        <h4>No Sprints Yet</h4>
+                        <p>Create your first sprint to start building your startup.</p>
+                        <a href="{% url 'create_sprint' %}" class="primary-btn">🚀 Create Sprint</a>
+                    </div>
                 {% endfor %}
-
-            </div>
-
-            <!-- QUICK ACTIONS -->
-
-            <div class="quick-actions">
-
-                <a href="{% url 'create_sprint' %}" class="primary-btn">
-                    🚀 Create Sprint
-                </a>
-
-                <a href="{% url 'startup_sprints' %}" class="secondary-btn">
-                    📋 Manage Sprints
-                </a>
-
-                <a href="{% url 'startup_profile_setup' %}" class="secondary-btn">
-                    🏢 Edit Profile
-                </a>
-
-                <a href="{% url 'startup_profile' startup_profile.id %}" class="secondary-btn">
-                    👤 My Profile
-                </a>
-
             </div>
 
         </main>
-
     </div>
-
-
 </section>
 
-
-
-{% endblock %}
-
-{% block scripts %}
-<script src="{% static 'js/sidebar.js' %}"></script>
+<script>
+    function toggleSubmenu(event, submenuId) {
+        event.preventDefault();
+        const submenu = document.getElementById(submenuId);
+        const arrow = document.getElementById(submenuId.replace('Submenu', 'Arrow'));
+        
+        if (submenu) {
+            submenu.classList.toggle('open');
+            if (arrow) {
+                arrow.classList.toggle('open');
+            }
+        }
+    }
+</script>
 {% endblock %}

@@ -1,78 +1,319 @@
-{% extends "base.html" %}
+{% extends 'payments/base_payments.html' %}
 {% load static %}
 
-{% block content %}
+{% block page_title %}Payment History{% endblock %}
+{% block page_icon %}💰{% endblock %}
+{% block page_subtitle %}All your successful transactions{% endblock %}
 
-<link rel="stylesheet" href="{% static 'css/payment_history.css' %}">
+{% block page_actions %}
+<a href="{% url 'payments:payments_dashboard' %}" class="btn btn-secondary">
+    <span class="btn-icon">📊</span> Dashboard
+</a>
+<a href="{% url 'payments:subscription_plans' %}" class="btn btn-secondary">
+    <span class="btn-icon">📋</span> Plans
+</a>
+<a href="{% url 'payments:billing_history' %}" class="btn btn-secondary">
+    <span class="btn-icon">🧾</span> Billing
+</a>
+<a href="{% url 'payments:invoices' %}" class="btn btn-secondary">
+    <span class="btn-icon">📄</span> Invoices
+</a>
+{% endblock %}
 
-<div class="payment-page">
-
-    <div class="page-header">
-
-        <h1>💰 Payment History</h1>
-
-        <p>
-            All successful transactions.
-        </p>
-
+{% block payments_content %}
+<div class="payment-history-container">
+    
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 24px; overflow: hidden;">
+        
+        {% if payments %}
+        <!-- Search and Filter Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <div style="position: relative;">
+                    <input type="text" id="searchPayment" placeholder="🔍 Search payments..." style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 8px; padding: 8px 14px; color: #e8edf5; font-size: 0.85rem; width: 220px; transition: all 0.3s;">
+                </div>
+            </div>
+            <div>
+                <span style="color: #64748b; font-size: 0.8rem;">Total: </span>
+                <span style="color: #e8edf5; font-weight: 600;" id="totalPayments">{{ payments|length }}</span>
+            </div>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;" id="paymentTable">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                        <th style="padding: 12px 16px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable(0)">
+                            Payment ID ↕
+                        </th>
+                        <th style="padding: 12px 16px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable(1)">
+                            Plan ↕
+                        </th>
+                        <th style="padding: 12px 16px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable(2)">
+                            Status ↕
+                        </th>
+                        <th style="padding: 12px 16px; text-align: right; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable(3)">
+                            Amount ↕
+                        </th>
+                        <th style="padding: 12px 16px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer;" onclick="sortTable(4)">
+                            Date ↕
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="paymentTableBody">
+                    {% for payment in payments %}
+                    <tr class="payment-row" style="border-bottom: 1px solid rgba(167, 139, 250, 0.04); transition: all 0.3s;">
+                        <td style="padding: 12px 16px;">
+                            <span style="font-family: monospace; color: #a78bfa; font-size: 0.8rem; font-weight: 500;">
+                                {{ payment.payment_id|default:"-"|truncatechars:12 }}
+                            </span>
+                        </td>
+                        <td style="padding: 12px 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.2rem;">
+                                    {% if payment.plan.name == "FREE" %}🆓
+                                    {% elif payment.plan.name == "PRO" %}⭐
+                                    {% elif payment.plan.name == "ELITE" %}💎
+                                    {% elif payment.plan.name == "STARTER" %}🚀
+                                    {% elif payment.plan.name == "GROWTH" %}📈
+                                    {% elif payment.plan.name == "SCALE" %}🏢
+                                    {% else %}📋
+                                    {% endif %}
+                                </span>
+                                <span style="color: #e8edf5; font-weight: 500;">{{ payment.plan.name }}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 12px 16px;">
+                            <!-- <span style="background: {% if payment.status == 'success' %}rgba(52,211,153,0.12); color: #34d399;{% else %}rgba(239,68,68,0.12); color: #f87171;{% endif %}; padding: 3px 14px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;"> -->
+                                {% if payment.status == 'success' %}✅ Success
+                                {% else %}❌ Failed{% endif %}
+                            </span>
+                        </td>
+                        <td style="padding: 12px 16px; text-align: right;">
+                            <span style="color: #a78bfa; font-weight: 700; font-size: 1rem;">
+                                ₹{{ payment.amount|floatformat:2 }}
+                            </span>
+                        </td>
+                        <td style="padding: 12px 16px;">
+                            <div>
+                                <span style="color: #e8edf5; font-size: 0.85rem;">{{ payment.created_at|date:"d M Y" }}</span>
+                                <span style="color: #64748b; font-size: 0.65rem; display: block;">{{ payment.created_at|date:"h:i A" }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Summary Footer -->
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(167, 139, 250, 0.06); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <span style="color: #64748b; font-size: 0.8rem;">Total Payments: </span>
+                <span style="color: #e8edf5; font-weight: 600;">{{ payments|length }}</span>
+            </div>
+            <div>
+                <span style="color: #64748b; font-size: 0.8rem;">Total Amount: </span>
+                <span style="color: #a78bfa; font-weight: 700;">
+                    {% with total=0 %}
+                        {% for payment in payments %}
+                            {% if payment.status == 'success' %}
+                                {% with total=total|add:payment.amount %}
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                        ₹{{ total|floatformat:2 }}
+                    {% endwith %}
+                </span>
+            </div>
+            <div>
+                <span style="color: #64748b; font-size: 0.8rem;">Successful: </span>
+                <span style="color: #34d399; font-weight: 600;">
+                    {{ payments|length }}
+                </span>
+            </div>
+        </div>
+        
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 4rem; margin-bottom: 16px;">💰</div>
+            <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Payment History</h3>
+            <p style="color: #94a3b8; margin-bottom: 20px;">You haven't made any payments yet. Subscribe to a plan to get started.</p>
+            <a href="{% url 'payments:subscription_plans' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s;">
+                📋 View Plans
+            </a>
+        </div>
+        {% endif %}
     </div>
-
-    <div class="payment-card">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Payment ID</th>
-
-                    <th>Plan</th>
-
-                    <th>Amount</th>
-
-                    <th>Date</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for payment in payments %}
-
-                <tr>
-
-                    <td>{{ payment.payment_id }}</td>
-
-                    <td>{{ payment.plan }}</td>
-
-                    <td>₹{{ payment.amount }}</td>
-
-                    <td>{{ payment.created_at|date:"d M Y" }}</td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="4">
-
-                        No payments found.
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
 </div>
 
+<script>
+    // ============================================
+    // SEARCH FUNCTIONALITY
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchPayment');
+        const tableRows = document.querySelectorAll('.payment-row');
+        const totalSpan = document.getElementById('totalPayments');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visible = 0;
+                
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const match = text.includes(query);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                
+                if (totalSpan) {
+                    totalSpan.textContent = visible;
+                }
+            });
+            
+            // Keyboard shortcut: Ctrl+F
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    if (searchInput && document.activeElement !== searchInput) {
+                        e.preventDefault();
+                        searchInput.focus();
+                        searchInput.select();
+                    }
+                }
+            });
+        }
+    });
+    
+    // ============================================
+    // SORT FUNCTIONALITY
+    // ============================================
+    let sortDirection = {};
+    
+    function sortTable(columnIndex) {
+        const table = document.getElementById('paymentTable');
+        const tbody = document.getElementById('paymentTableBody');
+        const rows = Array.from(tbody.querySelectorAll('.payment-row'));
+        
+        // Toggle sort direction
+        if (!sortDirection[columnIndex]) {
+            sortDirection[columnIndex] = 'asc';
+        } else if (sortDirection[columnIndex] === 'asc') {
+            sortDirection[columnIndex] = 'desc';
+        } else {
+            sortDirection[columnIndex] = 'asc';
+        }
+        
+        const direction = sortDirection[columnIndex];
+        
+        rows.sort((a, b) => {
+            let aVal = a.cells[columnIndex]?.textContent?.trim() || '';
+            let bVal = b.cells[columnIndex]?.textContent?.trim() || '';
+            
+            // Check if values are numbers (for amount column)
+            if (columnIndex === 3) {
+                aVal = parseFloat(aVal.replace('₹', '').replace(',', '')) || 0;
+                bVal = parseFloat(bVal.replace('₹', '').replace(',', '')) || 0;
+            }
+            
+            if (typeof aVal === 'string') {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+            
+            if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+        
+        rows.forEach(row => tbody.appendChild(row));
+        
+        // Update arrow indicators
+        document.querySelectorAll('#paymentTable th').forEach((th, index) => {
+            th.textContent = th.textContent.replace(' ↑', '').replace(' ↓', '');
+            if (index === columnIndex) {
+                th.textContent += direction === 'asc' ? ' ↑' : ' ↓';
+            }
+        });
+    }
+</script>
+
+<style>
+    .payment-history-container table tr:hover {
+        background: rgba(167, 139, 250, 0.02);
+    }
+    
+    .payment-history-container .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .payment-history-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .payment-history-container #searchPayment:focus {
+        outline: none;
+        border-color: rgba(167, 139, 250, 0.3);
+        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+        width: 280px;
+    }
+    
+    .payment-history-container #searchPayment:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .payment-history-container > div {
+            padding: 16px !important;
+        }
+        
+        .payment-history-container table {
+            font-size: 0.85rem;
+        }
+        
+        .payment-history-container table th,
+        .payment-history-container table td {
+            padding: 8px 12px !important;
+        }
+        
+        .payment-history-container table td:last-child {
+            text-align: left;
+        }
+        
+        .payment-history-container .filter-bar {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+        
+        .payment-history-container .filter-bar #searchPayment {
+            width: 100% !important;
+        }
+        
+        .payment-history-container > div[style*="margin-top: 20px;"] {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 8px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .payment-history-container table td {
+            font-size: 0.75rem;
+        }
+        
+        .payment-history-container table td .plan-icon {
+            font-size: 1rem;
+        }
+        
+        .payment-history-container table th {
+            font-size: 0.65rem;
+        }
+    }
+</style>
 {% endblock %}

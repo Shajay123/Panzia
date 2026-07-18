@@ -1,55 +1,573 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Leave Request - {{ leave.employee }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/leave_detail.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    {% if leave.status == "Pending" %}
+    <a href="{% url 'leave_approve' leave.id %}" class="btn btn-success btn-sm" onclick="return confirm('Approve this leave request?')">
+        <span class="btn-icon">✅</span> Approve
+    </a>
+    <a href="{% url 'leave_reject' leave.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Reject this leave request?')">
+        <span class="btn-icon">❌</span> Reject
+    </a>
+    <a href="{% url 'leave_update' leave.id %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">✏️</span> Edit
+    </a>
+    {% endif %}
+    <a href="{% url 'leave_delete' leave.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this leave request?')">
+        <span class="btn-icon">🗑️</span> Delete
+    </a>
+    <a href="{% url 'leave_dashboard' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       LEAVE DETAIL - HRMS STYLES
+       ============================================ */
+    .leave-detail-page {
+        max-width: 100%;
+    }
+
+    /* ===== STATUS BANNER ===== */
+    .status-banner {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        transition: all 0.3s;
+    }
+
+    .status-banner:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .status-banner.status-pending {
+        border-left: 4px solid #fbbf24;
+    }
+
+    .status-banner.status-approved {
+        border-left: 4px solid #34d399;
+    }
+
+    .status-banner.status-rejected {
+        border-left: 4px solid #f87171;
+    }
+
+    .status-banner.status-cancelled {
+        border-left: 4px solid #94a3b8;
+    }
+
+    .status-banner-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .status-banner .status-icon {
+        font-size: 1.5rem;
+    }
+
+    .status-banner .status-text {
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .status-banner .status-text strong {
+        color: #e8edf5;
+    }
+
+    .status-banner .status-meta {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    /* ===== DETAIL GRID ===== */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .detail-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+        margin-bottom: 20px;
+    }
+
+    .detail-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-badge {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 12px;
+        border-radius: 12px;
+    }
+
+    /* ===== DETAIL LIST ===== */
+    .detail-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        align-items: center;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-item .detail-label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .detail-item .detail-value {
+        color: #d6e0f0;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-align: right;
+        max-width: 60%;
+        word-break: break-word;
+    }
+
+    .detail-item .detail-value.highlight {
+        color: #a78bfa;
+        font-weight: 700;
+    }
+
+    /* ===== EMPLOYEE INFO ===== */
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .employee-info .employee-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-info .employee-avatar:not(img) {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-info strong {
+        display: block;
+        color: #e8edf5;
+        font-size: 0.85rem;
+    }
+
+    .employee-info small {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    /* ===== LEAVE TYPE BADGE ===== */
+    .leave-type-badge {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .status-badge .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.status-pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+    .status-badge.status-pending .status-dot { background: #f59e0b; }
+
+    .status-badge.status-approved {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.status-approved .status-dot { background: #22c55e; }
+
+    .status-badge.status-rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+    .status-badge.status-rejected .status-dot { background: #ef4444; }
+
+    .status-badge.status-cancelled {
+        background: rgba(148, 163, 184, 0.08);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.06);
+    }
+    .status-badge.status-cancelled .status-dot { background: #64748b; }
+
+    /* ===== REASON BOX ===== */
+    .reason-box {
+        padding: 4px 0;
+    }
+
+    .reason-box p {
+        margin: 0;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .reason-box .text-muted {
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* ===== TIMELINE ===== */
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-left: 8px;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 14px;
+        position: relative;
+    }
+
+    .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 28px;
+        bottom: -16px;
+        width: 2px;
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .timeline-dot {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        z-index: 1;
+    }
+
+    .timeline-dot .dot-icon {
+        font-size: 0.9rem;
+    }
+
+    .timeline-dot.primary {
+        background: rgba(167, 139, 250, 0.12);
+        border: 1px solid rgba(167, 139, 250, 0.1);
+    }
+
+    .timeline-dot.success {
+        background: rgba(34, 197, 94, 0.12);
+        border: 1px solid rgba(34, 197, 94, 0.1);
+    }
+
+    .timeline-dot.danger {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.1);
+    }
+
+    .timeline-dot.warning {
+        background: rgba(251, 191, 36, 0.12);
+        border: 1px solid rgba(251, 191, 36, 0.1);
+    }
+
+    .timeline-content {
+        flex: 1;
+        padding-top: 2px;
+    }
+
+    .timeline-content strong {
+        display: block;
+        color: #e8edf5;
+        font-size: 0.9rem;
+    }
+
+    .timeline-content p {
+        margin: 2px 0 0;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    /* ===== ACTION GRID ===== */
+    .action-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 0.85rem;
+        border: 1px solid transparent;
+    }
+
+    .action-btn .action-icon {
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .action-btn.edit {
+        background: rgba(251, 191, 36, 0.08);
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.06);
+    }
+
+    .action-btn.edit:hover {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.approve {
+        background: rgba(34, 197, 94, 0.08);
+        color: #4ade80;
+        border-color: rgba(34, 197, 94, 0.06);
+    }
+
+    .action-btn.approve:hover {
+        background: rgba(34, 197, 94, 0.15);
+        border-color: rgba(34, 197, 94, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.reject {
+        background: rgba(239, 68, 68, 0.08);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.06);
+    }
+
+    .action-btn.reject:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.delete {
+        background: rgba(239, 68, 68, 0.08);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.06);
+    }
+
+    .action-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .action-btn.profile {
+        background: rgba(96, 165, 250, 0.08);
+        color: #60a5fa;
+        border-color: rgba(96, 165, 250, 0.06);
+    }
+
+    .action-btn.profile:hover {
+        background: rgba(96, 165, 250, 0.15);
+        border-color: rgba(96, 165, 250, 0.15);
+        transform: translateY(-2px);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .leave-detail-page {
+            padding: 0;
+        }
+
+        .status-banner {
+            padding: 14px 16px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .detail-card {
+            padding: 16px;
+        }
+
+        .detail-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .detail-item .detail-value {
+            text-align: left;
+            max-width: 100%;
+        }
+
+        .employee-info {
+            justify-content: flex-start;
+        }
+
+        .action-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-btn {
+            justify-content: center;
+        }
+
+        .timeline-item:not(:last-child)::after {
+            left: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .status-banner .status-text {
+            font-size: 0.85rem;
+        }
+
+        .detail-item .detail-label {
+            font-size: 0.8rem;
+        }
+
+        .detail-item .detail-value {
+            font-size: 0.8rem;
+        }
+
+        .card-header h3 {
+            font-size: 0.9rem;
+        }
+
+        .action-btn {
+            font-size: 0.8rem;
+            padding: 8px 12px;
+        }
+
+        .timeline-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .timeline-item:not(:last-child)::after {
+            display: none;
+        }
+
+        .timeline-dot {
+            width: 28px;
+            height: 28px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .status-banner {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .detail-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .detail-card:nth-child(1) { animation-delay: 0.1s; }
+    .detail-card:nth-child(2) { animation-delay: 0.15s; }
+    .detail-card:nth-child(3) { animation-delay: 0.2s; }
+    .detail-card:nth-child(4) { animation-delay: 0.25s; }
+</style>
 
 <div class="leave-detail-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">📋</div>
-                <div>
-                    <div class="breadcrumb">
-                        <a href="{% url 'leave_dashboard' %}">Leave</a>
-                        <span class="breadcrumb-separator">/</span>
-                        <span class="breadcrumb-current">Leave Request</span>
-                    </div>
-                    <h1>Leave Request Details</h1>
-                    <p class="header-subtitle">
-                        <strong>{{ leave.employee.user.get_full_name|default:leave.employee.user.username }}</strong>
-                        · {{ leave.leave_type }}
-                    </p>
-                </div>
-            </div>
-            <div class="header-actions">
-                {% if leave.status == "Pending" %}
-                <a href="{% url 'leave_approve' leave.id %}" class="btn-approve" onclick="return confirm('Approve this leave request?')">
-                    ✅ Approve
-                </a>
-                <a href="{% url 'leave_reject' leave.id %}" class="btn-reject" onclick="return confirm('Reject this leave request?')">
-                    ❌ Reject
-                </a>
-                <a href="{% url 'leave_update' leave.id %}" class="btn-edit">
-                    ✏️ Edit
-                </a>
-                {% endif %}
-                <a href="{% url 'leave_delete' leave.id %}" class="btn-delete" onclick="return confirm('Delete this leave request?')">
-                    🗑️ Delete
-                </a>
-                <a href="{% url 'leave_dashboard' %}" class="btn-back">
-                    ← Back
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- ================= STATUS BANNER ================= -->
     <div class="status-banner status-{{ leave.status|lower }}">
@@ -66,7 +584,7 @@
         </div>
     </div>
 
-    <!-- ================= MAIN CONTENT ================= -->
+    <!-- ================= DETAIL GRID ================= -->
     <div class="detail-grid">
 
         <!-- Left Column -->
@@ -214,5 +732,69 @@
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // DELETE CONFIRMATION
+        // ============================================
+        document.querySelectorAll('.btn-delete, .action-btn.delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const confirmed = confirm('Are you sure you want to delete this leave request? This action cannot be undone.');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Press 'B' for Back
+            if (e.key === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const backBtn = document.querySelector('.btn-back');
+                if (backBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = backBtn.href;
+                }
+            }
+            // Press 'E' for Edit
+            if (e.key === 'e' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const editBtn = document.querySelector('.btn-edit');
+                if (editBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = editBtn.href;
+                }
+            }
+            // Press 'A' for Approve
+            if (e.key === 'a' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const approveBtn = document.querySelector('.btn-approve');
+                if (approveBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    const confirmed = confirm('Approve this leave request?');
+                    if (confirmed) {
+                        window.location.href = approveBtn.href;
+                    }
+                }
+            }
+            // Press 'R' for Reject
+            if (e.key === 'r' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const rejectBtn = document.querySelector('.btn-reject');
+                if (rejectBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    const confirmed = confirm('Reject this leave request?');
+                    if (confirmed) {
+                        window.location.href = rejectBtn.href;
+                    }
+                }
+            }
+        });
+
+        console.log('📋 Leave Details loaded');
+        console.log('👤 Employee: {{ leave.employee.user.get_full_name }}');
+        console.log('📊 Status: {{ leave.status }}');
+    });
+</script>
 
 {% endblock %}

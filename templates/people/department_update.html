@@ -1,38 +1,376 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Update Department - {{ department.name }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/department_form.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'department_detail' department.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">👁️</span> View Details
+    </a>
+    <a href="{% url 'departments' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Departments
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       DEPARTMENT UPDATE - HRMS STYLES
+       ============================================ */
+    .department-form-page {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    /* ===== FORM CARD ===== */
+    .form-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+        transition: all 0.3s;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    /* ===== FORM GROUP ===== */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #d6e0f0;
+        margin-bottom: 4px;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: #f87171;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: #64748b;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
+    .help-text {
+        display: block;
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .form-errors {
+        margin-top: 4px;
+    }
+
+    .error-message {
+        display: block;
+        font-size: 0.8rem;
+        color: #f87171;
+    }
+
+    /* ===== CHARACTER COUNTER ===== */
+    .char-counter {
+        display: block;
+        text-align: right;
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    /* ===== CHECKBOX GROUP ===== */
+    .checkbox-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .checkbox-group:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        accent-color: #7c3aed;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .checkbox-label {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .checkbox-label .checkbox-text {
+        font-weight: 500;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+    }
+
+    .checkbox-label .checkbox-help {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+
+    /* ===== INFO SECTION ===== */
+    .info-section {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 20px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .info-item .info-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .info-item .info-value {
+        font-size: 0.85rem;
+        color: #d6e0f0;
+        font-weight: 500;
+    }
+
+    /* ===== BADGES ===== */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .badge.success {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .badge.danger {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .form-actions .btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-light {
+        background: rgba(167, 139, 250, 0.04);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .btn-light:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .department-form-page {
+            padding: 0;
+        }
+
+        .form-card {
+            padding: 16px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .checkbox-group {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card {
+            padding: 14px;
+        }
+
+        .form-control {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-light {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .form-actions {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.1s;
+        opacity: 0;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div class="department-form-page">
 
-    <!-- ================= PAGE HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">✏️</div>
-                <div>
-                    <h1>Update Department</h1>
-                    <p class="header-subtitle">
-                        Editing <strong>{{ department.name }}</strong>
-                        <span class="dept-code">({{ department.code|default:"No Code" }})</span>
-                    </p>
-                </div>
-            </div>
-            <a href="{% url 'departments' %}" class="btn-back">
-                ← Back to Departments
-            </a>
-        </div>
-    </div>
-
     <!-- ================= FORM ================= -->
     <div class="form-card">
-        <form method="POST" novalidate>
+        <form method="POST" novalidate id="departmentForm">
             {% csrf_token %}
 
             <!-- Department Name -->
@@ -81,6 +419,7 @@
                 </div>
                 {% endif %}
                 <span class="help-text">Brief description of the department's purpose and responsibilities.</span>
+                <span class="char-counter" id="charCounter">0 / 500</span>
             </div>
 
             <!-- Active Status -->
@@ -131,13 +470,13 @@
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
                     💾 Update Department
                 </button>
-                <a href="{% url 'departments' %}" class="btn-secondary">
+                <a href="{% url 'departments' %}" class="btn btn-secondary">
                     Cancel
                 </a>
-                <a href="{% url 'department_detail' department.id %}" class="btn-light">
+                <a href="{% url 'department_detail' department.id %}" class="btn btn-light">
                     👁️ View Details
                 </a>
             </div>
@@ -149,43 +488,100 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Auto-focus on first input field
+        const form = document.getElementById('departmentForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // ============================================
+        // AUTO-FOCUS FIRST INPUT
+        // ============================================
         const firstInput = document.querySelector('input:not([type="checkbox"]), textarea, select');
         if (firstInput) {
             firstInput.focus();
         }
 
-        // Character counter for description
+        // ============================================
+        // CHARACTER COUNTER FOR DESCRIPTION
+        // ============================================
         const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
-        if (descriptionField) {
-            const maxLength = descriptionField.getAttribute('maxlength');
-            if (maxLength) {
-                const counter = document.createElement('span');
-                counter.className = 'char-counter';
-                counter.textContent = `0 / ${maxLength}`;
-                descriptionField.parentNode.appendChild(counter);
+        const charCounter = document.getElementById('charCounter');
+        if (descriptionField && charCounter) {
+            const maxLength = descriptionField.getAttribute('maxlength') || 500;
+            charCounter.textContent = `0 / ${maxLength}`;
 
-                descriptionField.addEventListener('input', function() {
-                    const current = this.value.length;
-                    counter.textContent = `${current} / ${maxLength}`;
-                    if (current > maxLength * 0.9) {
-                        counter.style.color = '#f87171';
-                    } else {
-                        counter.style.color = '#64748b';
-                    }
-                });
+            descriptionField.addEventListener('input', function() {
+                const current = this.value.length;
+                charCounter.textContent = `${current} / ${maxLength}`;
+                if (current > maxLength * 0.9) {
+                    charCounter.style.color = '#f87171';
+                } else {
+                    charCounter.style.color = '#64748b';
+                }
+            });
 
-                // Trigger initial count
-                descriptionField.dispatchEvent(new Event('input'));
-            }
+            // Trigger initial count
+            descriptionField.dispatchEvent(new Event('input'));
         }
 
-        // Confirmation on cancel if form is dirty
-        const form = document.querySelector('form');
-        let formChanged = false;
+        // ============================================
+        // REAL-TIME VALIDATION FEEDBACK
+        // ============================================
+        form.querySelectorAll('input, select, textarea').forEach(function(field) {
+            field.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.hasAttribute('required')) {
+                    this.classList.add('error');
+                    this.classList.remove('success');
+                } else if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                }
+            });
 
-        form.addEventListener('input', function() {
-            formChanged = true;
+            field.addEventListener('focus', function() {
+                this.classList.remove('error');
+            });
+
+            field.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                } else {
+                    this.classList.remove('success');
+                }
+            });
+        });
+
+        // ============================================
+        // PREVENT DOUBLE SUBMISSION
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Updating...</span>
+            `;
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUT: Ctrl+S TO SUBMIT
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        // ============================================
+        // CONFIRMATION ON CANCEL IF DIRTY
+        // ============================================
+        let formChanged = false;
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
         });
 
         const cancelBtn = document.querySelector('.btn-secondary');
@@ -199,6 +595,21 @@
                 }
             });
         }
+
+        // ============================================
+        // REMOVE ERROR STATE ON INPUT
+        // ============================================
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+            input.addEventListener('change', function() {
+                this.classList.remove('error');
+            });
+        });
+
+        console.log('✏️ Update Department Form loaded');
+        console.log('🏢 Department: {{ department.name }}');
     });
 </script>
 

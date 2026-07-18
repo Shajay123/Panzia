@@ -1,176 +1,78 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}
-Departments
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'department_create' %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Add Department
+    </a>
+    <button class="btn btn-secondary btn-sm" id="exportBtn">
+        <span class="btn-icon">📥</span> Export
+    </button>
+    <a href="{% url 'people_dashboard' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Dashboard
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/departments.css' %}">
+{% block hrms_content %}
 <style>
     /* ============================================
-       ENHANCED DEPARTMENTS STYLES
+       DEPARTMENTS - HRMS STYLES
        ============================================ */
-
     .departments-page {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 20px;
-        color: #e8edf5;
-    }
-
-    /* ===== PAGE HEADER ===== */
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-        gap: 15px;
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 16px;
-        padding: 20px 24px;
-    }
-
-    .page-header-left {
-        flex: 1;
-    }
-
-    .page-header h1 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #a78bfa, #f472b6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin: 0;
-    }
-
-    .page-header p {
-        color: #94a3b8;
-        font-size: 0.95rem;
-        margin: 4px 0 0;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .btn-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 24px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-secondary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 24px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-
-    .btn-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-    }
-
-    .btn-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 20px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .btn-back:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-        transform: translateX(-2px);
+        max-width: 100%;
     }
 
     /* ===== SUMMARY GRID ===== */
     .summary-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
     }
 
     .summary-card {
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
+        background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 12px;
-        padding: 16px 20px;
+        border-radius: 10px;
+        padding: 14px 18px;
+        transition: all 0.3s;
         position: relative;
-        transition: all 0.3s ease;
     }
 
     .summary-card:hover {
         border-color: rgba(167, 139, 250, 0.12);
         transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
 
     .summary-card h2 {
+        margin: 0;
         font-size: 1.5rem;
         font-weight: 700;
         color: #e8edf5;
-        margin: 0;
     }
 
     .summary-card p {
-        margin: 4px 0 0;
+        margin: 2px 0 0;
         font-size: 0.7rem;
         color: #94a3b8;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        font-weight: 600;
     }
 
     .summary-card .trend {
         position: absolute;
-        top: 12px;
-        right: 16px;
-        font-size: 0.6rem;
-        font-weight: 600;
-        padding: 2px 10px;
-        border-radius: 12px;
-        background: rgba(0, 0, 0, 0.2);
+        top: 10px;
+        right: 14px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
     }
 
     .trend.up { color: #34d399; }
@@ -178,13 +80,9 @@ Departments
     .trend.neutral { color: #94a3b8; }
 
     .summary-card.blue { border-left: 3px solid #60a5fa; }
-    .summary-card.blue h2 { color: #60a5fa; }
     .summary-card.green { border-left: 3px solid #34d399; }
-    .summary-card.green h2 { color: #34d399; }
     .summary-card.orange { border-left: 3px solid #f59e0b; }
-    .summary-card.orange h2 { color: #f59e0b; }
     .summary-card.purple { border-left: 3px solid #a78bfa; }
-    .summary-card.purple h2 { color: #a78bfa; }
 
     /* ===== TOOLBAR ===== */
     .toolbar {
@@ -245,13 +143,37 @@ Departments
         display: block;
     }
 
+    .btn-toggle-view {
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-toggle-view:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
     /* ===== TABLE CARD ===== */
     .table-card {
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
+        background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
         overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .table-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
     }
 
     .table-responsive {
@@ -263,13 +185,14 @@ Departments
         width: 100%;
         border-collapse: collapse;
         font-size: 0.85rem;
+        min-width: 700px;
     }
 
     thead th {
         text-align: left;
         padding: 12px 16px;
         color: #94a3b8;
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -295,8 +218,8 @@ Departments
     }
 
     tbody td {
-        padding: 12px 16px;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        padding: 10px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
         color: #d6e0f0;
         vertical-align: middle;
     }
@@ -306,7 +229,7 @@ Departments
     }
 
     tbody tr:hover {
-        background: rgba(167, 139, 250, 0.03);
+        background: rgba(167, 139, 250, 0.02);
     }
 
     tbody tr:last-child td {
@@ -366,12 +289,6 @@ Departments
     .employee-indicator {
         margin-left: 4px;
         font-size: 0.8rem;
-    }
-
-    .time-ago {
-        font-size: 0.7rem;
-        color: #64748b;
-        margin-left: 4px;
     }
 
     /* ===== TABLE ACTIONS ===== */
@@ -475,43 +392,20 @@ Departments
         text-align: center;
     }
 
-    /* ===== EMPTY STATE ===== */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-    }
-
-    .empty-state .empty-icon {
-        font-size: 4rem;
-        display: block;
-        margin-bottom: 16px;
-    }
-
-    .empty-state h3 {
-        color: #e8edf5;
-        font-size: 1.2rem;
-        margin: 0 0 8px;
-    }
-
-    .empty-state p {
-        color: #94a3b8;
-        margin: 0 0 20px;
-    }
-
-    .empty-state.full-width {
-        grid-column: 1 / -1;
-    }
-
-    /* ===== DEPARTMENT CARDS (Mobile View) ===== */
+    /* ===== CARDS VIEW ===== */
     .department-cards {
         display: none;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 16px;
+        margin-top: 16px;
+    }
+
+    .department-cards.visible {
+        display: grid;
     }
 
     .department-card {
-        background: linear-gradient(145deg, rgba(26, 16, 53, 0.8), rgba(45, 27, 74, 0.8));
-        backdrop-filter: blur(12px);
+        background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
         padding: 16px 20px;
@@ -594,37 +488,78 @@ Departments
         justify-content: center;
         padding: 8px 12px;
         font-size: 0.85rem;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .department-card .card-actions .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3.5rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.1rem;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        color: #94a3b8;
+        margin: 0 0 16px;
+    }
+
+    .empty-state .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .empty-state .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
     }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-        .departments-page {
-            padding: 12px;
-        }
-
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 16px 20px;
-        }
-
-        .header-actions {
-            width: 100%;
-        }
-
-        .header-actions .btn-primary,
-        .header-actions .btn-secondary,
-        .header-actions .btn-back {
-            flex: 1;
-            justify-content: center;
-        }
-
         .summary-grid {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .toolbar {
+            flex-direction: column;
+            align-items: stretch;
         }
 
         .filter-card {
-            min-width: 100%;
+            min-width: unset;
         }
 
         .table-footer {
@@ -637,17 +572,8 @@ Departments
             justify-content: center;
         }
 
-        .department-cards {
-            display: grid !important;
-        }
-
-        #tableView {
-            display: none !important;
-        }
-
-        /* Show cards on mobile */
-        .department-cards {
-            display: grid !important;
+        .department-cards.visible {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -656,41 +582,43 @@ Departments
             grid-template-columns: 1fr;
         }
 
-        .page-header h1 {
-            font-size: 1.4rem;
+        .summary-card h2 {
+            font-size: 1.2rem;
         }
 
-        .department-cards {
-            grid-template-columns: 1fr;
+        .department-card .card-header h3 {
+            font-size: 0.9rem;
+        }
+
+        .department-card ul li {
+            font-size: 0.8rem;
         }
     }
-</style>
-{% endblock %}
 
-{% block content %}
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .summary-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .summary-card:nth-child(1) { animation-delay: 0.05s; }
+    .summary-card:nth-child(2) { animation-delay: 0.1s; }
+    .summary-card:nth-child(3) { animation-delay: 0.15s; }
+    .summary-card:nth-child(4) { animation-delay: 0.2s; }
+</style>
 
 <div class="departments-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1>🏢 Departments</h1>
-            <p>Manage departments inside your startup.</p>
-        </div>
-        <div class="header-actions">
-            <a href="{% url 'department_create' %}" class="btn-primary">
-                ➕ Add Department
-            </a>
-            <button class="btn-secondary" id="exportBtn">
-                📥 Export
-            </button>
-            <a href="{% url 'people_dashboard' %}" class="btn-back">
-                ← Back to Dashboard
-            </a>
-        </div>
-    </div>
-
-    {% include 'people/includes/startup_banner.html' %}
 
     <!-- ================= SUMMARY ================= -->
     <div class="summary-grid">
@@ -723,7 +651,7 @@ Departments
             <button class="btn-clear" id="clearSearch" title="Clear search">✕</button>
         </div>
         <div style="display: flex; gap: 8px;">
-            <button class="btn-secondary" onclick="toggleView()" style="padding: 10px 16px; font-size: 0.85rem;">
+            <button class="btn-toggle-view" onclick="toggleView()" id="viewToggleBtn">
                 <span id="viewToggleIcon">📊</span> <span id="viewToggleText">Cards</span>
             </button>
         </div>
@@ -783,7 +711,7 @@ Departments
                     <tr>
                         <td colspan="7">
                             <div class="empty-state">
-                                <div class="empty-icon">🏢</div>
+                                <span class="empty-icon">🏢</span>
                                 <h3>No Departments Yet</h3>
                                 <p>Create your first department to organize employees.</p>
                                 <a href="{% url 'department_create' %}" class="btn-primary">
@@ -810,7 +738,7 @@ Departments
         </div>
     </div>
 
-    <!-- ================= CARDS VIEW (Mobile) ================= -->
+    <!-- ================= CARDS VIEW ================= -->
     <div class="department-cards" id="cardsView">
         {% for department in departments %}
         <div class="department-card">
@@ -846,8 +774,8 @@ Departments
             </div>
         </div>
         {% empty %}
-        <div class="empty-state full-width">
-            <div class="empty-icon">🏢</div>
+        <div class="empty-state" style="grid-column: 1 / -1;">
+            <span class="empty-icon">🏢</span>
             <h3>No Departments Yet</h3>
             <p>Create your first department to organize employees.</p>
             <a href="{% url 'department_create' %}" class="btn-primary">
@@ -866,7 +794,7 @@ Departments
         // ============================================
         const searchInput = document.getElementById('departmentSearch');
         const clearBtn = document.getElementById('clearSearch');
-        const rows = document.querySelectorAll('#tableView tbody tr:not(.empty-state)');
+        const rows = document.querySelectorAll('#tableView tbody tr:not(:has(.empty-state))');
         const cards = document.querySelectorAll('.department-card');
         const visibleCount = document.getElementById('visibleCount');
         const totalCount = document.getElementById('totalCount');
@@ -910,22 +838,26 @@ Departments
         // ============================================
         // VIEW TOGGLE (Table / Cards)
         // ============================================
+        let isCardView = false;
+
         window.toggleView = function() {
             const tableView = document.getElementById('tableView');
             const cardsView = document.getElementById('cardsView');
             const toggleIcon = document.getElementById('viewToggleIcon');
             const toggleText = document.getElementById('viewToggleText');
 
-            if (tableView.style.display === 'none') {
-                tableView.style.display = 'block';
-                cardsView.style.display = 'none';
-                toggleIcon.textContent = '📊';
-                toggleText.textContent = 'Cards';
-            } else {
+            isCardView = !isCardView;
+
+            if (isCardView) {
                 tableView.style.display = 'none';
-                cardsView.style.display = 'grid';
+                cardsView.classList.add('visible');
                 toggleIcon.textContent = '📋';
                 toggleText.textContent = 'Table';
+            } else {
+                tableView.style.display = 'block';
+                cardsView.classList.remove('visible');
+                toggleIcon.textContent = '📊';
+                toggleText.textContent = 'Cards';
             }
         };
 
@@ -936,14 +868,12 @@ Departments
             header.addEventListener('click', function() {
                 const sortKey = this.dataset.sort;
                 const tbody = this.closest('table').querySelector('tbody');
-                const rows = Array.from(tbody.querySelectorAll('tr:not(.empty-state)'));
+                const rows = Array.from(tbody.querySelectorAll('tr:not(:has(.empty-state))'));
 
-                // Toggle sort direction
                 const isAsc = !this.classList.contains('asc');
                 this.classList.toggle('asc', isAsc);
                 this.classList.toggle('desc', !isAsc);
 
-                // Update active state
                 document.querySelectorAll('.sortable').forEach(th => {
                     if (th !== this) {
                         th.classList.remove('asc', 'desc');
@@ -986,7 +916,7 @@ Departments
         // EXPORT FUNCTIONALITY
         // ============================================
         document.getElementById('exportBtn').addEventListener('click', function() {
-            const rows = document.querySelectorAll('#tableView tbody tr:not(.empty-state)');
+            const rows = document.querySelectorAll('#tableView tbody tr:not(:has(.empty-state))');
             let csv = 'Department,Code,Employees,Description,Created\n';
             
             rows.forEach(row => {
@@ -997,7 +927,6 @@ Departments
                     const description = row.querySelector('td:nth-child(4)')?.textContent?.trim() || '';
                     const created = row.querySelector('td:nth-child(6)')?.textContent?.trim() || '';
                     
-                    // Clean data for CSV
                     const clean = (str) => str.replace(/,/g, ';');
                     csv += `${clean(name)},${clean(code)},${clean(employees)},${clean(description)},${clean(created)}\n`;
                 }

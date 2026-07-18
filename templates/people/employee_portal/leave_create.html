@@ -1,50 +1,112 @@
-{% extends 'base.html' %}
+{% extends 'people/employee_portal/base_side_navbar.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}Apply for Leave{% endblock %}
+{% block page_icon %}📝{% endblock %}
+{% block page_subtitle %}Submit a leave request for approval{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'employee_portal_leave' %}" class="btn-portal-secondary">
+    <span class="btn-icon">←</span> Back to Leaves
+</a>
+{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_portal.css' %}">
+{{ block.super }}
 <style>
-    .portal-form {
-        max-width: 600px;
+    /* ============================================
+       LEAVE CREATE PAGE - ENHANCED STYLES
+       ============================================ */
+    
+    .leave-create-container {
+        max-width: 700px;
         margin: 0 auto;
+        animation: fadeInUp 0.5s ease;
     }
-    
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== FORM ENHANCEMENTS ===== */
+    .portal-form {
+        max-width: 100%;
+    }
+
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 22px;
+        position: relative;
     }
-    
+
     .form-group label {
         display: block;
         margin-bottom: 6px;
-        font-weight: 500;
+        font-weight: 600;
         color: #e8edf5;
+        font-size: 0.9rem;
     }
-    
+
+    .form-group label .required {
+        color: #ef4444;
+        margin-left: 2px;
+    }
+
     .form-group .form-control {
         width: 100%;
-        padding: 10px 12px;
+        padding: 10px 14px;
         border: 1px solid rgba(167, 139, 250, 0.1);
         border-radius: 8px;
         background: rgba(167, 139, 250, 0.03);
         color: #e8edf5;
         font-size: 0.95rem;
-        transition: border-color 0.2s;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        font-family: inherit;
     }
-    
+
     .form-group .form-control:focus {
         outline: none;
         border-color: #7c3aed;
         box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        background: rgba(167, 139, 250, 0.05);
     }
-    
+
     .form-group .form-control:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+        background: rgba(167, 139, 250, 0.02);
     }
-    
-    /* ===== DARK DROPDOWN STYLES ===== */
+
+    .form-group .form-control.error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .form-group .form-control.success {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+
+    .form-text {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.78rem;
+        color: #64748b;
+        transition: color 0.3s ease;
+    }
+
+    .form-text .icon {
+        margin-right: 4px;
+    }
+
+    /* ===== DARK DROPDOWN ===== */
     .form-group select.form-control {
         appearance: none;
         -webkit-appearance: none;
@@ -58,391 +120,518 @@
         color: #e8edf5;
         border-color: rgba(167, 139, 250, 0.15);
     }
-    
+
     .form-group select.form-control option {
         background-color: #1a1035;
         color: #e8edf5;
-        padding: 8px 12px;
+        padding: 10px 12px;
     }
-    
+
     .form-group select.form-control option:hover {
         background-color: #2d1b69;
     }
-    
+
     .form-group select.form-control option:checked {
         background-color: #7c3aed;
         color: white;
     }
-    
-    .form-group select.form-control:focus {
-        border-color: #7c3aed;
-        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-    }
-    
-    /* ===== DATE INPUT STYLES ===== */
-    .form-group input[type="date"].form-control {
-        color-scheme: dark;
-        background-color: #1a1035;
-        color: #e8edf5;
-        border-color: rgba(167, 139, 250, 0.15);
-    }
-    
-    .form-group input[type="date"].form-control::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-        cursor: pointer;
-    }
-    
-    .form-group input[type="date"].form-control::-webkit-datetime-edit {
-        color: #e8edf5;
-    }
-    
-    .form-group input[type="date"].form-control::-webkit-datetime-edit-fields-wrapper {
-        color: #e8edf5;
-    }
-    
-    .form-group input[type="date"].form-control::-webkit-datetime-edit-text {
-        color: #94a3b8;
-    }
-    
-    .form-group input[type="date"].form-control::-webkit-datetime-edit-month-field {
-        color: #e8edf5;
-    }
-    
-    .form-group input[type="date"].form-control::-webkit-datetime-edit-day-field {
-        color: #e8edf5;
-    }
-    
-    .form-group input[type="date"].form-control::-webkit-datetime-edit-year-field {
-        color: #e8edf5;
-    }
-    
-    .form-group textarea.form-control {
-        resize: vertical;
-        min-height: 100px;
-        background-color: #1a1035;
-        color: #e8edf5;
-        border-color: rgba(167, 139, 250, 0.15);
-    }
-    
-    .form-group textarea.form-control::placeholder {
-        color: #64748b;
-    }
-    
-    .form-text {
-        display: block;
-        margin-top: 4px;
-        font-size: 0.8rem;
-        color: #94a3b8;
-    }
-    
-    .text-muted {
-        color: #94a3b8;
-    }
-    
-    .form-errors {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        border-radius: 8px;
-        padding: 12px 16px;
-        margin-bottom: 20px;
-    }
-    
-    .error-message {
-        color: #f87171;
-        margin: 0;
-        font-size: 0.9rem;
-    }
-    
-    .field-errors {
-        margin-top: 4px;
-    }
-    
-    .error-text {
-        color: #f87171;
-        font-size: 0.8rem;
-    }
-    
-    .form-actions {
+
+    /* ===== LEAVE TYPE OPTIONS ===== */
+    .leave-type-option {
         display: flex;
-        gap: 12px;
-        margin-top: 30px;
-        justify-content: flex-end;
-    }
-    
-    .btn-portal-primary {
-        display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 24px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
+        padding: 4px 0;
     }
-    
-    .btn-portal-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+
+    .leave-type-option .icon {
+        font-size: 1.2rem;
+        width: 24px;
+        text-align: center;
     }
-    
-    .btn-portal-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    .btn-portal-secondary {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 24px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
+
+    .leave-type-option .label {
         font-weight: 500;
-        font-size: 0.95rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    
-    .btn-portal-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
         color: #e8edf5;
     }
-    
+
+    .leave-type-option .sub {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-left: 4px;
+    }
+
     /* ===== LEAVE DAYS CALCULATOR ===== */
     .leave-days-calculator {
-        background: rgba(167, 139, 250, 0.05);
+        background: linear-gradient(135deg, rgba(167, 139, 250, 0.05), rgba(124, 58, 237, 0.02));
         border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        padding: 12px 16px;
+        border-radius: 10px;
+        padding: 16px 20px;
         margin-top: 10px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     }
-    
+
+    .leave-days-calculator::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.03), transparent 70%);
+        animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(10%, 10%); }
+    }
+
+    .leave-days-calculator .calculator-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        width: 100%;
+    }
+
     .leave-days-calculator .days-label {
         font-size: 0.85rem;
         color: #94a3b8;
+        font-weight: 500;
     }
-    
+
     .leave-days-calculator .days-count {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         font-weight: 700;
         color: #a78bfa;
         background: rgba(167, 139, 250, 0.1);
-        padding: 4px 16px;
+        padding: 4px 20px;
         border-radius: 20px;
         border: 1px solid rgba(167, 139, 250, 0.15);
+        min-width: 40px;
+        text-align: center;
+        transition: all 0.3s ease;
     }
-    
+
+    .leave-days-calculator .days-count:hover {
+        transform: scale(1.05);
+        border-color: rgba(167, 139, 250, 0.3);
+    }
+
     .leave-days-calculator .days-count.weekend {
         color: #fbbf24;
         border-color: rgba(245, 158, 11, 0.2);
-        background: rgba(245, 158, 11, 0.1);
+        background: rgba(245, 158, 11, 0.08);
     }
-    
+
     .leave-days-calculator .days-count.holiday {
         color: #4ade80;
         border-color: rgba(34, 197, 94, 0.2);
-        background: rgba(34, 197, 94, 0.1);
+        background: rgba(34, 197, 94, 0.08);
     }
-    
+
+    .leave-days-calculator .days-count.invalid {
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.2);
+        background: rgba(239, 68, 68, 0.08);
+    }
+
     .leave-days-calculator .days-breakdown {
         font-size: 0.75rem;
         color: #64748b;
-        flex: 1;
-        min-width: 100px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-left: auto;
     }
-    
+
     .leave-days-calculator .days-breakdown span {
-        margin-right: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        transition: all 0.2s ease;
     }
-    
+
+    .leave-days-calculator .days-breakdown span:hover {
+        transform: translateY(-1px);
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
     .leave-days-calculator .days-breakdown .working-days {
         color: #a78bfa;
     }
-    
+
     .leave-days-calculator .days-breakdown .weekend-days {
         color: #fbbf24;
     }
-    
+
     .leave-days-calculator .days-breakdown .holiday-days {
         color: #4ade80;
     }
-    
-    /* ===== LEAVE TYPE ICONS ===== */
-    .leave-type-icon {
-        margin-right: 6px;
+
+    .leave-days-calculator .days-breakdown strong {
+        color: #e8edf5;
     }
-    
-    @media (max-width: 768px) {
-        .portal-form {
-            max-width: 100%;
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        justify-content: flex-end;
+    }
+
+    .form-actions .btn-portal-primary,
+    .form-actions .btn-portal-secondary {
+        padding: 10px 28px;
+        font-size: 0.95rem;
+        min-width: 120px;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .form-actions .btn-portal-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .form-actions .btn-portal-primary:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(124, 58, 237, 0.4);
+    }
+
+    .form-actions .btn-portal-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .form-actions .btn-portal-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .form-actions .btn-portal-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-2px);
+    }
+
+    /* ===== MESSAGES ===== */
+    .messages {
+        margin-bottom: 16px;
+    }
+
+    .message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        animation: slideDown 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
         }
-        
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message.success {
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .message.error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .message.info {
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .message.warning {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .message .msg-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .message .msg-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: inherit;
+        font-size: 1.2rem;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+    }
+
+    .message .msg-close:hover {
+        opacity: 1;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .leave-create-container {
+            padding: 0 5px;
+        }
+
+        .leave-days-calculator {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+            padding: 14px 16px;
+        }
+
+        .leave-days-calculator .calculator-content {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .leave-days-calculator .days-breakdown {
+            margin-left: 0;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .leave-days-calculator .days-breakdown span {
+            padding: 2px 8px;
+            font-size: 0.7rem;
+        }
+
         .form-actions {
             flex-direction: column;
         }
-        
+
         .form-actions .btn-portal-primary,
         .form-actions .btn-portal-secondary {
             width: 100%;
             justify-content: center;
         }
-        
-        .leave-days-calculator {
-            flex-direction: column;
-            align-items: stretch;
-            text-align: center;
+
+        .form-group .form-control {
+            font-size: 0.9rem;
+            padding: 8px 12px;
         }
-        
+    }
+
+    @media (max-width: 480px) {
+        .leave-create-container {
+            padding: 0;
+        }
+
+        .portal-card {
+            padding: 14px 16px;
+        }
+
+        .leave-days-calculator .days-count {
+            font-size: 1.2rem;
+            padding: 4px 16px;
+        }
+
         .leave-days-calculator .days-breakdown {
-            text-align: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
         }
-        
+
         .leave-days-calculator .days-breakdown span {
-            display: inline-block;
-            margin: 4px 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-actions .btn-portal-primary,
+        .form-actions .btn-portal-secondary {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+        }
+
+        .message {
+            padding: 10px 12px;
+            font-size: 0.85rem;
         }
     }
 </style>
 {% endblock %}
 
-{% block content %}
+{% block portal_content %}
+<div class="employee-portal-content">
+    <div class="leave-create-container">
 
-<div class="employee-portal">
-
-    <!-- ================= HEADER ================= -->
-    <div class="portal-header">
-        <div class="portal-header-content">
-            <div class="portal-header-left">
-                <div class="portal-header-icon">📝</div>
-                <div>
-                    <h1>Apply for Leave</h1>
-                    <p class="portal-header-subtitle">
-                        Submit a leave request for approval
-                    </p>
-                </div>
+        <!-- ================= MESSAGES ================= -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                <span class="msg-icon">
+                    {% if message.tags == 'success' %}✅
+                    {% elif message.tags == 'error' %}❌
+                    {% elif message.tags == 'info' %}ℹ️
+                    {% elif message.tags == 'warning' %}⚠️
+                    {% endif %}
+                </span>
+                <span>{{ message }}</span>
+                <button type="button" class="msg-close" onclick="this.parentElement.remove()">&times;</button>
             </div>
-            <div class="portal-header-right">
-                <a href="{% url 'employee_portal_leave' %}" class="btn-portal-secondary">
-                    ← Back to Leaves
-                </a>
-            </div>
+            {% endfor %}
         </div>
-    </div>
+        {% endif %}
 
-    <!-- ================= LEAVE FORM ================= -->
-    <div class="portal-card">
-        <div class="portal-card-header">
-            <h3>📋 Leave Request Form</h3>
+        <!-- ================= LEAVE FORM ================= -->
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <h3>📋 Leave Request Form</h3>
+                <span class="record-count">New Request</span>
+            </div>
+            
+            <form method="POST" class="portal-form" id="leaveForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Display non-field errors -->
+                {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {% for error in form.non_field_errors %}
+                    <p class="error-message">❌ {{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Employee Info (Read-only) -->
+                <div class="form-group">
+                    <label>👤 Employee</label>
+                    <input type="text" value="{{ employee.user.get_full_name|default:employee.user.username }}" 
+                           class="form-control" disabled>
+                    <small class="form-text">
+                        <span class="icon">ℹ️</span> Leave request will be submitted for yourself
+                    </small>
+                </div>
+                
+                <!-- Leave Type -->
+                <div class="form-group">
+                    <label for="id_leave_type">📋 Leave Type <span class="required">*</span></label>
+                    {{ form.leave_type }}
+                    {% if form.leave_type.errors %}
+                    <div class="field-errors">
+                        {% for error in form.leave_type.errors %}
+                        <span class="error-text">❌ {{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text">Select the type of leave you are requesting</small>
+                </div>
+                
+                <!-- From Date -->
+                <div class="form-group">
+                    <label for="id_from_date">📅 From Date <span class="required">*</span></label>
+                    {{ form.from_date }}
+                    {% if form.from_date.errors %}
+                    <div class="field-errors">
+                        {% for error in form.from_date.errors %}
+                        <span class="error-text">❌ {{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text">Start date of your leave</small>
+                </div>
+                
+                <!-- To Date -->
+                <div class="form-group">
+                    <label for="id_to_date">📅 To Date <span class="required">*</span></label>
+                    {{ form.to_date }}
+                    {% if form.to_date.errors %}
+                    <div class="field-errors">
+                        {% for error in form.to_date.errors %}
+                        <span class="error-text">❌ {{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text">End date of your leave</small>
+                </div>
+                
+                <!-- ===== LEAVE DAYS CALCULATOR ===== -->
+                <div class="leave-days-calculator" id="leaveDaysCalculator">
+                    <div class="calculator-content">
+                        <span class="days-label">📊 Total Leave Days:</span>
+                        <span class="days-count" id="totalDays">0</span>
+                        <div class="days-breakdown">
+                            <span class="working-days">💼 <strong id="workingDays">0</strong></span>
+                            <span class="weekend-days">📅 <strong id="weekendDays">0</strong></span>
+                            <span class="holiday-days">🎉 <strong id="holidayDays">0</strong></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reason -->
+                <div class="form-group">
+                    <label for="id_reason">📝 Reason</label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}
+                    <div class="field-errors">
+                        {% for error in form.reason.errors %}
+                        <span class="error-text">❌ {{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text">Provide a brief reason for your leave request (optional)</small>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="form-actions">
+                    <a href="{% url 'employee_portal_leave' %}" class="btn-portal-secondary">
+                        ❌ Cancel
+                    </a>
+                    <button type="submit" class="btn-portal-primary" id="submitBtn">
+                        📤 Submit Leave Request
+                    </button>
+                </div>
+            </form>
         </div>
-        
-        <form method="POST" class="portal-form" id="leaveForm">
-            {% csrf_token %}
-            
-            <!-- Display non-field errors -->
-            {% if form.non_field_errors %}
-            <div class="form-errors">
-                {% for error in form.non_field_errors %}
-                <p class="error-message">{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <!-- Employee Info (Read-only) -->
-            <div class="form-group">
-                <label>Employee</label>
-                <input type="text" value="{{ employee.user.get_full_name|default:employee.user.username }}" 
-                       class="form-control" disabled>
-                <small class="form-text text-muted">Leave request will be submitted for yourself</small>
-            </div>
-            
-            <!-- Leave Type -->
-            <div class="form-group">
-                <label for="id_leave_type">Leave Type *</label>
-                {{ form.leave_type }}
-                {% if form.leave_type.errors %}
-                <div class="field-errors">
-                    {% for error in form.leave_type.errors %}
-                    <span class="error-text">{{ error }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- From Date -->
-            <div class="form-group">
-                <label for="id_from_date">From Date *</label>
-                {{ form.from_date }}
-                {% if form.from_date.errors %}
-                <div class="field-errors">
-                    {% for error in form.from_date.errors %}
-                    <span class="error-text">{{ error }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- To Date -->
-            <div class="form-group">
-                <label for="id_to_date">To Date *</label>
-                {{ form.to_date }}
-                {% if form.to_date.errors %}
-                <div class="field-errors">
-                    {% for error in form.to_date.errors %}
-                    <span class="error-text">{{ error }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- ===== LEAVE DAYS CALCULATOR ===== -->
-            <div class="leave-days-calculator" id="leaveDaysCalculator">
-                <span class="days-label">📊 Total Leave Days:</span>
-                <span class="days-count" id="totalDays">0</span>
-                <div class="days-breakdown">
-                    <span class="working-days">💼 Working: <strong id="workingDays">0</strong></span>
-                    <span class="weekend-days">📅 Weekends: <strong id="weekendDays">0</strong></span>
-                    <span class="holiday-days">🎉 Holidays: <strong id="holidayDays">0</strong></span>
-                </div>
-            </div>
-            
-            <!-- Reason -->
-            <div class="form-group">
-                <label for="id_reason">Reason</label>
-                {{ form.reason }}
-                {% if form.reason.errors %}
-                <div class="field-errors">
-                    {% for error in form.reason.errors %}
-                    <span class="error-text">{{ error }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- Submit Buttons -->
-            <div class="form-actions">
-                <a href="{% url 'employee_portal_leave' %}" class="btn-portal-secondary">
-                    Cancel
-                </a>
-                <button type="submit" class="btn-portal-primary" id="submitBtn">
-                    📤 Submit Leave Request
-                </button>
-            </div>
-        </form>
-    </div>
 
+    </div>
 </div>
 
 <script>
@@ -479,6 +668,7 @@
                 workingDaysSpan.textContent = '0';
                 weekendDaysSpan.textContent = '0';
                 holidayDaysSpan.textContent = '0';
+                totalDaysSpan.className = 'days-count';
                 return;
             }
             
@@ -488,6 +678,7 @@
                 workingDaysSpan.textContent = '-';
                 weekendDaysSpan.textContent = '-';
                 holidayDaysSpan.textContent = '-';
+                totalDaysSpan.className = 'days-count invalid';
                 return;
             }
             
@@ -497,7 +688,6 @@
             let holidayDays = 0;
             
             // List of known holidays (you can fetch from server or define)
-            // For now, we'll use a simple check - you can expand this
             const holidayDates = [
                 // Format: 'YYYY-MM-DD'
                 // Add your holiday dates here or fetch from API
@@ -538,6 +728,12 @@
                 totalDaysSpan.classList.add('weekend');
             }
             
+            // Animate the counter
+            totalDaysSpan.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                totalDaysSpan.style.transform = 'scale(1)';
+            }, 200);
+            
             // Add tooltip
             const breakdown = `${totalDays} total days (${workingDays} working, ${weekendDays} weekends, ${holidayDays} holidays)`;
             totalDaysSpan.title = breakdown;
@@ -557,7 +753,7 @@
             
             toDateInput.addEventListener('change', function() {
                 if (fromDateInput.value && this.value < fromDateInput.value) {
-                    alert('To date cannot be before from date.');
+                    alert('⚠️ To date cannot be before from date.');
                     this.value = fromDateInput.value;
                 }
                 calculateLeaveDays();
@@ -580,20 +776,31 @@
             
             if (!fromDate || !toDate) {
                 e.preventDefault();
-                alert('Please select both from and to dates.');
+                alert('⚠️ Please select both from and to dates.');
+                fromDateInput.focus();
                 return false;
             }
             
             if (toDate < fromDate) {
                 e.preventDefault();
-                alert('To date must be after from date.');
+                alert('⚠️ To date must be after from date.');
+                toDateInput.focus();
                 return false;
             }
             
             if (!leaveType) {
                 e.preventDefault();
-                alert('Please select a leave type.');
+                alert('⚠️ Please select a leave type.');
+                document.querySelector('#id_leave_type').focus();
                 return false;
+            }
+            
+            // Confirm submission
+            const totalDays = parseInt(totalDaysSpan.textContent) || 0;
+            if (totalDays > 10) {
+                if (!confirm(`⚠️ You are requesting ${totalDays} days of leave. This is a long duration. Do you want to continue?`)) {
+                    return false;
+                }
             }
             
             // Disable submit button to prevent double submission
@@ -602,7 +809,21 @@
             
             return true;
         });
+        
+        // ============================================
+        // AUTO-DISMISS MESSAGES
+        // ============================================
+        const messages = document.querySelectorAll('.message');
+        messages.forEach(msg => {
+            setTimeout(() => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateY(-10px)';
+                msg.style.transition = 'all 0.3s ease';
+                setTimeout(() => msg.remove(), 300);
+            }, 5000);
+        });
+        
+        console.log('📝 Leave Create page loaded');
     });
 </script>
-
 {% endblock %}

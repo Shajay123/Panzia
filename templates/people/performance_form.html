@@ -1,171 +1,312 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/performance_form.css' %}">
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_icon %}{{ page_icon }}{% endblock %}
+{% block page_subtitle %}
+    {% if is_edit %}
+    Editing review for <strong>{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>
+    {% else %}
+    Create a new performance review.
+    {% endif %}
 {% endblock %}
 
-{% block content %}
+{% block page_actions %}
+<a href="{% url 'performance' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Reviews
+</a>
+{% if is_edit %}
+<a href="{% url 'performance_detail' review.id %}" class="btn btn-secondary">
+    <span class="btn-icon">👁️</span> View Details
+</a>
+{% endif %}
+{% endblock %}
 
-<div class="performance-form-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">{{ page_icon }}</div>
-                <div>
-                    <h1>{{ page_title }}</h1>
-                    <p class="header-subtitle">
-                        {% if is_edit %}
-                        Editing review for <strong>{{ review.employee }}</strong>
-                        {% else %}
-                        Create a new performance review.
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'performance' %}" class="btn-back">← Back to Reviews</a>
-            </div>
+{% block hrms_content %}
+<div class="performance-form-container">
+    
+    <!-- ====== ERROR MESSAGES ====== -->
+    {% if form.errors or messages %}
+    <div class="error-alert" style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span style="font-size: 1.2rem;">⚠️</span>
+            <h3 style="color: #f87171; font-size: 0.95rem; margin: 0;">Please correct the errors below</h3>
         </div>
+        <ul style="color: #94a3b8; margin: 0; padding-left: 20px; font-size: 0.9rem;">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li><strong style="color: #e8edf5;">{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <li>{{ message }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
     </div>
+    {% endif %}
 
-    <!-- ================= FORM ================= -->
+    <!-- ====== FORM ====== -->
     <form method="POST" novalidate>
         {% csrf_token %}
 
-        <!-- ====== ERROR MESSAGES ====== -->
-        {% if form.errors or messages %}
-        <div class="error-alert">
-            <div class="error-alert-header">
-                <span class="error-icon">⚠️</span>
-                <h3>Please correct the errors below</h3>
-            </div>
-            <ul class="error-list">
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-                {% for message in messages %}
-                    {% if message.tags == 'error' %}
-                        <li>{{ message }}</li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-        <!-- ====== FORM CARD ====== -->
-        <div class="form-card">
-            <div class="card-header">
-                <h2>📋 Review Details</h2>
-                <span class="card-badge">Required</span>
+        <div class="form-card" style="background: rgba(167, 139, 250, 0.02); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden; margin-bottom: 24px;">
+            <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                <h2 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">📋 Review Details</h2>
+                <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Required</span>
             </div>
 
-            <div class="form-grid">
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 24px;">
+                
                 <!-- Employee -->
-                <div class="form-group">
-                    <label for="{{ form.employee.id_for_label }}" class="form-label required">Employee</label>
-                    {{ form.employee }}
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.employee.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Employee <span style="color: #f87171;">*</span>
+                    </label>
+                    <select name="employee" id="{{ form.employee.id_for_label }}" class="form-control" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; padding: 10px 14px; color: #e8edf5; font-size: 0.9rem; transition: all 0.3s; width: 100%;" required>
+                        <option value="">Select Employee</option>
+                        {% for choice in form.fields.employee.choices %}
+                            {% if choice.0 %}
+                            <option value="{{ choice.0 }}" {% if form.employee.value|stringformat:"s" == choice.0|stringformat:"s" %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                     {% if form.employee.errors %}
-                        <div class="field-error">{{ form.employee.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.employee.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Select the employee being reviewed.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Select the employee being reviewed.</span>
                 </div>
 
                 <!-- Reviewer -->
-                <div class="form-group">
-                    <label for="{{ form.reviewer.id_for_label }}" class="form-label required">Reviewer</label>
-                    {{ form.reviewer }}
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.reviewer.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Reviewer <span style="color: #f87171;">*</span>
+                    </label>
+                    <select name="reviewer" id="{{ form.reviewer.id_for_label }}" class="form-control" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; padding: 10px 14px; color: #e8edf5; font-size: 0.9rem; transition: all 0.3s; width: 100%;" required>
+                        <option value="">Select Reviewer</option>
+                        {% for choice in form.fields.reviewer.choices %}
+                            {% if choice.0 %}
+                            <option value="{{ choice.0 }}" {% if form.reviewer.value|stringformat:"s" == choice.0|stringformat:"s" %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                     {% if form.reviewer.errors %}
-                        <div class="field-error">{{ form.reviewer.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.reviewer.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Person conducting the review.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Person conducting the review.</span>
                 </div>
 
                 <!-- Rating -->
-                <div class="form-group">
-                    <label for="{{ form.rating.id_for_label }}" class="form-label required">Rating</label>
-                    {{ form.rating }}
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.rating.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Rating <span style="color: #f87171;">*</span>
+                    </label>
+                    <select name="rating" id="{{ form.rating.id_for_label }}" class="form-control" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; padding: 10px 14px; color: #e8edf5; font-size: 0.9rem; transition: all 0.3s; width: 100%;" required>
+                        <option value="">Select Rating</option>
+                        <option value="1" {% if form.rating.value|stringformat:"s" == "1" %}selected{% endif %}>1 ⭐ - Needs Improvement</option>
+                        <option value="2" {% if form.rating.value|stringformat:"s" == "2" %}selected{% endif %}>2 ⭐⭐ - Below Expectations</option>
+                        <option value="3" {% if form.rating.value|stringformat:"s" == "3" %}selected{% endif %}>3 ⭐⭐⭐ - Meets Expectations</option>
+                        <option value="4" {% if form.rating.value|stringformat:"s" == "4" %}selected{% endif %}>4 ⭐⭐⭐⭐ - Exceeds Expectations</option>
+                        <option value="5" {% if form.rating.value|stringformat:"s" == "5" %}selected{% endif %}>5 ⭐⭐⭐⭐⭐ - Outstanding</option>
+                    </select>
                     {% if form.rating.errors %}
-                        <div class="field-error">{{ form.rating.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.rating.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Rate the employee's performance.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Rate the employee's performance.</span>
                 </div>
 
                 <!-- Review Period -->
-                <div class="form-group">
-                    <label for="{{ form.review_period.id_for_label }}" class="form-label">Review Period</label>
-                    {{ form.review_period }}
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="{{ form.review_period.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Review Period</label>
+                    <select name="review_period" id="{{ form.review_period.id_for_label }}" class="form-control" style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.1); border-radius: 10px; padding: 10px 14px; color: #e8edf5; font-size: 0.9rem; transition: all 0.3s; width: 100%;">
+                        <option value="">Select Period</option>
+                        {% for choice in form.fields.review_period.choices %}
+                            {% if choice.0 %}
+                            <option value="{{ choice.0 }}" {% if form.review_period.value == choice.0 %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                     {% if form.review_period.errors %}
-                        <div class="field-error">{{ form.review_period.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.review_period.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Period of this review.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Period of this review.</span>
                 </div>
 
                 <!-- Review -->
-                <div class="form-group full-width">
-                    <label for="{{ form.review.id_for_label }}" class="form-label required">Review</label>
+                <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label for="{{ form.review.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">
+                        Review <span style="color: #f87171;">*</span>
+                    </label>
                     {{ form.review }}
+                    <style>
+                        #id_review, #id_strengths, #id_areas_for_improvement, #id_goals {
+                            background: rgba(167, 139, 250, 0.04);
+                            border: 1px solid rgba(167, 139, 250, 0.1);
+                            border-radius: 10px;
+                            padding: 10px 14px;
+                            color: #e8edf5;
+                            font-size: 0.9rem;
+                            transition: all 0.3s;
+                            width: 100%;
+                            min-height: 100px;
+                            font-family: inherit;
+                            resize: vertical;
+                        }
+                        #id_review:focus, #id_strengths:focus, #id_areas_for_improvement:focus, #id_goals:focus {
+                            outline: none;
+                            border-color: rgba(167, 139, 250, 0.3);
+                            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+                        }
+                        #id_review:hover, #id_strengths:hover, #id_areas_for_improvement:hover, #id_goals:hover {
+                            border-color: rgba(167, 139, 250, 0.2);
+                        }
+                        #id_review::placeholder, #id_strengths::placeholder, #id_areas_for_improvement::placeholder, #id_goals::placeholder {
+                            color: #64748b;
+                        }
+                    </style>
                     {% if form.review.errors %}
-                        <div class="field-error">{{ form.review.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.review.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Provide a detailed performance review.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Provide a detailed performance review.</span>
                 </div>
 
                 <!-- Strengths -->
-                <div class="form-group full-width">
-                    <label for="{{ form.strengths.id_for_label }}" class="form-label">Strengths</label>
+                <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label for="{{ form.strengths.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Strengths</label>
                     {{ form.strengths }}
                     {% if form.strengths.errors %}
-                        <div class="field-error">{{ form.strengths.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.strengths.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">List the key strengths of the employee.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">List the key strengths of the employee.</span>
                 </div>
 
                 <!-- Areas for Improvement -->
-                <div class="form-group full-width">
-                    <label for="{{ form.areas_for_improvement.id_for_label }}" class="form-label">Areas for Improvement</label>
+                <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label for="{{ form.areas_for_improvement.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Areas for Improvement</label>
                     {{ form.areas_for_improvement }}
                     {% if form.areas_for_improvement.errors %}
-                        <div class="field-error">{{ form.areas_for_improvement.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.areas_for_improvement.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Identify areas where the employee can improve.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Identify areas where the employee can improve.</span>
                 </div>
 
                 <!-- Goals -->
-                <div class="form-group full-width">
-                    <label for="{{ form.goals.id_for_label }}" class="form-label">Goals</label>
+                <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label for="{{ form.goals.id_for_label }}" class="form-label" style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Goals</label>
                     {{ form.goals }}
                     {% if form.goals.errors %}
-                        <div class="field-error">{{ form.goals.errors.0 }}</div>
+                        <div class="field-error" style="color: #f87171; font-size: 0.8rem;">{{ form.goals.errors.0 }}</div>
                     {% endif %}
-                    <span class="help-text">Set goals for the next review period.</span>
+                    <span class="help-text" style="color: #64748b; font-size: 0.75rem;">Set goals for the next review period.</span>
                 </div>
             </div>
         </div>
 
         <!-- ====== FORM ACTIONS ====== -->
-        <div class="form-actions">
-            <button type="submit" class="btn-primary btn-save">
+        <div class="form-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="submit" class="btn-primary btn-save" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 32px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
                 {% if is_edit %}💾 Update Review{% else %}⭐ Create Review{% endif %}
             </button>
-            <a href="{% url 'performance' %}" class="btn-secondary">Cancel</a>
+            <a href="{% url 'performance' %}" class="btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
+                Cancel
+            </a>
             {% if is_edit %}
-            <a href="{% url 'performance_detail' review.id %}" class="btn-light">👁️ View Details</a>
+            <a href="{% url 'performance_detail' review.id %}" class="btn-light" style="background: rgba(167, 139, 250, 0.04); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.06); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 8px;">
+                👁️ View Details
+            </a>
             {% endif %}
         </div>
 
     </form>
 
 </div>
+
+<style>
+    .performance-form-container .form-control:focus {
+        outline: none;
+        border-color: rgba(167, 139, 250, 0.3) !important;
+        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05) !important;
+    }
+    
+    .performance-form-container .form-control:hover {
+        border-color: rgba(167, 139, 250, 0.2) !important;
+    }
+    
+    .performance-form-container .btn-primary.btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .performance-form-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .performance-form-container .btn-light:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .performance-form-container .form-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .performance-form-container .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .performance-form-container .form-grid {
+            grid-template-columns: 1fr !important;
+            padding: 16px !important;
+            gap: 16px !important;
+        }
+        
+        .performance-form-container .form-grid .full-width {
+            grid-column: span 1 !important;
+        }
+        
+        .performance-form-container .form-card .card-header {
+            padding: 14px 16px !important;
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 8px;
+        }
+        
+        .performance-form-container .form-card .card-header h2 {
+            font-size: 1rem !important;
+        }
+        
+        .performance-form-container .form-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .performance-form-container .form-actions button,
+        .performance-form-container .form-actions a {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -208,14 +349,14 @@
         if (ratingSelect) {
             ratingSelect.addEventListener('change', function() {
                 const rating = parseInt(this.value);
-                const stars = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
-                const label = this.options[this.selectedIndex]?.text || '';
-                // You can display the rating preview here if needed
+                if (rating > 0) {
+                    const stars = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+                    // You can display the rating preview here if needed
+                }
             });
         }
 
         console.log('⭐ Performance Form initialized');
     });
 </script>
-
 {% endblock %}

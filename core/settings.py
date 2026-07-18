@@ -25,13 +25,13 @@ SECRET_KEY = 'django-insecure--cd4@!-=yy9dk+d48q^pa3rhv#y(lw5^*!etrf-j&&+$t6=)t7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 ALLOWED_HOSTS = [
-    "9e9a-2409-40f4-3018-3a0d-f8ab-b319-c69-9559.ngrok-free.app",
+    "c942-117-213-115-145.ngrok-free.app",
     "127.0.0.1",
     "*",   # Remove in production
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://9e9a-2409-40f4-3018-3a0d-f8ab-b319-c69-9559.ngrok-free.app",
+    "https://c942-117-213-115-145.ngrok-free.app",
 ]
 
 
@@ -185,3 +185,53 @@ AUTH_USER_MODEL = 'accounts.User'
 RAZORPAY_KEY_ID = "rzp_test_T3gQAQZw24uRli"
 
 RAZORPAY_KEY_SECRET = "NQgWOXfD7e5XckVM3ViNbRap"
+
+
+
+
+# core/settings.py
+
+# ============================================
+# EMAIL CONFIGURATION
+# ============================================
+
+# Email Backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# SMTP Configuration (Using Gmail)
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+# Email Credentials
+EMAIL_HOST_USER = 'shajaygopi2001@gmail.com'
+EMAIL_HOST_PASSWORD = 'aves xenb ncco vcqw'  # App password
+
+# ============================================
+# EMAIL SETTINGS
+# ============================================
+
+# Default From Email
+DEFAULT_FROM_EMAIL = f'PANZIA <{EMAIL_HOST_USER}>'
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_SUBJECT_PREFIX = '[PANZIA] '
+
+# ============================================
+# SITE URL (for email links)
+# ============================================
+
+# For local development
+SITE_URL = 'http://127.0.0.1:8000'
+
+# For production with ngrok (uncomment when using ngrok)
+# SITE_URL = 'https://c942-117-213-115-145.ngrok-free.app'
+
+# For production with custom domain
+# SITE_URL = 'https://yourdomain.com'
+
+# ============================================
+# FOR DEVELOPMENT - Console Email Backend
+# ============================================
+# Uncomment the line below to see emails in console instead of sending
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

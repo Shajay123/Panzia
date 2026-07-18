@@ -1,95 +1,525 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}
-Delete Employee
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Employee
+    </a>
+    <a href="{% url 'employees' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">👥</span> All Employees
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_delete.css' %}">
-{% endblock %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       DELETE EMPLOYEE - HRMS STYLES
+       ============================================ */
+    .delete-container {
+        max-width: 550px;
+        margin: 0 auto;
+    }
 
-{% block content %}
+    .delete-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 40px 32px;
+        text-align: center;
+        transition: all 0.3s;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .delete-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+    }
+
+    .delete-card .delete-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .delete-card h2 {
+        margin: 0 0 8px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f87171;
+    }
+
+    .delete-card .delete-message {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .delete-card .delete-message strong {
+        color: #e8edf5;
+    }
+
+    /* ===== EMPLOYEE PREVIEW ===== */
+    .employee-preview {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px;
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 10px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .employee-preview .emp-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-preview .emp-avatar-placeholder {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-preview .emp-info h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .employee-preview .emp-info .emp-detail {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .employee-preview .emp-info .emp-detail .sep {
+        color: #64748b;
+        margin: 0 4px;
+    }
+
+    /* ===== EMPLOYEE DETAILS LIST ===== */
+    .details-list {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        text-align: left;
+    }
+
+    .details-list .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 0.85rem;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .details-list .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .details-list .detail-row .label {
+        color: #94a3b8;
+    }
+
+    .details-list .detail-row .value {
+        color: #e8edf5;
+        font-weight: 500;
+        text-align: right;
+        max-width: 60%;
+        word-break: break-word;
+    }
+
+    /* ===== WARNING BOX ===== */
+    .warning-box {
+        background: rgba(251, 191, 36, 0.06);
+        border: 1px solid rgba(251, 191, 36, 0.1);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: #fbbf24;
+        font-size: 0.85rem;
+        text-align: left;
+    }
+
+    .warning-box .warning-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .warning-box strong {
+        color: #fcd34d;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .delete-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .delete-actions .btn {
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .btn-delete:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .btn-cancel {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .delete-container {
+            padding: 0;
+        }
+
+        .delete-card {
+            padding: 28px 20px;
+        }
+
+        .delete-card h2 {
+            font-size: 1.3rem;
+        }
+
+        .employee-preview {
+            flex-wrap: wrap;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .details-list .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+
+        .details-list .detail-row .value {
+            text-align: left;
+            max-width: 100%;
+        }
+
+        .delete-actions {
+            flex-direction: column;
+        }
+
+        .delete-actions .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .delete-card {
+            padding: 20px 14px;
+        }
+
+        .delete-card .delete-icon {
+            font-size: 3rem;
+        }
+
+        .delete-card h2 {
+            font-size: 1.1rem;
+        }
+
+        .employee-preview .emp-avatar,
+        .employee-preview .emp-avatar-placeholder {
+            width: 44px;
+            height: 44px;
+            font-size: 1rem;
+        }
+
+        .employee-preview .emp-info h3 {
+            font-size: 0.9rem;
+        }
+
+        .employee-preview .emp-info .emp-detail {
+            font-size: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-delete,
+        .btn-cancel {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+
+        .warning-box {
+            font-size: 0.8rem;
+            padding: 10px 14px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .delete-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .employee-preview {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.1s;
+        opacity: 0;
+    }
+
+    .details-list {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .warning-box {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+
+    .delete-actions {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.25s;
+        opacity: 0;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div class="delete-container">
 
-<div class="delete-card">
+    <div class="delete-card">
 
-<div class="delete-icon">
+        <span class="delete-icon">🗑</span>
 
-🗑
+        <h2>Delete Employee</h2>
+
+        <p class="delete-message">
+            Are you sure you want to permanently delete
+            <strong>{{ employee.user.get_full_name|default:employee.user.username }}</strong>?
+            <br>
+            This action <strong>cannot be undone</strong>.
+        </p>
+
+        <!-- Employee Preview -->
+        <div class="employee-preview">
+            {% if employee.profile_image %}
+            <img src="{{ employee.profile_image.url }}" alt="{{ employee.user.get_full_name }}" class="emp-avatar">
+            {% else %}
+            <div class="emp-avatar-placeholder">
+                {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+            </div>
+            {% endif %}
+            <div class="emp-info">
+                <h3>{{ employee.user.get_full_name|default:employee.user.username }}</h3>
+                <div class="emp-detail">
+                    <span>{{ employee.employee_id|default:"N/A" }}</span>
+                    <span class="sep">•</span>
+                    <span>{{ employee.designation|default:"-" }}</span>
+                    <span class="sep">•</span>
+                    <span>{{ employee.department.name|default:"No Department" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Details -->
+        <div class="details-list">
+            <div class="detail-row">
+                <span class="label">Employee ID</span>
+                <span class="value">{{ employee.employee_id|default:"N/A" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Email</span>
+                <span class="value">{{ employee.user.email }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Department</span>
+                <span class="value">{{ employee.department.name|default:"-" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Designation</span>
+                <span class="value">{{ employee.designation|default:"-" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Employment Type</span>
+                <span class="value">{{ employee.employment_type|default:"-" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Status</span>
+                <span class="value">{{ employee.status|default:"-" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Joined</span>
+                <span class="value">{{ employee.joining_date|date:"d M Y"|default:"-" }}</span>
+            </div>
+        </div>
+
+        <!-- Warning Box -->
+        <div class="warning-box">
+            <span class="warning-icon">⚠️</span>
+            <div>
+                <strong>Warning:</strong> This action will permanently delete this employee's record.
+                {% if employee.documents.count > 0 or employee.attendance.count > 0 %}
+                They have {{ employee.documents.count }} document(s) and {{ employee.attendance.count }} attendance record(s) that will also be deleted.
+                {% endif %}
+                This cannot be recovered.
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <form method="POST" id="deleteForm">
+            {% csrf_token %}
+            <div class="delete-actions">
+                <button type="submit" class="btn btn-delete" id="deleteBtn">
+                    <span class="btn-icon">🗑</span>
+                    <span class="btn-text">Yes, Delete Employee</span>
+                </button>
+                <a href="{% url 'employee_detail' employee.id %}" class="btn btn-cancel">
+                    <span class="btn-icon">✕</span>
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+    </div>
 
 </div>
 
-<h2>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('deleteForm');
+        const deleteBtn = document.getElementById('deleteBtn');
 
-Delete Employee
+        // ============================================
+        // CONFIRMATION BEFORE SUBMIT
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            const confirmDelete = confirm('Are you sure you want to delete employee "{{ employee.user.get_full_name }}"? This action cannot be undone.');
+            if (!confirmDelete) {
+                e.preventDefault();
+                return false;
+            }
 
-</h2>
+            // Show loading state
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Deleting...</span>
+            `;
+        });
 
-<p>
+        // ============================================
+        // KEYBOARD SHORTCUT
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Enter key to submit
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                if (!deleteBtn.disabled) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+            // Escape key to cancel
+            if (e.key === 'Escape') {
+                const cancelBtn = document.querySelector('.btn-cancel');
+                if (cancelBtn) {
+                    window.location.href = cancelBtn.href;
+                }
+            }
+        });
 
-Are you sure you want to permanently delete
-
-<strong>
-
-{{ employee.user.get_full_name }}
-
-</strong>
-
-?
-
-</p>
-
-<ul>
-
-<li>
-
-Employee ID :
-<strong>{{ employee.employee_id }}</strong>
-
-</li>
-
-<li>
-
-Department :
-<strong>{{ employee.department }}</strong>
-
-</li>
-
-<li>
-
-Designation :
-<strong>{{ employee.designation }}</strong>
-
-</li>
-
-</ul>
-
-<form method="POST">
-
-{% csrf_token %}
-
-<div class="delete-actions">
-
-<button type="submit" class="btn-delete">
-
-Delete Employee
-
-</button>
-
-<a href="{% url 'employee_detail' employee.id %}" class="btn-cancel">
-
-Cancel
-
-</a>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
+        console.log('🗑 Employee Delete page loaded');
+        console.log('👤 Employee: {{ employee.user.get_full_name }}');
+        console.log('🆔 ID: {{ employee.employee_id }}');
+    });
+</script>
 
 {% endblock %}

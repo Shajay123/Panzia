@@ -1,41 +1,814 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Employee Onboarding{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/onboarding.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <button class="btn btn-secondary btn-sm" id="exportBtn">
+        <span class="btn-icon">📥</span> Export
+    </button>
+    <a href="{% url 'employee_create' %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Add Employee
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       EMPLOYEE ONBOARDING - HRMS STYLES
+       ============================================ */
+    .onboarding-page {
+        max-width: 100%;
+    }
+
+    /* ===== SUMMARY GRID ===== */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .summary-card .icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .summary-card h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+        line-height: 1.2;
+    }
+
+    .summary-card p {
+        margin: 0;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .summary-card .trend {
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+    }
+
+    .trend.up { color: #34d399; }
+    .trend.down { color: #f87171; }
+    .trend.neutral { color: #94a3b8; }
+
+    .summary-card.blue { border-left: 3px solid #60a5fa; }
+    .summary-card.orange { border-left: 3px solid #f59e0b; }
+    .summary-card.green { border-left: 3px solid #34d399; }
+    .summary-card.purple { border-left: 3px solid #a78bfa; }
+
+    /* ===== DASHBOARD CARD ===== */
+    .dashboard-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .dashboard-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .card-badge {
+        font-size: 0.65rem;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+    }
+
+    .progress-container {
+        width: 100%;
+        height: 8px;
+        background: rgba(167, 139, 250, 0.08);
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 8px 0 12px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1s ease;
+        background: linear-gradient(90deg, #7c3aed, #a78bfa);
+        width: 0%;
+    }
+
+    .progress-stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .progress-stats strong {
+        color: #e8edf5;
+    }
+
+    /* ===== FILTER CARD ===== */
+    .filter-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .filter-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .filter-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .btn-toggle-filters {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .btn-toggle-filters:hover {
+        color: #e8edf5;
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 12px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        max-height: 300px;
+    }
+
+    .filter-grid.collapsed {
+        max-height: 0;
+        opacity: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .filter-group label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        font-weight: 600;
+    }
+
+    .form-control {
+        padding: 8px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.05);
+    }
+
+    .form-control::placeholder {
+        color: #64748b;
+    }
+
+    .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px;
+        cursor: pointer;
+    }
+
+    .filter-actions {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-filter {
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-reset {
+        padding: 8px 20px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-reset:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .filter-stats {
+        margin-top: 12px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-stats strong {
+        color: #e8edf5;
+    }
+
+    /* ===== EMPLOYEE GRID ===== */
+    .employee-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
+    }
+
+    .employee-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+    .employee-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .employee-top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .employee-top .employee-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-top .avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-details h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .employee-details .designation {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        display: block;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+
+    .status-badge .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.status-onboarding {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+    .status-badge.status-onboarding .status-dot { background: #3b82f6; }
+
+    .status-badge.status-active {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.status-active .status-dot { background: #22c55e; }
+
+    .status-badge.status-probation {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+    .status-badge.status-probation .status-dot { background: #f59e0b; }
+
+    .status-badge.status-completed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.status-completed .status-dot { background: #22c55e; }
+
+    .status-badge.status-progress {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+    .status-badge.status-progress .status-dot { background: #f59e0b; }
+
+    .status-badge.status-pending {
+        background: rgba(148, 163, 184, 0.08);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.06);
+    }
+    .status-badge.status-pending .status-dot { background: #64748b; }
+
+    /* ===== EMPLOYEE INFO ===== */
+    .employee-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 12px;
+        padding: 12px 0;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        margin-bottom: 12px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .info-item .info-icon {
+        font-size: 0.9rem;
+    }
+
+    /* ===== CHECKLIST ===== */
+    .checklist {
+        margin-bottom: 14px;
+    }
+
+    .checklist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .checklist-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    .checklist-progress {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #a78bfa;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 10px;
+        border-radius: 12px;
+    }
+
+    .checklist-items {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .checklist-item:hover {
+        background: rgba(167, 139, 250, 0.04);
+    }
+
+    .checklist-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #7c3aed;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .checklist-item input[type="checkbox"]:checked+.checklist-text {
+        color: #4ade80;
+        text-decoration: line-through;
+        opacity: 0.7;
+    }
+
+    .checklist-text {
+        transition: all 0.2s;
+    }
+
+    /* ===== PROGRESS BAR IN CARD ===== */
+    .card-progress {
+        margin-bottom: 14px;
+    }
+
+    .card-progress .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(167, 139, 250, 0.08);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 4px;
+    }
+
+    .card-progress .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 1s ease;
+        background: linear-gradient(90deg, #7c3aed, #a78bfa);
+        width: 0%;
+    }
+
+    .card-progress .progress-text {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    /* ===== EMPLOYEE ACTIONS ===== */
+    .employee-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-view {
+        flex: 1;
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        text-decoration: none;
+        text-align: center;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-view:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-reminder {
+        flex: 1;
+        padding: 8px 12px;
+        background: rgba(251, 191, 36, 0.08);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-reminder:hover {
+        background: rgba(251, 191, 36, 0.15);
+    }
+
+    .btn-reminder:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* ===== EMPTY CARD ===== */
+    .empty-card {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        grid-column: 1 / -1;
+    }
+
+    .empty-card .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-card h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        margin: 0 0 8px;
+    }
+
+    .empty-card p {
+        margin: 0 0 20px;
+        font-size: 0.95rem;
+    }
+
+    .empty-card .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .empty-card .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .onboarding-page {
+            padding: 0;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            grid-column: 1;
+        }
+
+        .filter-buttons {
+            flex-direction: column;
+        }
+
+        .filter-buttons .btn-filter,
+        .filter-buttons .btn-reset {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .employee-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .employee-info {
+            grid-template-columns: 1fr;
+        }
+
+        .progress-stats {
+            flex-direction: column;
+            gap: 4px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .employee-top {
+            flex-wrap: wrap;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .employee-top .employee-avatar,
+        .employee-top .avatar {
+            width: 44px;
+            height: 44px;
+            font-size: 1rem;
+        }
+
+        .employee-details h3 {
+            font-size: 0.9rem;
+        }
+
+        .checklist-item {
+            font-size: 0.75rem;
+        }
+
+        .btn-view,
+        .btn-reminder {
+            font-size: 0.75rem;
+            padding: 6px 10px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .summary-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .summary-card:nth-child(1) { animation-delay: 0.05s; }
+    .summary-card:nth-child(2) { animation-delay: 0.1s; }
+    .summary-card:nth-child(3) { animation-delay: 0.15s; }
+    .summary-card:nth-child(4) { animation-delay: 0.2s; }
+
+    .dashboard-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .filter-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+
+    .employee-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .employee-card:nth-child(1) { animation-delay: 0.25s; }
+    .employee-card:nth-child(2) { animation-delay: 0.3s; }
+    .employee-card:nth-child(3) { animation-delay: 0.35s; }
+    .employee-card:nth-child(4) { animation-delay: 0.4s; }
+    .employee-card:nth-child(5) { animation-delay: 0.45s; }
+    .employee-card:nth-child(6) { animation-delay: 0.5s; }
+</style>
 
 <div class="onboarding-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">🚀</div>
-                <div>
-                    <h1>Employee Onboarding</h1>
-                    <p class="header-subtitle">Manage new employees and monitor onboarding progress.</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <button class="btn-secondary" id="exportBtn">
-                    <span class="btn-icon">📥</span> Export
-                </button>
-                <a href="{% url 'employee_create' %}" class="btn-primary">
-                    <span class="btn-icon">➕</span> Add Employee
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- ADD STARTUP BANNER HERE - RIGHT AFTER HEADER -->
-    <!-- ============================================================ -->
-    {% include 'people/includes/startup_banner.html' %}
 
     <!-- ================= SUMMARY ================= -->
     <div class="summary-grid">
@@ -79,9 +852,9 @@
             <h3>📈 Overall Onboarding Progress</h3>
             <span class="card-badge">{{ overall_progress|default:0 }}%</span>
         </div>
-        <div class="progress-container">
-            
-        </div>
+        <!-- <div class="progress-container">
+            <div class="progress-fill" id="overallProgressFill" style="width: {{ overall_progress|default:0 }}%;"></div>
+        </div> -->
         <div class="progress-stats">
             <span><strong>Completed:</strong> {{ completed_tasks|default:0 }} tasks</span>
             <span><strong>Pending:</strong> {{ pending_tasks|default:0 }} tasks</span>
@@ -121,8 +894,8 @@
             <div class="filter-group filter-actions">
                 <label>&nbsp;</label>
                 <div class="filter-buttons">
-                    <button class="btn-primary btn-filter" id="applyFilters">🔍 Apply</button>
-                    <button class="btn-light btn-reset" id="resetFilters">↩️ Reset</button>
+                    <button class="btn-filter" id="applyFilters">🔍 Apply</button>
+                    <button class="btn-reset" id="resetFilters">↩️ Reset</button>
                 </div>
             </div>
         </div>
@@ -206,18 +979,29 @@
             </div>
 
             <!-- Progress -->
-            
+            <!-- <div class="card-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill{{ forloop.counter }}" 
+                         style="width: {{ employee.onboarding_progress|default:0 }}%;"></div>
+                </div>
+                <div class="progress-text">
+                    <span>{{ employee.onboarding_progress|default:0 }}% Complete</span>
+                    <span>{{ employee.completed_tasks|default:0 }}/6 Tasks</span>
+                </div>
+            </div> -->
 
             <div class="employee-actions">
                 <a href="{% url 'employee_detail' employee.id %}" class="btn-view">
                     <span class="btn-icon">👤</span> View Profile
                 </a>
-                
+                <!-- <button class="btn-reminder" onclick="sendReminder({{ employee.id }}, '{{ employee.user.get_full_name }}')">
+                    <span class="btn-icon">🔔</span> Reminder
+                </button> -->
             </div>
         </div>
         {% empty %}
         <div class="empty-card">
-            <div class="empty-icon">🚀</div>
+            <span class="empty-icon">🚀</span>
             <h3>No Employees in Onboarding</h3>
             <p>Add new employees to start the onboarding process.</p>
             <a href="{% url 'employee_create' %}" class="btn-primary">➕ Add Employee</a>

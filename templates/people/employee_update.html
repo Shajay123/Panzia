@@ -1,256 +1,36 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Update Employee - {{ employee.user.get_full_name|default:employee.user.username }}{% endblock %}
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Profile
+    </a>
+</div>
+{% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/employee_update.css' %}">
+{% block hrms_content %}
 <style>
-    /* ===== ADDITIONAL STYLES ===== */
-    .no-departments-warning {
-        background: rgba(245, 158, 11, 0.08);
-        border: 1px solid rgba(245, 158, 11, 0.15);
-        border-radius: 10px;
-        padding: 16px 20px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: #fbbf24;
-    }
-    
-    .no-departments-warning .warning-icon {
-        font-size: 1.5rem;
-    }
-    
-    .no-departments-warning .warning-text {
-        flex: 1;
-    }
-    
-    .no-departments-warning .warning-text h4 {
-        margin: 0;
-        font-size: 0.95rem;
-    }
-    
-    .no-departments-warning .warning-text p {
-        margin: 2px 0 0;
-        font-size: 0.85rem;
-        color: #94a3b8;
-    }
-    
-    .no-departments-warning .btn-create-dept {
-        padding: 6px 16px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        text-decoration: none;
-        font-size: 0.85rem;
-        transition: all 0.2s;
-        white-space: nowrap;
-    }
-    
-    .no-departments-warning .btn-create-dept:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
-    }
-    
-    /* Timing Section */
-    .timing-grid-compact {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 16px;
-    }
-    
-    .timing-grid-compact .form-group {
-        margin-bottom: 0;
-    }
-    
-    .timing-grid-compact .form-group .help-text {
-        font-size: 0.7rem;
-    }
-    
-    .shift-presets {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 8px;
-    }
-    
-    .shift-preset-btn {
-        padding: 4px 12px;
-        border: 1px solid rgba(167, 139, 250, 0.1);
-        border-radius: 16px;
-        background: rgba(167, 139, 250, 0.03);
-        color: #94a3b8;
-        font-size: 0.75rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .shift-preset-btn:hover {
-        border-color: #7c3aed;
-        color: #a78bfa;
-        background: rgba(124, 58, 237, 0.05);
-    }
-    
-    .shift-preset-btn.active {
-        border-color: #7c3aed;
-        background: rgba(124, 58, 237, 0.1);
-        color: #a78bfa;
+    /* ============================================
+       UPDATE EMPLOYEE - HRMS STYLES
+       ============================================ */
+    .employee-update-page {
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
-    /* Phone Verification */
-    .phone-verification-container {
-        background: rgba(167, 139, 250, 0.03);
-        border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 10px;
-        padding: 16px;
-        margin-top: 8px;
-    }
-
-    .phone-input-group {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .phone-input-group .form-control {
-        flex: 1;
-        min-width: 150px;
-    }
-
-    .btn-send-otp {
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .btn-send-otp:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-send-otp:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .otp-input-group {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-top: 12px;
-    }
-
-    .otp-input-group .form-control {
-        flex: 1;
-        min-width: 150px;
-        letter-spacing: 4px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-align: center;
-    }
-
-    .btn-verify-otp {
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .btn-verify-otp:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
-    }
-
-    .otp-status {
-        margin-top: 8px;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        display: none;
-    }
-
-    .otp-status.success {
-        display: block;
-        background: rgba(34, 197, 94, 0.08);
-        border: 1px solid rgba(34, 197, 94, 0.15);
-        color: #4ade80;
-    }
-
-    .otp-status.error {
-        display: block;
-        background: rgba(239, 68, 68, 0.08);
-        border: 1px solid rgba(239, 68, 68, 0.15);
-        color: #f87171;
-    }
-
-    .otp-status.info {
-        display: block;
-        background: rgba(59, 130, 246, 0.08);
-        border: 1px solid rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-    }
-
-    .verified-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        background: rgba(34, 197, 94, 0.12);
-        color: #4ade80;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        margin-left: 8px;
-    }
-
-    .timer-text {
-        color: #94a3b8;
-        font-size: 0.8rem;
-    }
-
-    .phone-update-note {
-        margin-top: 8px;
-        padding: 8px 12px;
-        background: rgba(245, 158, 11, 0.06);
-        border: 1px solid rgba(245, 158, 11, 0.1);
-        border-radius: 6px;
-        color: #fbbf24;
-        font-size: 0.8rem;
-    }
-
-    /* Form Layout */
-    .form-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-    }
-
+    /* ===== FORM CARD ===== */
     .form-card {
         background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
         padding: 20px 24px;
         margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
     }
 
     .card-header {
@@ -260,6 +40,8 @@
         margin-bottom: 16px;
         padding-bottom: 10px;
         border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        gap: 8px;
     }
 
     .card-header h2 {
@@ -275,6 +57,18 @@
         background: rgba(167, 139, 250, 0.06);
         padding: 2px 12px;
         border-radius: 12px;
+    }
+
+    .card-badge.required {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+    }
+
+    /* ===== FORM LAYOUT ===== */
+    .form-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
     }
 
     .form-grid {
@@ -326,6 +120,26 @@
         cursor: not-allowed;
     }
 
+    .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
     .help-text {
         font-size: 0.75rem;
         color: #64748b;
@@ -338,9 +152,10 @@
         margin-top: 2px;
     }
 
+    /* ===== CHECKBOX ===== */
     .checkbox-wrapper {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 10px;
         padding: 8px 0;
     }
@@ -348,27 +163,31 @@
     .checkbox-wrapper input[type="checkbox"] {
         width: 18px;
         height: 18px;
+        margin-top: 2px;
         accent-color: #7c3aed;
         cursor: pointer;
+        flex-shrink: 0;
     }
 
     .checkbox-label {
         cursor: pointer;
-        color: #d6e0f0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
     }
 
-    .checkbox-text {
-        display: block;
+    .checkbox-label .checkbox-text {
         font-weight: 500;
+        color: #d6e0f0;
+        font-size: 0.9rem;
     }
 
-    .checkbox-help {
-        display: block;
+    .checkbox-label .checkbox-help {
         font-size: 0.75rem;
-        color: #94a3b8;
+        color: #64748b;
     }
 
-    /* Current Image */
+    /* ===== CURRENT IMAGE ===== */
     .current-image {
         display: flex;
         flex-direction: column;
@@ -429,104 +248,7 @@
         display: none;
     }
 
-    /* Form Actions */
-    .form-actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 20px;
-        padding-top: 16px;
-        border-top: 1px solid rgba(167, 139, 250, 0.06);
-        flex-wrap: wrap;
-    }
-
-    .btn-primary {
-        padding: 10px 24px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
-    }
-
-    .btn-secondary {
-        padding: 10px 24px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-    }
-
-    .btn-light {
-        padding: 10px 24px;
-        background: rgba(167, 139, 250, 0.03);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.06);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-light:hover {
-        background: rgba(167, 139, 250, 0.08);
-        color: #e8edf5;
-    }
-
-    .btn-save {
-        flex: 1;
-        justify-content: center;
-    }
-
-    .btn-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 18px;
-        background: rgba(167, 139, 250, 0.06);
-        color: #94a3b8;
-        border: 1px solid rgba(167, 139, 250, 0.08);
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .btn-back:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-        transform: translateX(-2px);
-    }
-
-    /* Error Alert */
+    /* ===== ERROR ALERT ===== */
     .error-alert {
         background: rgba(239, 68, 68, 0.06);
         border: 1px solid rgba(239, 68, 68, 0.12);
@@ -563,7 +285,71 @@
         margin-bottom: 2px;
     }
 
-    /* Responsive */
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .form-actions .btn {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .btn-light {
+        background: rgba(167, 139, 250, 0.03);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-light:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+    }
+
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 992px) {
         .form-layout {
             grid-template-columns: 1fr;
@@ -571,12 +357,16 @@
     }
 
     @media (max-width: 768px) {
-        .form-grid {
-            grid-template-columns: 1fr;
+        .employee-update-page {
+            padding: 0;
         }
 
         .form-card {
             padding: 16px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
         }
 
         .form-actions {
@@ -588,51 +378,82 @@
             justify-content: center;
         }
 
-        .phone-input-group,
-        .otp-input-group {
+        .card-header {
             flex-direction: column;
-            align-items: stretch;
-        }
-
-        .btn-send-otp,
-        .btn-verify-otp {
-            width: 100%;
-            justify-content: center;
+            align-items: flex-start;
         }
     }
 
     @media (max-width: 480px) {
-        .timing-grid-compact {
-            grid-template-columns: 1fr;
+        .form-card {
+            padding: 14px;
+        }
+
+        .form-control {
+            font-size: 0.85rem;
+            padding: 6px 10px;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-light {
+            font-size: 0.85rem;
+            padding: 8px 20px;
+        }
+
+        .current-avatar {
+            width: 64px;
+            height: 64px;
         }
     }
-</style>
-{% endblock %}
 
-{% block content %}
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .form-card:nth-child(1) { animation-delay: 0.05s; }
+    .form-card:nth-child(2) { animation-delay: 0.1s; }
+    .form-card:nth-child(3) { animation-delay: 0.15s; }
+    .form-card:nth-child(4) { animation-delay: 0.2s; }
+    .form-card:nth-child(5) { animation-delay: 0.25s; }
+    .form-card:nth-child(6) { animation-delay: 0.3s; }
+
+    .form-actions {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.35s;
+        opacity: 0;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div class="employee-update-page">
-
-    <!-- ================= PAGE HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">✏️</div>
-                <div>
-                    <h1>Update Employee</h1>
-                    <p class="header-subtitle">
-                        Editing <strong>{{ employee.user.get_full_name|default:employee.user.username }}</strong>
-                        <span class="employee-code">({{ employee.employee_id }})</span>
-                    </p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'employee_detail' employee.id %}" class="btn-back">
-                    ← Back to Profile
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- ================= FORM ================= -->
     <form method="POST" enctype="multipart/form-data" novalidate id="employeeForm">
@@ -674,7 +495,7 @@
                 <div class="form-card">
                     <div class="card-header">
                         <h2>👤 Employee Information</h2>
-                        <span class="card-badge">Required</span>
+                        <span class="card-badge required">Required</span>
                     </div>
                     <div class="form-grid">
                         <div class="form-group">
@@ -722,7 +543,7 @@
                 <div class="form-card">
                     <div class="card-header">
                         <h2>📱 Phone Number</h2>
-                        <span class="card-badge">Required</span>
+                        <span class="card-badge required">Required</span>
                     </div>
                     <div class="form-group">
                         <label for="{{ form.phone.id_for_label }}" class="form-label required">Phone Number</label>
@@ -854,13 +675,13 @@
 
                 <!-- Form Actions -->
                 <div class="form-actions">
-                    <button type="submit" class="btn-primary btn-save">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
                         💾 Update Employee
                     </button>
-                    <a href="{% url 'employee_detail' employee.id %}" class="btn-secondary">
+                    <a href="{% url 'employee_detail' employee.id %}" class="btn btn-secondary">
                         Cancel
                     </a>
-                    <a href="#" class="btn-light" onclick="window.location.reload();">
+                    <a href="#" class="btn btn-light" onclick="window.location.reload();">
                         🔄 Reset Form
                     </a>
                 </div>
@@ -874,6 +695,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('employeeForm');
+        const submitBtn = document.getElementById('submitBtn');
+
         // ============================================
         // FILE INPUT LABEL UPDATE
         // ============================================
@@ -898,11 +722,37 @@
         }
 
         // ============================================
+        // REAL-TIME VALIDATION FEEDBACK
+        // ============================================
+        form.querySelectorAll('input:not([type="file"]), select, textarea').forEach(function(field) {
+            field.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.hasAttribute('required')) {
+                    this.classList.add('error');
+                    this.classList.remove('success');
+                } else if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                }
+            });
+
+            field.addEventListener('focus', function() {
+                this.classList.remove('error');
+            });
+
+            field.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.remove('error');
+                    this.classList.add('success');
+                } else {
+                    this.classList.remove('success');
+                }
+            });
+        });
+
+        // ============================================
         // CONFIRMATION ON CANCEL IF DIRTY
         // ============================================
         let formChanged = false;
-        const form = document.querySelector('form');
-
         form.addEventListener('input', function(e) {
             if (e.target.tagName !== 'BUTTON') {
                 formChanged = true;
@@ -922,6 +772,18 @@
         }
 
         // ============================================
+        // PREVENT DOUBLE SUBMISSION
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = `
+                <span class="spinner"></span>
+                <span class="btn-text">Updating...</span>
+            `;
+        });
+
+        // ============================================
         // KEYBOARD SHORTCUT: Ctrl+Enter to submit
         // ============================================
         document.addEventListener('keydown', function(e) {
@@ -932,6 +794,18 @@
                     form.querySelector('button[type="submit"]').click();
                 }
             }
+        });
+
+        // ============================================
+        // REMOVE ERROR STATE ON INPUT
+        // ============================================
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+            input.addEventListener('change', function() {
+                this.classList.remove('error');
+            });
         });
 
         console.log('✏️ Employee Update page loaded');

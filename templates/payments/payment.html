@@ -1,130 +1,199 @@
-{% extends 'base.html' %}
+{% extends 'payments/base_payments.html' %}
 {% load static %}
 
-{% block content %}
+{% block page_title %}Pay for {{ plan.name }} Plan{% endblock %}
+{% block page_icon %}💳{% endblock %}
+{% block page_subtitle %}Complete your payment for the {{ plan.name }} plan{% endblock %}
 
-<link rel="stylesheet" href="{% static 'css/payment.css' %}">
+{% block page_actions %}
+<a href="{% url 'payments:subscription_plans' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Plans
+</a>
+<a href="{% url 'payments:payments_dashboard' %}" class="btn btn-secondary">
+    <span class="btn-icon">📊</span> Dashboard
+</a>
+{% endblock %}
 
-<div class="payment-page">
-
-    <div class="payment-card">
-
-        <div class="payment-header">
-
-            <div class="plan-icon">
-                💎
-            </div>
-
-            <h1>
-                Upgrade to {{ plan.name }}
-            </h1>
-
-            <p>
-                Unlock premium features and supercharge your journey with PANZIA.
-            </p>
-
+{% block payments_content %}
+<div class="payment-container" style="max-width: 550px; margin: 0 auto;">
+    
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 32px; text-align: center; transition: all 0.3s;">
+        
+        <!-- Plan Icon -->
+        <div style="font-size: 4rem; margin-bottom: 12px;">
+            {% if plan.name == "FREE" %}🆓
+            {% elif plan.name == "PRO" %}⭐
+            {% elif plan.name == "ELITE" %}💎
+            {% elif plan.name == "STARTER" %}🚀
+            {% elif plan.name == "GROWTH" %}📈
+            {% elif plan.name == "SCALE" %}🏢
+            {% else %}💎
+            {% endif %}
         </div>
-
-
-        <div class="plan-details">
-
-            <div class="detail-box">
-
-                <span class="label">
-                    Plan
-                </span>
-
-                <span class="value">
+        
+        <!-- Plan Name -->
+        <h1 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.8rem;">Upgrade to {{ plan.name }}</h1>
+        <p style="color: #94a3b8; margin: 8px 0 24px; font-size: 0.95rem; line-height: 1.6;">
+            Unlock premium features and supercharge your journey with PANZIA.
+        </p>
+        
+        <!-- Plan Details -->
+        <div style="background: rgba(167, 139, 250, 0.04); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                <span style="color: #94a3b8; font-size: 0.9rem;">Plan</span>
+                <span style="color: #e8edf5; font-weight: 600; font-size: 0.9rem;">
+                    <span style="font-size: 1.2rem; margin-right: 6px;">
+                        {% if plan.name == "FREE" %}🆓
+                        {% elif plan.name == "PRO" %}⭐
+                        {% elif plan.name == "ELITE" %}💎
+                        {% elif plan.name == "STARTER" %}🚀
+                        {% elif plan.name == "GROWTH" %}📈
+                        {% elif plan.name == "SCALE" %}🏢
+                        {% else %}💎
+                        {% endif %}
+                    </span>
                     {{ plan.name }}
                 </span>
-
             </div>
-
-
-            <div class="detail-box">
-
-                <span class="label">
-                    Duration
-                </span>
-
-                <span class="value">
-                    {{ plan.duration_days }} Days
-                </span>
-
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
+                <span style="color: #94a3b8; font-size: 0.9rem;">Duration</span>
+                <span style="color: #e8edf5; font-weight: 600; font-size: 0.9rem;">{{ plan.duration_days }} Days</span>
             </div>
-
-
-            <div class="price-box">
-
-                ₹{{ plan.price }}
-
+            <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                <span style="color: #94a3b8; font-size: 0.9rem;">Description</span>
+                <span style="color: #e8edf5; font-size: 0.85rem; text-align: right; max-width: 60%;">{{ plan.description|default:"Premium subscription plan" }}</span>
             </div>
-
         </div>
-
-
-        <button id="pay-btn" class="pay-btn">
-
+        
+        <!-- Price -->
+        <div style="margin-bottom: 24px; padding: 16px; background: linear-gradient(135deg, rgba(167, 139, 250, 0.06), rgba(124, 58, 237, 0.06)); border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.08);">
+            <span style="color: #64748b; font-size: 0.85rem; display: block; margin-bottom: 4px;">Total Amount</span>
+            <span style="color: #a78bfa; font-weight: 700; font-size: 2.5rem;">₹{{ plan.price|floatformat:2 }}</span>
+        </div>
+        
+        <!-- Payment Button -->
+        <button id="pay-btn" class="pay-btn" style="width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);">
             🚀 Proceed to Payment
-
         </button>
-
-
-        <div class="secure-note">
-
-            🔒 100% Secure Payment via Razorpay
-
+        
+        <!-- Secure Note -->
+        <div style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #64748b; font-size: 0.85rem;">
+            <span style="font-size: 1.2rem;">🔒</span>
+            100% Secure Payment via Razorpay
         </div>
-
+        
+        <!-- Trust Badges -->
+        <div style="margin-top: 16px; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;">
+            <span style="color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
+                <span style="color: #34d399;">✓</span> Encrypted
+            </span>
+            <span style="color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
+                <span style="color: #34d399;">✓</span> Secure
+            </span>
+            <span style="color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
+                <span style="color: #34d399;">✓</span> Instant
+            </span>
+        </div>
     </div>
-
 </div>
 
-
+<style>
+    .payment-container .glass-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    .payment-container .pay-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .payment-container .pay-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .payment-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    @media (max-width: 480px) {
+        .payment-container .glass-card {
+            padding: 20px 16px !important;
+            margin: 0 8px !important;
+        }
+        
+        .payment-container .glass-card h1 {
+            font-size: 1.4rem !important;
+        }
+        
+        .payment-container .glass-card .price-box {
+            font-size: 2rem !important;
+        }
+        
+        .payment-container .glass-card .detail-box {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 4px !important;
+        }
+        
+        .payment-container .pay-btn {
+            font-size: 0.95rem !important;
+            padding: 12px !important;
+        }
+    }
+</style>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var options = {
+            "key": "{{ key_id }}",
+            "amount": "{{ order.amount }}",
+            "currency": "INR",
+            "order_id": "{{ order.id }}",
+            "name": "PANZIA - {{ plan.name }}",
+            "description": "{{ plan.name }} Plan Subscription",
+            "image": "{% static 'images/logo.png' %}",
+            "prefill": {
+                "name": "{{ request.user.get_full_name|default:request.user.username }}",
+                "email": "{{ request.user.email }}",
+                "contact": "{{ request.user.phone|default:'' }}"
+            },
+            "theme": {
+                "color": "#7c3aed"
+            },
+            "modal": {
+                "ondismiss": function() {
+                    // User closed the modal
+                    console.log('Payment modal closed');
+                }
+            },
+            "handler": function(response){
+                // Redirect to success page with payment details
+                window.location.href = "{% url 'payments:payment_success' %}?payment_id=" 
+                    + response.razorpay_payment_id 
+                    + "&order_id=" + response.razorpay_order_id
+                    + "&plan_id={{ plan.id }}";
+            }
+        };
 
-var options = {
+        var rzp = new Razorpay(options);
 
-    key: "{{ key_id }}",
-
-    amount: "{{ order.amount }}",
-
-    currency: "INR",
-
-    order_id: "{{ order.id }}",
-
-    name: "PANZIA",
-
-    description: "{{ plan.name }}",
-
-    theme: {
-        color: "#8b5cf6"
-    },
-
-    handler: function(response){
-
-        window.location.href =
-        "/payments/success/?payment_id="
-        + response.razorpay_payment_id
-        + "&plan_id={{ plan.id }}";
-
-    }
-
-};
-
-var rzp = new Razorpay(options);
-
-document.getElementById("pay-btn").onclick = function(e){
-
-    rzp.open();
-
-    e.preventDefault();
-
-}
-
+        // Payment button click handler
+        document.getElementById("pay-btn").onclick = function(e){
+            e.preventDefault();
+            rzp.open();
+        };
+        
+        // Handle payment failure
+        rzp.on('payment.failed', function(response) {
+            console.log('Payment failed:', response);
+            window.location.href = "{% url 'payments:payment_failed' %}";
+        });
+    });
 </script>
-
 {% endblock %}

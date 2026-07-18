@@ -1,14 +1,403 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}
-Attendance Dashboard
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'attendance_report' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📊</span> Report
+    </a>
+    <a href="{% url 'attendance_create' %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Mark Attendance
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/attendance.css' %}">
+{% block hrms_content %}
 <style>
-    /* ===== ADDITIONAL STYLES ===== */
+    /* ============================================
+       ATTENDANCE DASHBOARD - HRMS STYLES
+       ============================================ */
+    .attendance-page {
+        max-width: 100%;
+    }
+
+    /* ===== SUMMARY GRID ===== */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .summary-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .summary-card .card-icon {
+        font-size: 1.8rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .summary-card .card-content {
+        flex: 1;
+    }
+
+    .summary-card h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #e8edf5;
+        line-height: 1.2;
+    }
+
+    .summary-card p {
+        margin: 0;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    .summary-card .card-percentage {
+        font-size: 0.65rem;
+        opacity: 0.8;
+        margin-top: 2px;
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
+    }
+
+    .summary-card.present .card-icon { color: #a78bfa; }
+    .summary-card.success .card-icon { color: #34d399; }
+    .summary-card.warning .card-icon { color: #fbbf24; }
+    .summary-card.danger .card-icon { color: #f87171; }
+    .summary-card.absent .card-icon { color: #94a3b8; }
+
+    /* ===== FILTER SECTION ===== */
+    .filter-section {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .filter-section:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 160px;
+    }
+
+    .filter-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-input-wrapper i {
+        position: absolute;
+        left: 12px;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .filter-input::placeholder {
+        color: #64748b;
+    }
+
+    .filter-input option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    .btn-filter {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-clear {
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .btn-clear:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .filter-results {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+
+    .filter-results strong {
+        color: #e8edf5;
+        margin: 0 2px;
+    }
+
+    /* ===== TABLE CARD ===== */
+    .table-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+    .table-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .table-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-export,
+    .btn-print {
+        padding: 6px 14px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        font-weight: 500;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-export:hover,
+    .btn-print:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    /* ===== TABLE ===== */
+    .table-responsive {
+        overflow-x: auto;
+        margin: 0 -4px;
+    }
+
+    #attendanceTable {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 1100px;
+    }
+
+    #attendanceTable th {
+        text-align: left;
+        font-weight: 600;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        position: relative;
+    }
+
+    #attendanceTable th:hover {
+        color: #e8edf5;
+    }
+
+    #attendanceTable th i {
+        font-size: 0.6rem;
+        opacity: 0.3;
+        margin-left: 4px;
+    }
+
+    #attendanceTable td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        vertical-align: middle;
+    }
+
+    #attendanceTable tbody tr:hover {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    /* ===== EMPLOYEE INFO ===== */
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .employee-info .employee-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-info .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.7rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-info strong {
+        display: block;
+        color: #e8edf5;
+        font-size: 0.85rem;
+    }
+
+    .employee-info small {
+        font-size: 0.65rem;
+        color: #94a3b8;
+    }
+
+    /* ===== BADGES ===== */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .badge.green {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .badge.red {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+
+    .badge.blue {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .badge.orange {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    /* ===== PHOTO THUMBNAILS ===== */
     .attendance-photo-thumb {
         width: 40px;
         height: 40px;
@@ -19,47 +408,18 @@ Attendance Dashboard
         transition: all 0.3s ease;
         background: rgba(167, 139, 250, 0.03);
     }
-    
+
     .attendance-photo-thumb:hover {
         transform: scale(1.2);
         border-color: #7c3aed;
         box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
     }
-    
-    .attendance-photo-thumb .no-photo-placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        font-size: 1.2rem;
-        color: #64748b;
-        background: rgba(167, 139, 250, 0.03);
-        border-radius: 4px;
-    }
-    
-    .no-photo {
-        color: #64748b;
-        font-size: 0.7rem;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        background: rgba(167, 139, 250, 0.03);
-        padding: 2px 6px;
-        border-radius: 4px;
-        white-space: nowrap;
-    }
-    
-    .no-photo::before {
-        content: '📷';
-        font-size: 0.9rem;
-    }
-    
+
     .photo-with-check {
         position: relative;
         display: inline-block;
     }
-    
+
     .photo-with-check .check-badge {
         position: absolute;
         bottom: -4px;
@@ -71,165 +431,30 @@ Attendance Dashboard
         border: 1px solid rgba(167, 139, 250, 0.1);
         font-weight: 600;
     }
-    
+
     .photo-with-check .check-badge.in {
         color: #22c55e;
         border-color: rgba(34, 197, 94, 0.2);
     }
-    
+
     .photo-with-check .check-badge.out {
         color: #3b82f6;
         border-color: rgba(59, 130, 246, 0.2);
     }
-    
-    /* Photo Modal */
-    .photo-modal {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(8px);
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .photo-modal.show {
-        display: flex;
-        animation: fadeIn 0.3s ease;
-    }
-    
-    .photo-modal-content {
-        background: #1a1035;
-        border-radius: 16px;
-        border: 1px solid rgba(167, 139, 250, 0.1);
-        max-width: 600px;
-        width: 90%;
-        max-height: 90vh;
-        overflow: auto;
-        position: relative;
-        animation: scaleIn 0.3s ease;
-    }
-    
-    .photo-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px 20px;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
-    }
-    
-    .photo-modal-header h2 {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #e8edf5;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .photo-modal-header h2 .photo-type {
+
+    .no-photo {
+        color: #64748b;
         font-size: 0.7rem;
-        background: rgba(167, 139, 250, 0.1);
-        padding: 2px 10px;
-        border-radius: 12px;
-        color: #a78bfa;
-    }
-    
-    .photo-modal-header h2 .photo-type.in {
-        background: rgba(34, 197, 94, 0.15);
-        color: #4ade80;
-    }
-    
-    .photo-modal-header h2 .photo-type.out {
-        background: rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-    }
-    
-    .photo-modal-close {
-        background: none;
-        border: none;
-        color: #94a3b8;
-        font-size: 1.8rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        line-height: 1;
-        padding: 0 8px;
-    }
-    
-    .photo-modal-close:hover {
-        color: #f87171;
-        transform: rotate(90deg);
-    }
-    
-    .photo-modal-body {
-        padding: 20px;
-        text-align: center;
-    }
-    
-    .photo-modal-body img {
-        max-width: 100%;
-        max-height: 500px;
-        border-radius: 8px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        background: #0a0618;
-    }
-    
-    .photo-modal-footer {
-        padding: 12px 20px;
-        border-top: 1px solid rgba(167, 139, 250, 0.06);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: #94a3b8;
-        font-size: 0.85rem;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    
-    .photo-modal-footer .photo-info {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-    
-    .photo-modal-footer .photo-info span {
         display: flex;
         align-items: center;
         gap: 4px;
+        background: rgba(167, 139, 250, 0.03);
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
     }
-    
-    .photo-modal-footer .photo-info .photo-time {
-        color: #a78bfa;
-        font-weight: 500;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    @keyframes scaleIn {
-        from { opacity: 0; transform: scale(0.9); }
-        to { opacity: 1; transform: scale(1); }
-    }
-    
-    /* Quick Stats Improvements */
-    .summary-card .card-percentage {
-        font-size: 0.7rem;
-        opacity: 0.8;
-        margin-top: 2px;
-        display: inline-block;
-        padding: 1px 8px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.05);
-    }
-    
+
+    /* ===== TIME BADGE ===== */
     .time-badge {
         display: inline-block;
         padding: 2px 10px;
@@ -239,12 +464,12 @@ Attendance Dashboard
         background: rgba(167, 139, 250, 0.06);
         color: #d6e0f0;
     }
-    
+
     .time-badge.empty {
         color: #64748b;
         background: transparent;
     }
-    
+
     .hours-badge {
         display: inline-block;
         padding: 2px 10px;
@@ -254,13 +479,24 @@ Attendance Dashboard
         background: rgba(167, 139, 250, 0.06);
         color: #a78bfa;
     }
-    
+
+    .notes-text {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        display: block;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
     .action-buttons {
         display: flex;
         gap: 4px;
         flex-wrap: wrap;
     }
-    
+
     .action-btn {
         width: 32px;
         height: 32px;
@@ -274,147 +510,403 @@ Attendance Dashboard
         border: none;
         cursor: pointer;
     }
-    
+
     .action-btn.view-btn {
         background: rgba(59, 130, 246, 0.1);
         color: #60a5fa;
     }
-    
+
     .action-btn.view-btn:hover {
         background: rgba(59, 130, 246, 0.2);
     }
-    
+
     .action-btn.edit-btn {
         background: rgba(245, 158, 11, 0.1);
         color: #fbbf24;
     }
-    
+
     .action-btn.edit-btn:hover {
         background: rgba(245, 158, 11, 0.2);
     }
-    
+
     .action-btn.delete-btn {
         background: rgba(239, 68, 68, 0.1);
         color: #f87171;
     }
-    
+
     .action-btn.delete-btn:hover {
         background: rgba(239, 68, 68, 0.2);
     }
-    
-    /* Column widths */
-    .col-checkin-photo {
-        width: 60px;
-        min-width: 60px;
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
     }
-    
-    .col-checkout-photo {
-        width: 60px;
-        min-width: 60px;
+
+    .empty-state .empty-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
     }
-    
-    /* Responsive */
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.1rem;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        margin: 0 0 16px;
+        font-size: 0.9rem;
+    }
+
+    /* ===== TABLE FOOTER ===== */
+    .table-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .pagination-info {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .pagination-info strong {
+        color: #e8edf5;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pagination-btn {
+        padding: 4px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 6px;
+        background: transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.8rem;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+        background: rgba(124, 58, 237, 0.15);
+        color: #a78bfa;
+        border-color: rgba(124, 58, 237, 0.15);
+    }
+
+    /* ===== PHOTO MODAL ===== */
+    .photo-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .photo-modal.show {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .photo-modal-content {
+        background: #1a1035;
+        border-radius: 16px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow: auto;
+        position: relative;
+        animation: scaleIn 0.3s ease;
+    }
+
+    .photo-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .photo-modal-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .photo-modal-header h2 .photo-type {
+        font-size: 0.7rem;
+        background: rgba(167, 139, 250, 0.1);
+        padding: 2px 10px;
+        border-radius: 12px;
+        color: #a78bfa;
+    }
+
+    .photo-modal-header h2 .photo-type.in {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .photo-modal-header h2 .photo-type.out {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .photo-modal-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        line-height: 1;
+        padding: 0 8px;
+    }
+
+    .photo-modal-close:hover {
+        color: #f87171;
+        transform: rotate(90deg);
+    }
+
+    .photo-modal-body {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .photo-modal-body img {
+        max-width: 100%;
+        max-height: 500px;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        background: #0a0618;
+    }
+
+    .photo-modal-footer {
+        padding: 12px 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .photo-modal-footer .photo-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .photo-modal-footer .photo-info span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .photo-modal-footer .photo-info .photo-time {
+        color: #a78bfa;
+        font-weight: 500;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        #attendanceTable {
+            min-width: 900px;
+        }
+    }
+
     @media (max-width: 768px) {
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-group {
+            min-width: unset;
+        }
+
+        .btn-filter,
+        .btn-clear {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filter-results {
+            margin-left: 0;
+            justify-content: center;
+            white-space: normal;
+        }
+
+        .table-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .table-actions {
+            justify-content: center;
+        }
+
         .photo-modal-content {
             width: 95%;
         }
-        
+
         .photo-modal-body img {
             max-height: 300px;
         }
-        
+
         .photo-modal-footer {
             flex-direction: column;
             align-items: flex-start;
         }
-        
-        .summary-grid {
-            grid-template-columns: repeat(2, 1fr);
+
+        .table-footer {
+            flex-direction: column;
+            text-align: center;
         }
-        
+
+        .pagination-controls {
+            justify-content: center;
+        }
+
         .action-buttons {
             gap: 2px;
         }
-        
+
         .action-btn {
             width: 28px;
             height: 28px;
             font-size: 0.7rem;
         }
-        
-        .col-checkin-photo,
-        .col-checkout-photo {
-            width: 50px;
-            min-width: 50px;
+
+        #attendanceTable {
+            min-width: 750px;
         }
     }
-    
+
     @media (max-width: 480px) {
         .summary-grid {
             grid-template-columns: 1fr;
         }
-        
-        .table-responsive {
-            overflow-x: auto;
+
+        #attendanceTable {
+            font-size: 0.75rem;
+            min-width: 650px;
         }
-        
-        .col-checkin-photo,
-        .col-checkout-photo {
-            width: 40px;
-            min-width: 40px;
-        }
-        
+
         .attendance-photo-thumb {
             width: 32px;
             height: 32px;
         }
+
+        .employee-info .employee-avatar,
+        .employee-info .avatar {
+            width: 28px;
+            height: 28px;
+            font-size: 0.6rem;
+        }
+
+        .employee-info strong {
+            font-size: 0.75rem;
+        }
+
+        .badge {
+            font-size: 0.55rem;
+            padding: 2px 8px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .summary-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .summary-card:nth-child(1) { animation-delay: 0.05s; }
+    .summary-card:nth-child(2) { animation-delay: 0.1s; }
+    .summary-card:nth-child(3) { animation-delay: 0.15s; }
+    .summary-card:nth-child(4) { animation-delay: 0.2s; }
+    .summary-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .filter-section {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .table-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
     }
 </style>
-{% endblock %}
-
-{% block content %}
 
 <div class="attendance-page">
 
-    <!-- ================= PAGE HEADER ================= -->
-    <div class="page-header">
-        <div>
-            <div class="breadcrumb">
-                <a href="{% url 'dashboard' %}">Dashboard</a>
-                <span>/</span>
-                <strong>Attendance</strong>
-            </div>
-            <h1>🕒 Daily Attendance</h1>
-            <p>Monitor employee attendance in real time.</p>
-        </div>
-        <div class="header-actions">
-            <a href="{% url 'attendance_report' %}" class="btn-secondary">
-                <i class="fas fa-chart-bar"></i> Attendance Report
-            </a>
-            <a href="{% url 'attendance_create' %}" class="btn-primary">
-                <i class="fas fa-plus-circle"></i> Mark Attendance
-            </a>
-        </div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- STARTUP BANNER - RIGHT AFTER HEADER -->
-    <!-- ============================================================ -->
-    {% include 'people/includes/startup_banner.html' %}
-    {% if is_super_admin %}
-    <div class="current-startup-banner">
-        <span class="banner-icon">🏢</span>
-        {% if current_startup %}
-            <span class="banner-text">Viewing: <strong>{{ current_startup.company_name }}</strong></span>
-            <a href="{% url 'reset_startup_view' %}?next={{ request.path }}" class="banner-reset">↺ View All</a>
-        {% else %}
-            <span class="banner-text">Viewing: <strong>All Startups</strong></span>
-        {% endif %}
-    </div>
-    {% endif %}
-
     <!-- ================= SUMMARY CARDS ================= -->
-    <div class="summary-grid" id="summaryGrid">
+    <div class="summary-grid">
         <div class="summary-card present">
             <div class="card-icon">📊</div>
             <div class="card-content">
@@ -540,8 +1032,8 @@ Attendance Dashboard
                         <th class="sortable" data-sort="status">Status <i class="fas fa-sort"></i></th>
                         <th class="col-checkin-photo">Check-in Photo</th>
                         <th class="col-checkout-photo">Check-out Photo</th>
+                        <th>Location</th>
                         <th>Working Hours</th>
-                        <th>Notes</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -609,19 +1101,19 @@ Attendance Dashboard
                             {% endif %}
                         </td>
                         <td>
-                            {% if item.photo %}
+                            {% if item.checkin_photo %}
                             <div class="photo-with-check">
-                                <img src="{{ item.photo.url }}" 
-                                     alt="Attendance Photo" 
+                                <img src="{{ item.checkin_photo.url }}" 
+                                     alt="Check-in Photo" 
                                      class="attendance-photo-thumb"
-                                     data-photo-url="{{ item.photo.url }}"
+                                     data-photo-url="{{ item.checkin_photo.url }}"
                                      data-employee-name="{{ item.employee.user.get_full_name|default:'' }}"
                                      data-photo-date="{{ item.date|date:'d M Y' }}"
-                                     data-photo-time="{% if item.check_in %}In: {{ item.check_in|time:'H:i' }}{% endif %}"
+                                     data-photo-time="In: {{ item.check_in|time:'H:i' }}"
                                      data-photo-type="checkin"
                                      onclick="openPhotoModal(this)"
                                      loading="lazy"
-                                     title="Click to view full photo">
+                                     title="Click to view check-in photo">
                                 <span class="check-badge in">✓</span>
                             </div>
                             {% else %}
@@ -629,23 +1121,36 @@ Attendance Dashboard
                             {% endif %}
                         </td>
                         <td>
-                            {% if item.photo %}
+                            {% if item.checkout_photo %}
                             <div class="photo-with-check">
-                                <img src="{{ item.photo.url }}" 
-                                     alt="Attendance Photo" 
+                                <img src="{{ item.checkout_photo.url }}" 
+                                     alt="Check-out Photo" 
                                      class="attendance-photo-thumb"
-                                     data-photo-url="{{ item.photo.url }}"
+                                     data-photo-url="{{ item.checkout_photo.url }}"
                                      data-employee-name="{{ item.employee.user.get_full_name|default:'' }}"
                                      data-photo-date="{{ item.date|date:'d M Y' }}"
-                                     data-photo-time="{% if item.check_out %}Out: {{ item.check_out|time:'H:i' }}{% endif %}"
+                                     data-photo-time="Out: {{ item.check_out|time:'H:i' }}"
                                      data-photo-type="checkout"
                                      onclick="openPhotoModal(this)"
                                      loading="lazy"
-                                     title="Click to view full photo">
+                                     title="Click to view check-out photo">
                                 <span class="check-badge out">✓</span>
                             </div>
                             {% else %}
                             <span class="no-photo">No photo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.location_address %}
+                            <span class="notes-text" title="{{ item.location_address }}">
+                                📍 {{ item.location_address|truncatechars:30 }}
+                            </span>
+                            {% elif item.location_lat and item.location_lng %}
+                            <span class="notes-text" title="{{ item.location_lat }}, {{ item.location_lng }}">
+                                📍 {{ item.location_lat|floatformat:4 }}, {{ item.location_lng|floatformat:4 }}
+                            </span>
+                            {% else %}
+                            <span class="no-photo">No location</span>
                             {% endif %}
                         </td>
                         <td>
@@ -657,11 +1162,6 @@ Attendance Dashboard
                                 {% else %}
                                     --
                                 {% endif %}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="notes-text" title="{{ item.notes|default:'-' }}">
-                                {{ item.notes|default:"-"|truncatechars:30 }}
                             </span>
                         </td>
                         <td class="action-buttons">
@@ -689,7 +1189,7 @@ Attendance Dashboard
                             <div class="empty-icon">📭</div>
                             <h3>No attendance records found</h3>
                             <p>Try adjusting your filters or mark attendance for today.</p>
-                            <a href="{% url 'attendance_create' %}" class="btn-primary">
+                            <a href="{% url 'attendance_create' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 8px; text-decoration: none; font-weight: 600;">
                                 <i class="fas fa-plus-circle"></i> Mark Attendance
                             </a>
                         </td>
@@ -719,7 +1219,7 @@ Attendance Dashboard
         <div class="photo-modal-header">
             <h2>
                 📸 Attendance Photo
-                <span class="photo-type" id="photoType">Check-in</span>
+                <span class="photo-type" id="photoType">Attendance</span>
             </h2>
             <button class="photo-modal-close" onclick="closePhotoModal()">&times;</button>
         </div>
@@ -737,7 +1237,6 @@ Attendance Dashboard
     </div>
 </div>
 
-<script src="{% static 'js/attendance.js' %}"></script>
 <script>
     // ============================================
     // CONFIRM DELETE
@@ -751,7 +1250,7 @@ Attendance Dashboard
     }
 
     // ============================================
-    // PHOTO MODAL - USING DATA ATTRIBUTES
+    // PHOTO MODAL
     // ============================================
     function openPhotoModal(element) {
         const modal = document.getElementById('photoModal');
@@ -761,12 +1260,11 @@ Attendance Dashboard
         const timeSpan = document.getElementById('photoTime');
         const typeSpan = document.getElementById('photoType');
         
-        // Get data from data attributes
         const imageUrl = element.dataset.photoUrl;
         const employeeName = element.dataset.employeeName || 'Employee';
         const photoDate = element.dataset.photoDate || '';
         const photoTime = element.dataset.photoTime || '';
-        const photoType = element.dataset.photoType || 'checkin';
+        const photoType = element.dataset.photoType || 'attendance';
         
         if (!imageUrl) {
             console.error('No photo URL found');
@@ -778,7 +1276,6 @@ Attendance Dashboard
         dateSpan.textContent = '📅 ' + photoDate;
         timeSpan.textContent = '⏰ ' + photoTime;
         
-        // Update type badge
         if (photoType === 'checkin') {
             typeSpan.textContent = '✅ Check-in Photo';
             typeSpan.className = 'photo-type in';
@@ -800,14 +1297,12 @@ Attendance Dashboard
         document.body.style.overflow = '';
     }
     
-    // Close modal on background click
     document.getElementById('photoModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closePhotoModal();
         }
     });
     
-    // Close modal on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closePhotoModal();
@@ -827,7 +1322,6 @@ Attendance Dashboard
             const rowData = [];
             for (let col of cols) {
                 let text = col.innerText.trim();
-                // Remove emojis and icons for clean CSV
                 text = text.replace(/[^\w\s,.-]/g, '').trim();
                 if (text) rowData.push(text);
             }
@@ -847,87 +1341,17 @@ Attendance Dashboard
     }
 
     // ============================================
-    // PASS DJANGO CONTEXT TO JAVASCRIPT - FIXED
-    // ============================================
-    (function() {
-        try {
-            const totalRecords = parseInt('{{ attendance|length|default:"0" }}') || 0;
-            const presentCount = parseInt('{{ present_count|default:"0" }}') || 0;
-            const wfhCount = parseInt('{{ wfh_count|default:"0" }}') || 0;
-            const leaveCount = parseInt('{{ leave_count|default:"0" }}') || 0;
-            const absentCount = parseInt('{{ absent_count|default:"0" }}') || 0;
-
-            const attendanceData = {
-                totalRecords: totalRecords,
-                presentCount: presentCount,
-                wfhCount: wfhCount,
-                leaveCount: leaveCount,
-                absentCount: absentCount
-            };
-
-            window.attendanceData = attendanceData;
-            console.log('📊 Attendance data loaded:', attendanceData);
-
-            // Update summary card percentages if needed
-            const summaryCards = document.querySelectorAll('.summary-card .card-percentage');
-            if (summaryCards.length > 0 && totalRecords > 0) {
-                const percentages = {
-                    'Present': Math.round((presentCount / totalRecords) * 100),
-                    'WFH': Math.round((wfhCount / totalRecords) * 100),
-                    'Leave': Math.round((leaveCount / totalRecords) * 100),
-                    'Absent': Math.round((absentCount / totalRecords) * 100)
-                };
-                
-                // Update the second card (Present), third (WFH), fourth (Leave), fifth (Absent)
-                const statusCards = document.querySelectorAll('.summary-card');
-                if (statusCards.length >= 5) {
-                    // Skip first card (Total Records)
-                    const cardLabels = ['Present', 'WFH', 'Leave', 'Absent'];
-                    cardLabels.forEach((label, index) => {
-                        const card = statusCards[index + 1];
-                        if (card) {
-                            const percentSpan = card.querySelector('.card-percentage');
-                            if (percentSpan) {
-                                percentSpan.textContent = (percentages[label] || 0) + '%';
-                            }
-                        }
-                    });
-                }
-            }
-
-            function initAttendance() {
-                if (typeof initializeAttendance === 'function') {
-                    initializeAttendance();
-                } else {
-                    console.warn('initializeAttendance function not found. Make sure attendance.js is loaded.');
-                }
-            }
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initAttendance);
-            } else {
-                initAttendance();
-            }
-        } catch (error) {
-            console.error('Error initializing attendance data:', error);
-        }
-    })();
-
-    // ============================================
     // KEYBOARD SHORTCUTS
     // ============================================
     document.addEventListener('keydown', function(e) {
-        // Ctrl + F for focus on search
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
             e.preventDefault();
             document.getElementById('employeeSearch').focus();
         }
-        // Ctrl + Shift + R for refresh
         if ((e.ctrlKey || e.metaKey) && e.key === 'r' && e.shiftKey) {
             e.preventDefault();
             window.location.reload();
         }
-        // Escape to close modal
         if (e.key === 'Escape') {
             closePhotoModal();
         }
@@ -941,7 +1365,6 @@ Attendance Dashboard
         const statusFilter = document.getElementById('statusFilter');
         const dateFilter = document.getElementById('dateFilter');
         
-        // Auto-submit on filter change
         if (statusFilter) {
             statusFilter.addEventListener('change', function() {
                 filterForm.submit();
@@ -954,7 +1377,6 @@ Attendance Dashboard
             });
         }
         
-        // Search with debounce
         const searchInput = document.getElementById('employeeSearch');
         let searchTimeout;
         if (searchInput) {
@@ -966,26 +1388,12 @@ Attendance Dashboard
             });
         }
         
-        // Clear button functionality
         const clearBtn = document.querySelector('.btn-clear');
         if (clearBtn) {
             clearBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 window.location.href = this.href;
             });
-        }
-    });
-
-    // ============================================
-    // PHOTO UPLOAD STATUS CHECK
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check if any photos exist
-        const photos = document.querySelectorAll('.attendance-photo-thumb');
-        if (photos.length === 0) {
-            console.log('📷 No attendance photos found');
-        } else {
-            console.log(`📷 Found ${photos.length} attendance photos`);
         }
     });
 

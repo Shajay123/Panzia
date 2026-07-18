@@ -1,34 +1,1065 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}Attendance Report{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/attendance_report.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <button class="btn btn-secondary btn-sm" id="exportExcel">
+        <span class="btn-icon">📥</span> Excel
+    </button>
+    <button class="btn btn-secondary btn-sm" id="exportPDF">
+        <span class="btn-icon">🖨</span> PDF
+    </button>
+    <a href="{% url 'attendance' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Attendance
+    </a>
+</div>
 {% endblock %}
 
-{% block content %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       ATTENDANCE REPORT - HRMS STYLES
+       ============================================ */
+    .attendance-report-page {
+        max-width: 100%;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-header .header-left .page-tag {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(124, 58, 237, 0.15);
+        color: #a78bfa;
+        border: 1px solid rgba(124, 58, 237, 0.1);
+        margin-bottom: 8px;
+    }
+
+    .page-header .header-left h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .page-header .header-left p {
+        margin: 4px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    /* ===== SUMMARY GRID ===== */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .summary-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .summary-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .summary-card .card-icon {
+        font-size: 1.8rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .summary-card h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #e8edf5;
+        line-height: 1.2;
+    }
+
+    .summary-card p {
+        margin: 0;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    .summary-card .trend {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        font-size: 0.55rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(4px);
+    }
+
+    .trend.up { color: #34d399; }
+    .trend.down { color: #f87171; }
+    .trend.neutral { color: #94a3b8; }
+
+    .summary-card.present .card-icon { color: #34d399; }
+    .summary-card.absent .card-icon { color: #f87171; }
+    .summary-card.leave .card-icon { color: #fbbf24; }
+    .summary-card.wfh .card-icon { color: #60a5fa; }
+    .summary-card.percentage .card-icon { color: #a78bfa; }
+
+    /* ===== FILTER CARD ===== */
+    .filter-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .filter-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .filter-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .btn-toggle-filters {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .btn-toggle-filters:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        transition: all 0.3s;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-group label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #94a3b8;
+    }
+
+    .form-control {
+        padding: 8px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    .filter-actions-group {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-filter {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+    }
+
+    .btn-filter.btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+    }
+
+    .btn-filter.btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-filter.btn-light {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-filter.btn-light:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    .filter-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .filter-stats #recordCount {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .active-filters {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: rgba(124, 58, 237, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(124, 58, 237, 0.06);
+    }
+
+    .filter-chip .remove-chip {
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+        font-size: 0.6rem;
+    }
+
+    .filter-chip .remove-chip:hover {
+        opacity: 1;
+    }
+
+    .no-filters {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+
+    /* ===== TABLE CARD ===== */
+    .table-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+    .table-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .table-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table-header-left h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .record-badge {
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+    }
+
+    .table-header-right {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .search-input {
+        padding: 6px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.85rem;
+        min-width: 180px;
+        transition: all 0.3s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    .search-input::placeholder {
+        color: #64748b;
+    }
+
+    .btn-sm {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
+
+    .btn-light {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-light:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+    }
+
+    /* ===== TABLE ===== */
+    .table-responsive {
+        overflow-x: auto;
+        margin: 0 -4px;
+    }
+
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 1100px;
+    }
+
+    .attendance-table th {
+        text-align: left;
+        font-weight: 600;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        position: relative;
+    }
+
+    .attendance-table th:hover {
+        color: #e8edf5;
+    }
+
+    .attendance-table th.sortable::after {
+        content: '↕';
+        font-size: 0.6rem;
+        margin-left: 4px;
+        opacity: 0.3;
+    }
+
+    .attendance-table th.asc::after {
+        content: '↑';
+        opacity: 1;
+        color: #a78bfa;
+    }
+
+    .attendance-table th.desc::after {
+        content: '↓';
+        opacity: 1;
+        color: #a78bfa;
+    }
+
+    .attendance-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        color: #d6e0f0;
+        vertical-align: middle;
+    }
+
+    .attendance-table tbody tr:hover {
+        background: rgba(167, 139, 250, 0.02);
+    }
+
+    /* ===== EMPLOYEE BOX ===== */
+    .employee-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .employee-box .employee-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        flex-shrink: 0;
+    }
+
+    .employee-box .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.7rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .employee-box strong {
+        display: block;
+        color: #e8edf5;
+        font-size: 0.85rem;
+    }
+
+    .employee-box small {
+        font-size: 0.65rem;
+        color: #94a3b8;
+    }
+
+    /* ===== PHOTO THUMBNAILS ===== */
+    .attendance-photo-thumb {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        transition: all 0.3s ease;
+        background: rgba(167, 139, 250, 0.03);
+    }
+
+    .attendance-photo-thumb:hover {
+        transform: scale(1.2);
+        border-color: #7c3aed;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .photo-with-check {
+        position: relative;
+        display: inline-block;
+    }
+
+    .photo-with-check .check-badge {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        font-size: 0.5rem;
+        background: #1a1035;
+        padding: 1px 4px;
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        font-weight: 600;
+    }
+
+    .photo-with-check .check-badge.in {
+        color: #22c55e;
+        border-color: rgba(34, 197, 94, 0.2);
+    }
+
+    .photo-with-check .check-badge.out {
+        color: #3b82f6;
+        border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .no-photo {
+        color: #64748b;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(167, 139, 250, 0.03);
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .status-badge .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-badge.status-present {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+    .status-badge.status-present .status-dot { background: #22c55e; }
+
+    .status-badge.status-absent {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+    .status-badge.status-absent .status-dot { background: #ef4444; }
+
+    .status-badge.status-wfh {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+    .status-badge.status-wfh .status-dot { background: #3b82f6; }
+
+    .status-badge.status-leave {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+    .status-badge.status-leave .status-dot { background: #f59e0b; }
+
+    /* ===== WORKING HOURS ===== */
+    .working-hours {
+        font-weight: 600;
+        color: #a78bfa;
+        font-family: monospace;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .table-btn {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .table-btn.view {
+        background: rgba(96, 165, 250, 0.08);
+        color: #60a5fa;
+        border-color: rgba(96, 165, 250, 0.06);
+    }
+    .table-btn.view:hover {
+        background: rgba(96, 165, 250, 0.15);
+    }
+
+    .table-btn.edit {
+        background: rgba(251, 191, 36, 0.08);
+        color: #fbbf24;
+        border-color: rgba(251, 191, 36, 0.06);
+    }
+    .table-btn.edit:hover {
+        background: rgba(251, 191, 36, 0.15);
+    }
+
+    .table-btn.delete {
+        background: rgba(239, 68, 68, 0.08);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.06);
+    }
+    .table-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.15);
+    }
+
+    /* ===== PHOTO MODAL ===== */
+    .photo-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .photo-modal.show {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .photo-modal-content {
+        background: #1a1035;
+        border-radius: 16px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow: auto;
+        position: relative;
+        animation: scaleIn 0.3s ease;
+    }
+
+    .photo-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .photo-modal-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .photo-modal-header h2 .photo-type {
+        font-size: 0.7rem;
+        background: rgba(167, 139, 250, 0.1);
+        padding: 2px 10px;
+        border-radius: 12px;
+        color: #a78bfa;
+    }
+
+    .photo-modal-header h2 .photo-type.in {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .photo-modal-header h2 .photo-type.out {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .photo-modal-close {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        line-height: 1;
+        padding: 0 8px;
+    }
+
+    .photo-modal-close:hover {
+        color: #f87171;
+        transform: rotate(90deg);
+    }
+
+    .photo-modal-body {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .photo-modal-body img {
+        max-width: 100%;
+        max-height: 500px;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        background: #0a0618;
+    }
+
+    .photo-modal-footer {
+        padding: 12px 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .photo-modal-footer .photo-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .photo-modal-footer .photo-info span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .photo-modal-footer .photo-info .photo-time {
+        color: #a78bfa;
+        font-weight: 500;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.1rem;
+        margin: 0 0 4px;
+    }
+
+    .empty-state p {
+        margin: 0 0 16px;
+        font-size: 0.9rem;
+    }
+
+    /* ===== REPORT FOOTER ===== */
+    .report-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .footer-left {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .footer-left strong {
+        color: #d6e0f0;
+    }
+
+    .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        padding: 4px 12px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 6px;
+        background: transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.8rem;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .attendance-table {
+            min-width: 950px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+        }
+
+        .page-header .header-left h1 {
+            font-size: 1.4rem;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            flex-direction: column;
+        }
+
+        .filter-actions .btn-filter {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .table-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-input {
+            width: 100%;
+            min-width: unset;
+        }
+
+        .report-footer {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .footer-left {
+            justify-content: center;
+        }
+
+        .attendance-table {
+            font-size: 0.8rem;
+            min-width: 800px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .table-btn {
+            justify-content: center;
+        }
+
+        .photo-modal-content {
+            width: 95%;
+        }
+
+        .photo-modal-body img {
+            max-height: 300px;
+        }
+
+        .photo-modal-footer {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header .header-left h1 {
+            font-size: 1.2rem;
+        }
+
+        .filter-stats {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .employee-box {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .status-badge {
+            font-size: 0.6rem;
+            padding: 2px 10px;
+        }
+
+        .footer-left {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .table-header-right {
+            flex-direction: column;
+        }
+
+        .table-header-right .btn-sm {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .attendance-photo-thumb {
+            width: 32px;
+            height: 32px;
+        }
+
+        .attendance-table {
+            min-width: 700px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .summary-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .summary-card:nth-child(1) { animation-delay: 0.05s; }
+    .summary-card:nth-child(2) { animation-delay: 0.1s; }
+    .summary-card:nth-child(3) { animation-delay: 0.15s; }
+    .summary-card:nth-child(4) { animation-delay: 0.2s; }
+    .summary-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .filter-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .table-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+</style>
 
 <div class="attendance-report-page">
 
     <!-- ================= HEADER ================= -->
     <div class="page-header">
-        <div>
+        <div class="header-left">
             <span class="page-tag">📊 Attendance Analytics</span>
             <h1>Attendance Report</h1>
             <p>Analyze attendance trends, employee working hours, absenteeism and workforce productivity.</p>
-        </div>
-        <div class="header-actions">
-            <a href="{% url 'attendance' %}" class="btn-light">← Attendance</a>
-            <button class="btn-secondary" id="exportExcel">📥 Excel</button>
-            <button class="btn-primary" id="exportPDF">🖨 PDF</button>
         </div>
     </div>
 
     <!-- ================= KPI CARDS ================= -->
     <div class="summary-grid">
         <div class="summary-card present">
-            <div class="card-icon">✅</div>
+            <span class="card-icon">✅</span>
             <div>
                 <h2>{{ present_count|default:0 }}</h2>
                 <p>Present</p>
@@ -36,7 +1067,7 @@
             <span class="trend up">↑ 8%</span>
         </div>
         <div class="summary-card absent">
-            <div class="card-icon">❌</div>
+            <span class="card-icon">❌</span>
             <div>
                 <h2>{{ absent_count|default:0 }}</h2>
                 <p>Absent</p>
@@ -44,7 +1075,7 @@
             <span class="trend down">↓ 3%</span>
         </div>
         <div class="summary-card leave">
-            <div class="card-icon">🌴</div>
+            <span class="card-icon">🌴</span>
             <div>
                 <h2>{{ leave_count|default:0 }}</h2>
                 <p>Leave</p>
@@ -52,7 +1083,7 @@
             <span class="trend neutral">→ 0%</span>
         </div>
         <div class="summary-card wfh">
-            <div class="card-icon">🏠</div>
+            <span class="card-icon">🏠</span>
             <div>
                 <h2>{{ wfh_count|default:0 }}</h2>
                 <p>WFH</p>
@@ -60,7 +1091,7 @@
             <span class="trend up">↑ 5%</span>
         </div>
         <div class="summary-card percentage">
-            <div class="card-icon">📈</div>
+            <span class="card-icon">📈</span>
             <div>
                 <h2>{{ attendance_percentage|default:0 }}%</h2>
                 <p>Attendance Rate</p>
@@ -116,10 +1147,10 @@
                 <div class="filter-group filter-actions-group">
                     <label>&nbsp;</label>
                     <div class="filter-actions">
-                        <button type="submit" class="btn-primary btn-filter">
+                        <button type="submit" class="btn-filter btn-primary">
                             🔍 Apply Filters
                         </button>
-                        <a href="{% url 'attendance_report' %}" class="btn-light btn-reset">
+                        <a href="{% url 'attendance_report' %}" class="btn-filter btn-light">
                             ↩️ Reset
                         </a>
                     </div>
@@ -157,6 +1188,8 @@
                         <th>Check Out</th>
                         <th class="sortable" data-sort="hours">Working Hours ↕</th>
                         <th class="sortable" data-sort="status">Status ↕</th>
+                        <th>Check-in Photo</th>
+                        <th>Check-out Photo</th>
                         <th>Notes</th>
                         <th>Actions</th>
                     </tr>
@@ -193,6 +1226,46 @@
                                 {{ record.status }}
                             </span>
                         </td>
+                        <td>
+                            {% if record.checkin_photo %}
+                            <div class="photo-with-check">
+                                <img src="{{ record.checkin_photo.url }}" 
+                                     alt="Check-in Photo" 
+                                     class="attendance-photo-thumb"
+                                     data-photo-url="{{ record.checkin_photo.url }}"
+                                     data-employee-name="{{ record.employee.user.get_full_name|default:'' }}"
+                                     data-photo-date="{{ record.date|date:'d M Y' }}"
+                                     data-photo-time="In: {{ record.check_in|time:'H:i' }}"
+                                     data-photo-type="checkin"
+                                     onclick="openPhotoModal(this)"
+                                     loading="lazy"
+                                     title="Click to view check-in photo">
+                                <span class="check-badge in">✓</span>
+                            </div>
+                            {% else %}
+                            <span class="no-photo">No photo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if record.checkout_photo %}
+                            <div class="photo-with-check">
+                                <img src="{{ record.checkout_photo.url }}" 
+                                     alt="Check-out Photo" 
+                                     class="attendance-photo-thumb"
+                                     data-photo-url="{{ record.checkout_photo.url }}"
+                                     data-employee-name="{{ record.employee.user.get_full_name|default:'' }}"
+                                     data-photo-date="{{ record.date|date:'d M Y' }}"
+                                     data-photo-time="Out: {{ record.check_out|time:'H:i' }}"
+                                     data-photo-type="checkout"
+                                     onclick="openPhotoModal(this)"
+                                     loading="lazy"
+                                     title="Click to view check-out photo">
+                                <span class="check-badge out">✓</span>
+                            </div>
+                            {% else %}
+                            <span class="no-photo">No photo</span>
+                            {% endif %}
+                        </td>
                         <td class="notes-cell">{{ record.notes|default:"-"|truncatechars:30 }}</td>
                         <td>
                             <div class="action-buttons">
@@ -204,12 +1277,12 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8">
+                        <td colspan="10">
                             <div class="empty-state">
-                                <div class="empty-icon">📋</div>
+                                <span class="empty-icon">📋</span>
                                 <h3>No Attendance Records Found</h3>
                                 <p>No attendance data matches your selected filters.</p>
-                                <a href="{% url 'attendance' %}" class="btn-primary btn-sm">➕ Mark Attendance</a>
+                                <a href="{% url 'attendance' %}" class="btn-filter btn-primary" style="display: inline-flex;">➕ Mark Attendance</a>
                             </div>
                         </td>
                     </tr>
@@ -235,9 +1308,93 @@
 
 </div>
 
+<!-- ================= PHOTO MODAL ================= -->
+<div class="photo-modal" id="photoModal">
+    <div class="photo-modal-content">
+        <div class="photo-modal-header">
+            <h2>
+                📸 Attendance Photo
+                <span class="photo-type" id="photoType">Attendance</span>
+            </h2>
+            <button class="photo-modal-close" onclick="closePhotoModal()">&times;</button>
+        </div>
+        <div class="photo-modal-body">
+            <img id="photoModalImage" src="" alt="Attendance Photo">
+        </div>
+        <div class="photo-modal-footer">
+            <div class="photo-info">
+                <span id="photoEmployee">👤 Employee</span>
+                <span id="photoDate">📅 Date</span>
+                <span id="photoTime" class="photo-time">⏰ Time</span>
+            </div>
+            <span>Attendance verification photo</span>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         
+        // ============================================
+        // PHOTO MODAL
+        // ============================================
+        window.openPhotoModal = function(element) {
+            const modal = document.getElementById('photoModal');
+            const img = document.getElementById('photoModalImage');
+            const employeeSpan = document.getElementById('photoEmployee');
+            const dateSpan = document.getElementById('photoDate');
+            const timeSpan = document.getElementById('photoTime');
+            const typeSpan = document.getElementById('photoType');
+            
+            const imageUrl = element.dataset.photoUrl;
+            const employeeName = element.dataset.employeeName || 'Employee';
+            const photoDate = element.dataset.photoDate || '';
+            const photoTime = element.dataset.photoTime || '';
+            const photoType = element.dataset.photoType || 'attendance';
+            
+            if (!imageUrl) {
+                console.error('No photo URL found');
+                return;
+            }
+            
+            img.src = imageUrl;
+            employeeSpan.textContent = '👤 ' + employeeName;
+            dateSpan.textContent = '📅 ' + photoDate;
+            timeSpan.textContent = '⏰ ' + photoTime;
+            
+            if (photoType === 'checkin') {
+                typeSpan.textContent = '✅ Check-in Photo';
+                typeSpan.className = 'photo-type in';
+            } else if (photoType === 'checkout') {
+                typeSpan.textContent = '📤 Check-out Photo';
+                typeSpan.className = 'photo-type out';
+            } else {
+                typeSpan.textContent = '📸 Attendance Photo';
+                typeSpan.className = 'photo-type';
+            }
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        };
+        
+        window.closePhotoModal = function() {
+            const modal = document.getElementById('photoModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        };
+        
+        document.getElementById('photoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePhotoModal();
+            }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePhotoModal();
+            }
+        });
+
         // ============================================
         // TOGGLE FILTERS
         // ============================================
@@ -286,7 +1443,6 @@
                 const currentDir = this.classList.contains('asc') ? 'asc' : 'desc';
                 const newDir = currentDir === 'asc' ? 'desc' : 'asc';
 
-                // Remove sort classes from all headers
                 document.querySelectorAll('.sortable').forEach(h => {
                     h.classList.remove('asc', 'desc');
                 });
@@ -370,7 +1526,7 @@
                 const checkOut = cells[3]?.textContent?.trim() || '';
                 const hours = cells[4]?.textContent?.trim() || '';
                 const status = cells[5]?.textContent?.trim() || '';
-                const notes = cells[6]?.textContent?.trim() || '';
+                const notes = cells[8]?.textContent?.trim() || '';
                 
                 csvContent += `"${employee}","${date}","${checkIn}","${checkOut}","${hours}","${status}","${notes}"\n`;
             });
@@ -430,10 +1586,8 @@
         }
 
         window.removeFilter = function(filter) {
-            // Remove filter by reloading without it
             const url = new URL(window.location.href);
-            const params = ['employee', 'status', 'from', 'to'];
-            params.forEach(p => url.searchParams.delete(p));
+            ['employee', 'status', 'from', 'to'].forEach(p => url.searchParams.delete(p));
             window.location.href = url.toString();
         };
 
@@ -451,18 +1605,6 @@
                 }
             }
         });
-
-        // ============================================
-        // AUTO-SUBMIT ON FILTER CHANGE (optional)
-        // ============================================
-        // Uncomment to auto-submit when filters change
-        /*
-        document.querySelectorAll('#employeeFilter, #statusFilter, #fromDate, #toDate').forEach(input => {
-            input.addEventListener('change', function() {
-                document.getElementById('filterForm').submit();
-            });
-        });
-        */
 
         console.log('📊 Attendance Report initialized');
         console.log(`📋 ${document.querySelectorAll('.record-row').length} records loaded`);

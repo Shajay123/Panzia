@@ -57,3 +57,51 @@ class StartupProfileForm(forms.ModelForm):
                 'class': 'form-control'
             }),
         }
+
+from django import forms
+from .models import StartupApplication
+
+
+class StartupApplicationForm(forms.ModelForm):
+    """Form for startup registration application"""
+    
+    applicant_name = forms.CharField(max_length=255, required=True)
+    applicant_email = forms.EmailField(required=True)
+    applicant_phone = forms.CharField(max_length=15, required=False)
+    
+    class Meta:
+        model = StartupApplication
+        fields = [
+            'company_name', 'tagline', 'website', 'industry', 'description', 'logo',
+            'address', 'city', 'state', 'country',
+            'applicant_name', 'applicant_email', 'applicant_phone'
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+        }
+    
+    def clean_applicant_email(self):
+        email = self.cleaned_data.get('applicant_email')
+        from accounts.models import User
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError(
+                "This email is already registered. Please login or use a different email."
+            )
+        if StartupApplication.objects.filter(
+            applicant_email=email, 
+            status='pending'
+        ).exists():
+            raise forms.ValidationError(
+                "An application with this email is already pending review."
+            )
+        return email
+    
+    def clean_company_name(self):
+        company = self.cleaned_data.get('company_name')
+        from .models import StartupProfile
+        if StartupProfile.objects.filter(company_name__iexact=company).exists():
+            raise forms.ValidationError(
+                "A startup with this name already exists. Please use a different name."
+            )
+        return company

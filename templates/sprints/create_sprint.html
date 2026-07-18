@@ -1,110 +1,959 @@
-{% extends 'base.html' %}
+{% extends 'sprints/base_sprint.html' %}
 {% load static %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/sprints.css' %}">
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'startup_sprints' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📋</span> My Sprints
+    </a>
+    <a href="{% url 'execution_dashboard' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📊</span> Dashboard
+    </a>
+</div>
 {% endblock %}
 
-{% block title %}
-Create Sprint
-{% endblock %}
+{% block execution_content %}
+<style>
+    .page-content {
+        background: transparent;
+        border: none;
+        border-radius: 16px;
+        padding: 28px;
+        animation: fadeInUp 0.4s ease;
+        max-width: 820px;
+        margin: 0 auto;
+    }
 
-{% block content %}
+    /* ===== HEADER ===== */
+    .page-header {
+        margin-bottom: 28px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
 
-<section class="create-sprint-section">
+    .page-header .page-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 10px;
+    }
 
-    <div class="create-sprint-container">
+    .page-header .title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
 
-        <!-- Header -->
+    .page-header .title-wrapper .title-icon {
+        font-size: 2.2rem;
+        line-height: 1;
+    }
 
-        <div class="page-header">
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: -0.5px;
+    }
 
+    .page-header h1 .sprint-name-highlight {
+        color: #a78bfa;
+    }
+
+    .page-header .subtitle {
+        margin: 6px 0 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        padding-left: 0;
+    }
+
+    /* ===== SPRINT LIMIT INFO ===== */
+    .sprint-limit-info {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 14px 20px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .sprint-limit-info .left-section {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .sprint-limit-info .plan-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .sprint-limit-info .limit-text {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .sprint-limit-info .limit-text strong {
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .sprint-limit-info .limit-text .count-used {
+        color: #a78bfa;
+    }
+
+    .sprint-limit-info .right-section .remaining-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .sprint-limit-info .right-section .remaining-badge.has-remaining {
+        background: rgba(52, 211, 153, 0.08);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.06);
+    }
+
+    .sprint-limit-info .right-section .remaining-badge.no-remaining {
+        background: rgba(239, 68, 68, 0.08);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+
+    /* ===== PROGRESS BAR ===== */
+    .sprint-progress {
+        margin-bottom: 24px;
+    }
+
+    .sprint-progress .progress-track {
+        width: 100%;
+        height: 4px;
+        background: rgba(167, 139, 250, 0.06);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .sprint-progress .progress-track .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7c3aed, #a78bfa);
+        border-radius: 2px;
+        transition: width 0.6s ease;
+        width: 0%;
+    }
+
+    /* ===== FORM ===== */
+    .form-container {
+        margin-top: 4px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-grid .full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #d6e0f0;
+        font-weight: 500;
+        font-size: 0.85rem;
+        letter-spacing: 0.3px;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+        font-weight: 700;
+    }
+
+    .form-group label .label-icon {
+        font-size: 1rem;
+    }
+
+    .form-group .help-text {
+        display: block;
+        color: #64748b;
+        font-size: 0.72rem;
+        margin-top: 2px;
+        padding-left: 4px;
+    }
+
+    /* ===== MODERN FORM CONTROLS ===== */
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(30, 27, 45, 0.8);
+        border: 1.5px solid rgba(167, 139, 250, 0.08);
+        border-radius: 10px;
+        color: #e8edf5;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        font-family: inherit;
+        backdrop-filter: blur(4px);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.08), inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        background: rgba(30, 27, 45, 0.9);
+    }
+
+    .form-control:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+        background: rgba(30, 27, 45, 0.9);
+    }
+
+    .form-control::placeholder {
+        color: #64748b;
+        opacity: 0.6;
+        font-size: 0.85rem;
+    }
+
+    .form-control.error {
+        border-color: #f87171;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+    }
+
+    .form-control:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* ===== TEXTAREA ===== */
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.7;
+        background: rgba(30, 27, 45, 0.8);
+        font-size: 0.9rem;
+    }
+
+    textarea.form-control:focus {
+        background: rgba(30, 27, 45, 0.9);
+    }
+
+    textarea.form-control::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    textarea.form-control::-webkit-scrollbar-track {
+        background: rgba(167, 139, 250, 0.02);
+        border-radius: 3px;
+    }
+
+    textarea.form-control::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.15);
+        border-radius: 3px;
+    }
+
+    textarea.form-control::-webkit-scrollbar-thumb:hover {
+        background: rgba(167, 139, 250, 0.25);
+    }
+
+    /* ===== SELECT ===== */
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 40px;
+        cursor: pointer;
+        background-color: rgba(30, 27, 45, 0.8);
+        color: #e8edf5;
+    }
+
+    select.form-control:hover {
+        background-color: rgba(30, 27, 45, 0.9);
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    select.form-control:focus {
+        background-color: rgba(30, 27, 45, 0.9);
+    }
+
+    select.form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    select.form-control option:hover {
+        background: rgba(167, 139, 250, 0.1);
+    }
+
+    select.form-control option:checked {
+        background: rgba(124, 58, 237, 0.2);
+        color: #a78bfa;
+    }
+
+    select.form-control optgroup {
+        background: #1a1035;
+        color: #94a3b8;
+        font-weight: 600;
+        padding: 8px 14px;
+    }
+
+    /* ===== NUMBER INPUT ===== */
+    input[type="number"].form-control {
+        -moz-appearance: textfield;
+        background: rgba(30, 27, 45, 0.8);
+    }
+
+    input[type="number"].form-control:hover {
+        background: rgba(30, 27, 45, 0.9);
+    }
+
+    input[type="number"].form-control:focus {
+        background: rgba(30, 27, 45, 0.9);
+    }
+
+    input[type="number"].form-control::-webkit-outer-spin-button,
+    input[type="number"].form-control::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* ===== DATE INPUT ===== */
+    input[type="date"].form-control {
+        color-scheme: dark;
+        cursor: pointer;
+        background: rgba(30, 27, 45, 0.8);
+        color: #e8edf5;
+        padding-right: 12px;
+    }
+
+    input[type="date"].form-control:hover {
+        background: rgba(30, 27, 45, 0.9);
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    input[type="date"].form-control:focus {
+        background: rgba(30, 27, 45, 0.9);
+    }
+
+    input[type="date"].form-control::-webkit-calendar-picker-indicator {
+        filter: invert(0.5);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+
+    input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+        filter: invert(0.8);
+        background: rgba(167, 139, 250, 0.1);
+    }
+
+    input[type="date"].form-control::-webkit-datetime-edit {
+        color: #e8edf5;
+    }
+
+    input[type="date"].form-control::-webkit-datetime-edit-fields-wrapper {
+        color: #e8edf5;
+    }
+
+    input[type="date"].form-control::-webkit-datetime-edit-text {
+        color: #64748b;
+        padding: 0 4px;
+    }
+
+    input[type="date"].form-control::-webkit-datetime-edit-month-field {
+        color: #e8edf5;
+    }
+
+    input[type="date"].form-control::-webkit-datetime-edit-day-field {
+        color: #e8edf5;
+    }
+
+    input[type="date"].form-control::-webkit-datetime-edit-year-field {
+        color: #e8edf5;
+    }
+
+    /* ===== AUTOCOMPLETE FIX ===== */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px rgba(30, 27, 45, 0.9) inset !important;
+        -webkit-text-fill-color: #e8edf5 !important;
+        caret-color: #e8edf5 !important;
+        border-color: rgba(167, 139, 250, 0.2) !important;
+    }
+
+    input:-moz-autofill {
+        background: rgba(30, 27, 45, 0.9) !important;
+        color: #e8edf5 !important;
+    }
+
+    /* ===== FIELD ERROR ===== */
+    .field-error {
+        color: #f87171;
+        font-size: 0.78rem;
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ===== FORM ACTIONS ===== */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .form-actions .left-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .form-actions .right-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        border: none;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #ffffff;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 28px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: #ffffff;
+    }
+
+    .btn-primary:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-3px);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-outline:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+        transform: translateY(-3px);
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .btn-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.15);
+    }
+
+    .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        transform: translateY(-3px);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .page-header .title-wrapper .title-icon {
+            font-size: 1.8rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .page-header .subtitle {
+            font-size: 0.85rem;
+        }
+
+        .sprint-limit-info {
+            flex-direction: column;
+            text-align: center;
+            padding: 12px 16px;
+        }
+
+        .sprint-limit-info .left-section {
+            justify-content: center;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .form-grid .full-width {
+            grid-column: 1;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .left-actions,
+        .form-actions .right-actions {
+            width: 100%;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-content {
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .page-header .title-wrapper {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .page-header .title-wrapper .title-icon {
+            font-size: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .sprint-limit-info .left-section {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+        }
+
+        .form-control {
+            padding: 10px 14px;
+            font-size: 0.85rem;
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== LOADING SHIMMER ===== */
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .form-control.loading {
+        background: linear-gradient(90deg, rgba(30, 27, 45, 0.8) 25%, rgba(30, 27, 45, 0.9) 50%, rgba(30, 27, 45, 0.8) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+</style>
+
+<div class="page-content">
+    <!-- ===== HEADER ===== -->
+    <div class="page-header">
+        <span class="page-badge">
+            {% if is_edit %}✏️{% else %}🚀{% endif %} Startup Workspace
+        </span>
+        <div class="title-wrapper">
+            <span class="title-icon">{% if is_edit %}✏️{% else %}🚀{% endif %}</span>
             <div>
-
-                <span class="page-badge">
-                    🚀 Startup Workspace
-                </span>
-
-                <h1>Create New Sprint</h1>
-
-                <p>
-                    Launch execution opportunities and attract top builders.
+                <h1>
+                    {% if is_edit %}
+                        Edit Sprint: <span class="sprint-name-highlight">{{ sprint.title }}</span>
+                    {% else %}
+                        Create New Sprint
+                    {% endif %}
+                </h1>
+                <p class="subtitle">
+                    {% if is_edit %}
+                        Update your sprint details below. Changes will be reflected immediately.
+                    {% else %}
+                        Define your sprint goals, set a deadline, and start building with your team.
+                    {% endif %}
                 </p>
-
             </div>
-
-            <a href="{% url 'startup_dashboard' %}" class="back-btn">
-                ← Dashboard
-            </a>
-
         </div>
-
-        <!-- Form Card -->
-
-        <div class="form-card">
-
-            <form method="POST">
-
-                {% csrf_token %}
-
-                <div class="form-grid">
-
-                    <div class="form-group">
-                        <label>Sprint Title</label>
-                        {{ form.title }}
-                    </div>
-
-                    <div class="form-group">
-                        <label>Domain</label>
-                        {{ form.domain }}
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Description</label>
-                        {{ form.description }}
-                    </div>
-
-                    <div class="form-group">
-                        <label>Category</label>
-                        {{ form.category }}
-                    </div>
-
-                    <div class="form-group">
-                        <label>Deadline</label>
-                        {{ form.deadline }}
-                    </div>
-
-                    <div class="form-group">
-                        <label>Maximum Contributors</label>
-                        {{ form.max_contributors }}
-                    </div>
-
-                    <div class="form-group">
-                        <label>Status</label>
-                        {{ form.status }}
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Required Skills</label>
-                        {{ form.required_skills }}
-                    </div>
-
-                </div>
-
-                <div class="form-actions">
-
-                    <button type="submit" class="create-btn">
-                        🚀 Create Sprint
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
     </div>
 
-</section>
+    <!-- ===== SPRINT LIMIT INFO ===== -->
+    <div class="sprint-limit-info">
+        <div class="left-section">
+            <span class="plan-badge">💎 {{ current_plan|default:"FREE" }}</span>
+            <span class="limit-text">
+                <span class="count-used">{{ sprint_count|default:0 }}</span> of <strong>{{ sprint_limit|default:1 }}</strong> sprints used
+            </span>
+        </div>
+        <div class="right-section">
+            <span class="remaining-badge {% if remaining_sprints > 0 %}has-remaining{% else %}no-remaining{% endif %}">
+                {% if remaining_sprints > 0 %}
+                    ✅ {{ remaining_sprints }} sprint(s) remaining
+                {% else %}
+                    ⚠️ Sprint limit reached
+                {% endif %}
+            </span>
+        </div>
+    </div>
 
+    <!-- ===== PROGRESS BAR ===== -->
+    <div class="sprint-progress">
+        <div class="progress-track">
+            <div class="progress-fill" style="width: {% widthratio sprint_count sprint_limit 100 %}%;"></div>
+        </div>
+    </div>
+
+    <!-- ===== FORM ===== -->
+    <div class="form-container">
+        <form method="POST" action="{% if is_edit %}{% url 'edit_sprint' sprint.id %}{% else %}{% url 'create_sprint' %}{% endif %}">
+            {% csrf_token %}
+
+            <!-- ====== ERROR MESSAGES ====== -->
+            {% if form.errors %}
+            <div style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="color: #f87171; font-size: 1.1rem;">⚠️</span>
+                    <span style="color: #f87171; font-weight: 600; font-size: 0.9rem;">Please correct the errors below</span>
+                </div>
+                <ul style="color: #94a3b8; margin: 6px 0 0; padding-left: 20px; font-size: 0.85rem; list-style-type: disc;">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong style="color: #e8edf5;">{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- ====== FORM FIELDS ====== -->
+            <div class="form-grid">
+                <!-- Title - Full Width -->
+                <div class="form-group full-width">
+                    <label for="{{ form.title.id_for_label }}">
+                        <span class="label-icon">📝</span>
+                        Sprint Title <span class="required">*</span>
+                    </label>
+                    <input type="text" 
+                           name="title" 
+                           id="{{ form.title.id_for_label }}"
+                           class="form-control" 
+                           placeholder="Enter a clear, descriptive sprint title..."
+                           value="{{ form.title.value|default:'' }}"
+                           required>
+                    <span class="help-text">Give your sprint a clear, descriptive title that captures its essence.</span>
+                </div>
+
+                <!-- Description - Full Width -->
+                <div class="form-group full-width">
+                    <label for="{{ form.description.id_for_label }}">
+                        <span class="label-icon">📄</span>
+                        Description <span class="required">*</span>
+                    </label>
+                    <textarea name="description" 
+                              id="{{ form.description.id_for_label }}"
+                              class="form-control" 
+                              placeholder="Describe the sprint goals, objectives, and expected outcomes..."
+                              rows="5"
+                              required>{{ form.description.value|default:'' }}</textarea>
+                    <span class="help-text">Describe what this sprint aims to achieve and why it matters.</span>
+                </div>
+
+                <!-- Category -->
+                <div class="form-group">
+                    <label for="{{ form.category.id_for_label }}">
+                        <span class="label-icon">🏷️</span>
+                        Category <span class="required">*</span>
+                    </label>
+                    <select name="category" 
+                            id="{{ form.category.id_for_label }}"
+                            class="form-control" 
+                            required>
+                        <option value="">Select Category</option>
+                        <option value="product" {% if form.category.value == 'product' %}selected{% endif %}>🛠️ Product Development</option>
+                        <option value="design" {% if form.category.value == 'design' %}selected{% endif %}>🎨 Design</option>
+                        <option value="engineering" {% if form.category.value == 'engineering' %}selected{% endif %}>⚙️ Engineering</option>
+                        <option value="marketing" {% if form.category.value == 'marketing' %}selected{% endif %}>📢 Marketing</option>
+                        <option value="sales" {% if form.category.value == 'sales' %}selected{% endif %}>💼 Sales</option>
+                        <option value="operations" {% if form.category.value == 'operations' %}selected{% endif %}>📋 Operations</option>
+                        <option value="hr" {% if form.category.value == 'hr' %}selected{% endif %}>👥 HR</option>
+                        <option value="finance" {% if form.category.value == 'finance' %}selected{% endif %}>💰 Finance</option>
+                        <option value="legal" {% if form.category.value == 'legal' %}selected{% endif %}>⚖️ Legal</option>
+                    </select>
+                    <span class="help-text">Select the category that best fits this sprint.</span>
+                </div>
+
+                <!-- Domain -->
+                <div class="form-group">
+                    <label for="{{ form.domain.id_for_label }}">
+                        <span class="label-icon">🌐</span>
+                        Domain <span class="required">*</span>
+                    </label>
+                    <select name="domain" 
+                            id="{{ form.domain.id_for_label }}"
+                            class="form-control" 
+                            required>
+                        <option value="">Select Domain</option>
+                        <option value="technology" {% if form.domain.value == 'technology' %}selected{% endif %}>💻 Technology</option>
+                        <option value="healthcare" {% if form.domain.value == 'healthcare' %}selected{% endif %}>🏥 Healthcare</option>
+                        <option value="finance" {% if form.domain.value == 'finance' %}selected{% endif %}>💰 Finance</option>
+                        <option value="education" {% if form.domain.value == 'education' %}selected{% endif %}>📚 Education</option>
+                        <option value="ecommerce" {% if form.domain.value == 'ecommerce' %}selected{% endif %}>🛒 E-Commerce</option>
+                        <option value="social" {% if form.domain.value == 'social' %}selected{% endif %}>🤝 Social</option>
+                        <option value="entertainment" {% if form.domain.value == 'entertainment' %}selected{% endif %}>🎬 Entertainment</option>
+                        <option value="realestate" {% if form.domain.value == 'realestate' %}selected{% endif %}>🏠 Real Estate</option>
+                        <option value="travel" {% if form.domain.value == 'travel' %}selected{% endif %}>✈️ Travel</option>
+                        <option value="food" {% if form.domain.value == 'food' %}selected{% endif %}>🍔 Food & Beverage</option>
+                    </select>
+                    <span class="help-text">Select the domain area for this sprint.</span>
+                </div>
+
+                <!-- Max Contributors -->
+                <div class="form-group">
+                    <label for="{{ form.max_contributors.id_for_label }}">
+                        <span class="label-icon">👥</span>
+                        Max Contributors
+                    </label>
+                    <input type="number" 
+                           name="max_contributors" 
+                           id="{{ form.max_contributors.id_for_label }}"
+                           class="form-control" 
+                           placeholder="e.g., 5"
+                           min="1"
+                           max="50"
+                           value="{{ form.max_contributors.value|default:'' }}">
+                    <span class="help-text">Maximum number of contributors allowed in this sprint (1-50).</span>
+                </div>
+
+                <!-- Deadline -->
+                <div class="form-group">
+                    <label for="{{ form.deadline.id_for_label }}">
+                        <span class="label-icon">📅</span>
+                        Deadline <span class="required">*</span>
+                    </label>
+                    <input type="date" 
+                           name="deadline" 
+                           id="{{ form.deadline.id_for_label }}"
+                           class="form-control" 
+                           value="{{ form.deadline.value|date:'Y-m-d'|default:'' }}"
+                           required>
+                    <span class="help-text">Set a realistic deadline for this sprint.</span>
+                </div>
+            </div>
+
+            <!-- ====== FORM ACTIONS ====== -->
+            <div class="form-actions">
+                <div class="left-actions">
+                    <button type="submit" class="btn btn-primary">
+                        {% if is_edit %}
+                            💾 Update Sprint
+                        {% else %}
+                            🚀 Create Sprint
+                        {% endif %}
+                    </button>
+                    <a href="{% url 'startup_sprints' %}" class="btn btn-secondary">
+                        ❌ Cancel
+                    </a>
+                </div>
+                <div class="right-actions">
+                    {% if is_edit %}
+                        <a href="{% url 'sprint_detail' sprint.id %}" class="btn btn-outline">
+                            👁️ View Sprint
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('{% if is_edit %}✏️ Edit Sprint{% else %}🚀 Create Sprint{% endif %} form loaded');
+
+        // ============================================
+        // AUTO-FOCUS FIRST FIELD
+        // ============================================
+        const firstInput = document.querySelector('.form-control:not([type="hidden"])');
+        if (firstInput && !firstInput.disabled) {
+            setTimeout(() => {
+                firstInput.focus();
+            }, 300);
+        }
+
+        // ============================================
+        // LIVE CHARACTER COUNT FOR TITLE
+        // ============================================
+        const titleInput = document.querySelector('input[name="title"]');
+        if (titleInput) {
+            const helpText = titleInput.closest('.form-group').querySelector('.help-text');
+            titleInput.addEventListener('input', function() {
+                const count = this.value.length;
+                if (helpText) {
+                    helpText.textContent = `${count}/100 characters • Give your sprint a clear, descriptive title.`;
+                    if (count > 80) {
+                        helpText.style.color = '#fbbf24';
+                    } else {
+                        helpText.style.color = '#64748b';
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // CONFIRMATION ON CANCEL
+        // ============================================
+        let formChanged = false;
+        const form = document.querySelector('form');
+        const cancelBtn = document.querySelector('.btn-secondary');
+
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Enter to submit form
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const form = document.querySelector('form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+
+        // ============================================
+        // DATE INPUT MINIMUM DATE
+        // ============================================
+        const dateInput = document.querySelector('input[type="date"]');
+        if (dateInput) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const minDate = `${year}-${month}-${day}`;
+            dateInput.setAttribute('min', minDate);
+        }
+    });
+</script>
 {% endblock %}

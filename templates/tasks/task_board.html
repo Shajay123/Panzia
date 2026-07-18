@@ -1,193 +1,527 @@
-{% extends 'base.html' %}
+{% extends 'sprints/base_sprint.html' %}
 {% load static %}
 
-{% block title %}
-Task Board
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'create_task' sprint.id %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Create Task
+    </a>
+    <a href="{% url 'sprint_detail' sprint.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📄</span> Sprint Details
+    </a>
+    <a href="{% url 'startup_sprints' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> My Sprints
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/task_board.css' %}">
-{% endblock %}
+{% block execution_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        animation: fadeInUp 0.4s ease;
+    }
 
-{% block content %}
+    /* ===== HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
 
-<section class="dashboard-section">
+    .page-header .header-left {
+        flex: 1;
+    }
 
-    <div class="dashboard-main">
+    .page-header .page-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 8px;
+    }
 
-        <!-- Header -->
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+        letter-spacing: -0.5px;
+    }
 
-        <div class="page-header">
+    .page-header h1 .sprint-name {
+        color: #a78bfa;
+    }
 
-            <div>
+    .page-header p {
+        margin: 4px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
 
-                <span class="dashboard-badge">
-                    ✅ Sprint Execution
-                </span>
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
 
-                <h1>
-                    {{ sprint.title }}
-                </h1>
+    .stat-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        text-align: center;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
 
-                <p>
-                    Manage and monitor all tasks assigned to your team members.
-                </p>
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    }
 
-            </div>
+    .stat-card .stat-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 4px;
+    }
 
-            <div>
+    .stat-card h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
 
-                <a href="{% url 'create_task' sprint.id %}"
-                   class="primary-btn">
-                    ➕ Create Task
-                </a>
+    .stat-card p {
+        margin: 0;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
 
-            </div>
+    /* ===== TASKS GRID ===== */
+    .tasks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+    }
 
+    .task-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .task-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .task-card .task-glow {
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.05), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+    }
+
+    .task-card:hover .task-glow {
+        opacity: 1;
+    }
+
+    /* ===== TASK HEADER ===== */
+    .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .task-header h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #e8edf5;
+        flex: 1;
+        line-height: 1.4;
+    }
+
+    .task-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .task-status.status-pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    .task-status.status-in_progress {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    .task-status.status-review {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .task-status.status-completed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .task-status.status-assigned {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    /* ===== TASK DESCRIPTION ===== */
+    .task-description {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        margin: 0 0 16px 0;
+        flex: 1;
+        display: -webkit-box;
+        
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* ===== TASK DETAILS ===== */
+    .task-details {
+        padding: 12px 14px;
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        margin-bottom: 16px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.8rem;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-row span {
+        color: #94a3b8;
+    }
+
+    .detail-row strong {
+        color: #d6e0f0;
+        font-weight: 500;
+    }
+
+    /* ===== TASK FOOTER ===== */
+    .task-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 12px;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .task-footer .action-btn {
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        font-weight: 500;
+    }
+
+    .task-footer .action-btn:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateX(4px);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        margin: 0 0 8px;
+    }
+
+    .empty-state p {
+        margin: 0 0 20px;
+        font-size: 0.95rem;
+    }
+
+    .empty-state .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .empty-state .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .page-content {
+            padding: 14px;
+        }
+
+        .page-header {
+            flex-direction: column;
+        }
+
+        .page-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .tasks-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .task-header h3 {
+            font-size: 0.95rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-content {
+            padding: 10px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .stat-card h2 {
+            font-size: 1.4rem;
+        }
+
+        .task-card {
+            padding: 16px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+
+    .task-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .task-card:nth-child(1) { animation-delay: 0.2s; }
+    .task-card:nth-child(2) { animation-delay: 0.25s; }
+    .task-card:nth-child(3) { animation-delay: 0.3s; }
+    .task-card:nth-child(4) { animation-delay: 0.35s; }
+    .task-card:nth-child(5) { animation-delay: 0.4s; }
+    .task-card:nth-child(6) { animation-delay: 0.45s; }
+</style>
+
+<div class="page-content">
+    <!-- ===== HEADER ===== -->
+    <div class="page-header">
+        <div class="header-left">
+            <span class="page-badge">✅ Sprint Execution</span>
+            <h1>
+                <span class="sprint-name">{{ sprint.title }}</span>
+            </h1>
+            <p>Manage and monitor all tasks assigned to your team members.</p>
         </div>
-
-        <!-- Stats -->
-
-        <div class="stats-grid">
-
-            <div class="stat-card">
-
-                <div class="stat-icon">📋</div>
-
-                <h2>{{ tasks.count }}</h2>
-
-                <p>Total Tasks</p>
-
-            </div>
-
-            <div class="stat-card">
-
-                <div class="stat-icon">🚀</div>
-
-                <h2>
-                    {{ tasks|length }}
-                </h2>
-
-                <p>Assigned Tasks</p>
-
-            </div>
-
-            <div class="stat-card">
-
-                <div class="stat-icon">🏆</div>
-
-                <h2>
-                    {{ sprint.progress_percentage }}%
-                </h2>
-
-                <p>Sprint Progress</p>
-
-            </div>
-
-        </div>
-
-        <!-- Tasks -->
-
-        {% if tasks %}
-
-        <div class="tasks-grid">
-
-            {% for task in tasks %}
-
-            <div class="task-card">
-
-                <div class="task-header">
-
-                    <h3>
-                        {{ task.title }}
-                    </h3>
-
-                    <span class="task-status status-{{ task.status }}">
-                        {{ task.get_status_display }}
-                    </span>
-
-                </div>
-
-                <p class="task-description">
-                    {{ task.description|truncatechars:120 }}
-                </p>
-
-                <div class="task-details">
-
-                    <div class="detail-row">
-
-                        <span>
-                            👤 Assigned To
-                        </span>
-
-                        <strong>
-
-                            {% if task.assigned_to %}
-                                {{ task.assigned_to.username }}
-                            {% else %}
-                                Not Assigned
-                            {% endif %}
-
-                        </strong>
-
-                    </div>
-
-                    <div class="detail-row">
-
-                        <span>
-                            📅 Deadline
-                        </span>
-
-                        <strong>
-                            {{ task.deadline }}
-                        </strong>
-
-                    </div>
-
-                </div>
-
-                <div class="task-footer">
-
-                    <a href="{% url 'task_detail' task.id %}"
-                       class="action-btn">
-                        View Task
-                    </a>
-
-                </div>
-
-            </div>
-
-            {% endfor %}
-
-        </div>
-
-        {% else %}
-
-        <div class="empty-state">
-
-            <div class="empty-icon">
-                📋
-            </div>
-
-            <h3>
-                No Tasks Created
-            </h3>
-
-            <p>
-                Start assigning work to your team members.
-            </p>
-
-            <a href="{% url 'create_task' sprint.id %}"
-               class="primary-btn">
-                Create First Task
-            </a>
-
-        </div>
-
-        {% endif %}
-
     </div>
 
-</section>
+    <!-- ===== STATS ===== -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">📋</span>
+            <h2>{{ tasks.count|default:"0" }}</h2>
+            <p>Total Tasks</p>
+        </div>
 
+        <div class="stat-card">
+            <span class="stat-icon">🚀</span>
+            <h2>{{ tasks|length|default:"0" }}</h2>
+            <p>Assigned Tasks</p>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">🏆</span>
+            <h2>{{ sprint.progress_percentage|default:"0" }}%</h2>
+            <p>Sprint Progress</p>
+        </div>
+    </div>
+
+    <!-- ===== TASKS ===== -->
+    {% if tasks %}
+    <div class="tasks-grid">
+        {% for task in tasks %}
+        <div class="task-card">
+            <div class="task-glow"></div>
+
+            <div class="task-header">
+                <h3>{{ task.title }}</h3>
+                <span class="task-status status-{{ task.status }}">
+                    {% if task.status == 'pending' %}⏳{% elif task.status == 'in_progress' %}🔄{% elif task.status == 'review' %}📝{% elif task.status == 'completed' %}✅{% else %}📌{% endif %}
+                    {{ task.get_status_display }}
+                </span>
+            </div>
+
+            <p class="task-description">{{ task.description|truncatechars:120 }}</p>
+
+            <div class="task-details">
+                <div class="detail-row">
+                    <span>👤 Assigned To</span>
+                    <strong>
+                        {% if task.assigned_to %}
+                            {{ task.assigned_to.username }}
+                        {% else %}
+                            Not Assigned
+                        {% endif %}
+                    </strong>
+                </div>
+                <div class="detail-row">
+                    <span>📅 Deadline</span>
+                    <strong>{{ task.deadline|date:"d M Y" }}</strong>
+                </div>
+            </div>
+
+            <div class="task-footer">
+                <a href="{% url 'task_detail' task.id %}" class="action-btn">
+                    View Task →
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="empty-icon">📋</span>
+        <h3>No Tasks Created</h3>
+        <p>Start assigning work to your team members.</p>
+        <a href="{% url 'create_task' sprint.id %}" class="btn btn-primary">
+            <span class="btn-icon">➕</span> Create First Task
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📋 Task Board loaded');
+        console.log('🚀 Sprint: {{ sprint.title }}');
+        console.log('📝 Total Tasks: {{ tasks.count|default:"0" }}');
+    });
+</script>
 {% endblock %}

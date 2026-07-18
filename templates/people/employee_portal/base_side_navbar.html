@@ -1,0 +1,563 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title|default:"Employee Portal" }}{% endblock %}
+
+{% block css %}
+<style>
+    /* ============================================
+       EMPLOYEE PORTAL SIDEBAR STYLES
+       ============================================ */
+    .employee-portal-wrapper {
+        display: flex;
+        min-height: 100vh;
+        background: radial-gradient(ellipse at top left, rgba(167, 139, 250, 0.03), transparent 70%);
+    }
+
+    /* ===== SIDEBAR ===== */
+    .employee-sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, #0f0a1a 0%, #1a1035 100%);
+        border-right: 1px solid rgba(167, 139, 250, 0.06);
+        min-height: 100vh;
+        padding: 20px 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+        z-index: 1000;
+    }
+
+    .employee-sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .employee-sidebar::-webkit-scrollbar-track {
+        background: rgba(167, 139, 250, 0.02);
+    }
+    
+    .employee-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.2);
+        border-radius: 10px;
+    }
+
+    .employee-sidebar .sidebar-brand {
+        padding: 0 20px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 12px;
+    }
+
+    .employee-sidebar .sidebar-brand h2 {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .employee-sidebar .sidebar-brand .logo-icon {
+        font-size: 1.5rem;
+    }
+
+    .employee-sidebar .sidebar-brand .brand-subtitle {
+        color: #94a3b8;
+        font-size: 0.7rem;
+        margin: 2px 0 0;
+        padding-left: 4px;
+    }
+
+    .employee-sidebar .sidebar-menu {
+        list-style: none;
+        padding: 0 12px;
+        margin: 0;
+    }
+
+    .employee-sidebar .sidebar-menu .menu-divider {
+        padding: 12px 14px 6px;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .employee-sidebar .sidebar-menu li {
+        margin-bottom: 2px;
+    }
+
+    .employee-sidebar .sidebar-menu li a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        color: #94a3b8;
+        text-decoration: none;
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 0.85rem;
+        position: relative;
+    }
+
+    .employee-sidebar .sidebar-menu li a:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+        transform: translateX(4px);
+    }
+
+    .employee-sidebar .sidebar-menu li a.active {
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.06);
+    }
+
+    .employee-sidebar .sidebar-menu li a .nav-icon {
+        font-size: 1.1rem;
+        width: 24px;
+        text-align: center;
+    }
+
+    .employee-sidebar .sidebar-menu li a .nav-badge {
+        margin-left: auto;
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        font-size: 0.6rem;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    .employee-sidebar .sidebar-menu li a .nav-badge.success {
+        background: rgba(52, 211, 153, 0.15);
+        color: #34d399;
+    }
+
+    .employee-sidebar .sidebar-menu li a .nav-badge.warning {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+    }
+
+    .employee-sidebar .sidebar-menu li a .nav-badge.info {
+        background: rgba(96, 165, 250, 0.15);
+        color: #60a5fa;
+    }
+
+    .employee-sidebar .sidebar-menu li a .active-dot {
+        margin-left: auto;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #a78bfa;
+        display: none;
+    }
+
+    .employee-sidebar .sidebar-menu li a.active .active-dot {
+        display: block;
+    }
+
+    /* ===== USER PROFILE IN SIDEBAR ===== */
+    .sidebar-user-profile {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sidebar-user-profile .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .sidebar-user-profile .user-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .sidebar-user-profile .user-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .sidebar-user-profile .user-info .user-name {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sidebar-user-profile .user-info .user-role {
+        color: #94a3b8;
+        font-size: 0.7rem;
+        margin: 0;
+    }
+
+    .sidebar-user-profile .logout-btn {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 1.2rem;
+        transition: all 0.3s;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+
+    .sidebar-user-profile .logout-btn:hover {
+        color: #f87171;
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .employee-main-content {
+        flex: 1;
+        padding: 24px 32px;
+        min-height: 100vh;
+        background: radial-gradient(ellipse at top left, rgba(167, 139, 250, 0.02), transparent 70%);
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 24px;
+    }
+
+    .page-header .page-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-header .page-title .title-icon {
+        font-size: 2rem;
+    }
+
+    .page-header .page-title h1 {
+        font-weight: 700;
+        color: #e8edf5;
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .page-header .page-title .subtitle {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .page-header .page-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* ===== MOBILE TOGGLE ===== */
+    .mobile-toggle {
+        display: none;
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 1100;
+        background: rgba(167, 139, 250, 0.1);
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 10px;
+        padding: 8px 12px;
+        color: #e8edf5;
+        font-size: 1.4rem;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s;
+    }
+
+    .mobile-toggle:hover {
+        background: rgba(167, 139, 250, 0.2);
+        border-color: rgba(167, 139, 250, 0.2);
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        backdrop-filter: blur(4px);
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .employee-sidebar {
+            transform: translateX(-100%);
+            width: 280px;
+        }
+
+        .employee-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .employee-main-content {
+            padding: 16px;
+            margin-left: 0;
+        }
+
+        .mobile-toggle {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-header .page-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .page-header .page-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .sidebar-user-profile {
+            padding: 12px 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .employee-main-content {
+            padding: 12px;
+        }
+
+        .page-header .page-title h1 {
+            font-size: 1.2rem;
+        }
+
+        .page-header .page-title .title-icon {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Mobile Toggle -->
+<button class="mobile-toggle" onclick="toggleSidebar()" id="mobileToggle">☰</button>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="employee-portal-wrapper">
+    
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="employee-sidebar" id="employeeSidebar">
+        <!-- Brand -->
+        <div class="sidebar-brand">
+            <h2>
+                <span class="logo-icon">👤</span> PANZIA
+            </h2>
+            <p class="brand-subtitle">Employee Portal</p>
+        </div>
+
+        <!-- Menu -->
+        <ul class="sidebar-menu">
+            <!-- Dashboard -->
+            <li>
+                <a href="{% url 'employee_portal_dashboard' %}" class="{% if request.resolver_match.url_name == 'employee_portal_dashboard' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                    <span class="active-dot"></span>
+                </a>
+            </li>
+
+            <li class="menu-divider">Self Service</li>
+
+            <!-- Profile -->
+            <li>
+                <a href="{% url 'employee_portal_profile' %}" class="{% if request.resolver_match.url_name == 'employee_portal_profile' %}active{% endif %}">
+                    <span class="nav-icon">👤</span>
+                    <span>My Profile</span>
+                    <span class="active-dot"></span>
+                </a>
+            </li>
+
+            <!-- Attendance -->
+            <li>
+                <a href="{% url 'employee_portal_attendance' %}" class="{% if request.resolver_match.url_name == 'employee_portal_attendance' %}active{% endif %}">
+                    <span class="nav-icon">📅</span>
+                    <span>Attendance</span>
+                    <span class="active-dot"></span>
+                </a>
+            </li>
+
+           
+
+            <!-- Leaves -->
+            <li>
+                <a href="{% url 'employee_portal_leave' %}" class="{% if request.resolver_match.url_name == 'employee_portal_leave' %}active{% endif %}">
+                    <span class="nav-icon">🌴</span>
+                    <span>My Leaves</span>
+                    {% if pending_leaves > 0 %}
+                    <span class="nav-badge warning">{{ pending_leaves }}</span>
+                    {% endif %}
+                    <span class="active-dot"></span>
+                </a>
+            </li>
+
+            <!-- Apply Leave (Quick Action) -->
+            <li style="padding-left: 12px;">
+                <a href="{% url 'employee_portal_leave_create' %}" class="{% if request.resolver_match.url_name == 'employee_portal_leave_create' %}active{% endif %}" style="font-size: 0.78rem; padding: 6px 14px; opacity: 0.8;">
+                    <span class="nav-icon">➕</span>
+                    <span>Apply Leave</span>
+                    <span class="active-dot"></span>
+                </a>
+            </li>
+
+            <!-- Payroll -->
+            <li>
+                <a href="{% url 'employee_portal_payroll' %}" class="{% if request.resolver_match.url_name == 'employee_portal_payroll' %}active{% endif %}">
+                    <span class="nav-icon">💰</span>
+                    <span>Payroll</span>
+                    <span class="active-dot"></span>
+                </a>
+            </li>
+
+            <li class="menu-divider">Quick Actions</li>
+
+            <!-- Quick Check-in -->
+            <li>
+                <a href="{% url 'employee_portal_attendance_checkin' %}" class="{% if request.resolver_match.url_name == 'employee_portal_attendance_checkin' %}active{% endif %}">
+                    <span class="nav-icon">✅</span>
+                    <span>Quick Check-In</span>
+                    <span class="active-dot"></span>
+                </a>
+            </li>
+
+            <!-- Quick Check-out -->
+            <li>
+                <a href="{% url 'employee_portal_attendance_checkout' %}" class="{% if request.resolver_match.url_name == 'employee_portal_attendance_checkout' %}active{% endif %}">
+                    <span class="nav-icon">🚀</span>
+                    <span>Quick Check-Out</span>
+                    <span class="active-dot"></span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- User Profile -->
+        <div class="sidebar-user-profile">
+            <div class="user-avatar">
+                {% if employee.profile_image %}
+                <img src="{{ employee.profile_image.url }}" alt="{{ employee.user.get_full_name }}">
+                {% else %}
+                {{ employee.user.first_name|first|default:employee.user.username|first|upper }}
+                {% endif %}
+            </div>
+            <div class="user-info">
+                <p class="user-name">{{ employee.user.get_full_name|default:employee.user.username }}</p>
+                <p class="user-role">{{ employee.designation|default:"Employee" }}</p>
+            </div>
+            <a href="{% url 'accounts:logout' %}" class="logout-btn" title="Logout">🚪</a>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="employee-main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-title">
+                <span class="title-icon">{% block page_icon %}👤{% endblock %}</span>
+                <div>
+                    <h1>{% block page_title %}Employee Portal{% endblock %}</h1>
+                    <p class="subtitle">{% block page_subtitle %}Welcome to your employee portal{% endblock %}</p>
+                </div>
+            </div>
+            <div class="page-actions">
+                {% block page_actions %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <!-- {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" 
+                 style="border-radius: 12px; border: none; padding: 14px 20px; margin-bottom: 20px; 
+                        {% if message.tags == 'success' %}background: rgba(52, 211, 153, 0.08); color: #34d399; border-left: 4px solid #34d399;
+                        {% elif message.tags == 'error' %}background: rgba(239, 68, 68, 0.08); color: #f87171; border-left: 4px solid #f87171;
+                        {% elif message.tags == 'warning' %}background: rgba(251, 191, 36, 0.08); color: #fbbf24; border-left: 4px solid #fbbf24;
+                        {% else %}background: rgba(96, 165, 250, 0.08); color: #60a5fa; border-left: 4px solid #60a5fa;{% endif %}">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" 
+                        style="float: right; background: none; border: none; color: inherit; font-size: 1.2rem; cursor: pointer;">×</button>
+            </div>
+            {% endfor %}
+        {% endif %} -->
+
+        <!-- Content -->
+        {% block portal_content %}{% endblock %}
+    </main>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('employeeSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+
+    // Close sidebar on window resize
+    window.addEventListener('resize', function() {
+        const sidebar = document.getElementById('employeeSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    });
+
+    // Close sidebar on link click (mobile)
+    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('employeeSidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        });
+    });
+
+    console.log('👤 Employee Portal Sidebar loaded');
+</script>
+{% endblock %}

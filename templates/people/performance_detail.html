@@ -1,102 +1,120 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }}{% endblock %}
-
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/performance_detail.css' %}">
+{% block page_title %}Performance Review Details{% endblock %}
+{% block page_icon %}{{ page_icon }}{% endblock %}
+{% block page_subtitle %}
+    <strong>{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>
+    · Rating: {{ review.rating }}/5 ⭐
 {% endblock %}
 
-{% block content %}
+{% block page_actions %}
+<a href="{% url 'performance_update' review.id %}" class="btn btn-secondary">
+    <span class="btn-icon">✏️</span> Edit
+</a>
+<a href="{% url 'performance_delete' review.id %}" class="btn btn-danger" onclick="return confirm('Delete this review?')">
+    <span class="btn-icon">🗑️</span> Delete
+</a>
+<a href="{% url 'performance' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back
+</a>
+{% endblock %}
 
-<div class="performance-detail-page">
-
-    <!-- ================= HEADER ================= -->
-    <div class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="header-icon">{{ page_icon }}</div>
-                <div>
-                    <h1>Performance Review Details</h1>
-                    <p class="header-subtitle">
-                        <strong>{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>
-                        · Rating: {{ review.rating }}/5 ⭐
-                    </p>
-                </div>
+{% block hrms_content %}
+<div class="performance-detail-container">
+    
+    <!-- ================= RATING BANNER ================= -->
+    <!-- <div class="rating-banner" style="padding: 18px 24px; border-radius: 12px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: {% if review.rating >= 4 %}rgba(52, 211, 153, 0.06){% elif review.rating >= 3 %}rgba(251, 191, 36, 0.06){% else %}rgba(239, 68, 68, 0.06){% endif %}; border: 1px solid {% if review.rating >= 4 %}rgba(52, 211, 153, 0.12){% elif review.rating >= 3 %}rgba(251, 191, 36, 0.12){% else %}rgba(239, 68, 68, 0.12){% endif %};"> -->
+        <div class="rating-banner-content" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div class="rating-display" style="display: flex; align-items: center; gap: 12px;">
+                <span class="rating-stars" style="color: #fbbf24; font-size: 1.4rem; letter-spacing: 2px;">
+                    {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= review.rating %}
+                            ★
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                </span>
+                <!-- <span class="rating-label" style="{% if review.rating >= 4 %}color: #34d399;{% elif review.rating >= 3 %}color: #fbbf24;{% else %}color: #f87171;{% endif %} font-weight: 700; font-size: 1rem;">
+                    {{ review.get_rating_label }}
+                </span> -->
             </div>
-            <div class="header-actions">
-                <a href="{% url 'performance_update' review.id %}" class="btn-edit">✏️ Edit</a>
-                <a href="{% url 'performance_delete' review.id %}" class="btn-delete" onclick="return confirm('Delete this review?')">🗑️ Delete</a>
-                <a href="{% url 'performance' %}" class="btn-back">← Back</a>
+            <div class="rating-meta" style="display: flex; gap: 16px; color: #94a3b8; font-size: 0.85rem; flex-wrap: wrap;">
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    <span>📅</span> {{ review.get_review_period_display }}
+                </span>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    <span>📆</span> Reviewed on {{ review.created_at|date:"d M Y" }}
+                </span>
             </div>
         </div>
-    </div>
-
-    <!-- ================= RATING BANNER ================= -->
-    <div class="rating-banner rating-{{ review.rating }}">
-        <div class="rating-banner-content">
-            <div class="rating-display">
-                <span class="rating-stars">{{ review.get_rating_stars }}</span>
-                <span class="rating-label">{{ review.get_rating_label }}</span>
-            </div>
-            <div class="rating-meta">
-                <span class="rating-period">{{ review.get_review_period_display }}</span>
-                <span class="rating-date">Reviewed on {{ review.created_at|date:"d M Y" }}</span>
-            </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                {{ review.rating }}/5
+            </span>
         </div>
     </div>
 
     <!-- ================= DETAIL GRID ================= -->
-    <div class="detail-grid">
+    <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
 
         <!-- Left Column -->
         <div class="detail-left">
-            <div class="detail-card">
-                <div class="card-header">
-                    <h3>📋 Review Information</h3>
-                    <span class="card-badge">Details</span>
+            <div class="detail-card" style="background: rgba(167, 139, 250, 0.02); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden;">
+                <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                    <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">📋 Review Information</h3>
+                    <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Details</span>
                 </div>
-                <div class="detail-list">
-                    <div class="detail-item">
-                        <span class="detail-label">Employee</span>
-                        <span class="detail-value">
-                            <div class="employee-info">
+                <div class="detail-list" style="padding: 8px 0;">
+                    <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                        <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Employee</span>
+                        <span style="color: #e8edf5; font-size: 0.9rem;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
                                 {% if review.employee.profile_image %}
-                                <img src="{{ review.employee.profile_image.url }}" alt="Employee" class="employee-avatar">
+                                <img src="{{ review.employee.profile_image.url }}" alt="Employee" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
                                 {% else %}
-                                <div class="employee-avatar">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(167, 139, 250, 0.12); display: flex; align-items: center; justify-content: center; color: #a78bfa; font-weight: 600; font-size: 0.8rem;">
                                     {{ review.employee.user.first_name|first|default:review.employee.user.username|first|upper }}
                                 </div>
                                 {% endif %}
-                                <div>
-                                    <strong>{{ review.employee.user.get_full_name|default:review.employee.user.username }}</strong>
-                                    <small>{{ review.employee.designation|default:"-" }}</small>
+                                <div style="text-align: left;">
+                                    <div style="font-weight: 500;">{{ review.employee.user.get_full_name|default:review.employee.user.username }}</div>
+                                    <div style="font-size: 0.75rem; color: #94a3b8;">{{ review.employee.designation|default:"-" }}</div>
                                 </div>
                             </div>
                         </span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Reviewer</span>
-                        <span class="detail-value">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</span>
+                    <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                        <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Reviewer</span>
+                        <span style="color: #e8edf5; font-size: 0.9rem; font-weight: 500;">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Rating</span>
-                        <span class="detail-value">
-                            <span class="rating-stars">{{ review.get_rating_stars }}</span>
-                            <span class="rating-number">{{ review.rating }}/5</span>
+                    <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                        <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Rating</span>
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #fbbf24; font-size: 1rem; letter-spacing: 2px;">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}
+                                        ★
+                                    {% else %}
+                                        ☆
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span style="color: #e8edf5; font-size: 0.9rem; font-weight: 600;">{{ review.rating }}/5</span>
                         </span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Review Period</span>
-                        <span class="detail-value">{{ review.get_review_period_display }}</span>
+                    <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                        <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Review Period</span>
+                        <span style="color: #e8edf5; font-size: 0.9rem; font-weight: 500;">{{ review.get_review_period_display }}</span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Created</span>
-                        <span class="detail-value">{{ review.created_at|date:"d M Y, H:i" }}</span>
+                    <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.04);">
+                        <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Created</span>
+                        <span style="color: #94a3b8; font-size: 0.85rem;">{{ review.created_at|date:"d M Y, H:i" }}</span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Last Updated</span>
-                        <span class="detail-value">{{ review.updated_at|date:"d M Y, H:i" }}</span>
+                    <div class="detail-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px;">
+                        <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">Last Updated</span>
+                        <span style="color: #94a3b8; font-size: 0.85rem;">{{ review.updated_at|date:"d M Y, H:i" }}</span>
                     </div>
                 </div>
             </div>
@@ -105,83 +123,83 @@
         <!-- Right Column -->
         <div class="detail-right">
             <!-- Review -->
-            <div class="detail-card">
-                <div class="card-header">
-                    <h3>📝 Review</h3>
-                    <span class="card-badge">Details</span>
+            <div class="detail-card" style="background: rgba(167, 139, 250, 0.02); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden; margin-bottom: 20px;">
+                <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                    <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">📝 Review</h3>
+                    <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Details</span>
                 </div>
-                <div class="review-box">
-                    <p>{{ review.review|linebreaks }}</p>
+                <div class="review-box" style="padding: 20px 24px;">
+                    {% if review.review %}
+                    <p style="color: #94a3b8; line-height: 1.8; font-size: 0.95rem; margin: 0; white-space: pre-wrap;">{{ review.review|linebreaks }}</p>
+                    {% else %}
+                    <p style="color: #64748b; font-style: italic; margin: 0;">No review text provided.</p>
+                    {% endif %}
                 </div>
             </div>
 
             <!-- Strengths -->
-            <div class="detail-card">
-                <div class="card-header">
-                    <h3>💪 Strengths</h3>
-                    <span class="card-badge">Details</span>
+            <div class="detail-card" style="background: rgba(52, 211, 153, 0.02); border-radius: 16px; border: 1px solid rgba(52, 211, 153, 0.08); overflow: hidden; margin-bottom: 20px;">
+                <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(52, 211, 153, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                    <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">💪 Strengths</h3>
+                    <span style="background: rgba(52, 211, 153, 0.08); color: #34d399; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Details</span>
                 </div>
-                <div class="strengths-box">
+                <div class="strengths-box" style="padding: 20px 24px;">
                     {% if review.strengths %}
-                    <p>{{ review.strengths|linebreaks }}</p>
+                    <p style="color: #94a3b8; line-height: 1.8; font-size: 0.95rem; margin: 0; white-space: pre-wrap;">{{ review.strengths|linebreaks }}</p>
                     {% else %}
-                    <p class="text-muted">No strengths listed.</p>
+                    <p style="color: #64748b; font-style: italic; margin: 0;">No strengths listed.</p>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Areas for Improvement -->
-            <div class="detail-card">
-                <div class="card-header">
-                    <h3>📈 Areas for Improvement</h3>
-                    <span class="card-badge">Details</span>
+            <div class="detail-card" style="background: rgba(251, 191, 36, 0.02); border-radius: 16px; border: 1px solid rgba(251, 191, 36, 0.08); overflow: hidden; margin-bottom: 20px;">
+                <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(251, 191, 36, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                    <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">📈 Areas for Improvement</h3>
+                    <span style="background: rgba(251, 191, 36, 0.08); color: #fbbf24; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Details</span>
                 </div>
-                <div class="improvement-box">
+                <div class="improvement-box" style="padding: 20px 24px;">
                     {% if review.areas_for_improvement %}
-                    <p>{{ review.areas_for_improvement|linebreaks }}</p>
+                    <p style="color: #94a3b8; line-height: 1.8; font-size: 0.95rem; margin: 0; white-space: pre-wrap;">{{ review.areas_for_improvement|linebreaks }}</p>
                     {% else %}
-                    <p class="text-muted">No areas for improvement listed.</p>
+                    <p style="color: #64748b; font-style: italic; margin: 0;">No areas for improvement listed.</p>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Goals -->
-            <div class="detail-card">
-                <div class="card-header">
-                    <h3>🎯 Goals</h3>
-                    <span class="card-badge">Details</span>
+            <div class="detail-card" style="background: rgba(167, 139, 250, 0.02); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden; margin-bottom: 20px;">
+                <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                    <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">🎯 Goals</h3>
+                    <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Details</span>
                 </div>
-                <div class="goals-box">
+                <div class="goals-box" style="padding: 20px 24px;">
                     {% if review.goals %}
-                    <p>{{ review.goals|linebreaks }}</p>
+                    <p style="color: #94a3b8; line-height: 1.8; font-size: 0.95rem; margin: 0; white-space: pre-wrap;">{{ review.goals|linebreaks }}</p>
                     {% else %}
-                    <p class="text-muted">No goals set.</p>
+                    <p style="color: #64748b; font-style: italic; margin: 0;">No goals set.</p>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Quick Actions -->
-            <div class="detail-card">
-                <div class="card-header">
-                    <h3>⚡ Quick Actions</h3>
-                    <span class="card-badge">Actions</span>
+            <div class="detail-card" style="background: rgba(167, 139, 250, 0.02); border-radius: 16px; border: 1px solid rgba(167, 139, 250, 0.08); overflow: hidden;">
+                <div class="card-header" style="padding: 18px 24px; border-bottom: 1px solid rgba(167, 139, 250, 0.06); display: flex; align-items: center; justify-content: space-between;">
+                    <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0;">⚡ Quick Actions</h3>
+                    <span style="background: rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Actions</span>
                 </div>
-                <div class="action-grid">
-                    <a href="{% url 'performance_update' review.id %}" class="action-btn edit">
-                        <span class="action-icon">✏️</span>
-                        Edit Review
+                <div class="action-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px 20px;">
+                    <a href="{% url 'performance_update' review.id %}" style="background: rgba(167, 139, 250, 0.06); border: 1px solid rgba(167, 139, 250, 0.08); color: #a78bfa; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s; justify-content: center;">
+                        <span style="font-size: 1.1rem;">✏️</span> Edit Review
                     </a>
-                    <a href="{% url 'performance_delete' review.id %}" class="action-btn delete" onclick="return confirm('Delete this review?')">
-                        <span class="action-icon">🗑️</span>
-                        Delete Review
+                    <a href="{% url 'performance_delete' review.id %}" onclick="return confirm('Delete this review?')" style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.08); color: #f87171; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s; justify-content: center;">
+                        <span style="font-size: 1.1rem;">🗑️</span> Delete Review
                     </a>
-                    <a href="{% url 'employee_detail' review.employee.id %}" class="action-btn profile">
-                        <span class="action-icon">👤</span>
-                        Employee Profile
+                    <a href="{% url 'employee_detail' review.employee.id %}" style="background: rgba(96, 165, 250, 0.06); border: 1px solid rgba(96, 165, 250, 0.08); color: #60a5fa; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s; justify-content: center;">
+                        <span style="font-size: 1.1rem;">👤</span> Employee Profile
                     </a>
-                    <a href="{% url 'performance' %}" class="action-btn back">
-                        <span class="action-icon">📋</span>
-                        All Reviews
+                    <a href="{% url 'performance' %}" style="background: rgba(251, 191, 36, 0.06); border: 1px solid rgba(251, 191, 36, 0.08); color: #fbbf24; padding: 10px 14px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s; justify-content: center;">
+                        <span style="font-size: 1.1rem;">📋</span> All Reviews
                     </a>
                 </div>
             </div>
@@ -193,6 +211,18 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Hover effects for action buttons
+        document.querySelectorAll('.action-grid a').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+            });
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        });
+
         // Delete confirmation
         document.querySelectorAll('.btn-delete, .action-btn.delete').forEach(btn => {
             btn.addEventListener('click', function(e) {
@@ -207,4 +237,93 @@
     });
 </script>
 
+<style>
+    .performance-detail-container .detail-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .performance-detail-container .detail-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    .performance-detail-container .action-grid a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .performance-detail-container .rating-banner {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .performance-detail-container .rating-banner:hover {
+        border-color: rgba(167, 139, 250, 0.2);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 992px) {
+        .performance-detail-container .detail-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .performance-detail-container .detail-grid {
+            gap: 16px !important;
+        }
+        
+        .performance-detail-container .detail-item {
+            padding: 12px 16px !important;
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 4px;
+        }
+        
+        .performance-detail-container .detail-item .employee-info {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .performance-detail-container .detail-card .card-header {
+            padding: 14px 16px !important;
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 8px;
+        }
+        
+        .performance-detail-container .detail-card .card-header h3 {
+            font-size: 1rem !important;
+        }
+        
+        .performance-detail-container .detail-item.total {
+            flex-direction: row !important;
+            padding: 14px 16px !important;
+        }
+        
+        .performance-detail-container .action-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .performance-detail-container .rating-banner {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .performance-detail-container .rating-banner .rating-display {
+            flex-wrap: wrap;
+        }
+        
+        .performance-detail-container .rating-meta {
+            flex-direction: column;
+            gap: 4px !important;
+        }
+        
+        .performance-detail-container .review-box,
+        .performance-detail-container .strengths-box,
+        .performance-detail-container .improvement-box,
+        .performance-detail-container .goals-box {
+            padding: 16px !important;
+        }
+    }
+</style>
 {% endblock %}

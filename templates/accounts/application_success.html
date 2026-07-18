@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Application Submitted - PANZIA{% endblock %}
+
+{% block css %}
+<style>
+    .success-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at top, #1a1035, #0a0618);
+        padding: 40px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .success-container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 50%, rgba(124, 58, 237, 0.03), transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(236, 72, 153, 0.03), transparent 50%);
+        animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(2%, -2%) rotate(2deg); }
+    }
+
+    .success-card {
+        position: relative;
+        z-index: 1;
+        max-width: 560px;
+        width: 100%;
+        padding: 48px 40px;
+        background: linear-gradient(145deg, rgba(26, 16, 53, 0.85), rgba(45, 27, 74, 0.85));
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 8px 64px rgba(0, 0, 0, 0.4);
+        animation: slideUp 0.6s ease forwards;
+        text-align: center;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .success-card .success-icon {
+        font-size: 4.5rem;
+        display: block;
+        margin-bottom: 12px;
+        animation: bounce 1s ease infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .success-card .badge {
+        display: inline-block;
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(52, 211, 153, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.06);
+        margin-bottom: 12px;
+    }
+
+    .success-card h1 {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0 0 8px;
+        font-size: 2rem;
+        letter-spacing: -0.5px;
+    }
+
+    .success-card h1 .highlight {
+        color: #a78bfa;
+    }
+
+    .success-card .subtitle {
+        color: #94a3b8;
+        font-size: 1rem;
+        line-height: 1.7;
+        margin: 0 0 20px;
+    }
+
+    .success-card .info-box {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        text-align: left;
+    }
+
+    .success-card .info-box .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+        font-size: 0.85rem;
+    }
+
+    .success-card .info-box .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .success-card .info-box .info-item .label {
+        color: #64748b;
+    }
+
+    .success-card .info-box .info-item .value {
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    .success-card .next-steps {
+        text-align: left;
+        margin: 20px 0 24px;
+        padding: 16px 20px;
+        background: rgba(251, 191, 36, 0.04);
+        border: 1px solid rgba(251, 191, 36, 0.06);
+        border-radius: 12px;
+    }
+
+    .success-card .next-steps h4 {
+        color: #fbbf24;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin: 0 0 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .success-card .next-steps ul {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin: 0;
+        padding-left: 20px;
+        line-height: 1.8;
+    }
+
+    .success-card .next-steps ul li::marker {
+        color: #a78bfa;
+    }
+
+    .success-card .action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #ffffff;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: #ffffff;
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-2px);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .btn-outline:hover {
+        background: rgba(167, 139, 250, 0.06);
+        color: #e8edf5;
+        transform: translateY(-2px);
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    @media (max-width: 480px) {
+        .success-card {
+            padding: 32px 20px;
+            border-radius: 16px;
+        }
+
+        .success-card .success-icon {
+            font-size: 3.5rem;
+        }
+
+        .success-card h1 {
+            font-size: 1.5rem;
+        }
+
+        .success-card .subtitle {
+            font-size: 0.9rem;
+        }
+
+        .success-card .info-box .info-item {
+            flex-direction: column;
+            gap: 2px;
+            padding: 8px 0;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-card">
+        <span class="success-icon">✅</span>
+        <span class="badge">✨ Application Received</span>
+        <h1>Application <span class="highlight">Submitted!</span></h1>
+        <p class="subtitle">
+            Thank you for applying to PANZIA. Your application has been received and is currently under review.
+        </p>
+
+        <div class="info-box">
+            <div class="info-item">
+                <span class="label">📋 Status</span>
+                <span class="value" style="color: #fbbf24;">Pending Review</span>
+            </div>
+            <div class="info-item">
+                <span class="label">📅 Submitted On</span>
+                <span class="value">{{ request.session.application_date|default:"Today" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">⏳ Estimated Review Time</span>
+                <span class="value">2-3 Business Days</span>
+            </div>
+        </div>
+
+        <div class="next-steps">
+            <h4>📌 What's Next?</h4>
+            <ul>
+                <li>Our team will review your application within 2-3 business days</li>
+                <li>You will receive an email notification once your application is reviewed</li>
+                <li>If approved, you will receive login credentials to access your startup dashboard</li>
+                <li>If rejected, you will receive feedback and can reapply</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{% url 'home' %}" class="btn btn-primary">
+                🏠 Go Home
+            </a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-secondary">
+                🔑 Login
+            </a>
+            <a href="#" class="btn btn-outline" onclick="window.print();">
+                🖨️ Print
+            </a>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(167, 139, 250, 0.04);">
+            <p style="color: #64748b; font-size: 0.75rem; margin: 0;">
+                📧 A confirmation email has been sent to your registered email address.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ Application success page loaded');
+        
+        if (!sessionStorage.getItem('application_submitted')) {
+            sessionStorage.setItem('application_submitted', new Date().toISOString());
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,348 @@
+{% extends 'analytics/base_analytics.html' %}
+{% load static %}
+
+{% block page_title %}Create Monthly Report{% endblock %}
+{% block page_icon %}📆{% endblock %}
+{% block page_subtitle %}Create a monthly analytics report{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'analytics:monthly_report' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Reports
+</a>
+{% endblock %}
+
+{% block analytics_content %}
+<div class="report-form-container" style="max-width: 800px; margin: 0 auto;">
+    
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 32px;">
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                
+                <!-- Month Info -->
+                <div style="grid-column: span 2;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">📆 Month Information</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Month <span style="color: #f87171;">*</span></label>
+                    {{ form.month }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Select the month for this report</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Year <span style="color: #f87171;">*</span></label>
+                    {{ form.year }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Enter the year for this report</span>
+                </div>
+                
+                <!-- Employee Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">👥 Employee Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Employees <span style="color: #f87171;">*</span></label>
+                    {{ form.total_employees }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total number of employees at the end of the month</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">New Employees</label>
+                    {{ form.new_employees }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Number of new hires during the month</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Employee Growth Rate (%)</label>
+                    {{ form.employee_growth_rate }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Percentage growth in employees</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Revenue Growth Rate (%)</label>
+                    {{ form.revenue_growth_rate }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Percentage growth in revenue</span>
+                </div>
+                
+                <!-- Financial Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">💰 Financial Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Payroll</label>
+                    {{ form.total_payroll }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total payroll expenses for the month</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Revenue <span style="color: #f87171;">*</span></label>
+                    {{ form.total_revenue }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total revenue generated during the month</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Expenses <span style="color: #f87171;">*</span></label>
+                    {{ form.total_expenses }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total expenses incurred during the month</span>
+                </div>
+                
+                <!-- Attendance Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">📋 Attendance Summary</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Avg Attendance Rate (%)</label>
+                    {{ form.avg_attendance_rate }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Average daily attendance percentage</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Absent Days</label>
+                    {{ form.total_absent_days }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total employee absent days</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Leave Days</label>
+                    {{ form.total_leave_days }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Total employee leave days taken</span>
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">⭐ Performance Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Avg Performance Rating</label>
+                    {{ form.avg_performance_rating }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Average performance rating (1-5)</span>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Reviews Completed</label>
+                    {{ form.reviews_completed }}
+                    <span style="color: #64748b; font-size: 0.75rem;">Number of performance reviews completed</span>
+                </div>
+            </div>
+            
+            <style>
+                #id_month, #id_year,
+                #id_total_employees, #id_new_employees,
+                #id_total_payroll, #id_total_revenue, #id_total_expenses,
+                #id_avg_attendance_rate, #id_total_absent_days, #id_total_leave_days,
+                #id_avg_performance_rating, #id_reviews_completed,
+                #id_employee_growth_rate, #id_revenue_growth_rate {
+                    background: rgba(167, 139, 250, 0.04);
+                    border: 1px solid rgba(167, 139, 250, 0.1);
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    color: #e8edf5;
+                    font-size: 0.9rem;
+                    transition: all 0.3s;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                #id_month:focus, #id_year:focus,
+                #id_total_employees:focus, #id_new_employees:focus,
+                #id_total_payroll:focus, #id_total_revenue:focus, #id_total_expenses:focus,
+                #id_avg_attendance_rate:focus, #id_total_absent_days:focus, #id_total_leave_days:focus,
+                #id_avg_performance_rating:focus, #id_reviews_completed:focus,
+                #id_employee_growth_rate:focus, #id_revenue_growth_rate:focus {
+                    outline: none;
+                    border-color: rgba(167, 139, 250, 0.3);
+                    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+                }
+                #id_month {
+                    appearance: none;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 12px center;
+                    padding-right: 36px;
+                    cursor: pointer;
+                }
+                #id_month option {
+                    background: #1a1035;
+                    color: #e8edf5;
+                }
+                input[type="number"]::-webkit-inner-spin-button,
+                input[type="number"]::-webkit-outer-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+               
+            </style>
+            
+            <!-- Preview Section -->
+            <div style="margin-top: 24px; padding: 16px; background: rgba(167, 139, 250, 0.04); border-radius: 10px; border: 1px solid rgba(167, 139, 250, 0.06);">
+                <h5 style="color: #a78bfa; font-weight: 600; font-size: 0.85rem; margin: 0 0 8px 0;">📊 Report Preview</h5>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <div style="text-align: center;">
+                        <span style="color: #64748b; font-size: 0.65rem;">Month</span>
+                        <p style="color: #e8edf5; font-weight: 600; margin: 2px 0 0;" id="previewMonth">-</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="color: #64748b; font-size: 0.65rem;">Year</span>
+                        <p style="color: #e8edf5; font-weight: 600; margin: 2px 0 0;" id="previewYear">-</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="color: #64748b; font-size: 0.65rem;">Employees</span>
+                        <p style="color: #60a5fa; font-weight: 600; margin: 2px 0 0;" id="previewEmployees">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 32px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; flex: 1; justify-content: center;">
+                    💾 Save Report
+                </button>
+                <a href="{% url 'analytics:monthly_report' %}" class="btn btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s;">
+                    Cancel
+                </a>
+                <button type="reset" class="btn btn-secondary" style="background: rgba(167, 139, 250, 0.04); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.06); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s;">
+                    🔄 Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // LIVE PREVIEW UPDATE
+        // ============================================
+        const monthField = document.getElementById('id_month');
+        const yearField = document.getElementById('id_year');
+        const employeesField = document.getElementById('id_total_employees');
+        
+        const previewMonth = document.getElementById('previewMonth');
+        const previewYear = document.getElementById('previewYear');
+        const previewEmployees = document.getElementById('previewEmployees');
+        
+        function updatePreview() {
+            if (monthField && monthField.value) {
+                previewMonth.textContent = monthField.options[monthField.selectedIndex]?.text || '-';
+            } else {
+                previewMonth.textContent = '-';
+            }
+            
+            if (yearField && yearField.value) {
+                previewYear.textContent = yearField.value;
+            } else {
+                previewYear.textContent = '-';
+            }
+            
+            if (employeesField && employeesField.value) {
+                previewEmployees.textContent = employeesField.value;
+            } else {
+                previewEmployees.textContent = '-';
+            }
+        }
+        
+        if (monthField) monthField.addEventListener('change', updatePreview);
+        if (yearField) yearField.addEventListener('input', updatePreview);
+        if (employeesField) employeesField.addEventListener('input', updatePreview);
+        
+        // Initial preview update
+        updatePreview();
+        
+        // ============================================
+        // CONFIRMATION ON CANCEL
+        // ============================================
+        let formChanged = false;
+        const form = document.querySelector('form');
+        
+        form.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'BUTTON') {
+                formChanged = true;
+            }
+        });
+        
+        const cancelBtn = document.querySelector('.btn-secondary');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (formChanged) {
+                    const confirmCancel = confirm('You have unsaved changes. Are you sure you want to leave?');
+                    if (!confirmCancel) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+        
+        // ============================================
+        // AUTO-FOCUS
+        // ============================================
+        const firstInput = document.querySelector('select, input:not([type="hidden"]), textarea');
+        if (firstInput && !firstInput.disabled) {
+            firstInput.focus();
+        }
+        
+        console.log('📆 Monthly Report Form initialized');
+    });
+</script>
+
+<style>
+    .report-form-container .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .report-form-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+    }
+    
+    .report-form-container .btn-secondary:last-child:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+    
+    .report-form-container .glass-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .report-form-container .glass-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .report-form-container .glass-card {
+            padding: 20px !important;
+        }
+        
+        .report-form-container .glass-card > div[style*="display: grid;"] {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .report-form-container .glass-card > div[style*="display: grid;"] .form-group {
+            grid-column: span 1 !important;
+        }
+        
+        .report-form-container .glass-card > div[style*="margin-top: 24px;"] {
+            flex-direction: column;
+        }
+        
+        .report-form-container .glass-card > div[style*="margin-top: 24px;"] button,
+        .report-form-container .glass-card > div[style*="margin-top: 24px;"] a {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .report-form-container .preview-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+{% endblock %}

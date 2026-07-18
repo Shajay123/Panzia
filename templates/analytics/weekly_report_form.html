@@ -1,0 +1,176 @@
+{% extends 'analytics/base_analytics.html' %}
+{% load static %}
+
+{% block page_title %}Create Weekly Report{% endblock %}
+{% block page_icon %}📅{% endblock %}
+{% block page_subtitle %}Create a weekly analytics report{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'analytics:weekly_report' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Reports
+</a>
+{% endblock %}
+
+{% block analytics_content %}
+<div class="report-form-container" style="max-width: 800px; margin: 0 auto;">
+    
+    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 32px;">
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                
+                <!-- Week Info -->
+                <div style="grid-column: span 2;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">📅 Week Information</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Week Start</label>
+                    {{ form.week_start }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Week End</label>
+                    {{ form.week_end }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Week Number</label>
+                    {{ form.week_number }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Year</label>
+                    {{ form.year }}
+                </div>
+                
+                <!-- Employee Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">👥 Employee Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Employees</label>
+                    {{ form.total_employees }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">New Employees</label>
+                    {{ form.new_employees }}
+                </div>
+                
+                <!-- Financial Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">💰 Financial Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Payroll</label>
+                    {{ form.total_payroll }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Revenue</label>
+                    {{ form.total_revenue }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Expenses</label>
+                    {{ form.total_expenses }}
+                </div>
+                
+                <!-- Attendance Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">📋 Attendance Summary</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Avg Attendance Rate (%)</label>
+                    {{ form.avg_attendance_rate }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Absent Days</label>
+                    {{ form.total_absent_days }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Total Leave Days</label>
+                    {{ form.total_leave_days }}
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div style="grid-column: span 2; margin-top: 12px;">
+                    <h4 style="color: #e8edf5; font-weight: 600; font-size: 0.9rem; margin: 0 0 12px 0;">⭐ Performance Metrics</h4>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Avg Performance Rating</label>
+                    {{ form.avg_performance_rating }}
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; grid-column: span 2;">
+                    <label style="color: #e8edf5; font-weight: 500; font-size: 0.85rem;">Reviews Completed</label>
+                    {{ form.reviews_completed }}
+                </div>
+            </div>
+            
+            <style>
+                #id_week_start, #id_week_end, #id_week_number, #id_year,
+                #id_total_employees, #id_new_employees,
+                #id_total_payroll, #id_total_revenue, #id_total_expenses,
+                #id_avg_attendance_rate, #id_total_absent_days, #id_total_leave_days,
+                #id_avg_performance_rating, #id_reviews_completed {
+                    background: rgba(167, 139, 250, 0.04);
+                    border: 1px solid rgba(167, 139, 250, 0.1);
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    color: #e8edf5;
+                    font-size: 0.9rem;
+                    transition: all 0.3s;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                #id_week_start:focus, #id_week_end:focus, #id_week_number:focus, #id_year:focus,
+                #id_total_employees:focus, #id_new_employees:focus,
+                #id_total_payroll:focus, #id_total_revenue:focus, #id_total_expenses:focus,
+                #id_avg_attendance_rate:focus, #id_total_absent_days:focus, #id_total_leave_days:focus,
+                #id_avg_performance_rating:focus, #id_reviews_completed:focus {
+                    outline: none;
+                    border-color: rgba(167, 139, 250, 0.3);
+                    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+                }
+                #id_week_start, #id_week_end {
+                    color-scheme: dark;
+                }
+            </style>
+            
+            <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; border: none; padding: 10px 32px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; flex: 1; justify-content: center;">
+                    💾 Save Report
+                </button>
+                <a href="{% url 'analytics:weekly_report' %}" class="btn btn-secondary" style="background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); padding: 10px 28px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .report-form-container .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .report-form-container .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}

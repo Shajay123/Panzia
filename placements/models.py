@@ -12,6 +12,12 @@ class PlacementJob(models.Model):
         ("Freelance", "Freelance"),
     )
 
+    STATUS_CHOICES = (
+        ("Open", "Open"),
+        ("Pending", "Pending"),
+        ("Closed", "Closed"),
+    )
+
     startup = models.ForeignKey(
         StartupProfile,
         on_delete=models.CASCADE
@@ -45,6 +51,7 @@ class PlacementJob(models.Model):
 
     status = models.CharField(
         max_length=20,
+        choices=STATUS_CHOICES,
         default="Open"
     )
 
@@ -55,16 +62,15 @@ class PlacementJob(models.Model):
     def __str__(self):
         return self.title
 
+
 class PlacementApplication(models.Model):
 
     STATUS = (
-
         ("Applied", "Applied"),
         ("Shortlisted", "Shortlisted"),
         ("Interview", "Interview"),
         ("Hired", "Hired"),
         ("Rejected", "Rejected"),
-
     )
 
     job = models.ForeignKey(

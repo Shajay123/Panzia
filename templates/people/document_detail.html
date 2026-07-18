@@ -1,230 +1,693 @@
-{% extends 'base.html' %}
+{% extends 'people/base_hrms.html' %}
 {% load static %}
 
-{% block title %}
-{{ document.title }} | Document Details
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'document_update' document.id %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">✏️</span> Edit
+    </a>
+    <a href="{% url 'document_delete' document.id %}" class="btn btn-danger btn-sm">
+        <span class="btn-icon">🗑️</span> Delete
+    </a>
+    <a href="{% url 'documents' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Documents
+    </a>
+</div>
 {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="{% static 'css/people/document_detail.css' %}">
-{% endblock %}
+{% block hrms_content %}
+<style>
+    /* ============================================
+       DOCUMENT DETAIL - HRMS STYLES
+       ============================================ */
+    .document-detail-page {
+        max-width: 100%;
+    }
 
-{% block content %}
+    /* ===== DOCUMENT HEADER ===== */
+    .document-header {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .document-header:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .document-header .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .document-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .document-header h1 .doc-emoji {
+        font-size: 1.8rem;
+    }
+
+    .document-header .header-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px 24px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .meta-item .meta-label {
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .meta-item .meta-value {
+        color: #d6e0f0;
+        font-weight: 500;
+    }
+
+    .meta-item .meta-value a {
+        color: #a78bfa;
+        text-decoration: none;
+    }
+
+    .meta-item .meta-value a:hover {
+        text-decoration: underline;
+    }
+
+    .meta-item .doc-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .meta-item .doc-status .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #22c55e;
+        display: inline-block;
+    }
+
+    /* ===== INFO GRID ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .info-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s;
+    }
+
+    .info-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .info-card .icon {
+        font-size: 1.8rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .info-card h4 {
+        margin: 0;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+    }
+
+    .info-card p {
+        margin: 2px 0 0;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #e8edf5;
+    }
+
+    /* ===== DETAIL CARD ===== */
+    .detail-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .detail-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .detail-card h3 {
+        margin: 0 0 16px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .detail-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .detail-table tr {
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .detail-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .detail-table th {
+        text-align: left;
+        padding: 8px 0;
+        font-weight: 500;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        width: 160px;
+        min-width: 120px;
+    }
+
+    .detail-table td {
+        padding: 8px 0;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* ===== FILE CARD ===== */
+    .file-card {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.04), rgba(236, 72, 153, 0.02));
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 12px;
+        padding: 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        transition: all 0.3s;
+        margin-bottom: 24px;
+    }
+
+    .file-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.05);
+    }
+
+    .file-card .file-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .file-card .file-icon {
+        font-size: 2.5rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .file-card .file-left h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e8edf5;
+        word-break: break-word;
+    }
+
+    .file-card .file-left p {
+        margin: 2px 0 0;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .file-card .file-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .file-card .file-actions .btn {
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-view {
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .btn-view:hover {
+        background: rgba(59, 130, 246, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .btn-download {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .document-detail-page {
+            padding: 0;
+        }
+
+        .document-header {
+            padding: 16px;
+        }
+
+        .document-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .document-header .header-top {
+            flex-direction: column;
+        }
+
+        .document-header .header-meta {
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .info-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .detail-card {
+            padding: 16px;
+        }
+
+        .detail-table th {
+            width: 100px;
+            min-width: 80px;
+            font-size: 0.8rem;
+        }
+
+        .detail-table td {
+            font-size: 0.85rem;
+        }
+
+        .file-card {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px 20px;
+        }
+
+        .file-card .file-left {
+            min-width: unset;
+        }
+
+        .file-card .file-actions {
+            width: 100%;
+        }
+
+        .file-card .file-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .document-header h1 {
+            font-size: 1rem;
+        }
+
+        .document-header h1 .doc-emoji {
+            font-size: 1.4rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-card {
+            padding: 12px 14px;
+        }
+
+        .info-card .icon {
+            font-size: 1.4rem;
+        }
+
+        .info-card p {
+            font-size: 0.85rem;
+        }
+
+        .detail-card {
+            padding: 14px;
+        }
+
+        .detail-card h3 {
+            font-size: 0.9rem;
+        }
+
+        .detail-table th {
+            width: 80px;
+            min-width: 60px;
+            font-size: 0.75rem;
+        }
+
+        .detail-table td {
+            font-size: 0.8rem;
+        }
+
+        .file-card .file-actions .btn {
+            font-size: 0.8rem;
+            padding: 6px 14px;
+        }
+
+        .file-card .file-icon {
+            font-size: 2rem;
+        }
+
+        .file-card .file-left h3 {
+            font-size: 0.85rem;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .document-header {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .info-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .info-card:nth-child(1) { animation-delay: 0.1s; }
+    .info-card:nth-child(2) { animation-delay: 0.15s; }
+    .info-card:nth-child(3) { animation-delay: 0.2s; }
+    .info-card:nth-child(4) { animation-delay: 0.25s; }
+
+    .detail-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
+    }
+
+    .file-card {
+        animation: fadeInUp 0.4s ease forwards;
+        animation-delay: 0.2s;
+        opacity: 0;
+    }
+</style>
 
 <div class="document-detail-page">
 
-    <!-- ================= HEADER ================= -->
-
-    <div class="page-header">
-
-        <div>
-
-            <div class="breadcrumb">
-
-                <a href="{% url 'documents' %}">📂 Documents</a>
-
-                <span>/</span>
-
-                <span>Document Details</span>
-
-            </div>
-
-            <h1>📄 {{ document.title }}</h1>
-
-            <p>
-
-                Employee :
-
-                <strong>
-
-                    {{ document.employee.user.get_full_name|default:document.employee.user.username }}
-
-                </strong>
-
-            </p>
-
+    <!-- ================= DOCUMENT HEADER ================= -->
+    <div class="document-header">
+        <div class="header-top">
+            <h1>
+                <span class="doc-emoji">📄</span>
+                {{ document.title }}
+            </h1>
         </div>
 
-        <div class="header-actions">
-
-            <a href="{% url 'document_update' document.id %}" class="btn-edit">
-
-                ✏ Edit
-
-            </a>
-
-            <a href="{% url 'document_delete' document.id %}" class="btn-delete">
-
-                🗑 Delete
-
-            </a>
-
+        <div class="header-meta">
+            <span class="meta-item">
+                <span class="meta-label">👤 Employee:</span>
+                <span class="meta-value">
+                    <a href="{% url 'employee_detail' document.employee.id %}">
+                        {{ document.employee.user.get_full_name|default:document.employee.user.username }}
+                    </a>
+                </span>
+            </span>
+            <span class="meta-item">
+                <span class="meta-label">🆔 Employee ID:</span>
+                <span class="meta-value">{{ document.employee.employee_id|default:"N/A" }}</span>
+            </span>
+            <span class="meta-item">
+                <span class="meta-label">📅 Uploaded:</span>
+                <span class="meta-value">{{ document.uploaded_at|date:"d M Y, H:i" }}</span>
+            </span>
+            <span class="meta-item">
+                <span class="meta-label">📂 Department:</span>
+                <span class="meta-value">{{ document.employee.department.name|default:"-" }}</span>
+            </span>
+            <span class="meta-item">
+                <span class="meta-label">💼 Designation:</span>
+                <span class="meta-value">{{ document.employee.designation|default:"-" }}</span>
+            </span>
+            <span class="meta-item">
+                <span class="meta-label">📊 Status:</span>
+                <span class="doc-status">
+                    <span class="status-dot"></span>
+                    Active
+                </span>
+            </span>
         </div>
-
     </div>
 
-    <!-- ================= INFO CARDS ================= -->
-
+    <!-- ================= INFO GRID ================= -->
     <div class="info-grid">
-
         <div class="info-card">
-
             <span class="icon">👤</span>
-
             <div>
-
                 <h4>Employee</h4>
-
-                <p>
-
-                    {{ document.employee.user.get_full_name|default:document.employee.user.username }}
-
-                </p>
-
+                <p>{{ document.employee.user.get_full_name|default:document.employee.user.username }}</p>
             </div>
-
         </div>
-
         <div class="info-card">
-
             <span class="icon">🆔</span>
-
             <div>
-
                 <h4>Employee ID</h4>
-
-                <p>{{ document.employee.employee_id }}</p>
-
+                <p>{{ document.employee.employee_id|default:"N/A" }}</p>
             </div>
-
         </div>
-
         <div class="info-card">
-
             <span class="icon">📅</span>
-
             <div>
-
                 <h4>Uploaded On</h4>
-
-                <p>{{ document.uploaded_at|date:"d M Y • h:i A" }}</p>
-
+                <p>{{ document.uploaded_at|date:"d M Y, H:i" }}</p>
             </div>
-
         </div>
-
         <div class="info-card">
-
             <span class="icon">📂</span>
-
             <div>
-
                 <h4>Department</h4>
-
-                <p>{{ document.employee.department.name }}</p>
-
+                <p>{{ document.employee.department.name|default:"-" }}</p>
             </div>
-
         </div>
-
     </div>
 
-    <!-- ================= DOCUMENT ================= -->
-
+    <!-- ================= DETAIL CARD ================= -->
     <div class="detail-card">
-
         <h3>📄 Document Information</h3>
-
         <table class="detail-table">
-
             <tr>
-
                 <th>Document Title</th>
-
                 <td>{{ document.title }}</td>
-
             </tr>
-
             <tr>
-
                 <th>Employee</th>
-
-                <td>
-
-                    {{ document.employee.user.get_full_name|default:document.employee.user.username }}
-
-                </td>
-
+                <td>{{ document.employee.user.get_full_name|default:document.employee.user.username }}</td>
             </tr>
-
             <tr>
-
+                <th>Employee ID</th>
+                <td>{{ document.employee.employee_id|default:"N/A" }}</td>
+            </tr>
+            <tr>
                 <th>Designation</th>
-
-                <td>{{ document.employee.designation }}</td>
-
+                <td>{{ document.employee.designation|default:"-" }}</td>
             </tr>
-
             <tr>
-
-                <th>Uploaded Date</th>
-
-                <td>{{ document.uploaded_at|date:"d M Y • h:i A" }}</td>
-
+                <th>Department</th>
+                <td>{{ document.employee.department.name|default:"-" }}</td>
             </tr>
-
+            <tr>
+                <th>Uploaded Date</th>
+                <td>{{ document.uploaded_at|date:"d M Y, H:i" }}</td>
+            </tr>
+            <tr>
+                <th>File Name</th>
+                <td>{{ document.file.name|cut:"employee_documents/" }}</td>
+            </tr>
+            <tr>
+                <th>File Type</th>
+                <td>
+                    {% with extension=document.file.name|cut:"employee_documents/"|cut:" "|slice:"-4:" %}
+                    {% if extension|upper == ".PDF" %}
+                    📄 PDF
+                    {% elif extension|upper in ".DOC,.DOCX" %}
+                    📝 Word
+                    {% elif extension|upper in ".XLS,.XLSX" %}
+                    📊 Excel
+                    {% elif extension|upper in ".JPG,.JPEG,.PNG,.GIF" %}
+                    🖼️ Image
+                    {% else %}
+                    📎 {{ extension|upper }}
+                    {% endif %}
+                    {% endwith %}
+                </td>
+            </tr>
         </table>
-
     </div>
 
-    <!-- ================= FILE ================= -->
-
+    <!-- ================= FILE CARD ================= -->
     <div class="file-card">
-
         <div class="file-left">
-
             <div class="file-icon">
-
+                {% with extension=document.file.name|cut:"employee_documents/"|cut:" "|slice:"-4:" %}
+                {% if extension|upper == ".PDF" %}
+                📄
+                {% elif extension|upper in ".DOC,.DOCX" %}
+                📝
+                {% elif extension|upper in ".XLS,.XLSX" %}
+                📊
+                {% elif extension|upper in ".JPG,.JPEG,.PNG,.GIF" %}
+                🖼️
+                {% else %}
                 📁
-
+                {% endif %}
+                {% endwith %}
             </div>
-
             <div>
-
-                <h3>
-
-                    {{ document.file.name|cut:"employee_documents/" }}
-
-                </h3>
-
-                <p>
-
-                    Secure Employee Document
-
-                </p>
-
+                <h3>{{ document.file.name|cut:"employee_documents/" }}</h3>
+                <p>Secure Employee Document</p>
             </div>
-
         </div>
-
         <div class="file-actions">
-
-            <a href="{{ document.file.url }}" target="_blank" class="btn-view">
-
+            <a href="{{ document.file.url }}" target="_blank" class="btn btn-view">
                 👁 View
-
             </a>
-
-            <a href="{{ document.file.url }}" download class="btn-download">
-
+            <a href="{{ document.file.url }}" download class="btn btn-download">
                 ⬇ Download
-
             </a>
-
         </div>
-
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Press 'E' for Edit
+            if (e.key === 'e' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const editBtn = document.querySelector('.btn-edit');
+                if (editBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = editBtn.href;
+                }
+            }
+            // Press 'D' for Delete
+            if (e.key === 'd' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const deleteBtn = document.querySelector('.btn-delete');
+                if (deleteBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    const confirmed = confirm('Are you sure you want to delete this document?');
+                    if (confirmed) {
+                        window.location.href = deleteBtn.href;
+                    }
+                }
+            }
+            // Press 'B' for Back
+            if (e.key === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const backBtn = document.querySelector('.btn-back');
+                if (backBtn && document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    window.location.href = backBtn.href;
+                }
+            }
+        });
+
+        console.log('📄 Document Detail loaded');
+        console.log('📋 Document: {{ document.title }}');
+        console.log('👤 Employee: {{ document.employee.user.get_full_name }}');
+    });
+</script>
 
 {% endblock %}

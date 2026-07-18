@@ -1,98 +1,551 @@
-{% extends 'base.html' %}
+{% extends 'placements/base_placements.html' %}
 {% load static %}
 
-{% block content %}
+{% block page_title %}Create New Job{% endblock %}
+{% block page_icon %}💼{% endblock %}
+{% block page_subtitle %}Find exceptional talent and build your startup team.{% endblock %}
 
-<link rel="stylesheet" href="{% static 'css/jobs.css' %}">
+{% block page_actions %}
+<a href="{% url 'startup_jobs' %}" class="btn btn-secondary">
+    <span class="btn-icon">←</span> Back to Jobs
+</a>
+{% endblock %}
 
-<div class="job-page">
+{% block placements_content %}
+<style>
+    .create-job-container {
+        max-width: 800px;
+        margin: 0 auto;
+        animation: fadeIn 0.5s ease;
+    }
 
-    <div class="job-container">
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-        <div class="job-header">
+    .glass-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 16px;
+        padding: 32px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-            <h1>💼 Create New Job</h1>
+    .glass-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
 
-            <p>
-                Find exceptional talent and build your startup team.
-            </p>
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
 
+    .form-group label {
+        color: #e8edf5;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+    }
+
+    .form-group .form-control {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: #e8edf5;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .form-group .form-control:focus {
+        outline: none;
+        border-color: rgba(167, 139, 250, 0.3);
+        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.05);
+    }
+
+    .form-group .form-control.error {
+        border-color: #f87171;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .form-group .form-control option {
+        background: #1a1035;
+        color: #e8edf5;
+    }
+
+    .form-group .help-text {
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    .form-group .error-text {
+        color: #f87171;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
+
+    .form-group textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-group select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-grid .full-width {
+        grid-column: span 2;
+    }
+
+    .form-actions {
+        margin-top: 24px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        justify-content: center;
+        font-family: inherit;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-3px);
+    }
+
+    /* ===== MESSAGES ===== */
+    .messages {
+        margin-bottom: 16px;
+    }
+
+    .message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        animation: slideDown 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.success {
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .message.error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .message.warning {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .message .msg-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .create-job-container {
+            padding: 0 10px;
+        }
+
+        .glass-card {
+            padding: 20px !important;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .form-grid .full-width {
+            grid-column: span 1 !important;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn-primary,
+        .form-actions .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .glass-card {
+            padding: 16px !important;
+        }
+    }
+</style>
+
+<div class="create-job-container">
+    
+    <!-- ================= MESSAGES ================= -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            <span class="msg-icon">
+                {% if message.tags == 'success' %}✅
+                {% elif message.tags == 'error' %}❌
+                {% elif message.tags == 'warning' %}⚠️
+                {% else %}ℹ️
+                {% endif %}
+            </span>
+            <span>{{ message }}</span>
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        <div class="glass-card">
-
-            <form method="POST">
-
-                {% csrf_token %}
-
-                <div class="form-group">
-
-                    <label>Job Title</label>
-
+    <!-- ================= CREATE JOB FORM ================= -->
+    <div class="glass-card">
+        <h3 style="color: #e8edf5; font-weight: 600; font-size: 1.1rem; margin: 0 0 20px;">📝 Create New Job</h3>
+        
+        <form method="POST" novalidate id="createJobForm">
+            {% csrf_token %}
+            
+            <!-- Display non-field errors -->
+            {% if form.non_field_errors %}
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+                {% for error in form.non_field_errors %}
+                <p style="color: #f87171; margin: 0;">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="form-grid">
+                <!-- Title -->
+                <div class="form-group full-width">
+                    <label>
+                        Job Title <span class="required">*</span>
+                    </label>
                     {{ form.title }}
-
+                    {% if form.title.errors %}
+                    <div class="error-text">
+                        {% for error in form.title.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <span class="help-text">Enter a clear and descriptive job title.</span>
                 </div>
-
-                <div class="form-group">
-
-                    <label>Description</label>
-
+                
+                <!-- Description -->
+                <div class="form-group full-width">
+                    <label>
+                        Description <span class="required">*</span>
+                    </label>
                     {{ form.description }}
-
+                    {% if form.description.errors %}
+                    <div class="error-text">
+                        {% for error in form.description.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <span class="help-text">Describe the role, responsibilities, and requirements.</span>
                 </div>
-
-                <div class="form-group">
-
-                    <label>Required Skills</label>
-
+                
+                <!-- Skills -->
+                <div class="form-group full-width">
+                    <label>
+                        Required Skills <span class="required">*</span>
+                    </label>
                     {{ form.skills }}
-
+                    {% if form.skills.errors %}
+                    <div class="error-text">
+                        {% for error in form.skills.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <span class="help-text">List skills separated by commas (e.g., Python, React, AWS).</span>
                 </div>
-
+                
+                <!-- Location -->
                 <div class="form-group">
-
-                    <label>Location</label>
-
+                    <label>
+                        Location <span class="required">*</span>
+                    </label>
                     {{ form.location }}
-
+                    {% if form.location.errors %}
+                    <div class="error-text">
+                        {% for error in form.location.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
-
+                
+                <!-- Salary -->
                 <div class="form-group">
-
-                    <label>Salary</label>
-
+                    <label>
+                        Salary <span class="required">*</span>
+                    </label>
                     {{ form.salary }}
-
+                    {% if form.salary.errors %}
+                    <div class="error-text">
+                        {% for error in form.salary.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <span class="help-text">e.g., $50,000 - $70,000 or Negotiable</span>
                 </div>
-
+                
+                <!-- Job Type -->
                 <div class="form-group">
-
-                    <label>Job Type</label>
-
+                    <label>
+                        Job Type <span class="required">*</span>
+                    </label>
                     {{ form.job_type }}
-
+                    {% if form.job_type.errors %}
+                    <div class="error-text">
+                        {% for error in form.job_type.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
-
+                
+                <!-- Experience Required -->
                 <div class="form-group">
-
                     <label>Experience Required</label>
-
                     {{ form.experience_required }}
-
+                    {% if form.experience_required.errors %}
+                    <div class="error-text">
+                        {% for error in form.experience_required.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <span class="help-text">e.g., 3+ years, Entry Level, Senior</span>
                 </div>
 
-                <button class="create-btn">
-
+                <!-- Status (Hidden, default will be set in view) -->
+                <input type="hidden" name="status" value="Open">
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <a href="{% url 'startup_jobs' %}" class="btn-secondary">
+                    Cancel
+                </a>
+                <button type="submit" class="btn-primary" id="submitBtn">
                     🚀 Publish Job
-
                 </button>
-
-            </form>
-
-        </div>
-
+            </div>
+        </form>
     </div>
 
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // FORM VALIDATION
+        // ============================================
+        const form = document.getElementById('createJobForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Ensure status has a value
+        const statusInput = document.querySelector('input[name="status"]');
+        if (statusInput && !statusInput.value) {
+            statusInput.value = 'Open';
+        }
+
+        form.addEventListener('submit', function(e) {
+            // Check required fields
+            const title = document.querySelector('#id_title');
+            const description = document.querySelector('#id_description');
+            const skills = document.querySelector('#id_skills');
+            const location = document.querySelector('#id_location');
+            const salary = document.querySelector('#id_salary');
+            const jobType = document.querySelector('#id_job_type');
+
+            let hasError = false;
+
+            // Clear previous errors
+            document.querySelectorAll('.error-text').forEach(el => el.textContent = '');
+            document.querySelectorAll('.form-control').forEach(el => el.classList.remove('error'));
+
+            // Validate Title
+            if (!title.value.trim()) {
+                showFieldError(title, 'Job title is required.');
+                hasError = true;
+            }
+
+            // Validate Description
+            if (!description.value.trim()) {
+                showFieldError(description, 'Description is required.');
+                hasError = true;
+            }
+
+            // Validate Skills
+            if (!skills.value.trim()) {
+                showFieldError(skills, 'Skills are required.');
+                hasError = true;
+            }
+
+            // Validate Location
+            if (!location.value.trim()) {
+                showFieldError(location, 'Location is required.');
+                hasError = true;
+            }
+
+            // Validate Salary
+            if (!salary.value.trim()) {
+                showFieldError(salary, 'Salary is required.');
+                hasError = true;
+            }
+
+            // Validate Job Type
+            if (!jobType.value) {
+                showFieldError(jobType, 'Job type is required.');
+                hasError = true;
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = document.querySelector('.form-control.error');
+                if (firstError) {
+                    firstError.focus();
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return false;
+            }
+
+            // Disable submit button to prevent double submission
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Publishing...';
+
+            return true;
+        });
+
+        function showFieldError(field, message) {
+            field.classList.add('error');
+            const parent = field.closest('.form-group');
+            let errorDiv = parent.querySelector('.error-text');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'error-text';
+                parent.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+        }
+
+        // ============================================
+        // REAL-TIME VALIDATION ON BLUR
+        // ============================================
+        document.querySelectorAll('.form-control').forEach(field => {
+            field.addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('error');
+                    const parent = this.closest('.form-group');
+                    const errorDiv = parent.querySelector('.error-text');
+                    if (errorDiv && errorDiv.textContent) {
+                        errorDiv.textContent = '';
+                    }
+                }
+            });
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                form.submit();
+            }
+        });
+
+        // ============================================
+        // CONSOLE LOG
+        // ============================================
+        console.log('💼 Create Job page loaded');
+    });
+</script>
 {% endblock %}
