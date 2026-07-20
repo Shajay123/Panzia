@@ -15,12 +15,422 @@
 {% endblock %}
 
 {% block payments_content %}
-<div class="payment-container" style="max-width: 550px; margin: 0 auto;">
+<style>
+    /* ============================================
+       PAYMENT PAGE - ENHANCED STYLES
+       ============================================ */
     
-    <div style="background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px; padding: 32px; text-align: center; transition: all 0.3s;">
+    .payment-container {
+        max-width: 550px;
+        margin: 0 auto;
+        animation: fadeInUp 0.5s ease;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .payment-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 16px;
+        padding: 32px;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payment-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.03), transparent 70%);
+        pointer-events: none;
+    }
+
+    .payment-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ===== PLAN ICON ===== */
+    .plan-icon {
+        font-size: 4rem;
+        margin-bottom: 12px;
+        display: block;
+        position: relative;
+        z-index: 1;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+
+    /* ===== PLAN NAME ===== */
+    .plan-title {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.8rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .plan-title .plan-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+
+    .plan-title .plan-badge.popular {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1a1035;
+    }
+
+    .plan-title .plan-badge.elite {
+        background: linear-gradient(135deg, #ec4899, #db2777);
+        color: #fff;
+    }
+
+    /* ===== PLAN SUBTITLE ===== */
+    .plan-subtitle {
+        color: #94a3b8;
+        margin: 8px 0 24px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ===== PLAN DETAILS ===== */
+    .plan-details {
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .plan-details .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .plan-details .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .plan-details .detail-label {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .plan-details .detail-value {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .plan-details .detail-value .icon {
+        font-size: 1.2rem;
+        margin-right: 4px;
+    }
+
+    /* ===== PRICE BOX ===== */
+    .price-box {
+        padding: 16px;
+        background: linear-gradient(135deg, rgba(167, 139, 250, 0.06), rgba(124, 58, 237, 0.06));
+        border-radius: 12px;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        margin-bottom: 24px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .price-box .price-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .price-box .price-amount {
+        color: #a78bfa;
+        font-weight: 700;
+        font-size: 2.5rem;
+    }
+
+    .price-box .price-amount .currency {
+        font-size: 1.5rem;
+        margin-right: 2px;
+    }
+
+    /* ===== PAYMENT BUTTON ===== */
+    .pay-btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.05rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+        position: relative;
+        z-index: 1;
+        font-family: inherit;
+    }
+
+    .pay-btn:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .pay-btn:active {
+        transform: scale(0.98);
+    }
+
+    .pay-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .pay-btn .spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top: 2px solid #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .pay-btn.loading .spinner {
+        display: inline-block;
+    }
+
+    .pay-btn.loading .btn-text {
+        display: none;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ===== SECURITY BADGES ===== */
+    .security-section {
+        margin-top: 16px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .security-section .secure-text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .security-section .secure-text .lock {
+        font-size: 1.2rem;
+    }
+
+    .security-badges {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
+
+    .security-badges .badge {
+        color: #64748b;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .security-badges .badge .check {
+        color: #34d399;
+    }
+
+    /* ============================================
+       TOAST NOTIFICATION
+       ============================================ */
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 14px 20px;
+        border-radius: 10px;
+        color: #fff;
+        font-weight: 600;
+        z-index: 9999;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        max-width: 400px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .toast-notification.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .toast-notification.success {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+
+    .toast-notification.error {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .toast-notification.warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .toast-notification.info {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+        .payment-container {
+            padding: 0 10px;
+        }
+
+        .payment-card {
+            padding: 24px 20px;
+        }
+
+        .plan-title {
+            font-size: 1.5rem;
+        }
+
+        .plan-icon {
+            font-size: 3.2rem;
+        }
+
+        .price-box .price-amount {
+            font-size: 2rem;
+        }
+
+        .plan-details {
+            padding: 16px;
+        }
+
+        .plan-details .detail-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .toast-notification {
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            font-size: 0.85rem;
+            padding: 12px 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .payment-card {
+            padding: 20px 16px;
+            margin: 0 4px;
+        }
+
+        .plan-title {
+            font-size: 1.3rem;
+        }
+
+        .plan-title .plan-badge {
+            font-size: 0.55rem;
+            padding: 1px 10px;
+            display: block;
+            margin: 4px auto 0;
+        }
+
+        .plan-icon {
+            font-size: 2.8rem;
+        }
+
+        .plan-subtitle {
+            font-size: 0.85rem;
+        }
+
+        .price-box .price-amount {
+            font-size: 1.8rem;
+        }
+
+        .pay-btn {
+            font-size: 0.95rem;
+            padding: 12px;
+        }
+
+        .security-badges {
+            gap: 12px;
+        }
+
+        .security-badges .badge {
+            font-size: 0.7rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .payment-card {
+            padding: 16px 12px;
+        }
+
+        .plan-title {
+            font-size: 1.1rem;
+        }
+
+        .price-box .price-amount {
+            font-size: 1.5rem;
+        }
+
+        .pay-btn {
+            font-size: 0.85rem;
+            padding: 10px;
+        }
+    }
+</style>
+
+<div class="payment-container">
+    
+    <div class="payment-card">
         
         <!-- Plan Icon -->
-        <div style="font-size: 4rem; margin-bottom: 12px;">
+        <span class="plan-icon">
             {% if plan.name == "FREE" %}🆓
             {% elif plan.name == "PRO" %}⭐
             {% elif plan.name == "ELITE" %}💎
@@ -29,20 +439,27 @@
             {% elif plan.name == "SCALE" %}🏢
             {% else %}💎
             {% endif %}
-        </div>
+        </span>
         
         <!-- Plan Name -->
-        <h1 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.8rem;">Upgrade to {{ plan.name }}</h1>
-        <p style="color: #94a3b8; margin: 8px 0 24px; font-size: 0.95rem; line-height: 1.6;">
+        <h1 class="plan-title">
+            {{ plan.name }}
+            {% if plan.name == "PRO" %}
+                <span class="plan-badge popular">⭐ Most Popular</span>
+            {% elif plan.name == "ELITE" %}
+                <span class="plan-badge elite">💎 Premium</span>
+            {% endif %}
+        </h1>
+        <p class="plan-subtitle">
             Unlock premium features and supercharge your journey with PANZIA.
         </p>
         
         <!-- Plan Details -->
-        <div style="background: rgba(167, 139, 250, 0.04); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
-                <span style="color: #94a3b8; font-size: 0.9rem;">Plan</span>
-                <span style="color: #e8edf5; font-weight: 600; font-size: 0.9rem;">
-                    <span style="font-size: 1.2rem; margin-right: 6px;">
+        <div class="plan-details">
+            <div class="detail-row">
+                <span class="detail-label">Plan</span>
+                <span class="detail-value">
+                    <span class="icon">
                         {% if plan.name == "FREE" %}🆓
                         {% elif plan.name == "PRO" %}⭐
                         {% elif plan.name == "ELITE" %}💎
@@ -55,107 +472,90 @@
                     {{ plan.name }}
                 </span>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(167, 139, 250, 0.06);">
-                <span style="color: #94a3b8; font-size: 0.9rem;">Duration</span>
-                <span style="color: #e8edf5; font-weight: 600; font-size: 0.9rem;">{{ plan.duration_days }} Days</span>
+            <div class="detail-row">
+                <span class="detail-label">Duration</span>
+                <span class="detail-value">{{ plan.duration_days }} Days</span>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 10px 0;">
-                <span style="color: #94a3b8; font-size: 0.9rem;">Description</span>
-                <span style="color: #e8edf5; font-size: 0.85rem; text-align: right; max-width: 60%;">{{ plan.description|default:"Premium subscription plan" }}</span>
+            {% if plan.description %}
+            <div class="detail-row">
+                <span class="detail-label">Description</span>
+                <span class="detail-value" style="text-align: right; max-width: 60%;">{{ plan.description|truncatechars:50 }}</span>
             </div>
+            {% endif %}
         </div>
         
+        <!-- Features -->
+        {% if plan.features %}
+        <div class="features-list" style="text-align: left; margin: 20px 0; padding: 0 10px; position: relative; z-index: 1;">
+            {% for feature in plan.features.split|slice:":4" %}
+            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; color: #94a3b8; font-size: 0.85rem;">
+                <span style="color: #34d399; font-weight: 700; flex-shrink: 0;">✓</span>
+                <span>{{ feature }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         <!-- Price -->
-        <div style="margin-bottom: 24px; padding: 16px; background: linear-gradient(135deg, rgba(167, 139, 250, 0.06), rgba(124, 58, 237, 0.06)); border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.08);">
-            <span style="color: #64748b; font-size: 0.85rem; display: block; margin-bottom: 4px;">Total Amount</span>
-            <span style="color: #a78bfa; font-weight: 700; font-size: 2.5rem;">₹{{ plan.price|floatformat:2 }}</span>
+        <div class="price-box">
+            <span class="price-label">Total Amount</span>
+            <span class="price-amount">
+                <span class="currency">₹</span>{{ plan.price|floatformat:2 }}
+            </span>
         </div>
         
         <!-- Payment Button -->
-        <button id="pay-btn" class="pay-btn" style="width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);">
-            🚀 Proceed to Payment
+        <button id="pay-btn" class="pay-btn">
+            <span class="btn-text">🚀 Proceed to Payment</span>
+            <span class="spinner"></span>
         </button>
         
-        <!-- Secure Note -->
-        <div style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #64748b; font-size: 0.85rem;">
-            <span style="font-size: 1.2rem;">🔒</span>
-            100% Secure Payment via Razorpay
+        <!-- Security Section -->
+        <div class="security-section">
+            <div class="secure-text">
+                <span class="lock">🔒</span>
+                100% Secure Payment via Razorpay
+            </div>
+            <div class="security-badges">
+                <span class="badge"><span class="check">✓</span> Encrypted</span>
+                <span class="badge"><span class="check">✓</span> Secure</span>
+                <span class="badge"><span class="check">✓</span> Instant</span>
+            </div>
         </div>
         
-        <!-- Trust Badges -->
-        <div style="margin-top: 16px; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;">
-            <span style="color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
-                <span style="color: #34d399;">✓</span> Encrypted
-            </span>
-            <span style="color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
-                <span style="color: #34d399;">✓</span> Secure
-            </span>
-            <span style="color: #64748b; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
-                <span style="color: #34d399;">✓</span> Instant
-            </span>
-        </div>
     </div>
+    
 </div>
 
-<style>
-    .payment-container .glass-card:hover {
-        border-color: rgba(167, 139, 250, 0.15);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    }
-    
-    .payment-container .pay-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
-        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    }
-    
-    .payment-container .pay-btn:active {
-        transform: scale(0.98);
-    }
-    
-    .payment-container .btn-secondary:hover {
-        background: rgba(167, 139, 250, 0.12);
-        color: #e8edf5;
-        border-color: rgba(167, 139, 250, 0.15);
-        transform: translateY(-2px);
-    }
-    
-    @media (max-width: 480px) {
-        .payment-container .glass-card {
-            padding: 20px 16px !important;
-            margin: 0 8px !important;
-        }
-        
-        .payment-container .glass-card h1 {
-            font-size: 1.4rem !important;
-        }
-        
-        .payment-container .glass-card .price-box {
-            font-size: 2rem !important;
-        }
-        
-        .payment-container .glass-card .detail-box {
-            flex-direction: column;
-            align-items: flex-start !important;
-            gap: 4px !important;
-        }
-        
-        .payment-container .pay-btn {
-            font-size: 0.95rem !important;
-            padding: 12px !important;
-        }
-    }
-</style>
+<!-- ============================================ -->
+<!-- TOAST NOTIFICATION                           -->
+<!-- ============================================ -->
+<div class="toast-notification" id="toastNotification"></div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // CHECK IF RAZORPAY IS LOADED
+        // ============================================
+        if (typeof Razorpay === 'undefined') {
+            showToast('Payment system is loading. Please wait...', 'info');
+            // Retry loading Razorpay
+            setTimeout(function() {
+                location.reload();
+            }, 3000);
+            return;
+        }
+
+        // ============================================
+        // RAZORPAY OPTIONS
+        // ============================================
         var options = {
             "key": "{{ key_id }}",
             "amount": "{{ order.amount }}",
             "currency": "INR",
             "order_id": "{{ order.id }}",
-            "name": "PANZIA - {{ plan.name }}",
+            "name": "PANZIA",
             "description": "{{ plan.name }} Plan Subscription",
             "image": "{% static 'images/logo.png' %}",
             "prefill": {
@@ -168,32 +568,120 @@
             },
             "modal": {
                 "ondismiss": function() {
-                    // User closed the modal
-                    console.log('Payment modal closed');
+                    showToast('Payment cancelled. You can try again.', 'warning');
+                    resetButton();
                 }
-            },
-            "handler": function(response){
-                // Redirect to success page with payment details
-                window.location.href = "{% url 'payments:payment_success' %}?payment_id=" 
-                    + response.razorpay_payment_id 
-                    + "&order_id=" + response.razorpay_order_id
-                    + "&plan_id={{ plan.id }}";
             }
         };
 
         var rzp = new Razorpay(options);
 
-        // Payment button click handler
-        document.getElementById("pay-btn").onclick = function(e){
-            e.preventDefault();
-            rzp.open();
-        };
-        
-        // Handle payment failure
-        rzp.on('payment.failed', function(response) {
-            console.log('Payment failed:', response);
-            window.location.href = "{% url 'payments:payment_failed' %}";
+        // ============================================
+        // PAYMENT SUCCESS HANDLER
+        // ============================================
+        rzp.on('payment.success', function(response) {
+            console.log('✅ Payment success:', response);
+            var successUrl = "{% url 'payments:payment_success' %}?razorpay_payment_id=" 
+                + response.razorpay_payment_id 
+                + "&razorpay_order_id=" + response.razorpay_order_id
+                + "&razorpay_signature=" + response.razorpay_signature
+                + "&plan_id={{ plan.id }}";
+            window.location.href = successUrl;
         });
+
+        // ============================================
+        // PAYMENT FAILED HANDLER
+        // ============================================
+        rzp.on('payment.failed', function(response) {
+            console.log('❌ Payment failed:', response);
+            var errorMessage = 'Payment failed. Please try again.';
+            if (response.error && response.error.description) {
+                errorMessage = response.error.description;
+            }
+            showToast(errorMessage, 'error');
+            resetButton();
+            
+            // Redirect to failed page after 3 seconds
+            setTimeout(function() {
+                window.location.href = "{% url 'payments:payment_failed' %}";
+            }, 3000);
+        });
+
+        // ============================================
+        // PAYMENT BUTTON CLICK
+        // ============================================
+        document.getElementById("pay-btn").addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            this.classList.add('loading');
+            this.disabled = true;
+            
+            try {
+                rzp.open();
+            } catch (error) {
+                console.error('Razorpay error:', error);
+                showToast('Unable to initialize payment. Please try again.', 'error');
+                resetButton();
+            }
+        });
+
+        // ============================================
+        // TOAST NOTIFICATION
+        // ============================================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.className = 'toast-notification ' + type;
+            
+            // Trigger reflow
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 5000);
+        }
+
+        // ============================================
+        // RESET BUTTON STATE
+        // ============================================
+        function resetButton() {
+            const btn = document.getElementById('pay-btn');
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Enter or Space to trigger payment
+            if ((e.key === 'Enter' || e.key === ' ') && document.activeElement === document.getElementById('pay-btn')) {
+                e.preventDefault();
+                document.getElementById('pay-btn').click();
+            }
+            // Escape to go back
+            if (e.key === 'Escape') {
+                if (confirm('Are you sure you want to leave this page? Your payment will not be completed.')) {
+                    window.location.href = "{% url 'payments:subscription_plans' %}";
+                }
+            }
+        });
+
+        // ============================================
+        // CONSOLE LOG
+        // ============================================
+        console.log('💳 Payment page loaded');
+        console.log('📋 Plan:', '{{ plan.name }}');
+        console.log('💰 Amount:', '{{ plan.price }}');
+        console.log('🆔 Order ID:', '{{ order.id }}');
+        console.log('🔑 Key ID:', '{{ key_id }}');
+        
+        // Test Razorpay initialization
+        console.log('✅ Razorpay initialized successfully');
     });
 </script>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'sprints/base_sprint.html' %}
+{% extends 'sprints/startup/base_sprint_startup.html' %}
 {% load static %}
 
 {% block page_actions %}
@@ -88,7 +88,13 @@
         transition: all 0.3s;
         position: relative;
         overflow: hidden;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
     }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
 
     .stat-card:hover {
         border-color: rgba(167, 139, 250, 0.12);
@@ -133,7 +139,16 @@
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
     }
+
+    .task-card:nth-child(1) { animation-delay: 0.2s; }
+    .task-card:nth-child(2) { animation-delay: 0.25s; }
+    .task-card:nth-child(3) { animation-delay: 0.3s; }
+    .task-card:nth-child(4) { animation-delay: 0.35s; }
+    .task-card:nth-child(5) { animation-delay: 0.4s; }
+    .task-card:nth-child(6) { animation-delay: 0.45s; }
 
     .task-card:hover {
         border-color: rgba(167, 139, 250, 0.15);
@@ -300,6 +315,7 @@
         background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
+        grid-column: 1 / -1;
     }
 
     .empty-state .empty-icon {
@@ -307,6 +323,12 @@
         display: block;
         margin-bottom: 16px;
         opacity: 0.5;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
 
     .empty-state h3 {
@@ -407,27 +429,6 @@
             transform: translateY(0);
         }
     }
-
-    .stat-card {
-        animation: fadeInUp 0.4s ease forwards;
-        opacity: 0;
-    }
-
-    .stat-card:nth-child(1) { animation-delay: 0.05s; }
-    .stat-card:nth-child(2) { animation-delay: 0.1s; }
-    .stat-card:nth-child(3) { animation-delay: 0.15s; }
-
-    .task-card {
-        animation: fadeInUp 0.4s ease forwards;
-        opacity: 0;
-    }
-
-    .task-card:nth-child(1) { animation-delay: 0.2s; }
-    .task-card:nth-child(2) { animation-delay: 0.25s; }
-    .task-card:nth-child(3) { animation-delay: 0.3s; }
-    .task-card:nth-child(4) { animation-delay: 0.35s; }
-    .task-card:nth-child(5) { animation-delay: 0.4s; }
-    .task-card:nth-child(6) { animation-delay: 0.45s; }
 </style>
 
 <div class="page-content">
@@ -452,13 +453,13 @@
 
         <div class="stat-card">
             <span class="stat-icon">🚀</span>
-            <h2>{{ tasks|length|default:"0" }}</h2>
+            <h2>{{ assigned_tasks|default:"0" }}</h2>
             <p>Assigned Tasks</p>
         </div>
 
         <div class="stat-card">
             <span class="stat-icon">🏆</span>
-            <h2>{{ sprint.progress_percentage|default:"0" }}%</h2>
+            <h2>{{ progress|default:"0" }}%</h2>
             <p>Sprint Progress</p>
         </div>
     </div>
@@ -472,7 +473,7 @@
 
             <div class="task-header">
                 <h3>{{ task.title }}</h3>
-                <span class="task-status status-{{ task.status }}">
+                <span class="task-status status-{{ task.status|lower|cut:' ' }}">
                     {% if task.status == 'pending' %}⏳{% elif task.status == 'in_progress' %}🔄{% elif task.status == 'review' %}📝{% elif task.status == 'completed' %}✅{% else %}📌{% endif %}
                     {{ task.get_status_display }}
                 </span>
@@ -522,6 +523,25 @@
         console.log('📋 Task Board loaded');
         console.log('🚀 Sprint: {{ sprint.title }}');
         console.log('📝 Total Tasks: {{ tasks.count|default:"0" }}');
+        console.log('📊 Progress: {{ progress|default:"0" }}%');
+        
+        // Animate cards on scroll
+        const cards = document.querySelectorAll('.task-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.4s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
     });
 </script>
 {% endblock %}

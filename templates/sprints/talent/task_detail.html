@@ -1,0 +1,524 @@
+{% extends 'sprints/talent/base_sprint_talent.html' %}
+{% load static %}
+
+{% block hub_actions %}
+<a href="{% url 'my_tasks' %}" class="secondary-btn">
+    <span class="btn-icon">←</span> My Tasks
+</a>
+<a href="{% url 'sprint_detail' task.sprint.id %}" class="secondary-btn">
+    <span class="btn-icon">📄</span> Sprint Details
+</a>
+{% if task.status == 'assigned' %}
+<a href="{% url 'submit_task' task.id %}" class="primary-btn">
+    <span class="btn-icon">📤</span> Submit Task
+</a>
+{% endif %}
+{% endblock %}
+
+{% block hub_content %}
+<style>
+    .task-detail-container {
+        max-width: 800px;
+        margin: 0 auto;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== TASK CARD ===== */
+    .task-card {
+        background: linear-gradient(145deg, rgba(167, 139, 250, 0.04), rgba(167, 139, 250, 0.01));
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 28px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .task-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-glow {
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.05), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+    }
+
+    .task-card:hover .task-glow {
+        opacity: 1;
+    }
+
+    /* ===== TASK HEADER ===== */
+    .task-header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .task-header-section .title-section {
+        flex: 1;
+    }
+
+    .task-header-section .title-section h2 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .task-header-section .title-section .sprint-ref {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    .task-header-section .title-section .sprint-ref a {
+        color: #a78bfa;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .task-header-section .title-section .sprint-ref a:hover {
+        color: #c4b5fd;
+        text-decoration: underline;
+    }
+
+    .task-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .task-status-badge.assigned {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .task-status-badge.review {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .task-status-badge.completed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .task-status-badge.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    .task-status-badge.in_progress {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    /* ===== TASK DESCRIPTION ===== */
+    .task-description-section {
+        margin-bottom: 20px;
+        padding: 16px 18px;
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 10px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .task-description-section h4 {
+        margin: 0 0 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+    }
+
+    .task-description-section p {
+        margin: 0;
+        color: #d6e0f0;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        white-space: pre-wrap;
+    }
+
+    /* ===== TASK DETAILS GRID ===== */
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .detail-item {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+
+    .detail-item label {
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .detail-item .value {
+        color: #e8edf5;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .detail-item .value .assigned-user {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-item .value .assigned-user .avatar-small {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.7rem;
+    }
+
+    /* ===== SUBMISSIONS SECTION ===== */
+    .submissions-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .submissions-section h4 {
+        margin: 0 0 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .submission-item {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+    }
+
+    .submission-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .submission-item .submission-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .submission-item .submission-header .submitted-by {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .submission-item .submission-header .submitted-by .avatar-small {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.6rem;
+    }
+
+    .submission-item .submission-header .submission-status {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 12px;
+    }
+
+    .submission-item .submission-header .submission-status.pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+
+    .submission-item .submission-header .submission-status.reviewed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .submission-item .submission-links {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .submission-item .submission-links a {
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .submission-item .submission-links a:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .submission-item .submission-notes {
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 6px;
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        font-size: 0.85rem;
+        color: #d6e0f0;
+        line-height: 1.6;
+    }
+
+    .submission-item .no-submission {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .task-card {
+            padding: 20px;
+        }
+
+        .task-header-section {
+            flex-direction: column;
+        }
+
+        .task-header-section .title-section h2 {
+            font-size: 1.2rem;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .submission-item .submission-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .task-card {
+            padding: 16px;
+        }
+
+        .task-header-section .title-section h2 {
+            font-size: 1rem;
+        }
+
+        .detail-item {
+            padding: 10px 12px;
+        }
+
+        .submission-item {
+            padding: 12px 14px;
+        }
+    }
+</style>
+
+<div class="task-detail-container">
+    <!-- ===== TASK CARD ===== -->
+    <div class="task-card">
+        <div class="task-glow"></div>
+
+        <!-- Task Header -->
+        <div class="task-header-section">
+            <div class="title-section">
+                <h2>{{ task.title }}</h2>
+                <div class="sprint-ref">
+                    Sprint: <a href="{% url 'sprint_detail' task.sprint.id %}">{{ task.sprint.title }}</a>
+                </div>
+            </div>
+            <span class="task-status-badge {{ task.status|lower|cut:' ' }}">
+                {% if task.status == 'pending' %}⏳
+                {% elif task.status == 'in_progress' %}🔄
+                {% elif task.status == 'review' %}📝
+                {% elif task.status == 'completed' %}✅
+                {% else %}📌{% endif %}
+                {{ task.get_status_display }}
+            </span>
+        </div>
+
+        <!-- Description -->
+        <div class="task-description-section">
+            <h4>📝 Description</h4>
+            <p>{{ task.description|default:"No description provided." }}</p>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="details-grid">
+            <div class="detail-item">
+                <label>👤 Assigned To</label>
+                <div class="value">
+                    {% if task.assigned_to %}
+                    <span class="assigned-user">
+                        <span class="avatar-small">{{ task.assigned_to.username|first|upper }}</span>
+                        {{ task.assigned_to.username }}
+                    </span>
+                    {% else %}
+                    <span style="color: #64748b;">Not Assigned</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <label>📅 Deadline</label>
+                <div class="value">
+                    {{ task.deadline|date:"d M Y" }}
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <label>🚀 Sprint</label>
+                <div class="value">
+                    <a href="{% url 'sprint_detail' task.sprint.id %}" style="color: #a78bfa; text-decoration: none;">
+                        {{ task.sprint.title }}
+                    </a>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <label>📅 Created</label>
+                <div class="value">
+                    {{ task.created_at|date:"d M Y" }}
+                    <span style="color: #64748b; font-size: 0.8rem;">
+                        ({{ task.created_at|timesince }} ago)
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submissions -->
+        <div class="submissions-section">
+            <h4>📤 Submissions</h4>
+            {% if submissions %}
+                {% for submission in submissions %}
+                <div class="submission-item">
+                    <div class="submission-header">
+                        <span class="submitted-by">
+                            <span class="avatar-small">{{ submission.user.username|first|upper }}</span>
+                            {{ submission.user.username }}
+                            <span style="color: #64748b; font-size: 0.75rem;">
+                                · Submitted {{ submission.submitted_at|timesince }} ago
+                            </span>
+                        </span>
+                        <span class="submission-status {% if submission.reviewed %}reviewed{% else %}pending{% endif %}">
+                            {% if submission.reviewed %}✅ Reviewed{% else %}⏳ Pending{% endif %}
+                        </span>
+                    </div>
+
+                    {% if submission.github_url or submission.drive_url %}
+                    <div class="submission-links">
+                        {% if submission.github_url %}
+                        <a href="{{ submission.github_url }}" target="_blank">
+                            🔗 GitHub
+                        </a>
+                        {% endif %}
+                        {% if submission.drive_url %}
+                        <a href="{{ submission.drive_url }}" target="_blank">
+                            📁 Drive
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if submission.notes %}
+                    <div class="submission-notes">
+                        {{ submission.notes }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="color: #64748b; font-size: 0.85rem; font-style: italic;">
+                    {% if task.status == 'assigned' %}
+                        You haven't submitted this task yet. 
+                        <a href="{% url 'submit_task' task.id %}" style="color: #a78bfa; text-decoration: none; font-style: normal;">
+                            Submit now →
+                        </a>
+                    {% else %}
+                        No submissions yet.
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 Task Detail loaded (Talent View)');
+        console.log('📋 Task: {{ task.title }}');
+        console.log('📊 Status: {{ task.status }}');
+        console.log('👤 Assigned To: {% if task.assigned_to %}{{ task.assigned_to.username }}{% else %}Not Assigned{% endif %}');
+        console.log('📤 Submissions: {{ submissions|length|default:"0" }}');
+    });
+</script>
+{% endblock %}

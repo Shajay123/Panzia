@@ -1,5 +1,7 @@
 # payments/subscription_checker.py
 
+from datetime import date
+from django.utils import timezone
 from .models import UserSubscription
 
 
@@ -15,6 +17,17 @@ def get_plan(user):
         return "FREE"
     except:
         return "FREE"
+
+
+def get_subscription(user):
+    """Get the current subscription object for a user"""
+    try:
+        return UserSubscription.objects.filter(
+            user=user,
+            active=True
+        ).first()
+    except:
+        return None
 
 
 def can_create_sprint(user):
@@ -48,6 +61,14 @@ def can_create_sprint(user):
             return sprint_count < 10
         elif plan_name == "SCALE":
             return True  # Unlimited
+        elif plan_name == "PRO":
+            from sprints.models import Sprint
+            sprint_count = Sprint.objects.filter(startup__user=user).count()
+            return sprint_count < 5
+        elif plan_name == "ELITE":
+            from sprints.models import Sprint
+            sprint_count = Sprint.objects.filter(startup__user=user).count()
+            return sprint_count < 20
         else:
             return True
     except:
@@ -75,6 +96,10 @@ def get_sprint_limit(user):
             return 10
         elif plan_name == "SCALE":
             return 999  # Unlimited
+        elif plan_name == "PRO":
+            return 5
+        elif plan_name == "ELITE":
+            return 20
         else:
             return 999
     except:
@@ -90,3 +115,63 @@ def get_remaining_sprints(user):
         return max(0, limit - current)
     except:
         return 0
+
+
+def is_subscription_expiring_soon(user, days=7):
+    """Check if the user's subscription is expiring soon"""
+    try:
+        subscription = UserSubscription.objects.filter(
+            user=user,
+            active=True
+        ).first()
+        
+        if not subscription or not subscription.end_date:
+            return False
+        
+        today = timezone.now().date()
+        days_remaining = (subscription.end_date - today).days
+        
+        return 0 < days_remaining <= days
+    except:
+        return False
+
+
+def get_subscription_status(user):
+    """Get detailed subscription status for a user"""
+    try:
+        subscription = UserSubscription.objects.filter(
+            user=user,
+            active=True
+        ).first()
+        
+        if not subscription:
+            return {
+                'has_subscription': False,
+                'plan_name': 'FREE',
+                'is_active': False,
+                'days_remaining': 0,
+                'is_expiring_soon': False,
+            }
+        
+        today = timezone.now().date()
+        days_remaining = (subscription.end_date - today).days if subscription.end_date else 0
+        
+        return {
+            'has_subscription': True,
+            'plan_name': subscription.plan.name,
+            'plan': subscription.plan,
+            'is_active': subscription.active,
+            'start_date': subscription.start_date,
+            'end_date': subscription.end_date,
+            'days_remaining': days_remaining,
+            'is_expiring_soon': 0 < days_remaining <= 7,
+            'is_expired': days_remaining <= 0,
+        }
+    except:
+        return {
+            'has_subscription': False,
+            'plan_name': 'FREE',
+            'is_active': False,
+            'days_remaining': 0,
+            'is_expiring_soon': False,
+        }

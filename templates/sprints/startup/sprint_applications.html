@@ -1,4 +1,4 @@
-{% extends 'sprints/base_sprint.html' %}
+{% extends 'sprints/startup/base_sprint_startup.html' %}
 {% load static %}
 
 {% block page_actions %}
@@ -88,7 +88,13 @@
         transition: all 0.3s;
         position: relative;
         overflow: hidden;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
     }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
 
     .stat-card:hover {
         border-color: rgba(167, 139, 250, 0.12);
@@ -150,7 +156,16 @@
         transition: all 0.3s;
         display: flex;
         flex-direction: column;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
     }
+
+    .application-card:nth-child(1) { animation-delay: 0.2s; }
+    .application-card:nth-child(2) { animation-delay: 0.25s; }
+    .application-card:nth-child(3) { animation-delay: 0.3s; }
+    .application-card:nth-child(4) { animation-delay: 0.35s; }
+    .application-card:nth-child(5) { animation-delay: 0.4s; }
+    .application-card:nth-child(6) { animation-delay: 0.45s; }
 
     .application-card:hover {
         border-color: rgba(167, 139, 250, 0.12);
@@ -177,6 +192,12 @@
         font-weight: 700;
         font-size: 1.2rem;
         flex-shrink: 0;
+        transition: all 0.3s;
+    }
+
+    .application-card:hover .avatar {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
     }
 
     .card-top .user-info {
@@ -293,6 +314,7 @@
 
     .application-actions .accept-btn:hover {
         box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+        background: linear-gradient(135deg, #10b981, #059669);
     }
 
     .application-actions .reject-btn {
@@ -303,6 +325,7 @@
 
     .application-actions .reject-btn:hover {
         box-shadow: 0 4px 16px rgba(220, 38, 38, 0.35);
+        background: linear-gradient(135deg, #ef4444, #dc2626);
     }
 
     .application-actions .view-btn {
@@ -325,6 +348,7 @@
         background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
+        grid-column: 1 / -1;
     }
 
     .empty-state-card .empty-icon {
@@ -332,6 +356,12 @@
         display: block;
         margin-bottom: 16px;
         opacity: 0.5;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
 
     .empty-state-card h3 {
@@ -416,31 +446,10 @@
             transform: translateY(0);
         }
     }
-
-    .stat-card {
-        animation: fadeInUp 0.4s ease forwards;
-        opacity: 0;
-    }
-
-    .stat-card:nth-child(1) { animation-delay: 0.05s; }
-    .stat-card:nth-child(2) { animation-delay: 0.1s; }
-    .stat-card:nth-child(3) { animation-delay: 0.15s; }
-
-    .application-card {
-        animation: fadeInUp 0.4s ease forwards;
-        opacity: 0;
-    }
-
-    .application-card:nth-child(1) { animation-delay: 0.2s; }
-    .application-card:nth-child(2) { animation-delay: 0.25s; }
-    .application-card:nth-child(3) { animation-delay: 0.3s; }
-    .application-card:nth-child(4) { animation-delay: 0.35s; }
-    .application-card:nth-child(5) { animation-delay: 0.4s; }
-    .application-card:nth-child(6) { animation-delay: 0.45s; }
 </style>
 
 <div class="page-content">
-    <!-- ===== HEADER ===== */
+    <!-- ===== HEADER ===== -->
     <div class="page-header">
         <div class="header-left">
             <span class="page-badge">📥 Talent Applications</span>
@@ -493,7 +502,7 @@
 
             <div class="application-message">
                 <h5>💡 Motivation</h5>
-                <p>{{ application.message }}</p>
+                <p>{{ application.message|default:"No motivation provided." }}</p>
             </div>
 
             <div class="application-meta">
@@ -502,10 +511,10 @@
 
             {% if application.status == 'pending' %}
             <div class="application-actions">
-                <a href="{% url 'accept_application' application.id %}" class="btn-action accept-btn">
+                <a href="{% url 'accept_application' application.id %}" class="btn-action accept-btn" onclick="return confirm('Are you sure you want to accept this application?')">
                     ✅ Accept
                 </a>
-                <a href="{% url 'reject_application' application.id %}" class="btn-action reject-btn">
+                <a href="{% url 'reject_application' application.id %}" class="btn-action reject-btn" onclick="return confirm('Are you sure you want to reject this application?')">
                     ❌ Reject
                 </a>
             </div>
@@ -534,4 +543,32 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📥 Sprint Applications loaded');
+        console.log('🚀 Sprint: {{ sprint.title }}');
+        console.log('📝 Total Applications: {{ applications.count|default:"0" }}');
+        console.log('👥 Current Members: {{ sprint.members.count|default:"0" }}');
+        console.log('🎯 Required Members: {{ sprint.max_contributors|default:"0" }}');
+        
+        // Animate cards on scroll
+        const cards = document.querySelectorAll('.application-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.4s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+    });
+</script>
 {% endblock %}

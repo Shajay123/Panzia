@@ -1,4 +1,4 @@
-{% extends 'sprints/base_sprint.html' %}
+{% extends 'sprints/startup/base_sprint_startup.html' %}
 {% load static %}
 
 {% block page_actions %}
@@ -6,7 +6,6 @@
     <a href="{% url 'create_sprint' %}" class="btn btn-primary btn-sm">
         <span class="btn-icon">➕</span> Create Sprint
     </a>
-    
 </div>
 {% endblock %}
 
@@ -164,6 +163,9 @@
         padding: 20px;
         margin-top: 20px;
         transition: all 0.3s;
+        animation: fadeInUp 0.5s ease forwards;
+        animation-delay: 0.15s;
+        opacity: 0;
     }
 
     .content-card:hover {
@@ -539,4 +541,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📊 Execution Dashboard loaded');
+        console.log('📈 Total Sprints: {{ total_sprints|default:"0" }}');
+        console.log('🟢 Active Sprints: {{ active_sprints|default:"0" }}');
+        console.log('🏆 Completed Sprints: {{ completed_sprints|default:"0" }}');
+        console.log('📂 Open Sprints: {{ open_sprints|default:"0" }}');
+        
+        // Animate stat cards on hover
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+        });
+    });
+</script>
 {% endblock %}

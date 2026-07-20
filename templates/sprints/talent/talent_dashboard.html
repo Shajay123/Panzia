@@ -1,0 +1,560 @@
+{% extends 'sprints/talent/base_sprint_talent.html' %}
+{% load static %}
+
+{% block hub_actions %}
+<a href="{% url 'browse_sprints' %}" class="primary-btn">
+    <span class="btn-icon">🚀</span> Browse Sprints
+</a>
+{% endblock %}
+
+{% block hub_content %}
+<style>
+    /* ============================================
+       TALENT DASHBOARD - ENHANCED STYLES
+       ============================================ */
+    
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card .stat-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #e8edf5;
+        letter-spacing: -0.5px;
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .stat-card .stat-change {
+        font-size: 0.65rem;
+        font-weight: 600;
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        margin-top: 6px;
+    }
+
+    .stat-card .stat-change.positive {
+        color: #34d399;
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .stat-card .stat-change.neutral {
+        color: #94a3b8;
+        background: rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-card .stat-change.warning {
+        color: #fbbf24;
+        background: rgba(251, 191, 36, 0.08);
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+
+    .stat-card.applications { border-left: 3px solid #a78bfa; }
+    .stat-card.applications::before { background: linear-gradient(90deg, #a78bfa, #c4b5fd); }
+
+    .stat-card.sprints { border-left: 3px solid #60a5fa; }
+    .stat-card.sprints::before { background: linear-gradient(90deg, #60a5fa, #93bbfc); }
+
+    .stat-card.tasks { border-left: 3px solid #34d399; }
+    .stat-card.tasks::before { background: linear-gradient(90deg, #34d399, #6ee7b7); }
+
+    .stat-card.review { border-left: 3px solid #fbbf24; }
+    .stat-card.review::before { background: linear-gradient(90deg, #fbbf24, #fcd34d); }
+
+    /* ===== GRID ===== */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .dashboard-panel {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+    .dashboard-panel:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .panel-header .header-count {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #94a3b8;
+        background: rgba(167, 139, 250, 0.06);
+        padding: 2px 10px;
+        border-radius: 12px;
+        margin-left: 4px;
+    }
+
+    .panel-header .view-all {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        border-radius: 8px;
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.04);
+        font-weight: 500;
+    }
+
+    .panel-header .view-all:hover {
+        color: #a78bfa;
+        background: rgba(167, 139, 250, 0.08);
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateX(4px);
+    }
+
+    /* ===== APPLICATION ITEMS ===== */
+    .application-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        transition: all 0.3s;
+    }
+
+    .application-item:last-child {
+        border-bottom: none;
+    }
+
+    .application-item:hover {
+        padding-left: 8px;
+        background: rgba(167, 139, 250, 0.02);
+        border-radius: 6px;
+    }
+
+    .application-item .app-info {
+        flex: 1;
+    }
+
+    .application-item .app-info .app-title {
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .application-item .app-info .app-meta {
+        color: #64748b;
+        font-size: 0.75rem;
+        margin-top: 2px;
+    }
+
+    .application-item .app-status {
+        flex-shrink: 0;
+    }
+
+    .status-badge-sm {
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .status-badge-sm.pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+
+    .status-badge-sm.accepted {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .status-badge-sm.rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+
+    /* ===== TASK ITEMS ===== */
+    .task-item-dashboard {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        transition: all 0.3s;
+    }
+
+    .task-item-dashboard:last-child {
+        border-bottom: none;
+    }
+
+    .task-item-dashboard:hover {
+        padding-left: 8px;
+        background: rgba(167, 139, 250, 0.02);
+        border-radius: 6px;
+    }
+
+    .task-item-dashboard .task-info {
+        flex: 1;
+    }
+
+    .task-item-dashboard .task-info .task-title {
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .task-item-dashboard .task-info .task-meta {
+        color: #64748b;
+        font-size: 0.75rem;
+        margin-top: 2px;
+    }
+
+    .task-status-sm {
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .task-status-sm.pending {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .task-status-sm.progress {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    .task-status-sm.review {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .task-status-sm.completed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state-sm {
+        text-align: center;
+        padding: 20px;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .empty-state-sm .empty-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 8px;
+        opacity: 0.4;
+    }
+
+    .empty-state-sm .empty-action {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 16px;
+        border-radius: 6px;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+    }
+
+    .empty-state-sm .empty-action:hover {
+        background: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .dashboard-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.4rem;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 1.5rem;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .application-item,
+        .task-item-dashboard {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .application-item .app-status,
+        .task-item-dashboard .task-status {
+            width: 100%;
+        }
+
+        .application-item .app-status .status-badge-sm,
+        .task-item-dashboard .task-status .task-status-sm {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.2rem;
+        }
+
+        .dashboard-panel {
+            padding: 16px;
+        }
+
+        .panel-header {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .panel-header .view-all {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<!-- ===== STATS ===== -->
+<div class="dashboard-stats">
+    <div class="stat-card applications">
+        <span class="stat-icon">📨</span>
+        <div class="stat-value">{{ total_applications|default:"0" }}</div>
+        <div class="stat-label">Applications</div>
+        <span class="stat-change neutral">📊 Total</span>
+    </div>
+
+    <div class="stat-card sprints">
+        <span class="stat-icon">🚀</span>
+        <div class="stat-value">{{ total_member_sprints|default:"0" }}</div>
+        <div class="stat-label">Sprints Joined</div>
+        <span class="stat-change positive">✅ Active</span>
+    </div>
+
+    <div class="stat-card tasks">
+        <span class="stat-icon">📋</span>
+        <div class="stat-value">{{ pending_tasks|default:"0" }}</div>
+        <div class="stat-label">Tasks Pending</div>
+        <span class="stat-change warning">⏳ Waiting</span>
+    </div>
+
+    <div class="stat-card review">
+        <span class="stat-icon">✅</span>
+        <div class="stat-value">{{ completed_tasks|default:"0" }}</div>
+        <div class="stat-label">Tasks Completed</div>
+        <span class="stat-change positive">🏆 Done</span>
+    </div>
+</div>
+
+<!-- ===== GRID ===== -->
+<div class="dashboard-grid">
+    <!-- Recent Applications -->
+    <div class="dashboard-panel">
+        <div class="panel-header">
+            <h3>
+                📨 Recent Applications
+                <span class="header-count">{{ recent_applications|length }}</span>
+            </h3>
+            <a href="{% url 'my_applications' %}" class="view-all">
+                View All
+                <span class="arrow">→</span>
+            </a>
+        </div>
+        <div>
+            {% if recent_applications %}
+                {% for app in recent_applications %}
+                <div class="application-item">
+                    <div class="app-info">
+                        <div class="app-title">{{ app.sprint.title }}</div>
+                        <div class="app-meta">🏢 {{ app.sprint.startup.company_name }} · {{ app.applied_at|timesince }} ago</div>
+                    </div>
+                    <div class="app-status">
+                        <span class="status-badge-sm {{ app.status|lower }}">{{ app.status|title }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state-sm">
+                    <span class="empty-icon">📭</span>
+                    <p>No applications yet</p>
+                    <a href="{% url 'browse_sprints' %}" class="empty-action">🚀 Browse Sprints</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <div class="dashboard-panel">
+        <div class="panel-header">
+            <h3>
+                ✅ Recent Tasks
+                <span class="header-count">{{ recent_tasks|length }}</span>
+            </h3>
+            <a href="{% url 'my_tasks' %}" class="view-all">
+                View All
+                <span class="arrow">→</span>
+            </a>
+        </div>
+        <div>
+            {% if recent_tasks %}
+                {% for task in recent_tasks %}
+                <div class="task-item-dashboard">
+                    <div class="task-info">
+                        <div class="task-title">{{ task.title }}</div>
+                        <div class="task-meta">🚀 {{ task.sprint.title }} · {{ task.created_at|timesince }} ago</div>
+                    </div>
+                    <div class="task-status">
+                        <span class="task-status-sm {{ task.status|lower }}">{{ task.get_status_display }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state-sm">
+                    <span class="empty-icon">✅</span>
+                    <p>No tasks assigned yet</p>
+                    <a href="{% url 'browse_sprints' %}" class="empty-action">🚀 Join a Sprint</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ===== QUICK ACTIONS ===== -->
+<div class="dashboard-panel">
+    <div class="panel-header">
+        <h3>⚡ Quick Actions</h3>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="{% url 'browse_sprints' %}" class="primary-btn" style="flex: 1; min-width: 140px; justify-content: center; padding: 10px 20px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px;">
+            🚀 Browse Sprints
+        </a>
+        <a href="{% url 'my_applications' %}" class="secondary-btn" style="flex: 1; min-width: 140px; justify-content: center; padding: 10px 20px; background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px;">
+            📨 My Applications
+        </a>
+        <a href="{% url 'my_tasks' %}" class="secondary-btn" style="flex: 1; min-width: 140px; justify-content: center; padding: 10px 20px; background: rgba(167, 139, 250, 0.06); color: #94a3b8; border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px;">
+            ✅ My Tasks
+        </a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🏠 Talent Dashboard loaded');
+        console.log('📨 Total Applications: {{ total_applications|default:"0" }}');
+        console.log('🚀 Sprints Joined: {{ total_member_sprints|default:"0" }}');
+        console.log('📋 Tasks Pending: {{ pending_tasks|default:"0" }}');
+        console.log('✅ Tasks Completed: {{ completed_tasks|default:"0" }}');
+    });
+</script>
+{% endblock %}

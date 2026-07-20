@@ -1,4 +1,4 @@
-{% extends 'sprints/base_sprint.html' %}
+{% extends 'sprints/startup/base_sprint_startup.html' %}
 {% load static %}
 
 {% block page_actions %}
@@ -339,7 +339,6 @@
 
     /* ===== NUMBER INPUT ===== */
     input[type="number"].form-control {
-        
         background: rgba(30, 27, 45, 0.8);
     }
 
@@ -495,6 +494,12 @@
         transform: translateY(-1px);
     }
 
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
     .btn-secondary {
         background: rgba(167, 139, 250, 0.06);
         color: #94a3b8;
@@ -531,6 +536,29 @@
         background: rgba(239, 68, 68, 0.15);
         color: #fca5a5;
         transform: translateY(-3px);
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .btn .spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .btn.loading .spinner {
+        display: inline-block;
+    }
+
+    .btn.loading .btn-text {
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 
     /* ===== RESPONSIVE ===== */
@@ -700,15 +728,15 @@
     </div>
 
     <!-- ===== PROGRESS BAR ===== -->
-    <div class="sprint-progress">
+    <!-- <div class="sprint-progress">
         <div class="progress-track">
-            <!-- <div class="progress-fill" style="width: {% widthratio sprint_count sprint_limit 100 %}%;"></div> -->
+            <div class="progress-fill" style="width: {% widthratio sprint_count sprint_limit 100 %}%;"></div>
         </div>
-    </div>
+    </div> -->
 
     <!-- ===== FORM ===== -->
     <div class="form-container">
-        <form method="POST" action="{% if is_edit %}{% url 'edit_sprint' sprint.id %}{% else %}{% url 'create_sprint' %}{% endif %}">
+        <form method="POST" id="sprintForm" action="{% if is_edit %}{% url 'edit_sprint' sprint.id %}{% else %}{% url 'create_sprint' %}{% endif %}">
             {% csrf_token %}
 
             <!-- ====== ERROR MESSAGES ====== -->
@@ -745,7 +773,8 @@
                            class="form-control" 
                            placeholder="Enter a clear, descriptive sprint title..."
                            value="{{ form.title.value|default:'' }}"
-                           required>
+                           required
+                           maxlength="100">
                     <span class="help-text">Give your sprint a clear, descriptive title that captures its essence.</span>
                 </div>
 
@@ -849,12 +878,15 @@
             <!-- ====== FORM ACTIONS ====== -->
             <div class="form-actions">
                 <div class="left-actions">
-                    <button type="submit" class="btn btn-primary">
-                        {% if is_edit %}
-                            💾 Update Sprint
-                        {% else %}
-                            🚀 Create Sprint
-                        {% endif %}
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span class="spinner"></span>
+                        <span class="btn-text">
+                            {% if is_edit %}
+                                💾 Update Sprint
+                            {% else %}
+                                🚀 Create Sprint
+                            {% endif %}
+                        </span>
                     </button>
                     <a href="{% url 'startup_sprints' %}" class="btn btn-secondary">
                         ❌ Cancel
@@ -892,11 +924,16 @@
         const titleInput = document.querySelector('input[name="title"]');
         if (titleInput) {
             const helpText = titleInput.closest('.form-group').querySelector('.help-text');
+            const maxLength = 100;
+            
             titleInput.addEventListener('input', function() {
                 const count = this.value.length;
+                const remaining = maxLength - count;
                 if (helpText) {
-                    helpText.textContent = `${count}/100 characters • Give your sprint a clear, descriptive title.`;
-                    if (count > 80) {
+                    helpText.textContent = `${count}/${maxLength} characters • ${remaining} remaining`;
+                    if (remaining < 10) {
+                        helpText.style.color = '#f87171';
+                    } else if (remaining < 20) {
                         helpText.style.color = '#fbbf24';
                     } else {
                         helpText.style.color = '#64748b';
@@ -909,7 +946,7 @@
         // CONFIRMATION ON CANCEL
         // ============================================
         let formChanged = false;
-        const form = document.querySelector('form');
+        const form = document.getElementById('sprintForm');
         const cancelBtn = document.querySelector('.btn-secondary');
 
         form.addEventListener('input', function(e) {
@@ -935,8 +972,9 @@
         document.addEventListener('keydown', function(e) {
             // Ctrl+Enter to submit form
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                const form = document.querySelector('form');
+                const form = document.getElementById('sprintForm');
                 if (form) {
+                    e.preventDefault();
                     form.submit();
                 }
             }
@@ -954,6 +992,53 @@
             const minDate = `${year}-${month}-${day}`;
             dateInput.setAttribute('min', minDate);
         }
+
+        // ============================================
+        // FORM SUBMISSION - PREVENT DOUBLE CLICK
+        // ============================================
+        const submitBtn = document.getElementById('submitBtn');
+        form.addEventListener('submit', function(e) {
+            if (submitBtn.disabled) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            
+            // Re-enable after 3 seconds if form doesn't submit (fallback)
+            setTimeout(() => {
+                if (!submitBtn.disabled) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                }
+            }, 3000);
+        });
+
+        // ============================================
+        // VALIDATION - Required fields
+        // ============================================
+        const requiredFields = form.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            field.addEventListener('blur', function() {
+                if (!this.value.trim()) {
+                    this.classList.add('error');
+                } else {
+                    this.classList.remove('error');
+                }
+            });
+            
+            field.addEventListener('focus', function() {
+                this.classList.remove('error');
+            });
+            
+            field.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('error');
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

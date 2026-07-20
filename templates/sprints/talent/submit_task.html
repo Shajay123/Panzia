@@ -1,0 +1,707 @@
+{% extends 'sprints/talent/base_sprint_talent.html' %}
+{% load static %}
+
+{% block hub_actions %}
+<a href="{% url 'my_tasks' %}" class="secondary-btn">
+    <span class="btn-icon">←</span> My Tasks
+</a>
+<a href="{% url 'sprint_detail' task.sprint.id %}" class="secondary-btn">
+    <span class="btn-icon">📄</span> Sprint Details
+</a>
+{% endblock %}
+
+{% block hub_content %}
+<style>
+    .submit-container {
+        max-width: 700px;
+        margin: 0 auto;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== TASK INFO CARD ===== */
+    .task-info-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .task-info-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+    }
+
+    .task-info-card .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .task-info-card .task-header h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .task-info-card .task-header .status-badge {
+        padding: 4px 14px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .status-badge.assigned {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .status-badge.in_progress {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    .status-badge.review {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .status-badge.completed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .task-info-card .task-description {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        margin-bottom: 12px;
+    }
+
+    .task-info-card .task-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .task-info-card .task-meta .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .task-info-card .task-meta .meta-item strong {
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    /* ===== FORM CARD ===== */
+    .form-card {
+        background: linear-gradient(145deg, rgba(167, 139, 250, 0.04), rgba(167, 139, 250, 0.01));
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 28px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-glow {
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.05), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+    }
+
+    .form-card:hover .form-glow {
+        opacity: 1;
+    }
+
+    .form-card h3 {
+        margin: 0 0 4px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .form-card .form-subtitle {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0 0 20px;
+    }
+
+    /* ===== FORM GROUP ===== */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+
+    .form-group label .required {
+        color: #f87171;
+        margin-left: 2px;
+    }
+
+    .form-group label .optional {
+        color: #64748b;
+        font-weight: 400;
+        font-size: 0.8rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid rgba(167, 139, 250, 0.1);
+        border-radius: 12px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .form-group input:hover,
+    .form-group textarea:hover {
+        border-color: rgba(167, 139, 250, 0.25);
+        background: rgba(167, 139, 250, 0.06);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        background: rgba(167, 139, 250, 0.05);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: #64748b;
+        font-weight: 400;
+    }
+
+    .form-group .help-text {
+        display: block;
+        color: #64748b;
+        font-size: 0.75rem;
+        margin-top: 4px;
+    }
+
+    .form-group .help-text .icon {
+        margin-right: 4px;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+        line-height: 1.7;
+    }
+
+    /* ===== NOTES SECTION ===== */
+    .notes-section {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 20px;
+    }
+
+    .notes-section h4 {
+        margin: 0 0 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .notes-section .task-detail-item {
+        display: flex;
+        gap: 8px;
+        padding: 6px 0;
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .notes-section .task-detail-item strong {
+        color: #e8edf5;
+        font-weight: 500;
+        min-width: 80px;
+    }
+
+    .notes-section .task-detail-item .description-text {
+        color: #d6e0f0;
+        line-height: 1.6;
+    }
+
+    .notes-section .task-detail-item .deadline-text {
+        color: #fbbf24;
+        font-weight: 500;
+    }
+
+    /* ===== ACTION ROW ===== */
+    .action-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .action-row .submit-btn {
+        padding: 12px 32px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+        flex: 1;
+        justify-content: center;
+    }
+
+    .action-row .submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .action-row .submit-btn:active {
+        transform: translateY(0px);
+    }
+
+    .action-row .submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .action-row .submit-btn .spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .action-row .submit-btn.loading .spinner {
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .action-row .cancel-btn {
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        cursor: pointer;
+    }
+
+    .action-row .cancel-btn:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-3px);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    .action-row .cancel-btn:active {
+        transform: translateY(0px);
+    }
+
+    /* ===== VALIDATION STATES ===== */
+    .form-group input.error,
+    .form-group textarea.error {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+    }
+
+    .form-group input.success,
+    .form-group textarea.success {
+        border-color: #34d399 !important;
+        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1) !important;
+    }
+
+    .form-group .error-text {
+        color: #f87171;
+        font-size: 0.75rem;
+        margin-top: 4px;
+        display: none;
+    }
+
+    .form-group .error-text.show {
+        display: block;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .form-card {
+            padding: 20px 16px;
+        }
+
+        .task-info-card {
+            padding: 16px;
+        }
+
+        .task-info-card .task-header {
+            flex-direction: column;
+        }
+
+        .action-row {
+            flex-direction: column;
+        }
+
+        .action-row .submit-btn,
+        .action-row .cancel-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .notes-section .task-detail-item {
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .notes-section .task-detail-item strong {
+            min-width: auto;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-card {
+            padding: 16px 12px;
+        }
+
+        .task-info-card {
+            padding: 14px;
+        }
+
+        .task-info-card .task-header h2 {
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+
+        .action-row .submit-btn,
+        .action-row .cancel-btn {
+            font-size: 0.85rem;
+            padding: 10px 20px;
+        }
+    }
+</style>
+
+<div class="submit-container">
+    <!-- ===== TASK INFO ===== -->
+    <div class="task-info-card">
+        <div class="task-header">
+            <h2>{{ task.title }}</h2>
+            <span class="status-badge {{ task.status|lower }}">
+                {% if task.status == 'assigned' %}📌
+                {% elif task.status == 'in_progress' %}🔄
+                {% elif task.status == 'review' %}📝
+                {% else %}✅{% endif %}
+                {{ task.get_status_display }}
+            </span>
+        </div>
+        <div class="task-description">
+            {{ task.description }}
+        </div>
+        <div class="task-meta">
+            <span class="meta-item">
+                🚀 Sprint: <strong>{{ task.sprint.title }}</strong>
+            </span>
+            <span class="meta-item">
+                📅 Deadline: <strong>{{ task.deadline }}</strong>
+            </span>
+            <span class="meta-item">
+                👤 Assigned to: <strong>{{ task.assigned_to.username }}</strong>
+            </span>
+        </div>
+    </div>
+
+    <!-- ===== FORM ===== -->
+    <div class="form-card">
+        <div class="form-glow"></div>
+
+        <h3>📤 Submit Your Work</h3>
+        <p class="form-subtitle">Provide links to your work and add any relevant notes.</p>
+
+        <form method="POST" id="submitForm" novalidate>
+            {% csrf_token %}
+
+            <!-- GitHub URL -->
+            <div class="form-group">
+                <label for="github_url">
+                    🔗 GitHub URL
+                    <span class="required">*</span>
+                </label>
+                <input 
+                    type="url" 
+                    id="github_url"
+                    name="github_url" 
+                    class="form-control" 
+                    placeholder="https://github.com/your-username/your-repo"
+                    required
+                >
+                <span class="help-text">
+                    <span class="icon">💡</span> Paste your GitHub repository link (required)
+                </span>
+                <div class="error-text">Please enter a valid GitHub URL</div>
+            </div>
+
+            <!-- Drive URL -->
+            <div class="form-group">
+                <label for="drive_url">
+                    📁 Google Drive URL
+                    <span class="optional">(optional)</span>
+                </label>
+                <input 
+                    type="url" 
+                    id="drive_url"
+                    name="drive_url" 
+                    class="form-control" 
+                    placeholder="https://drive.google.com/drive/folders/..."
+                >
+                <span class="help-text">
+                    <span class="icon">💡</span> Share your Google Drive file/folder link (optional)
+                </span>
+            </div>
+
+            <!-- Notes -->
+            <div class="notes-section">
+                <h4>📝 Additional Notes</h4>
+                <div class="task-detail-item">
+                    <strong>Description:</strong>
+                    <span class="description-text">{{ task.description }}</span>
+                </div>
+                <div class="task-detail-item">
+                    <strong>Deadline:</strong>
+                    <span class="deadline-text">{{ task.deadline }}</span>
+                </div>
+                <div style="margin-top: 12px;">
+                    <textarea 
+                        name="notes" 
+                        id="notes"
+                        rows="4" 
+                        class="form-control"
+                        placeholder="Add any extra information, context, or instructions for the reviewer..."
+                    ></textarea>
+                    <span class="help-text">
+                        <span class="icon">💡</span> Add any additional context or instructions (optional)
+                    </span>
+                    <div class="help-text" id="notesCount" style="text-align: right; color: #64748b; font-size: 0.7rem;">
+                        0 / 500 characters
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-row">
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="spinner"></span>
+                    <span class="btn-text">🚀 Submit Work</span>
+                </button>
+                <a href="{% url 'my_tasks' %}" class="cancel-btn">
+                    ❌ Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('submitForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const githubInput = document.getElementById('github_url');
+        const driveInput = document.getElementById('drive_url');
+        const notesInput = document.getElementById('notes');
+        const notesCount = document.getElementById('notesCount');
+        const maxNotesLength = 500;
+
+        // ============================================
+        // NOTES CHARACTER COUNTER
+        // ============================================
+        if (notesInput && notesCount) {
+            notesInput.addEventListener('input', function() {
+                const length = this.value.length;
+                const remaining = maxNotesLength - length;
+                notesCount.textContent = `${length} / ${maxNotesLength} characters`;
+                
+                if (remaining < 50) {
+                    notesCount.style.color = '#f87171';
+                } else if (remaining < 100) {
+                    notesCount.style.color = '#fbbf24';
+                } else {
+                    notesCount.style.color = '#64748b';
+                }
+            });
+        }
+
+        // ============================================
+        // URL VALIDATION
+        // ============================================
+        function validateUrl(input) {
+            const errorElement = input.parentElement.querySelector('.error-text');
+            if (input.value && !isValidUrl(input.value)) {
+                input.classList.add('error');
+                input.classList.remove('success');
+                if (errorElement) errorElement.classList.add('show');
+                return false;
+            } else if (input.value) {
+                input.classList.remove('error');
+                input.classList.add('success');
+                if (errorElement) errorElement.classList.remove('show');
+                return true;
+            }
+            return true;
+        }
+
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // GitHub URL validation
+        githubInput.addEventListener('blur', function() {
+            validateUrl(this);
+        });
+
+        githubInput.addEventListener('input', function() {
+            if (this.value) {
+                validateUrl(this);
+            } else {
+                this.classList.remove('error', 'success');
+            }
+        });
+
+        // Drive URL validation
+        driveInput.addEventListener('blur', function() {
+            if (this.value) {
+                validateUrl(this);
+            }
+        });
+
+        // ============================================
+        // PREVENT DOUBLE SUBMISSION
+        // ============================================
+        form.addEventListener('submit', function(e) {
+            // Validate GitHub URL
+            if (!validateUrl(githubInput)) {
+                e.preventDefault();
+                githubInput.focus();
+                return;
+            }
+
+            if (submitBtn.disabled) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.querySelector('.btn-text').textContent = 'Submitting...';
+            
+            // Re-enable after 5 seconds (fallback)
+            setTimeout(() => {
+                if (submitBtn.disabled) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                    submitBtn.querySelector('.btn-text').textContent = '🚀 Submit Work';
+                }
+            }, 5000);
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Enter to submit
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // ============================================
+        // AUTO-FOCUS FIRST FIELD
+        // ============================================
+        setTimeout(() => {
+            githubInput.focus();
+        }, 300);
+
+        // ============================================
+        // CONSOLE LOG
+        // ============================================
+        console.log('📤 Submit Task page loaded');
+        console.log('📋 Task: {{ task.title }}');
+        console.log('🚀 Sprint: {{ task.sprint.title }}');
+        console.log('📅 Deadline: {{ task.deadline }}');
+        console.log('👤 Assigned to: {{ task.assigned_to.username }}');
+    });
+</script>
+{% endblock %}

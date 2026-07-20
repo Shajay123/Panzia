@@ -1,0 +1,872 @@
+{% extends 'sprints/startup/base_sprint_startup.html' %}
+{% load static %}
+
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'review_submissions' submission.task.sprint.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> Back to Submissions
+    </a>
+    <a href="{% url 'sprint_detail' submission.task.sprint.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📄</span> Sprint Details
+    </a>
+    <a href="{% url 'sprint_tasks' submission.task.sprint.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">✅</span> Tasks
+    </a>
+</div>
+{% endblock %}
+
+{% block execution_content %}
+<style>
+    .page-content {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-header .header-left {
+        flex: 1;
+    }
+
+    .page-header .page-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 8px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+        letter-spacing: -0.5px;
+    }
+
+    .page-header p {
+        margin: 4px 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+
+    .alert-container {
+        max-width: 800px;
+        margin: 0 auto 20px;
+    }
+
+    .alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        animation: slideDown 0.3s ease;
+        margin-bottom: 10px;
+    }
+
+    .alert-success {
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+    }
+
+    .alert-warning {
+        background: rgba(251, 191, 36, 0.08);
+        border: 1px solid rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+    }
+
+    .alert-info {
+        background: rgba(96, 165, 250, 0.08);
+        border: 1px solid rgba(96, 165, 250, 0.15);
+        color: #60a5fa;
+    }
+
+    .alert .alert-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .alert .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: currentColor;
+        cursor: pointer;
+        font-size: 1.2rem;
+        opacity: 0.6;
+        transition: opacity 0.3s;
+        padding: 0 4px;
+    }
+
+    .alert .alert-close:hover {
+        opacity: 1;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .review-card {
+        max-width: 800px;
+        margin: 0 auto;
+        background: linear-gradient(145deg, rgba(167, 139, 250, 0.04), rgba(167, 139, 250, 0.01));
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 28px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .review-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .review-glow {
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.05), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+    }
+
+    .review-card:hover .review-glow {
+        opacity: 1;
+    }
+
+    .submission-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .submission-header .avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        transition: all 0.3s;
+    }
+
+    .submission-header:hover .avatar {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    .submission-header h3 {
+        margin: 0 0 4px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .submission-header .status-badge {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    .submission-header .status-badge.pending {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+
+    .submission-header .status-badge.approved {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .submission-header .status-badge.rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .info-item {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 12px 16px;
+    }
+
+    .info-item .info-label {
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #94a3b8;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .info-item .info-value {
+        color: #e8edf5;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .link-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        transition: all 0.3s;
+    }
+
+    .link-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .link-card .link-label {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .link-btn {
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #ffffff;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .link-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: #ffffff;
+    }
+
+    .notes-box {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 20px;
+    }
+
+    .notes-box h4 {
+        margin: 0 0 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .notes-box p {
+        margin: 0;
+        color: #d6e0f0;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        white-space: pre-wrap;
+    }
+
+    .notes-box .empty-notes {
+        color: #64748b;
+        font-style: italic;
+    }
+
+    .rejection-section {
+        display: none;
+        margin-top: 16px;
+        padding: 16px 18px;
+        background: rgba(239, 68, 68, 0.05);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 10px;
+        animation: slideDown 0.3s ease;
+    }
+
+    .rejection-section.show {
+        display: block;
+    }
+
+    .rejection-section .form-group {
+        margin-bottom: 0;
+    }
+
+    .rejection-section label {
+        display: block;
+        font-weight: 600;
+        color: #f87171;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+
+    .rejection-section .required-asterisk {
+        color: #f87171;
+    }
+
+    .rejection-section textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid rgba(239, 68, 68, 0.2);
+        border-radius: 10px;
+        background: rgba(167, 139, 250, 0.03);
+        color: #e8edf5;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 80px;
+        line-height: 1.7;
+    }
+
+    .rejection-section textarea:focus {
+        outline: none;
+        border-color: #ef4444;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        background: rgba(167, 139, 250, 0.05);
+    }
+
+    .rejection-section textarea::placeholder {
+        color: #64748b;
+        font-weight: 400;
+    }
+
+    .rejection-section textarea.error {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
+    }
+
+    .rejection-section .field-error {
+        color: #f87171;
+        font-size: 0.78rem;
+        margin-top: 4px;
+        display: none;
+    }
+
+    .rejection-section .field-error.show {
+        display: block;
+    }
+
+    .rejection-section .char-count {
+        text-align: right;
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .rejection-section .char-count.danger {
+        color: #f87171;
+    }
+
+    .action-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .action-row .btn {
+        padding: 10px 28px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        cursor: pointer;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .action-row .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .action-row .btn .spinner {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .action-row .btn.loading .spinner {
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .action-row .approve-btn {
+        background: linear-gradient(135deg, #059669, #047857);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+    }
+
+    .action-row .approve-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.35);
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .action-row .reject-btn {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+    }
+
+    .action-row .reject-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.35);
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .action-row .approved-message {
+        flex: 1;
+        padding: 10px 20px;
+        border-radius: 10px;
+        background: rgba(34, 197, 94, 0.08);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+        text-align: center;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .action-row .rejected-message {
+        flex: 1;
+        padding: 10px 20px;
+        border-radius: 10px;
+        background: rgba(239, 68, 68, 0.08);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+        text-align: center;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .action-row .review-btn {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+    }
+
+    .action-row .review-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .page-content { padding: 14px; }
+        .page-header { flex-direction: column; }
+        .page-header h1 { font-size: 1.4rem; }
+        .review-card { padding: 20px; }
+        .info-grid { grid-template-columns: 1fr; }
+        .action-row { flex-direction: column; }
+        .action-row .btn { width: 100%; }
+        .submission-header { flex-direction: column; text-align: center; }
+    }
+
+    @media (max-width: 480px) {
+        .page-content { padding: 10px; }
+        .review-card { padding: 16px; }
+        .page-header h1 { font-size: 1.2rem; }
+        .link-card { flex-direction: column; align-items: stretch; }
+        .link-btn { justify-content: center; }
+        .submission-header .avatar { width: 48px; height: 48px; font-size: 1.2rem; }
+        .rejection-section textarea { font-size: 0.9rem; padding: 10px 14px; }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .review-card {
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+        animation-delay: 0.1s;
+    }
+</style>
+
+<div class="page-content">
+    <div class="page-header">
+        <div class="header-left">
+            <span class="page-badge">🧪 Submission Review</span>
+            <h1>{{ submission.task.title }}</h1>
+            <p>Review the submitted work and approve execution.</p>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <span class="alert-icon">
+                {% if message.tags == 'success' %}✅
+                {% elif message.tags == 'error' %}❌
+                {% elif message.tags == 'warning' %}⚠️
+                {% else %}ℹ️{% endif %}
+            </span>
+            <span>{{ message }}</span>
+            <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="review-card">
+        <div class="review-glow"></div>
+
+        <div class="submission-header">
+            <div class="avatar">{{ submission.user.username|first|upper }}</div>
+            <div>
+                <h3>{{ submission.user.username }}</h3>
+                <span class="status-badge 
+                    {% if submission.reviewed and submission.rejection_reason %}rejected
+                    {% elif submission.reviewed %}approved
+                    {% else %}pending{% endif %}">
+                    {% if submission.reviewed and submission.rejection_reason %}
+                        ❌ Rejected
+                    {% elif submission.reviewed %}
+                        ✅ Approved
+                    {% else %}
+                        ⏳ Waiting For Approval
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Task</span>
+                <span class="info-value">{{ submission.task.title }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Task Status</span>
+                <span class="info-value">{{ submission.task.get_status_display }}</span>
+            </div>
+        </div>
+
+        {% if submission.github_url %}
+        <div class="link-card">
+            <span class="link-label">🔗 GitHub Repository</span>
+            <a href="{{ submission.github_url }}" target="_blank" class="link-btn">
+                Open GitHub →
+            </a>
+        </div>
+        {% endif %}
+
+        {% if submission.drive_url %}
+        <div class="link-card">
+            <span class="link-label">📁 Drive Files</span>
+            <a href="{{ submission.drive_url }}" target="_blank" class="link-btn">
+                Open Drive →
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="notes-box">
+            <h4>📝 Submission Notes</h4>
+            {% if submission.notes %}
+                <p>{{ submission.notes }}</p>
+            {% else %}
+                <p class="empty-notes">No additional notes provided.</p>
+            {% endif %}
+        </div>
+
+        {% if submission.reviewed and submission.rejection_reason %}
+        <div class="notes-box" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+            <h4 style="color: #f87171;">❌ Rejection Reason</h4>
+            <p style="color: #fca5a5;">{{ submission.rejection_reason }}</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" id="reviewForm" action="{% url 'submission_review' submission.id %}">
+            {% csrf_token %}
+
+            <div class="rejection-section" id="rejectionSection">
+                <div class="form-group">
+                    <label for="rejection_reason">
+                        ❌ Rejection Reason <span class="required-asterisk">*</span>
+                    </label>
+                    <textarea 
+                        id="rejection_reason" 
+                        name="rejection_reason" 
+                        placeholder="Please provide a clear reason for rejecting this submission..."
+                        maxlength="500"
+                    ></textarea>
+                    <div class="field-error" id="rejectionError">Please provide a reason for rejection.</div>
+                    <div class="char-count" id="rejectionCharCount">0 / 500 characters</div>
+                </div>
+            </div>
+
+            <div class="action-row">
+                {% if not submission.reviewed %}
+                    <!-- APPROVE BUTTON - Simple, no JavaScript interference -->
+                    <button type="submit" name="action" value="approve" class="btn approve-btn">
+                        ✅ Approve Work
+                    </button>
+                    
+                    <!-- REJECT BUTTON -->
+                    <button type="button" class="btn reject-btn" id="showRejectBtn">
+                        ❌ Reject Work
+                    </button>
+                    <button type="submit" name="action" value="reject" class="btn reject-btn" id="confirmRejectBtn" style="display: none;">
+                        ❌ Confirm Reject
+                    </button>
+                {% elif submission.reviewed and submission.rejection_reason %}
+                    <div class="rejected-message">
+                        ❌ This submission has been rejected.
+                    </div>
+                    <a href="{% url 'review_submissions' submission.task.sprint.id %}" class="btn review-btn">
+                        📋 Back to Submissions
+                    </a>
+                {% else %}
+                    <div class="approved-message">
+                        ✅ This submission has been reviewed and approved.
+                    </div>
+                    <a href="{% url 'sprint_detail' submission.task.sprint.id %}" class="btn review-btn">
+                        📄 View Sprint
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // ============================================
+            // GET ELEMENTS
+            // ============================================
+            var showRejectBtn = document.getElementById('showRejectBtn');
+            var confirmRejectBtn = document.getElementById('confirmRejectBtn');
+            var rejectionSection = document.getElementById('rejectionSection');
+            var rejectionReason = document.getElementById('rejection_reason');
+            var rejectionError = document.getElementById('rejectionError');
+            var rejectionCharCount = document.getElementById('rejectionCharCount');
+            var maxLength = 500;
+
+            console.log('🧪 Submission Review loaded (Startup View)');
+            console.log('📝 Submission: {{ submission.task.title }}');
+            console.log('👤 User: {{ submission.user.username }}');
+            console.log('📊 Status: {% if submission.reviewed %}Reviewed{% else %}Pending{% endif %}');
+
+            // ============================================
+            // AUTO-DISMISS MESSAGES
+            // ============================================
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    if (alert) {
+                        alert.style.opacity = '0';
+                        alert.style.transform = 'translateY(-10px)';
+                        alert.style.transition = 'all 0.3s ease';
+                        setTimeout(function() {
+                            if (alert && alert.parentElement) {
+                                alert.remove();
+                            }
+                        }, 300);
+                    }
+                }, 5000);
+            });
+
+            // ============================================
+            // SHOW REJECTION SECTION
+            // ============================================
+            if (showRejectBtn && rejectionSection && confirmRejectBtn && rejectionReason && rejectionError) {
+                showRejectBtn.addEventListener('click', function() {
+                    rejectionSection.classList.add('show');
+                    this.style.display = 'none';
+                    confirmRejectBtn.style.display = 'inline-flex';
+                    setTimeout(function() {
+                        if (rejectionReason) {
+                            rejectionReason.focus();
+                        }
+                    }, 100);
+                    if (rejectionReason) {
+                        rejectionReason.classList.remove('error');
+                    }
+                    if (rejectionError) {
+                        rejectionError.classList.remove('show');
+                    }
+                });
+            }
+
+            // ============================================
+            // REJECTION REASON CHARACTER COUNTER
+            // ============================================
+            if (rejectionReason && rejectionCharCount) {
+                rejectionReason.addEventListener('input', function() {
+                    var length = this.value.length;
+                    var remaining = maxLength - length;
+                    rejectionCharCount.textContent = length + ' / ' + maxLength + ' characters';
+                    
+                    this.classList.remove('error');
+                    if (rejectionError) {
+                        rejectionError.classList.remove('show');
+                    }
+                    
+                    if (remaining < 50) {
+                        rejectionCharCount.classList.add('danger');
+                    } else {
+                        rejectionCharCount.classList.remove('danger');
+                    }
+                });
+            }
+
+            // ============================================
+            // CONFIRM REJECT BUTTON - Validate
+            // ============================================
+            if (confirmRejectBtn && rejectionReason && rejectionError) {
+                confirmRejectBtn.addEventListener('click', function(e) {
+                    var reason = rejectionReason.value.trim();
+                    
+                    if (!reason) {
+                        e.preventDefault();
+                        rejectionReason.classList.add('error');
+                        rejectionError.classList.add('show');
+                        rejectionReason.focus();
+                        return;
+                    }
+                });
+            }
+
+            // ============================================
+            // REMOVE ERROR STATE ON INPUT
+            // ============================================
+            if (rejectionReason && rejectionError) {
+                rejectionReason.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.classList.remove('error');
+                        rejectionError.classList.remove('show');
+                    }
+                });
+            }
+
+            // ============================================
+            // ESCAPE TO CANCEL REJECTION
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && rejectionSection && rejectionSection.classList.contains('show')) {
+                    rejectionSection.classList.remove('show');
+                    if (showRejectBtn) {
+                        showRejectBtn.style.display = 'inline-flex';
+                    }
+                    if (confirmRejectBtn) {
+                        confirmRejectBtn.style.display = 'none';
+                    }
+                    if (rejectionReason) {
+                        rejectionReason.value = '';
+                        rejectionReason.classList.remove('error');
+                    }
+                    if (rejectionCharCount) {
+                        rejectionCharCount.textContent = '0 / ' + maxLength + ' characters';
+                    }
+                    if (rejectionError) {
+                        rejectionError.classList.remove('show');
+                    }
+                    if (rejectionReason) {
+                        rejectionReason.blur();
+                    }
+                }
+            });
+
+            // ============================================
+            // ENTER KEY IN TEXTAREA
+            // ============================================
+            if (rejectionReason && confirmRejectBtn) {
+                rejectionReason.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && e.shiftKey) {
+                        return;
+                    }
+                    if (e.key === 'Enter' && confirmRejectBtn.style.display !== 'none') {
+                        e.preventDefault();
+                        if (confirmRejectBtn) {
+                            confirmRejectBtn.click();
+                        }
+                    }
+                });
+            }
+        });
+    })();
+</script>
+{% endblock %}

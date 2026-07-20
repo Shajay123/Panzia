@@ -1,0 +1,663 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Sprint Hub - PANZIA
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>
+    /* ============================================
+       TALENT SPRINT HUB - BASE TEMPLATE
+       ============================================ */
+    
+    .sprint-hub-section {
+        background: #0a0618;
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+
+    .sprint-hub-wrapper {
+        display: flex;
+        gap: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* ============================================
+       SIDEBAR
+       ============================================ */
+    .sprint-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 20px 0;
+        height: fit-content;
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+
+    .sprint-sidebar::-webkit-scrollbar {
+        width: 3px;
+    }
+    .sprint-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .sprint-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(167, 139, 250, 0.2);
+        border-radius: 10px;
+    }
+
+    .sidebar-logo {
+        padding: 0 20px 16px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 12px;
+    }
+
+    .sidebar-logo h2 {
+        color: #e8edf5;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin: 0;
+        background: linear-gradient(135deg, #a78bfa, #f472b6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .sidebar-logo .dashboard-subtitle {
+        color: #94a3b8;
+        font-size: 0.7rem;
+        margin: 0;
+    }
+
+    .sprint-sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sprint-sidebar ul li {
+        margin-bottom: 2px;
+    }
+
+    .sprint-sidebar ul li a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 20px;
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+    }
+
+    .sprint-sidebar ul li a:hover {
+        color: #e8edf5;
+        background: rgba(167, 139, 250, 0.04);
+        border-left-color: rgba(167, 139, 250, 0.2);
+    }
+
+    .sprint-sidebar ul li a.active {
+        color: #a78bfa;
+        background: rgba(167, 139, 250, 0.06);
+        border-left-color: #7c3aed;
+    }
+
+    .sprint-sidebar ul li a .nav-icon {
+        font-size: 1.1rem;
+        width: 24px;
+        text-align: center;
+    }
+
+    .sprint-sidebar .sidebar-heading {
+        padding: 12px 20px 6px;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .sprint-main {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* ===== HEADER ===== */
+    .hub-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 20px 24px;
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .hub-header:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .hub-header .hub-badge {
+        display: inline-block;
+        padding: 2px 12px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .hub-header h1 {
+        color: #e8edf5;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .hub-header h1 .page-icon {
+        font-size: 1.8rem;
+    }
+
+    .hub-header h1 .page-count {
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: #94a3b8;
+        margin-left: 8px;
+    }
+
+    .hub-header p {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        margin: 4px 0 0;
+        line-height: 1.6;
+    }
+
+    .hub-header .hub-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    /* ===== BUTTON STYLES ===== */
+    .primary-btn {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .primary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+        color: white;
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .primary-btn:active {
+        transform: translateY(0px);
+    }
+
+    .primary-btn .btn-icon {
+        font-size: 1.1rem;
+    }
+
+    .secondary-btn {
+        padding: 10px 24px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .secondary-btn:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-2px);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    .secondary-btn:active {
+        transform: translateY(0px);
+    }
+
+    .secondary-btn .btn-icon {
+        font-size: 1.1rem;
+    }
+
+    .success-btn {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #059669, #047857);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .success-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(5, 150, 105, 0.3);
+        color: white;
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    /* ===== HUB CONTENT ===== */
+    .hub-content {
+        padding: 4px 0;
+        animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== FLASH MESSAGES ===== */
+    .alert-container {
+        margin-bottom: 20px;
+    }
+
+    .alert {
+        padding: 14px 20px;
+        border-radius: 12px;
+        border: none;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-success {
+        background: rgba(34, 197, 94, 0.1);
+        color: #4ade80;
+        border-left: 4px solid #34d399;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border-left: 4px solid #ef4444;
+    }
+
+    .alert-warning {
+        background: rgba(251, 191, 36, 0.1);
+        color: #fbbf24;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .alert-info {
+        background: rgba(96, 165, 250, 0.1);
+        color: #60a5fa;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .alert .alert-icon {
+        font-size: 1.2rem;
+    }
+
+    .alert .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: currentColor;
+        cursor: pointer;
+        font-size: 1.2rem;
+        opacity: 0.6;
+        transition: opacity 0.3s;
+        padding: 0 4px;
+    }
+
+    .alert .alert-close:hover {
+        opacity: 1;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+        .sprint-hub-wrapper {
+            flex-direction: column;
+        }
+
+        .sprint-sidebar {
+            width: 100%;
+            position: static;
+            max-height: none;
+            padding: 16px 0;
+        }
+
+        .sprint-sidebar ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            padding: 0 12px;
+        }
+
+        .sprint-sidebar ul li {
+            margin: 0;
+        }
+
+        .sprint-sidebar ul li a {
+            padding: 6px 14px;
+            border-left: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+
+        .sprint-sidebar ul li a:hover {
+            border-left: none;
+        }
+
+        .sprint-sidebar ul li a.active {
+            border-left: none;
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        .sprint-sidebar .sidebar-heading {
+            display: none;
+        }
+
+        .sprint-sidebar .sidebar-logo {
+            padding: 0 16px 12px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sprint-hub-section {
+            padding: 12px 0;
+        }
+
+        .sprint-hub-wrapper {
+            padding: 0 12px;
+        }
+
+        .hub-header {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px;
+        }
+
+        .hub-header .hub-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .hub-header .hub-actions .primary-btn,
+        .hub-header .hub-actions .secondary-btn,
+        .hub-header .hub-actions .success-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .hub-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .hub-header h1 .page-icon {
+            font-size: 1.4rem;
+        }
+
+        .sprint-sidebar ul li a {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .sprint-hub-wrapper {
+            padding: 0 8px;
+        }
+
+        .hub-header {
+            padding: 12px 14px;
+        }
+
+        .hub-header h1 {
+            font-size: 1rem;
+        }
+
+        .hub-header h1 .page-icon {
+            font-size: 1.2rem;
+        }
+
+        .hub-header p {
+            font-size: 0.85rem;
+        }
+
+        .hub-header .hub-badge {
+            font-size: 0.55rem;
+        }
+
+        .sprint-sidebar ul li a {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+        }
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #0a0618;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #2d1b4a;
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #3d2b5a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="sprint-hub-section">
+    <div class="sprint-hub-wrapper">
+        
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sprint-sidebar">
+            <div class="sidebar-logo">
+                <h2>🚀 Sprint Hub</h2>
+                <p class="dashboard-subtitle">Talent Workspace</p>
+            </div>
+
+            <ul>
+                <!-- Dashboard -->
+                <li>
+                    <a href="{% url 'talent_dashboard' %}" class="{% if request.resolver_match.url_name == 'talent_dashboard' %}active{% endif %}">
+                        <span class="nav-icon">🏠</span> Dashboard
+                    </a>
+                </li>
+
+                <!-- Sprint Hub -->
+                <li class="sidebar-heading">Sprint Hub</li>
+                <li>
+                    <a href="{% url 'browse_sprints' %}" class="{% if request.resolver_match.url_name == 'browse_sprints' %}active{% endif %}">
+                        <span class="nav-icon">🚀</span> Browse Sprints
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'my_applications' %}" class="{% if request.resolver_match.url_name == 'my_applications' %}active{% endif %}">
+                        <span class="nav-icon">📨</span> Sprint Applications
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'my_tasks' %}" class="{% if request.resolver_match.url_name == 'my_tasks' %}active{% endif %}">
+                        <span class="nav-icon">✅</span> My Tasks
+                    </a>
+                </li>
+
+                
+            </ul>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="sprint-main">
+            <!-- ===== HEADER ===== -->
+            <div class="hub-header">
+                <div>
+                    <span class="hub-badge">🚀 Sprint Hub</span>
+                    <h1>
+                        <span class="page-icon">{{ page_icon|default:"🚀" }}</span>
+                        {{ page_title|default:"Sprint Hub" }}
+                        {% if page_count %}
+                        <span class="page-count">({{ page_count }})</span>
+                        {% endif %}
+                    </h1>
+                    <p>{{ page_subtitle|default:"Find and join startup sprints" }}</p>
+                </div>
+                <div class="hub-actions">
+                    {% block hub_actions %}{% endblock %}
+                </div>
+            </div>
+
+            <!-- ===== FLASH MESSAGES ===== -->
+            {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <span class="alert-icon">
+                        {% if message.tags == 'success' %}✅
+                        {% elif message.tags == 'error' %}❌
+                        {% elif message.tags == 'warning' %}⚠️
+                        {% else %}ℹ️{% endif %}
+                    </span>
+                    {{ message }}
+                    <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- ===== CONTENT ===== -->
+            <div class="hub-content">
+                {% block hub_content %}{% endblock %}
+            </div>
+        </main>
+
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // AUTO-DISMISS FLASH MESSAGES
+        // ============================================
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                alert.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    if (alert.parentElement) {
+                        alert.remove();
+                    }
+                }, 300);
+            }, 5000);
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Alt+H to go to Home/Dashboard
+            if (e.altKey && e.key === 'h') {
+                e.preventDefault();
+                window.location.href = "{% url 'talent_dashboard' %}";
+            }
+            // Alt+B to go to Browse Sprints
+            if (e.altKey && e.key === 'b') {
+                e.preventDefault();
+                window.location.href = "{% url 'browse_sprints' %}";
+            }
+            // Alt+A to go to My Applications
+            if (e.altKey && e.key === 'a') {
+                e.preventDefault();
+                window.location.href = "{% url 'my_applications' %}";
+            }
+            // Alt+T to go to My Tasks
+            if (e.altKey && e.key === 't') {
+                e.preventDefault();
+                window.location.href = "{% url 'my_tasks' %}";
+            }
+            // Alt+P to go to Profile
+            if (e.altKey && e.key === 'p') {
+                e.preventDefault();
+                window.location.href = "{% url 'talent_profile' request.user.id %}";
+            }
+        });
+
+        console.log('🚀 Sprint Hub loaded');
+        console.log('📄 Page: {{ page_title|default:"Sprint Hub" }}');
+    });
+</script>
+{% endblock %}

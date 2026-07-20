@@ -1,28 +1,31 @@
-{% extends 'sprints/base_sprint.html' %}
+{% extends 'sprints/talent/base_sprint_talent.html' %}
 {% load static %}
 
-{% block page_actions %}
-<div class="action-buttons">
-    <a href="{% url 'startup_sprints' %}" class="btn btn-secondary btn-sm">
-        <span class="btn-icon">←</span> My Sprints
-    </a>
-    <a href="{% url 'execution_dashboard' %}" class="btn btn-secondary btn-sm">
-        <span class="btn-icon">📊</span> Dashboard
-    </a>
-    {% if sprint.status != 'completed' %}
-    <a href="{% url 'create_task' sprint.id %}" class="btn btn-primary btn-sm">
-        <span class="btn-icon">➕</span> Create Task
-    </a>
+{% block hub_actions %}
+<a href="{% url 'browse_sprints' %}" class="secondary-btn">
+    <span class="btn-icon">←</span> Browse Sprints
+</a>
+<a href="{% url 'my_applications' %}" class="secondary-btn">
+    <span class="btn-icon">📨</span> My Applications
+</a>
+{% if not is_member and sprint.status == 'open' %}
+    {% if sprint.id not in applied_sprint_ids %}
+        <a href="{% url 'apply_sprint' sprint.id %}" class="primary-btn">
+            <span class="btn-icon">📝</span> Apply Now
+        </a>
     {% endif %}
-</div>
+{% endif %}
 {% endblock %}
 
-{% block execution_content %}
+{% block hub_content %}
 <style>
     .sprint-detail-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        animation: fadeInUp 0.4s ease;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     /* ===== HERO CARD ===== */
@@ -71,10 +74,24 @@
         letter-spacing: -0.5px;
     }
 
+    .hero-left .startup-name {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .hero-left .startup-name strong {
+        color: #a78bfa;
+        font-weight: 600;
+    }
+
     .hero-left .description {
         color: #94a3b8;
         font-size: 0.95rem;
-        line-height: 1.6;
+        line-height: 1.7;
         margin: 0;
     }
 
@@ -93,21 +110,21 @@
     }
 
     .status-badge.open {
-        background: rgba(251, 191, 36, 0.12);
-        color: #fbbf24;
-        border: 1px solid rgba(251, 191, 36, 0.06);
-    }
-
-    .status-badge.active {
         background: rgba(34, 197, 94, 0.12);
         color: #4ade80;
         border: 1px solid rgba(34, 197, 94, 0.06);
     }
 
-    .status-badge.completed {
-        background: rgba(96, 165, 250, 0.12);
+    .status-badge.active {
+        background: rgba(59, 130, 246, 0.12);
         color: #60a5fa;
-        border: 1px solid rgba(96, 165, 250, 0.06);
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .status-badge.completed {
+        background: rgba(156, 163, 175, 0.12);
+        color: #9ca3af;
+        border: 1px solid rgba(156, 163, 175, 0.06);
     }
 
     .status-badge.pending {
@@ -119,7 +136,7 @@
     /* ===== STATS GRID ===== */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         gap: 16px;
         margin-bottom: 24px;
     }
@@ -206,6 +223,36 @@
         color: #e8edf5;
         font-size: 0.85rem;
         font-weight: 500;
+    }
+
+    /* ===== SKILLS SECTION ===== */
+    .skills-section {
+        margin-top: 12px;
+    }
+
+    .skills-section h4 {
+        margin: 0 0 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .skills-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .skill-tag {
+        padding: 4px 14px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
     }
 
     /* ===== PROGRESS ===== */
@@ -324,6 +371,12 @@
         font-weight: 600;
         font-size: 0.9rem;
         flex-shrink: 0;
+        transition: all 0.3s;
+    }
+
+    .member-row:hover .avatar {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
     }
 
     .member-row strong {
@@ -392,32 +445,66 @@
         border: 1px solid rgba(167, 139, 250, 0.06);
     }
 
-    /* ===== REVIEW CARD ===== */
-    .review-card {
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    .task-status.assigned {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
     }
 
-    .review-card:last-child {
-        border-bottom: none;
+    /* ===== APPLICATION STATUS ===== */
+    .application-status-card {
+        background: rgba(167, 139, 250, 0.04);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
     }
 
-    .review-card strong {
-        color: #d6e0f0;
-        font-size: 0.9rem;
+    .application-status-card .app-status-icon {
+        font-size: 2rem;
     }
 
-    .review-card span {
-        color: #fbbf24;
-        font-size: 0.85rem;
-        margin-left: 8px;
+    .application-status-card .app-status-text h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
     }
 
-    .review-card p {
-        margin: 4px 0 0;
+    .application-status-card .app-status-text p {
+        margin: 2px 0 0;
         color: #94a3b8;
         font-size: 0.85rem;
-        line-height: 1.6;
+    }
+
+    .application-status-card .app-status-badge {
+        margin-left: auto;
+        padding: 4px 16px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .application-status-card .app-status-badge.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    .application-status-card .app-status-badge.accepted {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .application-status-card .app-status-badge.rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
     }
 
     /* ===== RESPONSIVE ===== */
@@ -454,12 +541,13 @@
             margin-top: 4px;
         }
 
-        .quick-links {
+        .application-status-card {
             flex-direction: column;
+            text-align: center;
         }
 
-        .quick-links .action-btn {
-            justify-content: center;
+        .application-status-card .app-status-badge {
+            margin-left: 0;
         }
     }
 
@@ -486,6 +574,14 @@
 
         .info-card {
             padding: 16px;
+        }
+
+        .quick-links {
+            flex-direction: column;
+        }
+
+        .quick-links .action-btn {
+            justify-content: center;
         }
     }
 
@@ -535,11 +631,45 @@
 </style>
 
 <div class="sprint-detail-container">
+    <!-- ===== APPLICATION STATUS (if applied) ===== -->
+    {% if application_status %}
+    <div class="application-status-card">
+        <span class="app-status-icon">
+            {% if application_status == 'pending' %}⏳
+            {% elif application_status == 'accepted' %}✅
+            {% else %}❌{% endif %}
+        </span>
+        <div class="app-status-text">
+            <h4>
+                {% if application_status == 'pending' %}Application Pending
+                {% elif application_status == 'accepted' %}Application Accepted! 🎉
+                {% else %}Application Rejected
+                {% endif %}
+            </h4>
+            <p>
+                {% if application_status == 'pending' %}
+                    Your application is under review. You'll be notified once a decision is made.
+                {% elif application_status == 'accepted' %}
+                    Congratulations! You've been accepted to this sprint. Start working on your tasks.
+                {% else %}
+                    Your application was not accepted. Don't give up - explore other sprints!
+                {% endif %}
+            </p>
+        </div>
+        <span class="app-status-badge {{ application_status }}">
+            {{ application_status|title }}
+        </span>
+    </div>
+    {% endif %}
+
     <!-- ===== HERO CARD ===== -->
     <div class="hero-card">
         <div class="hero-left">
-            <span class="badge">🚀 Sprint Workspace</span>
+            <span class="badge">🚀 Sprint Opportunity</span>
             <h1>{{ sprint.title }}</h1>
+            <div class="startup-name">
+                🏢 by <strong>{{ sprint.startup.company_name }}</strong>
+            </div>
             <p class="description">{{ sprint.description }}</p>
         </div>
         <div class="hero-right">
@@ -586,8 +716,12 @@
                 <strong>{{ sprint.deadline }}</strong>
             </div>
             <div class="info-row">
-                <span>🚀 Startup</span>
-                <strong>{{ sprint.startup.company_name }}</strong>
+                <span>👥 Contributors</span>
+                <strong>{{ sprint.max_contributors }}</strong>
+            </div>
+            <div class="info-row">
+                <span>📅 Created</span>
+                <strong>{{ sprint.created_at|date:"d M Y" }}</strong>
             </div>
         </div>
 
@@ -602,18 +736,25 @@
                     <div class="progress-fill" style="width: {{ progress|default:'0' }}%;"></div>
                 </div> -->
             </div>
+            {% if sprint.required_skills.all %}
+            <div class="skills-section">
+                <h4>🛠️ Required Skills</h4>
+                <div class="skills-wrapper">
+                    {% for skill in sprint.required_skills.all %}
+                    <span class="skill-tag">{{ skill.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
             <div class="quick-links">
-                <a href="{% url 'sprint_members' sprint.id %}" class="action-btn">
-                    👥 Members
-                </a>
-                <a href="{% url 'sprint_tasks' sprint.id %}" class="action-btn">
-                    ✅ Tasks
-                </a>
-                {% if sprint.status != 'completed' %}
-                <a href="{% url 'create_task' sprint.id %}" class="action-btn">
-                    ➕ Create Task
+                {% if is_member %}
+                <a href="{% url 'my_tasks' %}" class="action-btn">
+                    ✅ My Tasks
                 </a>
                 {% endif %}
+                <a href="{% url 'browse_sprints' %}" class="action-btn">
+                    🚀 Browse More
+                </a>
             </div>
         </div>
     </div>
@@ -627,6 +768,9 @@
                 <div class="avatar">{{ member.user.username|first|upper }}</div>
                 <div>
                     <strong>{{ member.user.username }}</strong>
+                    {% if forloop.first %}
+                    <span style="color: #a78bfa; font-size: 0.7rem; margin-left: 8px;">⭐ Lead</span>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -660,25 +804,6 @@
             </div>
         {% endif %}
     </div>
-
-    <!-- ===== REVIEWS ===== -->
-    <div class="content-card">
-        <h3>⭐ Reviews</h3>
-        {% if reviews %}
-            {% for review in reviews %}
-            <div class="review-card">
-                <strong>{{ review.reviewer.username }}</strong>
-                <span>⭐ {{ review.rating }}/5</span>
-                <p>{{ review.feedback }}</p>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state">
-                <span class="empty-icon">⭐</span>
-                <p>No reviews yet.</p>
-            </div>
-        {% endif %}
-    </div>
 </div>
 
 <script>
@@ -690,8 +815,16 @@
             progressFill.style.width = '0%';
             setTimeout(function() {
                 progressFill.style.width = width;
-            }, 500);
+            }, 800);
         }
+
+        console.log('🚀 Sprint Detail loaded');
+        console.log('📋 Sprint: {{ sprint.title }}');
+        console.log('🏢 Startup: {{ sprint.startup.company_name }}');
+        console.log('👥 Members: {{ members.count|default:"0" }}');
+        console.log('✅ Tasks: {{ tasks.count|default:"0" }}');
+        console.log('📈 Progress: {{ progress|default:"0" }}%');
+        
     });
 </script>
 {% endblock %}

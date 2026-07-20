@@ -1,4 +1,4 @@
-{% extends 'sprints/base_sprint.html' %}
+{% extends 'sprints/startup/base_sprint_startup.html' %}
 {% load static %}
 
 {% block page_actions %}
@@ -570,7 +570,7 @@
 </style>
 
 <div class="page-content">
-    <!-- ===== HEADER ===== */
+    <!-- ===== HEADER ===== -->
     <div class="page-header">
         <div class="header-left">
             <span class="page-badge">✅ Sprint Task</span>
@@ -626,6 +626,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span class="spinner"></span>
                     <span class="btn-icon">✅</span>
                     <span class="btn-text">Create Task</span>
                     <span class="btn-shortcut">Ctrl+S</span>
@@ -678,12 +679,31 @@
 
         // Prevent double submission
         form.addEventListener('submit', function(e) {
+            if (submitBtn.disabled) {
+                e.preventDefault();
+                return;
+            }
+            
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
             submitBtn.innerHTML = `
                 <span class="spinner"></span>
+                <span class="btn-icon">⏳</span>
                 <span class="btn-text">Creating...</span>
             `;
+            
+            // Re-enable after 5 seconds if form doesn't submit (fallback)
+            setTimeout(() => {
+                if (submitBtn.disabled) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                    submitBtn.innerHTML = `
+                        <span class="btn-icon">✅</span>
+                        <span class="btn-text">Create Task</span>
+                        <span class="btn-shortcut">Ctrl+S</span>
+                    `;
+                }
+            }, 5000);
         });
 
         // Keyboard shortcut: Ctrl+S to submit
@@ -695,6 +715,16 @@
                 }
             }
         });
+
+        // Set minimum date for deadline
+        const deadlineInput = document.querySelector('input[type="date"]');
+        if (deadlineInput) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            deadlineInput.setAttribute('min', `${year}-${month}-${day}`);
+        }
 
         console.log('📝 Create Task Form loaded');
         console.log('🚀 Sprint: {{ sprint.title }}');

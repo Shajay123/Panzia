@@ -23,8 +23,7 @@
                 <h4 style="margin: 0; color: #e8edf5; font-weight: 700;">
                     <span style="color: #a78bfa;">🚀</span> Execution
                 </h4>
-                <small style="color: #94a3b8; font-size: 0.7rem; display: block; margin-top: 2px;">Sprint
-                    Management</small>
+                <small style="color: #94a3b8; font-size: 0.7rem; display: block; margin-top: 2px;">Sprint Management</small>
             </div>
 
             <div class="position-sticky pt-3" style="padding: 12px 0;">
@@ -57,31 +56,21 @@
 
                     <!-- Create Sprint -->
                     <li class="nav-item" style="margin-bottom: 2px;">
-                        <a class="nav-link {% if 'create' in request.path %}active{% endif %}"
+                        <a class="nav-link {% if 'create' in request.path and 'task' not in request.path %}active{% endif %}"
                             href="{% url 'create_sprint' %}"
                             style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; color: #94a3b8; text-decoration: none; transition: all 0.3s; font-weight: 500; font-size: 0.9rem;">
                             <span class="nav-icon" style="font-size: 1.2rem;">➕</span>
                             <span>Create Sprint</span>
-                            {% if 'create' in request.path %}
+                            {% if 'create' in request.path and 'task' not in request.path %}
                             <span style="margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: #34d399;"></span>
                             {% endif %}
                         </a>
                     </li>
 
-                    
-
-                    
-
-                    
-
-                    
-
                     <!-- Divider -->
                     <li style="padding: 12px 14px 6px; list-style: none;">
                         <hr style="border-color: rgba(167, 139, 250, 0.06); margin: 0;">
                     </li>
-
-                    
                 </ul>
             </div>
         </div>
@@ -132,7 +121,6 @@
 </div>
 
 <style>
-    /* ===== SIDEBAR NAV HOVER EFFECTS ===== */
     .nav-link {
         position: relative;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -154,39 +142,6 @@
         color: #a78bfa;
     }
 
-    /* ===== SUBMENU STYLES ===== */
-    .submenu {
-        list-style: none;
-        padding-left: 20px;
-        margin: 4px 0;
-    }
-
-    .submenu li {
-        padding: 2px 0;
-    }
-
-    .submenu li a {
-        color: #94a3b8;
-        text-decoration: none;
-        font-size: 0.85rem;
-        padding: 4px 12px;
-        display: block;
-        border-radius: 6px;
-        transition: all 0.3s;
-    }
-
-    .submenu li a:hover {
-        background: rgba(167, 139, 250, 0.06);
-        color: #e8edf5;
-        transform: translateX(4px);
-    }
-
-    .submenu li a.active {
-        background: rgba(167, 139, 250, 0.08);
-        color: #a78bfa;
-    }
-
-    /* ===== BUTTON STYLES ===== */
     .btn-toolbar {
         display: flex;
         gap: 10px;
@@ -224,7 +179,6 @@
         transform: translateY(-3px);
         box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
         background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-        border-color: rgba(124, 58, 237, 0.4);
         color: #fff;
     }
 
@@ -237,7 +191,6 @@
     .btn-toolbar .btn-secondary:hover {
         background: rgba(167, 139, 250, 0.12);
         color: #e8edf5;
-        border-color: rgba(167, 139, 250, 0.15);
         transform: translateY(-3px);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     }
@@ -252,54 +205,43 @@
         font-size: 0.9rem;
     }
 
-    /* ===== SIDEBAR SCROLLBAR ===== */
     .sidebar::-webkit-scrollbar {
         width: 4px;
     }
-
     .sidebar::-webkit-scrollbar-track {
         background: rgba(167, 139, 250, 0.02);
     }
-
     .sidebar::-webkit-scrollbar-thumb {
         background: rgba(167, 139, 250, 0.2);
         border-radius: 10px;
     }
-
     .sidebar::-webkit-scrollbar-thumb:hover {
         background: rgba(167, 139, 250, 0.3);
     }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
         .sidebar {
             width: 200px !important;
             transform: translateX(-100%);
             transition: transform 0.3s ease;
         }
-
         .sidebar.open {
             transform: translateX(0);
         }
-
         .col-md-9 {
             margin-left: 0 !important;
             padding: 16px !important;
         }
-
         .h2 {
             font-size: 1.4rem !important;
         }
-
         .mobile-toggle {
             display: flex !important;
         }
-
         .btn-toolbar {
             flex-direction: column;
             width: 100%;
         }
-
         .btn-toolbar .btn {
             width: 100%;
             justify-content: center;
@@ -310,18 +252,15 @@
         .sidebar {
             width: 100% !important;
         }
-
         .col-md-9 {
             padding: 12px !important;
         }
-
         .btn-toolbar .btn {
             font-size: 0.8rem;
             padding: 6px 14px;
         }
     }
 
-    /* ===== MOBILE TOGGLE BUTTON ===== */
     .mobile-toggle {
         display: none;
         position: fixed;
@@ -346,7 +285,6 @@
         border-color: rgba(167, 139, 250, 0.2);
     }
 
-    /* Overlay for mobile */
     .sidebar-overlay {
         display: none;
         position: fixed;
@@ -369,34 +307,25 @@
         }
     }
 
-    /* ===== FLASH MESSAGE STYLES ===== */
     .alert-success {
         background: rgba(52, 211, 153, 0.1) !important;
         border-left: 4px solid #34d399 !important;
     }
-
     .alert-error {
         background: rgba(239, 68, 68, 0.1) !important;
         border-left: 4px solid #f87171 !important;
     }
-
     .alert-warning {
         background: rgba(251, 191, 36, 0.1) !important;
         border-left: 4px solid #fbbf24 !important;
     }
-
     .alert-info {
         background: rgba(96, 165, 250, 0.1) !important;
         border-left: 4px solid #60a5fa !important;
     }
 </style>
 
-<!-- Mobile Toggle Button -->
-<button class="mobile-toggle" onclick="toggleSidebar()" id="mobileToggle">
-    ☰
-</button>
-
-<!-- Sidebar Overlay -->
+<button class="mobile-toggle" onclick="toggleSidebar()" id="mobileToggle">☰</button>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <script>
@@ -407,7 +336,6 @@
         overlay.classList.toggle('active');
     }
 
-    // Close sidebar on window resize
     window.addEventListener('resize', function () {
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebarOverlay');
@@ -417,7 +345,6 @@
         }
     });
 
-    // Close sidebar on link click (mobile)
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', function () {
             if (window.innerWidth <= 768) {
@@ -428,18 +355,5 @@
             }
         });
     });
-
-    // Toggle Sprint Actions Submenu
-    function toggleSprintActions() {
-        const menu = document.getElementById('sprintActionsMenu');
-        const arrow = document.getElementById('sprintArrow');
-        if (menu.style.display === 'block') {
-            menu.style.display = 'none';
-            arrow.style.transform = 'rotate(0deg)';
-        } else {
-            menu.style.display = 'block';
-            arrow.style.transform = 'rotate(90deg)';
-        }
-    }
 </script>
 {% endblock %}

@@ -1,0 +1,644 @@
+{% extends 'sprints/talent/base_sprint_talent.html' %}
+{% load static %}
+
+{% block hub_actions %}
+<a href="{% url 'browse_sprints' %}" class="secondary-btn">
+    <span class="btn-icon">🚀</span> Browse Sprints
+</a>
+<a href="{% url 'my_applications' %}" class="secondary-btn">
+    <span class="btn-icon">📨</span> My Applications
+</a>
+{% endblock %}
+
+{% block hub_content %}
+<style>
+    /* ============================================
+       MY TASKS - ENHANCED STYLES
+       ============================================ */
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card h2 {
+        color: #e8edf5;
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin: 0;
+    }
+
+    .stat-card p {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        margin: 4px 0 0;
+    }
+
+    .stat-card .stat-icon {
+        font-size: 1.5rem;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .stat-card.pending { border-left: 3px solid #60a5fa; }
+    .stat-card.pending::before { background: linear-gradient(90deg, #60a5fa, #93bbfc); }
+    .stat-card.pending h2 { color: #60a5fa; }
+
+    .stat-card.progress { border-left: 3px solid #60a5fa; }
+    .stat-card.progress::before { background: linear-gradient(90deg, #60a5fa, #93bbfc); }
+    .stat-card.progress h2 { color: #60a5fa; }
+
+    .stat-card.review { border-left: 3px solid #fbbf24; }
+    .stat-card.review::before { background: linear-gradient(90deg, #fbbf24, #fcd34d); }
+    .stat-card.review h2 { color: #fbbf24; }
+
+    .stat-card.completed { border-left: 3px solid #4ade80; }
+    .stat-card.completed::before { background: linear-gradient(90deg, #4ade80, #6ee7b7); }
+    .stat-card.completed h2 { color: #4ade80; }
+
+    .stat-card.rejected { border-left: 3px solid #f87171; }
+    .stat-card.rejected::before { background: linear-gradient(90deg, #f87171, #fca5a5); }
+    .stat-card.rejected h2 { color: #f87171; }
+
+    /* ===== TASK ITEMS ===== */
+    .task-item {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .task-item:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 3px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .task-item:hover::before {
+        opacity: 1;
+    }
+
+    .task-item.pending::before { background: #60a5fa; }
+    .task-item.progress::before { background: #60a5fa; }
+    .task-item.review::before { background: #fbbf24; }
+    .task-item.completed::before { background: #4ade80; }
+    .task-item.rejected::before { background: #f87171; }
+
+    .task-item .task-info {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .task-item .task-info h4 {
+        color: #e8edf5;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .task-item .task-info .task-meta {
+        color: #94a3b8;
+        margin: 4px 0 0;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .task-item .task-info .task-meta .separator {
+        color: #64748b;
+    }
+
+    .task-item .task-info .task-description {
+        color: #64748b;
+        font-size: 0.8rem;
+        margin-top: 4px;
+        display: -webkit-box;
+        
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* ===== TASK STATUS ===== */
+    .task-item .task-status {
+        flex-shrink: 0;
+    }
+
+    .task-item .task-status .status-badge {
+        padding: 4px 14px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.pending {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .status-badge.progress {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    .status-badge.review {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .status-badge.completed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .status-badge.rejected {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.06);
+    }
+
+    /* ===== TASK ACTIONS ===== */
+    .task-item .task-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .btn-submit {
+        padding: 6px 16px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0px);
+    }
+
+    .btn-view {
+        padding: 6px 16px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-view:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .btn-completed {
+        padding: 6px 16px;
+        background: rgba(34, 197, 94, 0.08);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.08);
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-review {
+        padding: 6px 16px;
+        background: rgba(167, 139, 250, 0.08);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-rejected {
+        padding: 6px 16px;
+        background: rgba(239, 68, 68, 0.08);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.08);
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* ===== REJECTION REASON TOOLTIP ===== */
+    .rejection-trigger {
+        cursor: help;
+        border-bottom: 1px dashed #f87171;
+        position: relative;
+    }
+
+    .rejection-tooltip {
+        display: none;
+        position: absolute;
+        bottom: calc(100% + 10px);
+        right: 0;
+        background: #1a1035;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 10px;
+        padding: 12px 16px;
+        min-width: 250px;
+        max-width: 350px;
+        z-index: 100;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        color: #fca5a5;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        text-align: left;
+    }
+
+    .rejection-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        right: 20px;
+        border: 8px solid transparent;
+        border-top-color: #1a1035;
+    }
+
+    .rejection-tooltip.show {
+        display: block;
+        animation: fadeInTooltip 0.3s ease;
+    }
+
+    @keyframes fadeInTooltip {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .rejection-tooltip .tooltip-title {
+        color: #f87171;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+        grid-column: 1 / -1;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .empty-state .btn-primary {
+        display: inline-block;
+        padding: 10px 28px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .empty-state .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .task-item {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 14px 16px;
+        }
+
+        .task-item .task-status {
+            width: 100%;
+        }
+
+        .task-item .task-status .status-badge {
+            width: 100%;
+            text-align: center;
+        }
+
+        .task-item .task-actions {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .task-item .task-actions .btn-submit,
+        .task-item .task-actions .btn-view,
+        .task-item .task-actions .btn-completed,
+        .task-item .task-actions .btn-review,
+        .task-item .task-actions .btn-rejected {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .rejection-tooltip {
+            right: -20px;
+            min-width: 200px;
+            max-width: 280px;
+        }
+
+        .rejection-tooltip::after {
+            right: 40px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            padding: 16px;
+        }
+
+        .stat-card h2 {
+            font-size: 1.4rem;
+        }
+
+        .task-item .task-info h4 {
+            font-size: 0.9rem;
+        }
+
+        .task-item .task-info .task-meta {
+            font-size: 0.8rem;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card pending">
+        <span class="stat-icon">📌</span>
+        <h2>{{ pending_count|default:"0" }}</h2>
+        <p>Pending Tasks</p>
+    </div>
+    <div class="stat-card progress">
+        <span class="stat-icon">🔄</span>
+        <h2>{{ progress_count|default:"0" }}</h2>
+        <p>In Progress</p>
+    </div>
+    <div class="stat-card review">
+        <span class="stat-icon">⏳</span>
+        <h2>{{ review_count|default:"0" }}</h2>
+        <p>Under Review</p>
+    </div>
+    <div class="stat-card completed">
+        <span class="stat-icon">✅</span>
+        <h2>{{ completed_count|default:"0" }}</h2>
+        <p>Completed Tasks</p>
+    </div>
+</div>
+
+<!-- Tasks List -->
+{% if tasks %}
+    {% for task in tasks %}
+    <div class="task-item {{ task.status|lower }}">
+        <div class="task-info">
+            <h4>{{ task.title }}</h4>
+            <div class="task-meta">
+                🚀 {{ task.sprint.title }}
+                <span class="separator">·</span>
+                📅 {{ task.created_at|date:"d M Y" }}
+                <span class="separator">·</span>
+                ⏰ {{ task.created_at|timesince }} ago
+            </div>
+            {% if task.description %}
+            <div class="task-description">{{ task.description|truncatechars:80 }}</div>
+            {% endif %}
+        </div>
+        <div class="task-status">
+            <span class="status-badge {{ task.status|lower }}">
+                {% if task.status == 'pending' %}📌
+                {% elif task.status == 'progress' %}🔄
+                {% elif task.status == 'review' %}📝
+                {% else %}✅{% endif %}
+                {{ task.get_status_display }}
+            </span>
+        </div>
+        <div class="task-actions">
+            <!-- ✅ SUBMIT BUTTON - Shows for pending or progress tasks -->
+            {% if task.status == 'pending' or task.status == 'progress' %}
+                <a href="{% url 'submit_task' task.id %}" class="btn-submit">📤 Submit</a>
+            <!-- ⏳ REVIEW BADGE - Shows for review tasks -->
+            {% elif task.status == 'review' %}
+                <span class="btn-review">⏳ Under Review</span>
+            <!-- ✅ COMPLETED BADGE - Shows for completed tasks -->
+            {% else %}
+                <span class="btn-completed">✅ Completed</span>
+            {% endif %}
+            <!-- 👁️ VIEW BUTTON - Always visible -->
+            <a href="{% url 'task_detail' task.id %}" class="btn-view">👁️ View</a>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="empty-state">
+    <span class="empty-icon">📭</span>
+    <h3>No Tasks Assigned</h3>
+    <p>You don't have any tasks assigned yet. Join a sprint to get started!</p>
+    <a href="{% url 'browse_sprints' %}" class="btn-primary">🚀 Browse Sprints</a>
+</div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // ANIMATE CARDS ON SCROLL
+        // ============================================
+        const items = document.querySelectorAll('.task-item');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateX(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        items.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(-10px)';
+            item.style.transition = `all 0.4s ease ${index * 0.1}s`;
+            observer.observe(item);
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Alt+B to go to Browse Sprints
+            if (e.altKey && e.key === 'b') {
+                e.preventDefault();
+                window.location.href = "{% url 'browse_sprints' %}";
+            }
+            // Alt+A to go to My Applications
+            if (e.altKey && e.key === 'a') {
+                e.preventDefault();
+                window.location.href = "{% url 'my_applications' %}";
+            }
+            // Alt+H to go to Dashboard
+            if (e.altKey && e.key === 'h') {
+                e.preventDefault();
+                window.location.href = "{% url 'talent_dashboard' %}";
+            }
+        });
+
+        // ============================================
+        // CONSOLE LOG
+        // ============================================
+        console.log('✅ My Tasks page loaded');
+        console.log('📌 Pending: {{ pending_count|default:"0" }}');
+        console.log('🔄 In Progress: {{ progress_count|default:"0" }}');
+        console.log('⏳ Under Review: {{ review_count|default:"0" }}');
+        console.log('✅ Completed: {{ completed_count|default:"0" }}');
+        console.log('📊 Total tasks: {{ tasks|length }}');
+    });
+</script>
+{% endblock %}

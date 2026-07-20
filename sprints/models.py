@@ -235,7 +235,8 @@ class Submission(models.Model):
         null=True
     )
 
-    notes = models.TextField()
+    notes = models.TextField(blank=True, default='')
+    
     reviewed = models.BooleanField(
         default=False
     )
@@ -246,10 +247,15 @@ class Submission(models.Model):
     )
 
     submitted_at = models.DateTimeField(auto_now_add=True)
+    
+    # ✅ NEW: Rejection reason
+    rejection_reason = models.TextField(
+        blank=True,
+        default=''
+    )
 
     def __str__(self):
         return f"{self.user.username} - {self.task.title}"
-
 
 # ======================================
 # SPRINT ROLE

@@ -15,46 +15,539 @@
 {% endblock %}
 
 {% block payments_content %}
+<style>
+    /* ============================================
+       SUBSCRIPTION PLANS - ENHANCED STYLES
+       ============================================ */
+    
+    .subscription-plans-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== FILTER TABS ===== */
+    .filter-tabs {
+        display: inline-flex;
+        background: rgba(167, 139, 250, 0.04);
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .plan-toggle {
+        padding: 8px 24px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        position: relative;
+    }
+
+    .plan-toggle:hover {
+        background: rgba(167, 139, 250, 0.08);
+        color: #e8edf5;
+    }
+
+    .plan-toggle.active {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.25);
+    }
+
+    /* ===== PLAN CARDS ===== */
+    .plans-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-top: 24px;
+    }
+
+    .plan-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 2px solid rgba(167, 139, 250, 0.08);
+        border-radius: 20px;
+        padding: 32px 24px;
+        text-align: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .plan-card:hover {
+        border-color: rgba(167, 139, 250, 0.25);
+        transform: translateY(-6px);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .plan-card.current-plan {
+        border-color: rgba(167, 139, 250, 0.4);
+        box-shadow: 0 0 40px rgba(167, 139, 250, 0.08);
+    }
+
+    .plan-card.popular {
+        border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    /* ===== BADGES ===== */
+    .plan-badge {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 4px 16px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        z-index: 1;
+    }
+
+    .plan-badge.popular {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1a1035;
+    }
+
+    .plan-badge.current {
+        background: linear-gradient(135deg, #34d399, #10b981);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+        left: auto;
+        right: -10px;
+        transform: none;
+    }
+
+    .plan-badge.savings {
+        background: rgba(52, 211, 153, 0.1);
+        color: #34d399;
+        padding: 2px 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        position: static;
+        transform: none;
+        display: inline-block;
+        margin-top: 8px;
+        border-radius: 12px;
+        border: 1px solid rgba(52, 211, 153, 0.15);
+    }
+
+    /* ===== PLAN ICON ===== */
+    .plan-icon {
+        font-size: 3.5rem;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    /* ===== PLAN NAME ===== */
+    .plan-name {
+        color: #e8edf5;
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.3rem;
+    }
+
+    /* ===== PRICE ===== */
+    .plan-price {
+        margin: 16px 0;
+    }
+
+    .plan-price .amount {
+        color: #a78bfa;
+        font-weight: 700;
+        font-size: 2.5rem;
+    }
+
+    .plan-price .period {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .plan-price .free-badge {
+        color: #34d399;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* ===== DESCRIPTION ===== */
+    .plan-description {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin: 0 0 20px 0;
+        line-height: 1.6;
+        min-height: 50px;
+        flex-grow: 0;
+    }
+
+    /* ===== DIVIDER ===== */
+    .plan-divider {
+        border: none;
+        border-top: 1px solid rgba(167, 139, 250, 0.06);
+        margin: 16px 0;
+    }
+
+    /* ===== FEATURES ===== */
+    .plan-features {
+        text-align: left;
+        margin: 16px 0;
+        min-height: 140px;
+        flex-grow: 1;
+    }
+
+    .plan-features .features-label {
+        color: #94a3b8;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 12px 0;
+        font-weight: 600;
+    }
+
+    .plan-features ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .plan-features ul li {
+        color: #e8edf5;
+        font-size: 0.85rem;
+        padding: 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .plan-features ul li:last-child {
+        border-bottom: none;
+    }
+
+    .plan-features ul li .check {
+        color: #34d399;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .plan-features ul li .feature-disabled {
+        color: #64748b;
+    }
+
+    /* ===== ACTION BUTTON ===== */
+    .plan-action {
+        margin-top: 20px;
+    }
+
+    .btn-subscribe {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .btn-subscribe.free {
+        background: linear-gradient(135deg, #34d399, #10b981);
+        color: #fff;
+    }
+
+    .btn-subscribe.free:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 32px rgba(52, 211, 153, 0.35);
+    }
+
+    .btn-subscribe.premium {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-subscribe.premium:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 32px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .btn-subscribe.current {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(167, 139, 250, 0.1);
+        background: rgba(167, 139, 250, 0.03);
+        color: #94a3b8;
+        font-weight: 600;
+        cursor: not-allowed;
+        font-size: 0.95rem;
+        font-family: inherit;
+    }
+
+    /* ===== COMPARISON SECTION ===== */
+    .comparison-section {
+        text-align: center;
+        margin-top: 32px;
+        padding: 20px;
+        background: rgba(167, 139, 250, 0.02);
+        border-radius: 12px;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .comparison-section p {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .comparison-section .compare-link {
+        color: #a78bfa;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .comparison-section .compare-link:hover {
+        color: #8b5cf6;
+    }
+
+    /* ===== FAQ SECTION ===== */
+    .faq-section {
+        margin-top: 32px;
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .faq-section h4 {
+        color: #e8edf5;
+        font-weight: 600;
+        margin: 0 0 16px 0;
+        text-align: center;
+    }
+
+    .faq-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .faq-item {
+        padding: 12px 16px;
+        background: rgba(167, 139, 250, 0.02);
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .faq-item:hover {
+        background: rgba(167, 139, 250, 0.05);
+    }
+
+    .faq-item .faq-q {
+        color: #a78bfa;
+        font-weight: 600;
+        margin: 0;
+        font-size: 0.85rem;
+    }
+
+    .faq-item .faq-a {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        margin: 4px 0 0;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .plans-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .plans-grid {
+            grid-template-columns: 1fr;
+            max-width: 450px;
+            margin: 24px auto 0;
+        }
+
+        .filter-tabs {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .plan-toggle {
+            padding: 6px 16px;
+            font-size: 0.8rem;
+        }
+
+        .faq-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .plan-card {
+            padding: 24px 20px;
+        }
+
+        .plan-price .amount {
+            font-size: 2rem;
+        }
+
+        .plan-icon {
+            font-size: 2.8rem;
+        }
+
+        .comparison-section {
+            padding: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .plan-card {
+            padding: 20px 16px;
+        }
+
+        .plan-price .amount {
+            font-size: 1.8rem;
+        }
+
+        .plan-icon {
+            font-size: 2.2rem;
+        }
+
+        .plan-name {
+            font-size: 1.1rem;
+        }
+
+        .plan-features ul li {
+            font-size: 0.8rem;
+        }
+
+        .btn-subscribe {
+            font-size: 0.85rem;
+            padding: 10px;
+        }
+
+        .plan-badge.popular {
+            font-size: 0.55rem;
+            padding: 3px 12px;
+        }
+
+        .plan-badge.current {
+            font-size: 0.55rem;
+            padding: 3px 10px;
+        }
+
+        .faq-item {
+            padding: 10px 12px;
+        }
+
+        .faq-item .faq-q {
+            font-size: 0.8rem;
+        }
+
+        .faq-item .faq-a {
+            font-size: 0.75rem;
+        }
+    }
+
+    /* ===== NO PLANS MESSAGE ===== */
+    .no-plans-message {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+
+    .no-plans-message .icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .no-plans-message h4 {
+        color: #e8edf5;
+        margin-bottom: 8px;
+    }
+
+    .no-plans-message p {
+        margin: 0;
+    }
+
+    /* ============================================
+       ANIMATIONS
+       ============================================ */
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .plan-card {
+        animation: slideUp 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    .plan-card:nth-child(1) { animation-delay: 0.05s; }
+    .plan-card:nth-child(2) { animation-delay: 0.1s; }
+    .plan-card:nth-child(3) { animation-delay: 0.15s; }
+    .plan-card:nth-child(4) { animation-delay: 0.2s; }
+    .plan-card:nth-child(5) { animation-delay: 0.25s; }
+</style>
+
 <div class="subscription-plans-container">
     
-    <!-- Plan Filter Tabs -->
+    <!-- ================= FILTER TABS ================= -->
     <div style="text-align: center; margin-bottom: 32px;">
-        <div style="display: inline-flex; background: rgba(167, 139, 250, 0.04); border-radius: 12px; padding: 4px; border: 1px solid rgba(167, 139, 250, 0.06); flex-wrap: wrap; justify-content: center;">
-            <button class="plan-toggle active" data-filter="all" style="padding: 8px 24px; border: none; border-radius: 8px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s;">
-                💎 All Plans
-            </button>
-            <button class="plan-toggle" data-filter="popular" style="padding: 8px 24px; border: none; border-radius: 8px; background: transparent; color: #94a3b8; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s;">
-                ⭐ Popular
-            </button>
-            <button class="plan-toggle" data-filter="free" style="padding: 8px 24px; border: none; border-radius: 8px; background: transparent; color: #94a3b8; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s;">
-                🆓 Free
-            </button>
-            <button class="plan-toggle" data-filter="premium" style="padding: 8px 24px; border: none; border-radius: 8px; background: transparent; color: #94a3b8; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s;">
-                💎 Premium
-            </button>
+        <div class="filter-tabs">
+            <button class="plan-toggle active" data-filter="all">💎 All Plans</button>
+            <button class="plan-toggle" data-filter="popular">⭐ Popular</button>
+            <button class="plan-toggle" data-filter="free">🆓 Free</button>
+            <button class="plan-toggle" data-filter="premium">💎 Premium</button>
         </div>
     </div>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;" id="plansGrid">
+    <!-- ================= PLANS GRID ================= -->
+    <div class="plans-grid" id="plansGrid">
         {% for plan in plans %}
-        <!-- <div class="plan-card" data-plan="{{ plan.name|lower }}" data-price="{{ plan.price }}" style="background: rgba(167, 139, 250, 0.02); border: 2px solid {% if current_sub and current_sub.plan.id == plan.id %}rgba(167, 139, 250, 0.4){% else %}rgba(167, 139, 250, 0.08){% endif %}; border-radius: 20px; padding: 32px 24px; text-align: center; transition: all 0.3s; position: relative; {% if current_sub and current_sub.plan.id == plan.id %}box-shadow: 0 0 40px rgba(167, 139, 250, 0.08);{% endif %}"> -->
+        <div class="plan-card {% if current_sub and current_sub.plan.id == plan.id %}current-plan{% endif %} {% if plan.name == "PRO" or plan.name == "GROWTH" %}popular{% endif %}"
+             data-plan="{{ plan.name|lower }}"
+             data-price="{{ plan.price }}">
             
             <!-- Popular Badge -->
             {% if plan.name == "PRO" or plan.name == "GROWTH" %}
-            <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1035; padding: 4px 16px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; z-index: 1;">
-                ⭐ Most Popular
-            </div>
+            <div class="plan-badge popular">⭐ Most Popular</div>
             {% endif %}
             
             <!-- Current Plan Badge -->
             {% if current_sub and current_sub.plan.id == plan.id %}
-            <div style="position: absolute; top: -10px; right: -10px; background: linear-gradient(135deg, #34d399, #10b981); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3); z-index: 1;">
-                ✓ Current
-            </div>
+            <div class="plan-badge current">✓ Current</div>
             {% endif %}
             
             <!-- Plan Icon -->
-            <div style="font-size: 3.5rem; margin-bottom: 12px;">
+            <span class="plan-icon">
                 {% if plan.name == "FREE" %}🆓
                 {% elif plan.name == "PRO" %}⭐
                 {% elif plan.name == "ELITE" %}💎
@@ -63,56 +556,55 @@
                 {% elif plan.name == "SCALE" %}🏢
                 {% else %}📋
                 {% endif %}
-            </div>
+            </span>
             
             <!-- Plan Name -->
-            <h3 style="color: #e8edf5; font-weight: 700; margin: 0; font-size: 1.3rem;">{{ plan.name }}</h3>
+            <h3 class="plan-name">{{ plan.name }}</h3>
             
             <!-- Price -->
-            <div style="margin: 16px 0;">
-                <span style="color: #a78bfa; font-weight: 700; font-size: 2.5rem;">₹{{ plan.price|floatformat:0 }}</span>
-                {% if plan.price > 0 %}
-                    <span style="color: #94a3b8; font-size: 0.85rem;">/ {{ plan.duration_days }} days</span>
+            <div class="plan-price">
+                {% if plan.price == 0 %}
+                    <span class="free-badge">🆓 Free Forever</span>
                 {% else %}
-                    <span style="color: #34d399; font-size: 0.85rem; font-weight: 600;">Free Forever</span>
+                    <span class="amount">₹{{ plan.price|floatformat:0 }}</span>
+                    <span class="period">/ {{ plan.duration_days }} days</span>
                 {% endif %}
             </div>
             
             <!-- Description -->
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 20px 0; line-height: 1.6; min-height: 50px;">
+            <p class="plan-description">
                 {{ plan.description|default:"Perfect plan for your needs" }}
             </p>
             
             <!-- Divider -->
-            <hr style="border-color: rgba(167, 139, 250, 0.06); margin: 16px 0;">
+            <hr class="plan-divider">
             
             <!-- Features -->
-            <div style="text-align: left; margin: 16px 0; min-height: 120px;">
-                <p style="color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0; font-weight: 600;">
-                    ✨ What's Included
-                </p>
-                <ul style="list-style: none; padding: 0; margin: 0;">
+            <div class="plan-features">
+                <p class="features-label">✨ What's Included</p>
+                <ul>
                     {% if plan.features %}
                         {% for feature in plan.features.split|slice:":6" %}
-                        <li style="color: #e8edf5; font-size: 0.85rem; padding: 6px 0; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(167, 139, 250, 0.03);">
-                            <span style="color: #34d399; font-weight: 700;">✓</span> 
+                        <li>
+                            <span class="check">✓</span> 
                             <span>{{ feature }}</span>
                         </li>
                         {% endfor %}
                     {% else %}
-                        <li style="color: #94a3b8; font-size: 0.85rem; padding: 4px 0;">Standard features included</li>
+                        <li><span class="check">✓</span> Standard features included</li>
+                        <li><span class="check">✓</span> Basic support</li>
+                        <li><span class="check">✓</span> Community access</li>
                     {% endif %}
                 </ul>
             </div>
             
             <!-- Action Button -->
-            <div style="margin-top: 20px;">
+            <div class="plan-action">
                 {% if current_sub and current_sub.plan.id == plan.id %}
-                    <button disabled style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.1); background: rgba(167, 139, 250, 0.03); color: #94a3b8; font-weight: 600; cursor: not-allowed; font-size: 0.95rem;">
-                        ✅ Currently Active
-                    </button>
+                    <button class="btn-subscribe current" disabled>✅ Currently Active</button>
                 {% else %}
-                    <!-- <a href="{% url 'payments:buy_plan' plan.id %}" class="subscribe-btn" style="display: block; width: 100%; padding: 12px; border-radius: 12px; background: {% if plan.name == 'FREE' %}linear-gradient(135deg, #34d399, #10b981){% else %}linear-gradient(135deg, #7c3aed, #6d28d9){% endif %}; color: #fff; font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; box-shadow: {% if plan.name != 'FREE' %}0 4px 16px rgba(124, 58, 237, 0.2);{% endif %}"> -->
+                    <a href="{% url 'payments:buy_plan' plan.id %}" 
+                       class="btn-subscribe {% if plan.price == 0 %}free{% else %}premium{% endif %}">
                         {% if plan.price == 0 %}
                             🆓 Get Started Free
                         {% else %}
@@ -125,64 +617,61 @@
             <!-- Savings Badge for Annual Plans -->
             {% if plan.duration_days >= 365 %}
             <div style="margin-top: 12px;">
-                <span style="background: rgba(52, 211, 153, 0.1); color: #34d399; padding: 2px 12px; border-radius: 12px; font-size: 0.65rem; font-weight: 600;">
-                    💰 Save 20% with Annual Plan
-                </span>
+                <span class="plan-badge savings">💰 Save 20% with Annual Plan</span>
             </div>
             {% endif %}
         </div>
         {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.08); border-radius: 16px;">
-            <div style="font-size: 4rem; margin-bottom: 16px;">📋</div>
-            <h3 style="color: #e8edf5; font-weight: 600; margin-bottom: 8px;">No Plans Available</h3>
-            <p style="color: #94a3b8;">Please check back later for available subscription plans.</p>
+        <div class="no-plans-message">
+            <span class="icon">📋</span>
+            <h4>No Plans Available</h4>
+            <p>Please check back later for available subscription plans.</p>
         </div>
         {% endfor %}
     </div>
     
-    <!-- Comparison Table Link -->
-    <div style="text-align: center; margin-top: 32px; padding: 20px; background: rgba(167, 139, 250, 0.02); border-radius: 12px; border: 1px solid rgba(167, 139, 250, 0.06);">
-        <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
+    <!-- ================= COMPARISON SECTION ================= -->
+    <div class="comparison-section">
+        <p>
             🤔 Not sure which plan is right for you? 
-            <a href="#" style="color: #a78bfa; text-decoration: none; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.color='#8b5cf6'" onmouseout="this.style.color='#a78bfa'">
-                Compare all features →
-            </a>
+            <a href="#" class="compare-link">Compare all features →</a>
         </p>
     </div>
     
-    <!-- FAQ Section -->
-    <div style="margin-top: 32px; background: rgba(167, 139, 250, 0.02); border: 1px solid rgba(167, 139, 250, 0.06); border-radius: 12px; padding: 24px;">
-        <h4 style="color: #e8edf5; font-weight: 600; margin: 0 0 16px 0; text-align: center;">❓ Frequently Asked Questions</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div>
-                <p style="color: #a78bfa; font-weight: 600; margin: 0; font-size: 0.85rem;">Can I change my plan later?</p>
-                <p style="color: #94a3b8; font-size: 0.8rem; margin: 4px 0 0;">Yes, you can upgrade or downgrade anytime.</p>
+    <!-- ================= FAQ SECTION ================= -->
+    <div class="faq-section">
+        <h4>❓ Frequently Asked Questions</h4>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <p class="faq-q">Can I change my plan later?</p>
+                <p class="faq-a">Yes, you can upgrade or downgrade anytime from your subscription settings.</p>
             </div>
-            <div>
-                <p style="color: #a78bfa; font-weight: 600; margin: 0; font-size: 0.85rem;">Is there a free trial?</p>
-                <p style="color: #94a3b8; font-size: 0.8rem; margin: 4px 0 0;">Yes, all paid plans come with a 14-day free trial.</p>
+            <div class="faq-item">
+                <p class="faq-q">Is there a free trial?</p>
+                <p class="faq-a">Yes, all paid plans come with a 14-day free trial.</p>
             </div>
-            <div>
-                <p style="color: #a78bfa; font-weight: 600; margin: 0; font-size: 0.85rem;">How do I cancel my subscription?</p>
-                <p style="color: #94a3b8; font-size: 0.8rem; margin: 4px 0 0;">Cancel anytime from your subscription settings.</p>
+            <div class="faq-item">
+                <p class="faq-q">How do I cancel my subscription?</p>
+                <p class="faq-a">Cancel anytime from your subscription settings. No questions asked.</p>
             </div>
-            <div>
-                <p style="color: #a78bfa; font-weight: 600; margin: 0; font-size: 0.85rem;">Is payment secure?</p>
-                <p style="color: #94a3b8; font-size: 0.8rem; margin: 4px 0 0;">100% secure payment via Razorpay.</p>
+            <div class="faq-item">
+                <p class="faq-q">Is payment secure?</p>
+                <p class="faq-a">100% secure payment via Razorpay with industry-standard encryption.</p>
             </div>
         </div>
     </div>
+
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // ============================================
-        // PLAN FILTERING - FIXED
+        // PLAN FILTERING
         // ============================================
         const toggleButtons = document.querySelectorAll('.plan-toggle');
         const planCards = document.querySelectorAll('.plan-card');
+        const plansGrid = document.getElementById('plansGrid');
         
-        // Function to filter plans
         function filterPlans(filterType) {
             let visibleCount = 0;
             
@@ -196,54 +685,44 @@
                         show = true;
                         break;
                     case 'popular':
-                        // Show PRO and GROWTH plans as popular
                         show = planName.includes('pro') || planName.includes('growth');
                         break;
                     case 'free':
-                        // Show FREE plan
                         show = planName.includes('free') || planPrice === 0;
                         break;
                     case 'premium':
-                        // Show paid plans (not free)
                         show = planPrice > 0 && !planName.includes('free');
                         break;
                     default:
                         show = true;
                 }
                 
-                card.style.display = show ? 'block' : 'none';
+                card.style.display = show ? 'flex' : 'none';
                 if (show) visibleCount++;
             });
             
             // Update toggle buttons
             toggleButtons.forEach(btn => {
                 btn.classList.remove('active');
-                btn.style.background = 'transparent';
-                btn.style.color = '#94a3b8';
             });
             
             const activeBtn = document.querySelector(`.plan-toggle[data-filter="${filterType}"]`);
             if (activeBtn) {
                 activeBtn.classList.add('active');
-                activeBtn.style.background = 'linear-gradient(135deg, #7c3aed, #6d28d9)';
-                activeBtn.style.color = '#fff';
             }
             
-            // Show message if no plans visible
-            const grid = document.getElementById('plansGrid');
+            // Show/hide no plans message
             const existingMsg = document.querySelector('.no-plans-message');
-            
             if (visibleCount === 0) {
                 if (!existingMsg) {
                     const msg = document.createElement('div');
                     msg.className = 'no-plans-message';
-                    msg.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #94a3b8;';
                     msg.innerHTML = `
-                        <div style="font-size: 3rem; margin-bottom: 12px;">🔍</div>
-                        <h4 style="color: #e8edf5; margin-bottom: 8px;">No plans match your filter</h4>
+                        <span class="icon">🔍</span>
+                        <h4>No plans match your filter</h4>
                         <p>Try selecting a different filter option.</p>
                     `;
-                    grid.appendChild(msg);
+                    plansGrid.appendChild(msg);
                 }
             } else {
                 if (existingMsg) {
@@ -252,144 +731,33 @@
             }
         }
         
-        // Add click event listeners to toggle buttons
+        // Add click event listeners
         toggleButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 const filterType = this.getAttribute('data-filter');
                 filterPlans(filterType);
             });
-            
-            // Hover effects
-            btn.addEventListener('mouseenter', function() {
-                if (!this.classList.contains('active')) {
-                    this.style.background = 'rgba(167, 139, 250, 0.08)';
-                    this.style.color = '#e8edf5';
-                }
-            });
-            btn.addEventListener('mouseleave', function() {
-                if (!this.classList.contains('active')) {
-                    this.style.background = 'transparent';
-                    this.style.color = '#94a3b8';
-                }
-            });
-        });
-        
-        // ============================================
-        // ANIMATED ENTRY
-        // ============================================
-        const cards = document.querySelectorAll('.plan-card');
-        cards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            setTimeout(() => {
-                card.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, 100 + (index * 100));
         });
         
         // ============================================
         // KEYBOARD SHORTCUTS
         // ============================================
         document.addEventListener('keydown', function(e) {
-            // Alt+1 for All Plans
-            if (e.altKey && e.key === '1') {
-                e.preventDefault();
-                filterPlans('all');
-            }
-            // Alt+2 for Popular
-            else if (e.altKey && e.key === '2') {
-                e.preventDefault();
-                filterPlans('popular');
-            }
-            // Alt+3 for Free
-            else if (e.altKey && e.key === '3') {
-                e.preventDefault();
-                filterPlans('free');
-            }
-            // Alt+4 for Premium
-            else if (e.altKey && e.key === '4') {
-                e.preventDefault();
-                filterPlans('premium');
+            if (e.altKey) {
+                switch(e.key) {
+                    case '1': e.preventDefault(); filterPlans('all'); break;
+                    case '2': e.preventDefault(); filterPlans('popular'); break;
+                    case '3': e.preventDefault(); filterPlans('free'); break;
+                    case '4': e.preventDefault(); filterPlans('premium'); break;
+                }
             }
         });
         
+        // ============================================
+        // CONSOLE LOG
+        // ============================================
         console.log('📋 Subscription Plans loaded');
-        console.log(`📊 ${cards.length} plans available`);
+        console.log(`📊 ${planCards.length} plans available`);
     });
 </script>
-
-<style>
-    .subscription-plans-container .plan-card {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .subscription-plans-container .plan-card:hover {
-        border-color: rgba(167, 139, 250, 0.25) !important;
-        transform: translateY(-6px);
-        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
-    }
-    
-    .subscription-plans-container .subscribe-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 32px rgba(124, 58, 237, 0.35) !important;
-        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    }
-    
-    .subscription-plans-container .plan-toggle.active {
-        background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
-        color: #fff !important;
-    }
-    
-    .subscription-plans-container .faq-link:hover {
-        color: #8b5cf6 !important;
-    }
-    
-    /* Filter animation */
-    .subscription-plans-container .plan-card {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    @media (max-width: 768px) {
-        .subscription-plans-container > div[style*="display: grid;"] {
-            grid-template-columns: 1fr !important;
-        }
-        
-        .subscription-plans-container .faq-grid {
-            grid-template-columns: 1fr !important;
-        }
-        
-        .subscription-plans-container .plan-toggle-container {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .subscription-plans-container .plan-toggle {
-            font-size: 0.8rem !important;
-            padding: 6px 16px !important;
-        }
-        
-        .subscription-plans-container .filter-tabs {
-            flex-wrap: wrap;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .subscription-plans-container .plan-card {
-            padding: 24px 16px !important;
-        }
-        
-        .subscription-plans-container .plan-card .price {
-            font-size: 2rem !important;
-        }
-        
-        .subscription-plans-container .plan-card .plan-icon {
-            font-size: 2.5rem !important;
-        }
-        
-        .subscription-plans-container .plan-card .features-list li {
-            font-size: 0.8rem !important;
-        }
-    }
-</style>
 {% endblock %}

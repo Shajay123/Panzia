@@ -1,0 +1,415 @@
+{% extends 'sprints/talent/base_sprint_talent.html' %}
+{% load static %}
+
+{% block hub_actions %}
+<a href="{% url 'my_applications' %}" class="secondary-btn">
+    <span class="btn-icon">📨</span> My Applications
+</a>
+<a href="{% url 'my_tasks' %}" class="secondary-btn">
+    <span class="btn-icon">✅</span> My Tasks
+</a>
+{% endblock %}
+
+{% block hub_content %}
+<style>
+    /* ============================================
+       BROWSE SPRINTS - ENHANCED STYLES
+       ============================================ */
+    
+    .sprints-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sprint-card {
+        background: rgba(167, 139, 250, 0.02);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sprint-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #7c3aed, #a78bfa);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .sprint-card:hover::before {
+        opacity: 1;
+    }
+
+    .sprint-card:hover {
+        border-color: rgba(167, 139, 250, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .sprint-card .sprint-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .sprint-card .sprint-header h3 {
+        color: #e8edf5;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0;
+        flex: 1;
+        line-height: 1.4;
+    }
+
+    .sprint-card .sprint-header .status-badge {
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .status-badge.open {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .status-badge.active {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.06);
+    }
+
+    .status-badge.completed {
+        background: rgba(156, 163, 175, 0.12);
+        color: #9ca3af;
+        border: 1px solid rgba(156, 163, 175, 0.06);
+    }
+
+    .sprint-card .sprint-description {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+        line-height: 1.6;
+        display: -webkit-box;
+        
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .sprint-card .sprint-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        color: #64748b;
+        font-size: 0.8rem;
+        margin-bottom: 16px;
+        padding: 8px 0;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+        border-bottom: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .sprint-card .sprint-meta .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .sprint-card .sprint-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .btn-apply {
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-apply:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .btn-apply:active {
+        transform: translateY(0px);
+    }
+
+    .btn-applied {
+        padding: 8px 20px;
+        background: rgba(34, 197, 94, 0.08);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.08);
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-accepted {
+        padding: 8px 20px;
+        background: rgba(59, 130, 246, 0.08);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.08);
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .btn-details {
+        padding: 8px 16px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.08);
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-details:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        transform: translateY(-2px);
+        border-color: rgba(167, 139, 250, 0.15);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+        grid-column: 1 / -1;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 16px;
+        opacity: 0.5;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-state h3 {
+        color: #e8edf5;
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .empty-state .btn-primary {
+        display: inline-block;
+        padding: 10px 28px;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .empty-state .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .sprints-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .sprint-card {
+            padding: 16px;
+        }
+
+        .sprint-card .sprint-actions {
+            flex-direction: column;
+        }
+
+        .sprint-card .sprint-actions .btn-apply,
+        .sprint-card .sprint-actions .btn-applied,
+        .sprint-card .sprint-actions .btn-accepted,
+        .sprint-card .sprint-actions .btn-details {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .sprint-card .sprint-header {
+            flex-direction: column;
+        }
+
+        .sprint-card .sprint-header h3 {
+            font-size: 1rem;
+        }
+
+        .sprint-card .sprint-meta {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1rem;
+        }
+    }
+</style>
+
+{% if sprints %}
+<div class="sprints-grid">
+    {% for sprint in sprints %}
+    <div class="sprint-card">
+        <div class="sprint-header">
+            <h3>{{ sprint.title }}</h3>
+            <span class="status-badge {{ sprint.status|lower }}">{{ sprint.status|title }}</span>
+        </div>
+        
+        <p class="sprint-description">{{ sprint.description|truncatechars:120 }}</p>
+        
+        <div class="sprint-meta">
+            <span class="meta-item">🏢 {{ sprint.startup.company_name }}</span>
+            <span class="meta-item">📍 {{ sprint.location|default:"Remote" }}</span>
+            <span class="meta-item">📅 {{ sprint.created_at|date:"d M Y" }}</span>
+            <span class="meta-item">👥 {{ sprint.max_contributors }} contributors</span>
+        </div>
+        
+        <div class="sprint-actions">
+            {% if sprint.id in applied_sprint_ids %}
+                <span class="btn-applied">✅ Applied</span>
+            {% elif sprint.id in accepted_sprint_ids %}
+                <span class="btn-accepted">✅ Accepted</span>
+            {% else %}
+                <a href="{% url 'apply_sprint' sprint.id %}" class="btn-apply">📝 Apply Now</a>
+            {% endif %}
+            <a href="{% url 'sprint_detail' sprint.id %}" class="btn-details">👁️ View Details</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <span class="empty-icon">🚀</span>
+    <h3>No Open Sprints Available</h3>
+    <p>There are currently no open sprints. Check back later for new opportunities.</p>
+    <a href="{% url 'talent_dashboard' %}" class="btn-primary">🏠 Return to Dashboard</a>
+</div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ============================================
+        // ANIMATE CARDS ON SCROLL
+        // ============================================
+        const cards = document.querySelectorAll('.sprint-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.4s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            // Alt+A to go to My Applications
+            if (e.altKey && e.key === 'a') {
+                e.preventDefault();
+                window.location.href = "{% url 'my_applications' %}";
+            }
+            // Alt+T to go to My Tasks
+            if (e.altKey && e.key === 't') {
+                e.preventDefault();
+                window.location.href = "{% url 'my_tasks' %}";
+            }
+            // Alt+H to go to Dashboard
+            if (e.altKey && e.key === 'h') {
+                e.preventDefault();
+                window.location.href = "{% url 'talent_dashboard' %}";
+            }
+        });
+
+        // ============================================
+        // CONSOLE LOG
+        // ============================================
+        console.log('🚀 Browse Sprints page loaded');
+        console.log('📊 Total sprints: {{ sprints|length }}');
+        console.log('📨 Applied sprints: {{ applied_sprint_ids|length }}');
+        console.log('✅ Accepted sprints: {{ accepted_sprint_ids|length }}');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,716 @@
+{% extends 'sprints/startup/base_sprint_startup.html' %}
+{% load static %}
+
+{% block page_actions %}
+<div class="action-buttons">
+    <a href="{% url 'startup_sprints' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">←</span> My Sprints
+    </a>
+    <a href="{% url 'execution_dashboard' %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📊</span> Dashboard
+    </a>
+    {% if sprint.status != 'completed' %}
+    <a href="{% url 'create_task' sprint.id %}" class="btn btn-primary btn-sm">
+        <span class="btn-icon">➕</span> Create Task
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block execution_content %}
+<style>
+    .sprint-detail-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    /* ===== HERO CARD ===== */
+    .hero-card {
+        background: linear-gradient(145deg, rgba(167, 139, 250, 0.04), rgba(167, 139, 250, 0.01));
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 16px;
+        padding: 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 24px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+        animation-delay: 0.05s;
+    }
+
+    .hero-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero-left {
+        flex: 1;
+    }
+
+    .hero-left .badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(167, 139, 250, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        margin-bottom: 12px;
+    }
+
+    .hero-left h1 {
+        margin: 0 0 8px;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+        letter-spacing: -0.5px;
+    }
+
+    .hero-left .description {
+        color: #94a3b8;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .hero-right {
+        flex-shrink: 0;
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-badge.open {
+        background: rgba(251, 191, 36, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.06);
+    }
+
+    .status-badge.active {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .status-badge.completed {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    .status-badge.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 10px;
+        padding: 16px 20px;
+        text-align: center;
+        transition: all 0.3s;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.15s; }
+    .stat-card:nth-child(3) { animation-delay: 0.2s; }
+
+    .stat-card:hover {
+        border-color: rgba(167, 139, 250, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card .stat-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .stat-card h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #e8edf5;
+    }
+
+    .stat-card p {
+        margin: 0;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* ===== INFO GRID ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+
+    .info-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .info-card:nth-child(1) { animation-delay: 0.25s; }
+    .info-card:nth-child(2) { animation-delay: 0.3s; }
+
+    .info-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .info-card h3 {
+        margin: 0 0 16px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-row span {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .info-row strong {
+        color: #e8edf5;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* ===== PROGRESS ===== */
+    .progress-wrapper {
+        margin-bottom: 16px;
+    }
+
+    .progress-top {
+        display: flex;
+        justify-content: space-between;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(167, 139, 250, 0.08);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.8s ease;
+        background: linear-gradient(90deg, #7c3aed, #a78bfa);
+    }
+
+    .quick-links {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(167, 139, 250, 0.04);
+    }
+
+    .quick-links .action-btn {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(167, 139, 250, 0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .quick-links .action-btn:hover {
+        background: rgba(167, 139, 250, 0.12);
+        color: #e8edf5;
+        border-color: rgba(167, 139, 250, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* ===== CONTENT CARDS ===== */
+    .content-card {
+        background: rgba(167, 139, 250, 0.03);
+        border: 1px solid rgba(167, 139, 250, 0.06);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+        margin-bottom: 16px;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    .content-card:nth-child(1) { animation-delay: 0.35s; }
+    .content-card:nth-child(2) { animation-delay: 0.4s; }
+    .content-card:nth-child(3) { animation-delay: 0.45s; }
+
+    .content-card:hover {
+        border-color: rgba(167, 139, 250, 0.1);
+    }
+
+    .content-card h3 {
+        margin: 0 0 16px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #e8edf5;
+    }
+
+    .content-card .empty-state {
+        text-align: center;
+        padding: 20px;
+        color: #94a3b8;
+    }
+
+    .content-card .empty-state .empty-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    /* ===== MEMBER ROW ===== */
+    .member-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .member-row:last-child {
+        border-bottom: none;
+    }
+
+    .member-row .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        transition: all 0.3s;
+    }
+
+    .member-row:hover .avatar {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    .member-row strong {
+        color: #d6e0f0;
+        font-size: 0.9rem;
+    }
+
+    /* ===== TASK ROW ===== */
+    .task-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+        gap: 12px;
+        transition: all 0.3s;
+    }
+
+    .task-row:hover {
+        background: rgba(167, 139, 250, 0.03);
+        padding-left: 8px;
+        border-radius: 6px;
+    }
+
+    .task-row:last-child {
+        border-bottom: none;
+    }
+
+    .task-row strong {
+        color: #d6e0f0;
+        font-size: 0.9rem;
+        display: block;
+    }
+
+    .task-row p {
+        margin: 4px 0 0;
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+
+    .task-status {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .task-status.pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.06);
+    }
+
+    .task-status.in_progress {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    .task-status.completed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.06);
+    }
+
+    .task-status.review {
+        background: rgba(167, 139, 250, 0.12);
+        color: #a78bfa;
+        border: 1px solid rgba(167, 139, 250, 0.06);
+    }
+
+    .task-status.assigned {
+        background: rgba(96, 165, 250, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.06);
+    }
+
+    /* ===== REVIEW CARD ===== */
+    .review-card {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.03);
+    }
+
+    .review-card:last-child {
+        border-bottom: none;
+    }
+
+    .review-card strong {
+        color: #d6e0f0;
+        font-size: 0.9rem;
+    }
+
+    .review-card span {
+        color: #fbbf24;
+        font-size: 0.85rem;
+        margin-left: 8px;
+    }
+
+    .review-card p {
+        margin: 4px 0 0;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .hero-card {
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .hero-left h1 {
+            font-size: 1.4rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .stat-card h2 {
+            font-size: 1.4rem;
+        }
+
+        .task-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .task-status {
+            align-self: flex-start;
+            margin-top: 4px;
+        }
+
+        .quick-links {
+            flex-direction: column;
+        }
+
+        .quick-links .action-btn {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-card {
+            padding: 16px;
+        }
+
+        .hero-left h1 {
+            font-size: 1.2rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card h2 {
+            font-size: 1.2rem;
+        }
+
+        .content-card {
+            padding: 16px;
+        }
+
+        .info-card {
+            padding: 16px;
+        }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="sprint-detail-container">
+    <!-- ===== HERO CARD ===== -->
+    <div class="hero-card">
+        <div class="hero-left">
+            <span class="badge">🚀 Sprint Workspace</span>
+            <h1>{{ sprint.title }}</h1>
+            <p class="description">{{ sprint.description }}</p>
+        </div>
+        <div class="hero-right">
+            <span class="status-badge {{ sprint.status }}">
+                {% if sprint.status == 'open' %}📂{% elif sprint.status == 'active' %}🟢{% elif sprint.status == 'completed' %}🏆{% else %}⏳{% endif %}
+                {{ sprint.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <!-- ===== STATS ===== -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">👥</span>
+            <h2>{{ members.count|default:"0" }}</h2>
+            <p>Members</p>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">✅</span>
+            <h2>{{ tasks.count|default:"0" }}</h2>
+            <p>Tasks</p>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">📈</span>
+            <h2>{{ progress|default:"0" }}%</h2>
+            <p>Progress</p>
+        </div>
+    </div>
+
+    <!-- ===== INFO GRID ===== -->
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>Sprint Information</h3>
+            <div class="info-row">
+                <span>🌐 Domain</span>
+                <strong>{{ sprint.domain }}</strong>
+            </div>
+            <div class="info-row">
+                <span>📂 Category</span>
+                <strong>{{ sprint.category }}</strong>
+            </div>
+            <div class="info-row">
+                <span>📅 Deadline</span>
+                <strong>{{ sprint.deadline }}</strong>
+            </div>
+            <div class="info-row">
+                <span>🚀 Startup</span>
+                <strong>{{ sprint.startup.company_name }}</strong>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>Sprint Progress</h3>
+            <div class="progress-wrapper">
+                <div class="progress-top">
+                    <span>Completion</span>
+                    <span>{{ progress|default:"0" }}%</span>
+                </div>
+                <!-- <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ progress|default:'0' }}%;"></div>
+                </div> -->
+            </div>
+            <div class="quick-links">
+                <a href="{% url 'sprint_members' sprint.id %}" class="action-btn">
+                    👥 Members
+                </a>
+                <a href="{% url 'sprint_tasks' sprint.id %}" class="action-btn">
+                    ✅ Tasks
+                </a>
+                {% if sprint.status != 'completed' %}
+                <a href="{% url 'create_task' sprint.id %}" class="action-btn">
+                    ➕ Create Task
+                </a>
+                <a href="{% url 'review_submissions' sprint.id %}" class="action-btn">
+                    🧪 Review Submissions
+                </a>
+                {% endif %}
+                <a href="{% url 'sprint_applications' sprint.id %}" class="action-btn">
+                    📥 Applications
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TEAM MEMBERS ===== -->
+    <div class="content-card">
+        <h3>👥 Team Members</h3>
+        {% if members %}
+            {% for member in members %}
+            <div class="member-row">
+                <div class="avatar">{{ member.user.username|first|upper }}</div>
+                <div>
+                    <strong>{{ member.user.username }}</strong>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-icon">👥</span>
+                <p>No members joined yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== TASKS ===== -->
+    <div class="content-card">
+        <h3>✅ Sprint Tasks</h3>
+        {% if tasks %}
+            {% for task in tasks %}
+            <div class="task-row">
+                <div>
+                    <strong>{{ task.title }}</strong>
+                    <p>{{ task.description|truncatechars:100 }}</p>
+                </div>
+                <span class="task-status {{ task.status|lower|cut:' ' }}">
+                    {{ task.get_status_display }}
+                </span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-icon">✅</span>
+                <p>No tasks created yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== REVIEWS ===== -->
+    <div class="content-card">
+        <h3>⭐ Reviews</h3>
+        {% if reviews %}
+            {% for review in reviews %}
+            <div class="review-card">
+                <strong>{{ review.reviewer.username }}</strong>
+                <span>⭐ {{ review.rating }}/5</span>
+                <p>{{ review.feedback }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-icon">⭐</span>
+                <p>No reviews yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate progress bar
+        const progressFill = document.querySelector('.progress-fill');
+        if (progressFill) {
+            const width = progressFill.style.width;
+            progressFill.style.width = '0%';
+            setTimeout(function() {
+                progressFill.style.width = width;
+            }, 800);
+        }
+
+        console.log('🚀 Sprint Detail loaded');
+        console.log('📋 Sprint: {{ sprint.title }}');
+        console.log('👥 Members: {{ members.count|default:"0" }}');
+        console.log('✅ Tasks: {{ tasks.count|default:"0" }}');
+        console.log('📈 Progress: {{ progress|default:"0" }}%');
+    });
+</script>
+{% endblock %}

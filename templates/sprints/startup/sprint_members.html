@@ -1,4 +1,4 @@
-{% extends 'sprints/base_sprint.html' %}
+{% extends 'sprints/startup/base_sprint_startup.html' %}
 {% load static %}
 
 {% block page_actions %}
@@ -13,6 +13,9 @@
     {% endif %}
     <a href="{% url 'sprint_applications' sprint.id %}" class="btn btn-secondary btn-sm">
         <span class="btn-icon">📥</span> Applications
+    </a>
+    <a href="{% url 'sprint_detail' sprint.id %}" class="btn btn-secondary btn-sm">
+        <span class="btn-icon">📄</span> Details
     </a>
 </div>
 {% endblock %}
@@ -90,7 +93,13 @@
         transition: all 0.3s;
         position: relative;
         overflow: hidden;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
     }
+
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
 
     .stat-card:hover {
         border-color: rgba(167, 139, 250, 0.12);
@@ -151,7 +160,16 @@
         padding: 20px;
         text-align: center;
         transition: all 0.3s;
+        animation: fadeInUp 0.4s ease forwards;
+        opacity: 0;
     }
+
+    .member-card:nth-child(1) { animation-delay: 0.2s; }
+    .member-card:nth-child(2) { animation-delay: 0.25s; }
+    .member-card:nth-child(3) { animation-delay: 0.3s; }
+    .member-card:nth-child(4) { animation-delay: 0.35s; }
+    .member-card:nth-child(5) { animation-delay: 0.4s; }
+    .member-card:nth-child(6) { animation-delay: 0.45s; }
 
     .member-card:hover {
         border-color: rgba(167, 139, 250, 0.12);
@@ -218,6 +236,7 @@
         background: rgba(167, 139, 250, 0.03);
         border: 1px solid rgba(167, 139, 250, 0.06);
         border-radius: 12px;
+        grid-column: 1 / -1;
     }
 
     .empty-state .empty-icon {
@@ -225,6 +244,12 @@
         display: block;
         margin-bottom: 16px;
         opacity: 0.5;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
 
     .empty-state h3 {
@@ -306,27 +331,6 @@
             transform: translateY(0);
         }
     }
-
-    .stat-card {
-        animation: fadeInUp 0.4s ease forwards;
-        opacity: 0;
-    }
-
-    .stat-card:nth-child(1) { animation-delay: 0.05s; }
-    .stat-card:nth-child(2) { animation-delay: 0.1s; }
-    .stat-card:nth-child(3) { animation-delay: 0.15s; }
-
-    .member-card {
-        animation: fadeInUp 0.4s ease forwards;
-        opacity: 0;
-    }
-
-    .member-card:nth-child(1) { animation-delay: 0.2s; }
-    .member-card:nth-child(2) { animation-delay: 0.25s; }
-    .member-card:nth-child(3) { animation-delay: 0.3s; }
-    .member-card:nth-child(4) { animation-delay: 0.35s; }
-    .member-card:nth-child(5) { animation-delay: 0.4s; }
-    .member-card:nth-child(6) { animation-delay: 0.45s; }
 </style>
 
 <div class="page-content">
@@ -352,14 +356,14 @@
 
         <div class="stat-card">
             <span class="stat-icon">✅</span>
-            <h2>{{ sprint.tasks.count|default:"0" }}</h2>
+            <h2>{{ tasks.count|default:"0" }}</h2>
             <p>Total Tasks</p>
             <span class="stat-change neutral">📋 All tasks</span>
         </div>
 
         <div class="stat-card">
             <span class="stat-icon">📈</span>
-            <h2>{{ sprint.progress_percentage|default:"0" }}%</h2>
+            <h2>{{ progress|default:"0" }}%</h2>
             <p>Sprint Progress</p>
             <span class="stat-change positive">🚀 On track</span>
         </div>
@@ -389,4 +393,32 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('👥 Sprint Members loaded');
+        console.log('🚀 Sprint: {{ sprint.title }}');
+        console.log('👥 Total Members: {{ members.count|default:"0" }}');
+        console.log('✅ Total Tasks: {{ tasks.count|default:"0" }}');
+        console.log('📈 Progress: {{ progress|default:"0" }}%');
+        
+        // Animate cards on scroll
+        const cards = document.querySelectorAll('.member-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `all 0.4s ease ${index * 0.1}s`;
+            observer.observe(card);
+        });
+    });
+</script>
 {% endblock %}

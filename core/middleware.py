@@ -75,25 +75,72 @@ class RoleBasedRedirectMiddleware:
             return None
         
         # ============================================
-        # TALENT - RESTRICTED TO TALENT DASHBOARD
+        # TALENT - RESTRICTED TO TALENT DASHBOARD AND RELATED PAGES
         # ============================================
         if request.user.role == 'talent':
+            # Allow talent to access these paths
             talent_allowed_paths = [
                 '/dashboard/talent/',
+                '/sprints/talent-dashboard/',
                 '/talents/',
                 '/browse-jobs/',
                 '/my-applications/',
                 '/placements/browse-jobs/',
                 '/placements/my-applications/',
+                '/placements/browse-jobs/',
+                '/placements/my-applications/',
+                # Sprint URLs - TALENT SIDE (view only)
+                '/sprints/browse/',
+                '/sprints/my-applications/',
+                '/sprints/my-tasks/',
+                '/sprints/apply/',
+                '/sprints/detail/',
+                '/sprints/submit-task/',
+                '/sprints/task/',  # For task_detail view
+                # AI Engine
+                '/ai_engine/dashboard/',
+                '/ai_engine/',
+                # Payments
+                '/payments/',
+                # Jobs/Placements
+                '/placements/',
+                # Profile
+                '/profiles/',
+                '/portfolio/',
             ]
             for path in talent_allowed_paths:
                 if request.path.startswith(path):
                     return None
             
-            # If talent tries to access restricted areas
+            # Block talent from accessing startup sprint pages
+            startup_sprint_paths = [
+                '/sprints/create/',
+                '/sprints/my-sprints/',
+                '/sprints/edit/',
+                '/sprints/delete/',
+                '/sprints/applications/',
+                '/sprints/accept/',
+                '/sprints/reject/',
+                '/sprints/members/',
+                '/sprints/tasks/',
+                '/sprints/create-task/',
+                '/sprints/review-submissions/',
+                '/sprints/submission-review/',
+                '/sprints/approve-submission/',
+            ]
+            for path in startup_sprint_paths:
+                if request.path.startswith(path):
+                    return redirect('talent_dashboard')
+            
+            # If talent tries to access startup dashboard
             if request.path.startswith('/dashboard/startup/'):
                 return redirect('talent_dashboard')
             
+            # If talent tries to access people/HR pages
+            if request.path.startswith('/people/'):
+                return redirect('talent_dashboard')
+            
+            # For any other restricted page, redirect to talent dashboard
             return redirect('talent_dashboard')
         
         return None
@@ -163,7 +210,7 @@ class StartupAccessMiddleware:
             return redirect('employee_portal_dashboard')
         
         # ============================================
-        # TALENT - RESTRICTED ACCESS
+        # TALENT - RESTRICTED ACCESS (Allow sprint URLs)
         # ============================================
         if request.user.role == 'talent':
             talent_allowed_paths = [
@@ -173,6 +220,18 @@ class StartupAccessMiddleware:
                 '/my-applications/',
                 '/placements/browse-jobs/',
                 '/placements/my-applications/',
+                '/sprints/browse/',
+                '/sprints/my-applications/',
+                '/sprints/my-tasks/',
+                '/sprints/apply/',
+                '/sprints/detail/',
+                '/sprints/submit-task/',
+                '/sprints/task/',  # For task_detail view
+                '/ai_engine/dashboard/',
+                '/payments/',
+                '/placements/',
+                '/profiles/',
+                '/portfolio/',
             ]
             for path in talent_allowed_paths:
                 if request.path.startswith(path):
